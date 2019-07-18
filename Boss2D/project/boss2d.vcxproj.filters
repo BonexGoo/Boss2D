@@ -1,0 +1,659 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Boss2D">
+      <UniqueIdentifier>{8fb3137a-4e98-4b28-a300-32f9512ec7f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\addon">
+      <UniqueIdentifier>{ae4e5aeb-628d-4f71-90dd-5ed0749b62e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\core">
+      <UniqueIdentifier>{4ab891ec-1e36-48a1-a513-40354704dfd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\element">
+      <UniqueIdentifier>{ba030221-446f-4ca5-aa22-60c0bfda6cb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\format">
+      <UniqueIdentifier>{c4cdc3fb-ee8d-4afe-a7e3-46b44dbba0f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\platform">
+      <UniqueIdentifier>{77bd18fd-c178-4870-97f8-d8f6df5a6a07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\service">
+      <UniqueIdentifier>{6180358d-5265-4a1b-86ae-7e1e76ec297b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\platform\android">
+      <UniqueIdentifier>{187e807b-4d92-4665-b92f-4c1780086dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\platform\win32">
+      <UniqueIdentifier>{807cfafa-cf2c-4557-8be9-304ca1d55fe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{acd7b87a-23bc-4068-af15-c96b4ffb6ec5}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{ae3e104a-c457-4fa2-b3c2-8ce846d91257}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\element\boss_clip.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_color.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_font.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_image.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_matrix.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_point.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_rect.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_size.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_tween.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_vector.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\android\OpenGLES_Functions.cpp">
+      <Filter>Boss2D\platform\android</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\boss_platform_blank.cpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\boss_platform_cocos2dx.cpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\boss_platform_impl.cpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\boss_platform_native.cpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\format\boss_bmp.cpp">
+      <Filter>Boss2D\format</Filter>
+    </ClCompile>
+    <ClCompile Include="..\format\boss_flv.cpp">
+      <Filter>Boss2D\format</Filter>
+    </ClCompile>
+    <ClCompile Include="..\format\boss_png.cpp">
+      <Filter>Boss2D\format</Filter>
+    </ClCompile>
+    <ClCompile Include="..\format\boss_zen.cpp">
+      <Filter>Boss2D\format</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_aac.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_alpr.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_curl.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_git.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_h264.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_jpg.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_tesseract.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_fakewin.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libgit2-0.22.2.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libssh2-1.6.0.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_rtmpdump-2.4.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_tensorflow-1.2.1.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_zip.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\element\boss_solver.cpp">
+      <Filter>Boss2D\element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_addon.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_asset.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_buffer.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_context.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_library.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_math.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_memory.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_mutex.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_parser.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_profile.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_remote.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_share.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_storage.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_string.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_tasking.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_updater.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_view.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\boss_wstring.cpp">
+      <Filter>Boss2D\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_opencv.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_ogg.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libogg-1.3.3.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libvorbis-1.3.6.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\boss_platform_qt5.cpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_boss_platform_qt5.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_boss_platform_qt5.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_asyncfilemanager.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_backey.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_batchbuilder.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_boxr.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_brii.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_camera360service.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_firebaseservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_livechatservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_oauth2service.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_parasource.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_streamingservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_tryworld.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_typolar.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_zay.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_tesseract-3.05.02.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_ssl.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_freetype.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_tif.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_decoder.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_encoder.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_zayson.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_webrtc.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libsrtp-2.2.0.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_rnnoise-chromium.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_usrsctp-0.9.3.0.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_websocket.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_websocketpp-0.8.1.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_openssl-1.1.1a.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\element\boss_clip.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_color.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_font.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_image.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_matrix.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_point.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_rect.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_size.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_tween.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_vector.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\android\OpenGLES_Functions.h">
+      <Filter>Boss2D\platform\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\win32\glew.h">
+      <Filter>Boss2D\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\boss_platform.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\boss_platform_blank.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\boss_platform_cocos2dx.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\boss_platform_impl.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\boss_platform_native.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\format\boss_bmp.hpp">
+      <Filter>Boss2D\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\format\boss_flv.hpp">
+      <Filter>Boss2D\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\format\boss_png.hpp">
+      <Filter>Boss2D\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\format\boss_zen.hpp">
+      <Filter>Boss2D\format</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_aac.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_alpr.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_curl.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_git.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_h264.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_jpg.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_tesseract.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_fakewin.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libgit2-0.22.2.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libssh2-1.6.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_rtmpdump-2.4.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_tensorflow-1.2.1.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_zip.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\element\boss_solver.hpp">
+      <Filter>Boss2D\element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss.h">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_addon.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_array.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_asset.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_buffer.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_context.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_counter.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_library.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_map.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_math.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_memory.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_mutex.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_object.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_parser.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_profile.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_queue.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_remote.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_share.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_storage.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_string.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_tasking.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_tree.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_updater.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_view.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_wstring.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_opencv.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_ogg.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libogg-1.3.3.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libvorbis-1.3.6.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_asyncfilemanager.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_backey.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_batchbuilder.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_boxr.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_brii.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_camera360service.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_firebaseservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_livechatservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_oauth2service.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_parasource.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_streamingservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_tryworld.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_typolar.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_zay.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_tesseract-3.05.02.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_ssl.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_freetype.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_tif.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_openh264-1.6.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_zayson.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_webrtc.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libsrtp-2.2.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_rnnoise-chromium.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_usrsctp-0.9.3.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_websocketpp-0.8.1.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_websocket.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_openssl-1.1.1a.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\platform\boss_platform_qt5.hpp">
+      <Filter>Boss2D\platform</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="boss2d.natvis" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="BOSS::String">
+    <DisplayString> {m_words.share->mData, s8b} </DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">m_words.share->mValidCount</Item>
+      <Item Name="[share]" ExcludeView="simple">m_words.share->mShareCount</Item>
+      <ArrayItems>
+        <Size>m_words.share->mValidCount</Size>
+        <ValuePointer>(char*)(m_words.share->mData)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="BOSS::Color">
+    <DisplayString> [r={(int)r}, g={(int)g}, b={(int)b}, a={(int)a}] </DisplayString>
+  </Type>
+
+  <Type Name="BOSS::Array&lt;*,1,4&gt;">
+    <DisplayString>[size={share->mValidCount}]</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>share->mValidCount</Size>
+        <ValuePointer>($T1*)share->mData</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="BOSS::Array&lt;*,2,4&gt;">
+    <!-- <DisplayString>[size={share->mValidCount}]</DisplayString> !-->
+    <DisplayString>{share->mData, s8b}</DisplayString>
+    
+    <Expand>
+      <ArrayItems>
+        <Size>share->mValidCount</Size>
+        <ValuePointer>($T1*)share->mData</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  
+</AutoVisualizer>

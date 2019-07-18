@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EF5C0617-444B-4C79-8273-CEC642C286D1}</ProjectGuid>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="..\addon\boss_addon_aac.cpp" />
+    <ClCompile Include="..\addon\boss_addon_alpr.cpp" />
+    <ClCompile Include="..\addon\boss_addon_curl.cpp" />
+    <ClCompile Include="..\addon\boss_addon_freetype.cpp" />
+    <ClCompile Include="..\addon\boss_addon_git.cpp" />
+    <ClCompile Include="..\addon\boss_addon_h264.cpp" />
+    <ClCompile Include="..\addon\boss_addon_jpg.cpp" />
+    <ClCompile Include="..\addon\boss_addon_ogg.cpp" />
+    <ClCompile Include="..\addon\boss_addon_opencv.cpp" />
+    <ClCompile Include="..\addon\boss_addon_ssl.cpp" />
+    <ClCompile Include="..\addon\boss_addon_tesseract.cpp" />
+    <ClCompile Include="..\addon\boss_addon_tif.cpp" />
+    <ClCompile Include="..\addon\boss_addon_webrtc.cpp" />
+    <ClCompile Include="..\addon\boss_addon_websocket.cpp" />
+    <ClCompile Include="..\addon\boss_addon_zip.cpp" />
+    <ClCompile Include="..\addon\boss_fakewin.cpp" />
+    <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp" />
+    <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
+    <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
+    <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp" />
+    <ClCompile Include="..\addon\boss_integration_libgit2-0.22.2.c" />
+    <ClCompile Include="..\addon\boss_integration_libogg-1.3.3.c" />
+    <ClCompile Include="..\addon\boss_integration_libsrtp-2.2.0.c" />
+    <ClCompile Include="..\addon\boss_integration_libssh2-1.6.0.c" />
+    <ClCompile Include="..\addon\boss_integration_libvorbis-1.3.6.c" />
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0.cpp" />
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.c" />
+    <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.c" />
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0.cpp" />
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.c" />
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0.cpp" />
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_decoder.cpp" />
+    <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_encoder.cpp" />
+    <ClCompile Include="..\addon\boss_integration_openssl-1.1.1a.c" />
+    <ClCompile Include="..\addon\boss_integration_rnnoise-chromium.cpp" />
+    <ClCompile Include="..\addon\boss_integration_rtmpdump-2.4.c" />
+    <ClCompile Include="..\addon\boss_integration_tensorflow-1.2.1.cpp" />
+    <ClCompile Include="..\addon\boss_integration_tesseract-3.05.02.cpp" />
+    <ClCompile Include="..\addon\boss_integration_usrsctp-0.9.3.0.c" />
+    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001.cpp" />
+    <ClCompile Include="..\addon\boss_integration_websocketpp-0.8.1.cpp" />
+    <ClCompile Include="..\core\boss.cpp" />
+    <ClCompile Include="..\core\boss_addon.cpp" />
+    <ClCompile Include="..\core\boss_asset.cpp" />
+    <ClCompile Include="..\core\boss_buffer.cpp" />
+    <ClCompile Include="..\core\boss_context.cpp" />
+    <ClCompile Include="..\core\boss_library.cpp" />
+    <ClCompile Include="..\core\boss_math.cpp" />
+    <ClCompile Include="..\core\boss_memory.cpp" />
+    <ClCompile Include="..\core\boss_mutex.cpp" />
+    <ClCompile Include="..\core\boss_parser.cpp" />
+    <ClCompile Include="..\core\boss_profile.cpp" />
+    <ClCompile Include="..\core\boss_remote.cpp" />
+    <ClCompile Include="..\core\boss_share.cpp" />
+    <ClCompile Include="..\core\boss_storage.cpp" />
+    <ClCompile Include="..\core\boss_string.cpp" />
+    <ClCompile Include="..\core\boss_tasking.cpp" />
+    <ClCompile Include="..\core\boss_updater.cpp" />
+    <ClCompile Include="..\core\boss_view.cpp" />
+    <ClCompile Include="..\core\boss_wstring.cpp" />
+    <ClCompile Include="..\element\boss_clip.cpp" />
+    <ClCompile Include="..\element\boss_color.cpp" />
+    <ClCompile Include="..\element\boss_font.cpp" />
+    <ClCompile Include="..\element\boss_image.cpp" />
+    <ClCompile Include="..\element\boss_matrix.cpp" />
+    <ClCompile Include="..\element\boss_point.cpp" />
+    <ClCompile Include="..\element\boss_rect.cpp" />
+    <ClCompile Include="..\element\boss_size.cpp" />
+    <ClCompile Include="..\element\boss_solver.cpp" />
+    <ClCompile Include="..\element\boss_tween.cpp" />
+    <ClCompile Include="..\element\boss_vector.cpp" />
+    <ClCompile Include="..\format\boss_bmp.cpp" />
+    <ClCompile Include="..\format\boss_flv.cpp" />
+    <ClCompile Include="..\format\boss_png.cpp" />
+    <ClCompile Include="..\format\boss_zen.cpp" />
+    <ClCompile Include="..\platform\android\OpenGLES_Functions.cpp" />
+    <ClCompile Include="..\platform\boss_platform_blank.cpp" />
+    <ClCompile Include="..\platform\boss_platform_cocos2dx.cpp" />
+    <ClCompile Include="..\platform\boss_platform_impl.cpp" />
+    <ClCompile Include="..\platform\boss_platform_native.cpp" />
+    <ClCompile Include="..\platform\boss_platform_qt5.cpp" />
+    <ClCompile Include="..\service\boss_asyncfilemanager.cpp" />
+    <ClCompile Include="..\service\boss_backey.cpp" />
+    <ClCompile Include="..\service\boss_batchbuilder.cpp" />
+    <ClCompile Include="..\service\boss_boxr.cpp" />
+    <ClCompile Include="..\service\boss_brii.cpp" />
+    <ClCompile Include="..\service\boss_camera360service.cpp" />
+    <ClCompile Include="..\service\boss_firebaseservice.cpp" />
+    <ClCompile Include="..\service\boss_livechatservice.cpp" />
+    <ClCompile Include="..\service\boss_oauth2service.cpp" />
+    <ClCompile Include="..\service\boss_parasource.cpp" />
+    <ClCompile Include="..\service\boss_streamingservice.cpp" />
+    <ClCompile Include="..\service\boss_tryworld.cpp" />
+    <ClCompile Include="..\service\boss_typolar.cpp" />
+    <ClCompile Include="..\service\boss_zay.cpp" />
+    <ClCompile Include="..\service\boss_zayson.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\addon\boss_addon_aac.hpp" />
+    <ClInclude Include="..\addon\boss_addon_alpr.hpp" />
+    <ClInclude Include="..\addon\boss_addon_curl.hpp" />
+    <ClInclude Include="..\addon\boss_addon_freetype.hpp" />
+    <ClInclude Include="..\addon\boss_addon_git.hpp" />
+    <ClInclude Include="..\addon\boss_addon_h264.hpp" />
+    <ClInclude Include="..\addon\boss_addon_jpg.hpp" />
+    <ClInclude Include="..\addon\boss_addon_ogg.hpp" />
+    <ClInclude Include="..\addon\boss_addon_opencv.hpp" />
+    <ClInclude Include="..\addon\boss_addon_ssl.hpp" />
+    <ClInclude Include="..\addon\boss_addon_tesseract.hpp" />
+    <ClInclude Include="..\addon\boss_addon_tif.hpp" />
+    <ClInclude Include="..\addon\boss_addon_webrtc.hpp" />
+    <ClInclude Include="..\addon\boss_addon_websocket.hpp" />
+    <ClInclude Include="..\addon\boss_addon_zip.hpp" />
+    <ClInclude Include="..\addon\boss_fakewin.h" />
+    <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h" />
+    <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
+    <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />
+    <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h" />
+    <ClInclude Include="..\addon\boss_integration_libgit2-0.22.2.h" />
+    <ClInclude Include="..\addon\boss_integration_libogg-1.3.3.h" />
+    <ClInclude Include="..\addon\boss_integration_libsrtp-2.2.0.h" />
+    <ClInclude Include="..\addon\boss_integration_libssh2-1.6.0.h" />
+    <ClInclude Include="..\addon\boss_integration_libvorbis-1.3.6.h" />
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0.h" />
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.h" />
+    <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.h" />
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0.h" />
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.h" />
+    <ClInclude Include="..\addon\boss_integration_openh264-1.6.0.h" />
+    <ClInclude Include="..\addon\boss_integration_openssl-1.1.1a.h" />
+    <ClInclude Include="..\addon\boss_integration_rnnoise-chromium.h" />
+    <ClInclude Include="..\addon\boss_integration_rtmpdump-2.4.h" />
+    <ClInclude Include="..\addon\boss_integration_tensorflow-1.2.1.h" />
+    <ClInclude Include="..\addon\boss_integration_tesseract-3.05.02.h" />
+    <ClInclude Include="..\addon\boss_integration_usrsctp-0.9.3.0.h" />
+    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001.h" />
+    <ClInclude Include="..\addon\boss_integration_websocketpp-0.8.1.hpp" />
+    <ClInclude Include="..\core\boss.h" />
+    <ClInclude Include="..\core\boss.hpp" />
+    <ClInclude Include="..\core\boss_addon.hpp" />
+    <ClInclude Include="..\core\boss_array.hpp" />
+    <ClInclude Include="..\core\boss_asset.hpp" />
+    <ClInclude Include="..\core\boss_buffer.hpp" />
+    <ClInclude Include="..\core\boss_context.hpp" />
+    <ClInclude Include="..\core\boss_counter.hpp" />
+    <ClInclude Include="..\core\boss_library.hpp" />
+    <ClInclude Include="..\core\boss_map.hpp" />
+    <ClInclude Include="..\core\boss_math.hpp" />
+    <ClInclude Include="..\core\boss_memory.hpp" />
+    <ClInclude Include="..\core\boss_mutex.hpp" />
+    <ClInclude Include="..\core\boss_object.hpp" />
+    <ClInclude Include="..\core\boss_parser.hpp" />
+    <ClInclude Include="..\core\boss_profile.hpp" />
+    <ClInclude Include="..\core\boss_queue.hpp" />
+    <ClInclude Include="..\core\boss_remote.hpp" />
+    <ClInclude Include="..\core\boss_share.hpp" />
+    <ClInclude Include="..\core\boss_storage.hpp" />
+    <ClInclude Include="..\core\boss_string.hpp" />
+    <ClInclude Include="..\core\boss_tasking.hpp" />
+    <ClInclude Include="..\core\boss_tree.hpp" />
+    <ClInclude Include="..\core\boss_updater.hpp" />
+    <ClInclude Include="..\core\boss_view.hpp" />
+    <ClInclude Include="..\core\boss_wstring.hpp" />
+    <ClInclude Include="..\element\boss_clip.hpp" />
+    <ClInclude Include="..\element\boss_color.hpp" />
+    <ClInclude Include="..\element\boss_font.hpp" />
+    <ClInclude Include="..\element\boss_image.hpp" />
+    <ClInclude Include="..\element\boss_matrix.hpp" />
+    <ClInclude Include="..\element\boss_point.hpp" />
+    <ClInclude Include="..\element\boss_rect.hpp" />
+    <ClInclude Include="..\element\boss_size.hpp" />
+    <ClInclude Include="..\element\boss_solver.hpp" />
+    <ClInclude Include="..\element\boss_tween.hpp" />
+    <ClInclude Include="..\element\boss_vector.hpp" />
+    <ClInclude Include="..\format\boss_bmp.hpp" />
+    <ClInclude Include="..\format\boss_flv.hpp" />
+    <ClInclude Include="..\format\boss_png.hpp" />
+    <ClInclude Include="..\format\boss_zen.hpp" />
+    <ClInclude Include="..\platform\android\OpenGLES_Functions.h" />
+    <ClInclude Include="..\platform\boss_platform.hpp" />
+    <ClInclude Include="..\platform\boss_platform_blank.hpp" />
+    <ClInclude Include="..\platform\boss_platform_cocos2dx.hpp" />
+    <ClInclude Include="..\platform\boss_platform_impl.hpp" />
+    <ClInclude Include="..\platform\boss_platform_native.hpp" />
+    <ClInclude Include="..\platform\boss_platform_qt5.hpp" />
+    <ClInclude Include="..\platform\win32\glew.h" />
+    <ClInclude Include="..\service\boss_asyncfilemanager.hpp" />
+    <ClInclude Include="..\service\boss_backey.hpp" />
+    <ClInclude Include="..\service\boss_batchbuilder.hpp" />
+    <ClInclude Include="..\service\boss_boxr.hpp" />
+    <ClInclude Include="..\service\boss_brii.hpp" />
+    <ClInclude Include="..\service\boss_camera360service.hpp" />
+    <ClInclude Include="..\service\boss_firebaseservice.hpp" />
+    <ClInclude Include="..\service\boss_livechatservice.hpp" />
+    <ClInclude Include="..\service\boss_oauth2service.hpp" />
+    <ClInclude Include="..\service\boss_parasource.hpp" />
+    <ClInclude Include="..\service\boss_streamingservice.hpp" />
+    <ClInclude Include="..\service\boss_tryworld.hpp" />
+    <ClInclude Include="..\service\boss_typolar.hpp" />
+    <ClInclude Include="..\service\boss_zay.hpp" />
+    <ClInclude Include="..\service\boss_zayson.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;BOSS_NDEBUG=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)config;$(SolutionDir)..\Boss2D\core;$(SolutionDir)..\Boss2D;$(SolutionDir)..\..\..\Boss2D\core;$(SolutionDir)..\..\..\Boss2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;BOSS_NDEBUG=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)config;$(SolutionDir)..\Boss2D\core;$(SolutionDir)..\Boss2D;$(SolutionDir)..\..\..\Boss2D\core;$(SolutionDir)..\..\..\Boss2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BOSS_NDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)config;$(SolutionDir)..\Boss2D\core;$(SolutionDir)..\Boss2D;$(SolutionDir)..\..\..\Boss2D\core;$(SolutionDir)..\..\..\Boss2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat />
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BOSS_NDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)config;$(SolutionDir)..\Boss2D\core;$(SolutionDir)..\Boss2D;$(SolutionDir)..\..\..\Boss2D\core;$(SolutionDir)..\..\..\Boss2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <OutputFile>$(SolutionDir)[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

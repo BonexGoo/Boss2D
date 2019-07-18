@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>HelloWorld Installer</Name>
+    <Version>1.0.0</Version>
+    <Title>HelloWorld 설치하기</Title>
+    <Publisher>Boss2D</Publisher>
+    <!-- Directory name is used in component.xml -->
+    <StartMenuDir>HelloWorld</StartMenuDir>
+    <TargetDir>@HomeDir@/HelloWorld</TargetDir>
+</Installer>

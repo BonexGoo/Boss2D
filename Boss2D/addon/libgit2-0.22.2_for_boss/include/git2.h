@@ -1,0 +1,65 @@
+/*
+ * Copyright (C) the libgit2 contributors. All rights reserved.
+ *
+ * This file is part of libgit2, distributed under the GNU GPL v2 with
+ * a Linking Exception. For full terms see the included COPYING file.
+ */
+
+#ifndef INCLUDE_git_git_h__
+#define INCLUDE_git_git_h__
+
+#include BOSS_LIBGIT2_U_git2__annotated_commit_h //original-code:"git2/annotated_commit.h"
+#include BOSS_LIBGIT2_U_git2__attr_h //original-code:"git2/attr.h"
+#include BOSS_LIBGIT2_U_git2__blob_h //original-code:"git2/blob.h"
+#include BOSS_LIBGIT2_U_git2__blame_h //original-code:"git2/blame.h"
+#include BOSS_LIBGIT2_U_git2__branch_h //original-code:"git2/branch.h"
+#include BOSS_LIBGIT2_U_git2__buffer_h //original-code:"git2/buffer.h"
+#include BOSS_LIBGIT2_U_git2__checkout_h //original-code:"git2/checkout.h"
+#include BOSS_LIBGIT2_U_git2__cherrypick_h //original-code:"git2/cherrypick.h"
+#include BOSS_LIBGIT2_U_git2__clone_h //original-code:"git2/clone.h"
+#include BOSS_LIBGIT2_U_git2__commit_h //original-code:"git2/commit.h"
+#include BOSS_LIBGIT2_U_git2__common_h //original-code:"git2/common.h"
+#include BOSS_LIBGIT2_U_git2__config_h //original-code:"git2/config.h"
+#include BOSS_LIBGIT2_U_git2__describe_h //original-code:"git2/describe.h"
+#include BOSS_LIBGIT2_U_git2__diff_h //original-code:"git2/diff.h"
+#include BOSS_LIBGIT2_U_git2__errors_h //original-code:"git2/errors.h"
+#include BOSS_LIBGIT2_U_git2__filter_h //original-code:"git2/filter.h"
+#include BOSS_LIBGIT2_U_git2__global_h //original-code:"git2/global.h"
+#include BOSS_LIBGIT2_U_git2__graph_h //original-code:"git2/graph.h"
+#include BOSS_LIBGIT2_U_git2__ignore_h //original-code:"git2/ignore.h"
+#include BOSS_LIBGIT2_U_git2__index_h //original-code:"git2/index.h"
+#include BOSS_LIBGIT2_U_git2__indexer_h //original-code:"git2/indexer.h"
+#include BOSS_LIBGIT2_U_git2__merge_h //original-code:"git2/merge.h"
+#include BOSS_LIBGIT2_U_git2__message_h //original-code:"git2/message.h"
+#include BOSS_LIBGIT2_U_git2__net_h //original-code:"git2/net.h"
+#include "git2/notes.h"
+#include BOSS_LIBGIT2_U_git2__object_h //original-code:"git2/object.h"
+#include BOSS_LIBGIT2_U_git2__odb_h //original-code:"git2/odb.h"
+#include BOSS_LIBGIT2_U_git2__odb_backend_h //original-code:"git2/odb_backend.h"
+#include BOSS_LIBGIT2_U_git2__oid_h //original-code:"git2/oid.h"
+#include BOSS_LIBGIT2_U_git2__pack_h //original-code:"git2/pack.h"
+#include BOSS_LIBGIT2_U_git2__patch_h //original-code:"git2/patch.h"
+#include BOSS_LIBGIT2_U_git2__pathspec_h //original-code:"git2/pathspec.h"
+#include BOSS_LIBGIT2_U_git2__push_h //original-code:"git2/push.h"
+#include "git2/rebase.h"
+#include BOSS_LIBGIT2_U_git2__refdb_h //original-code:"git2/refdb.h"
+#include BOSS_LIBGIT2_U_git2__reflog_h //original-code:"git2/reflog.h"
+#include BOSS_LIBGIT2_U_git2__refs_h //original-code:"git2/refs.h"
+#include BOSS_LIBGIT2_U_git2__refspec_h //original-code:"git2/refspec.h"
+#include BOSS_LIBGIT2_U_git2__remote_h //original-code:"git2/remote.h"
+#include BOSS_LIBGIT2_U_git2__repository_h //original-code:"git2/repository.h"
+#include BOSS_LIBGIT2_U_git2__reset_h //original-code:"git2/reset.h"
+#include BOSS_LIBGIT2_U_git2__revert_h //original-code:"git2/revert.h"
+#include BOSS_LIBGIT2_U_git2__revparse_h //original-code:"git2/revparse.h"
+#include BOSS_LIBGIT2_U_git2__revwalk_h //original-code:"git2/revwalk.h"
+#include BOSS_LIBGIT2_U_git2__signature_h //original-code:"git2/signature.h"
+#include BOSS_LIBGIT2_U_git2__stash_h //original-code:"git2/stash.h"
+#include BOSS_LIBGIT2_U_git2__status_h //original-code:"git2/status.h"
+#include BOSS_LIBGIT2_U_git2__submodule_h //original-code:"git2/submodule.h"
+#include BOSS_LIBGIT2_U_git2__tag_h //original-code:"git2/tag.h"
+#include BOSS_LIBGIT2_U_git2__transport_h //original-code:"git2/transport.h"
+#include BOSS_LIBGIT2_U_git2__tree_h //original-code:"git2/tree.h"
+#include BOSS_LIBGIT2_U_git2__types_h //original-code:"git2/types.h"
+#include "git2/version.h"
+
+#endif

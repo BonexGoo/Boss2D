@@ -1,0 +1,87 @@
+openalpr (2.2.4-1) unstable; urgency=low
+
+  * Added Python3 bindings (Closes: #815961)
+  * Remove frame number from JSON output (Closes: #813290)
+  * Use dh-python to generate proper depends for python-openalpr (Closes:
+    #815960)
+  * Change python-openalpr from arch any to arch all (Closes: #815959)
+  * Fixed build failure on Hurd (Closes: #812738)
+  * Add bindings package for python3, python3-openalpr
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Matthew Hill <matthill@openalpr.com>  Sun, 28 Feb 2016 09:51:25 -0500
+
+openalpr (2.2.3-1) unstable; urgency=low
+
+  * Changed Debian config to build on all architectures
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Matthew Hill <matthill@openalpr.com>  Sun, 24 Jan 2016 15:33:25 -0500
+
+openalpr (2.2.2-1) unstable; urgency=low
+
+  * Minor bug fixes
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Matthew Hill <matthill@openalpr.com>  Wed, 6 Jan 2016 06:48:05 -0500
+
+openalpr (2.2.1-1) unstable; urgency=low
+
+  * Initial upload to Debian (Closes: #747509)
+  * Debian Packaging enhancements
+  * Added binding for Go
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Matthew Hill <matthill@openalpr.com>  Thu, 17 Dec 2015 18:10:05 -0500
+
+openalpr (2.2.0-0.1) experimental; urgency=low
+
+  * Non-maintainer upload
+  * Added training data for Singapore and Great Britain
+  * Improved accuracy and reduced false positives for US plate detector
+  * Improved support for 2-line plates (requires training data)
+  * Supports analyzing multiple training datasets in one pass
+  * Added OpenCL GPU support (works with Nvidia, AMD, and Intel GPUs)
+  * Upgraded to OpenCV 3.0
+  * Support Tesseract 3.04
+  * .NET library API improvements
+  * Bug Fixes
+
+ -- Matthew Hill <matthill@openalpr.com>  Mon, 19 Oct 2015 18:15:00 -0500
+
+openalpr (2.1.0-0.1) experimental; urgency=low
+
+  * Non-maintainer upload
+  * Added per-character details to API output
+  * Bug fixes
+  * Added camera calibration utility
+  * Motion detector for video frames
+  * Full UTF-8 character support
+  * Support for South Korean and Australian plates
+  * Experimental morphological plate detector
+  * Pattern matching for European countries
+
+ -- Matthew Hill <matthill@openalpr.com>  Thu, 18 Jun 2015 20:31:00 -0500
+
+openalpr (2.0.1-0.1) experimental; urgency=low
+
+  * Non-maintainer upload
+  * Bindings for Java, C#, and Python
+  * API changes/simplification
+  * CUDA support
+  * Bug fixes
+  * Faster initial load time
+  * Additional Config options
+  * Library supports multi-line plates
+
+ -- Matthew Hill <matthill@openalpr.com>  Thu, 12 Mar 2015 23:46:00 -0500
+
+openalpr (2.0.0-0.1) experimental; urgency=low
+
+  * Non-maintainer upload
+  * Upstream release with several fixes:
+    - Compilation of utilities enabled
+    - installation of static library
+    - alpr build against shared library
+
+ -- Emmanuel Papin <manupap01@gmail.com>  Sun, 14 Dec 2014 19:39:07 +0200
