@@ -35,10 +35,11 @@ namespace BOSS
     public:
         inline bool HasBitmap() const {return (m_bitmap != nullptr);}
         inline id_bitmap_read GetBitmap() const {return m_bitmap;}
-        inline id_image_read GetImage() const {return GetImageCore();}
-        inline id_image_read GetImage(const sint32 width, const sint32 height) const {return GetImageCore(width, height);}
-        inline id_image_read GetImage(const Color& coloring) const {return GetImageCore(-1, -1, coloring);}
-        inline id_image_read GetImage(const sint32 width, const sint32 height, const Color& coloring) const {return GetImageCore(width, height, coloring);}
+        inline id_image_read GetImage() const {return GetImageCore(true, -1, -1, Color::ColoringDefault);}
+        inline id_image_read GetBuildImage(const sint32 width, const sint32 height, const bool forced = true) const {return GetImageCore(forced, width, height, Color::ColoringDefault);}
+        inline id_image_read GetBuildImage(const Color& coloring, const bool forced = true) const {return GetImageCore(forced, -1, -1, coloring);}
+        inline id_image_read GetBuildImage(const sint32 width, const sint32 height, const Color& coloring, const bool forced = true) const {return GetImageCore(forced, width, height, coloring);}
+        inline bool IsBuildFinished() const {return m_builder.Finished();}
         sint32 GetImageWidth() const;
         sint32 GetImageHeight() const;
         inline sint32 GetWidth() const {return m_valid_rect.r - m_valid_rect.l;}
@@ -79,7 +80,7 @@ namespace BOSS
         void ResetData();
         void MakeData(sint32 l, sint32 t, sint32 r, sint32 b);
         void RecalcData();
-        id_image_read GetImageCore(sint32 resizing_width = -1, sint32 resizing_height = -1, const Color coloring = Color::ColoringDefault) const;
+        id_image_read GetImageCore(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring) const;
 
     private:
         class Builder
@@ -91,17 +92,19 @@ namespace BOSS
             Builder& operator=(Builder&& rhs);
         public:
             void Clear();
+            bool Finished();
             void ValidBitmap(id_bitmap_read bitmap);
-            id_image_read GetOriginalImage();
-            id_image_read GetImage(sint32 resizing_width = -1, sint32 resizing_height = -1, const Color coloring = Color::ColoringDefault);
+            id_image_read GetLastImage();
+            id_image_read GetImage(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring);
         private:
             id_bitmap_read m_RefBitmap;
             sint32 m_BitmapWidth;
             sint32 m_BitmapHeight;
-            id_image mOriginalImage;
+            id_image mLastImage;
             size64 mRoutineResize;
             Color mRoutineColor;
             id_image_routine mRoutine;
+            bool mIsRoutineFinished;
         };
 
     private:

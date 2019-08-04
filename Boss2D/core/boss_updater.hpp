@@ -54,6 +54,7 @@ namespace BOSS
         FrameUpdater& operator=(const FrameUpdater& rhs);
 
     public:
+        void RepaintOnce();
         void Flush(void (*invalidator)(payload, chars), payload data);
         void WakeUp(void (*invalidator)(payload, chars), payload data);
 
@@ -62,6 +63,9 @@ namespace BOSS
         {return false;}
         virtual bool UpdateForTick() override
         {return false;}
+
+    private:
+        bool m_needRepaint;
     };
 
     ////////////////////////////////////////////////////////////////////////////////

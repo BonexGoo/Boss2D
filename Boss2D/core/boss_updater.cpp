@@ -113,6 +113,7 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     FrameUpdater::FrameUpdater()
     {
+        m_needRepaint = false;
     }
 
     FrameUpdater::FrameUpdater(const FrameUpdater& rhs)
@@ -128,6 +129,11 @@ namespace BOSS
     {
         Updater::operator=(rhs);
         return *this;
+    }
+
+    void FrameUpdater::RepaintOnce()
+    {
+        m_needRepaint = true;
     }
 
     void FrameUpdater::Flush(void (*invalidator)(payload, chars), payload data)
@@ -151,6 +157,11 @@ namespace BOSS
             if(CurUpdater->UpdateForTick())
                 invalidator(data, CurUpdater->m_uigroup);
             CurUpdater = NextUpdater;
+        }
+        if(m_needRepaint)
+        {
+            m_needRepaint = false;
+            invalidator(data, nullptr);
         }
     }
 

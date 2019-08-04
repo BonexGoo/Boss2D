@@ -110,6 +110,10 @@ public:
         return outputHeight;
     }
 
+    int getOrientation() const {
+        return orientationCode;
+    }
+
     chars getColorSpace() const {
         switch (dec.out_color_space) {
         case JCS_RGB:
@@ -142,5 +146,6 @@ private:
     int imageWidth, imageHeight;
     int desiredWidth, desiredHeight;
     int outputWidth, outputHeight;
+    int orientationCode; // added by BOSS : 회전방향
     uint08* output;
 };

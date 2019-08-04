@@ -293,7 +293,7 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     // ZayPanel
     ////////////////////////////////////////////////////////////////////////////////
-    ZayPanel::ZayPanel(Updater* updater, float width, float height, const buffer touch)
+    ZayPanel::ZayPanel(FrameUpdater* updater, float width, float height, const buffer touch)
         : m_updater(updater), m_width(width), m_height(height)
     {
         m_dirty = false;
@@ -478,7 +478,7 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
-            Platform::Graphics::DrawImage(image.GetImage(LastColor),
+            Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
                 image.GetImageWidth(), image.GetImageHeight());
@@ -507,7 +507,7 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
-            Platform::Graphics::DrawImage(image.GetImage(LastColor),
+            Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
                 image.GetImageWidth(), image.GetImageHeight());
@@ -589,11 +589,13 @@ namespace BOSS
             if(rebuild)
             {
                 const Color& LastColor = m_stack_color[-1];
-                auto RebuildImage = image.GetImage(DstWidth, DstHeight, LastColor);
+                auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, false);
                 auto RebuildWidth = Platform::Graphics::GetImageWidth(RebuildImage);
                 auto RebuildHeight = Platform::Graphics::GetImageHeight(RebuildImage);
                 Platform::Graphics::DrawImage(RebuildImage, 0, 0, RebuildWidth, RebuildHeight,
                     LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
+                if(m_updater &&!image.IsBuildFinished())
+                    m_updater->RepaintOnce();
             }
             else Platform::Graphics::DrawImage(image.GetImage(), 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
@@ -657,7 +659,7 @@ namespace BOSS
             const Color& LastColor = m_stack_color[-1];
             for(sint32 y = 0, yend = image.PatchSrcYCount() - 1; y < yend; ++y)
             for(sint32 x = 0, xend = image.PatchSrcXCount() - 1; x < xend; ++x)
-                Platform::Graphics::DrawImage(image.GetImage(LastColor),
+                Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                     PatchSrcX[x], PatchSrcY[y], PatchSrcX[x + 1] - PatchSrcX[x], PatchSrcY[y + 1] - PatchSrcY[y],
                     LastClip.l + PatchDstX[x], LastClip.t + PatchDstY[y], PatchDstX[x + 1] - PatchDstX[x], PatchDstY[y + 1] - PatchDstY[y]);
         }
@@ -711,7 +713,7 @@ namespace BOSS
             float DstX = XBegin;
             for(sint32 x = 0; x < XCount; ++x)
             {
-                Platform::Graphics::DrawImage(image.GetImage(LastColor),
+                Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                     0, 0, image.GetImageWidth(), image.GetImageHeight(),
                     LastClip.l + DstX, LastClip.t + DstY,
                     image.GetImageWidth(), image.GetImageHeight());

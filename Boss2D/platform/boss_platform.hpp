@@ -987,8 +987,9 @@ namespace BOSS
             /*!
             \brief 이미지루틴 삭제
             \param routine : 이미지루틴
+            \param keep_image : 빌드된 결과를 리턴받을지의 여부
             */
-            static void RemoveImageRoutine(id_image_routine routine);
+            static id_image RemoveImageRoutine(id_image_routine routine, bool keep_image = false);
 
             /*!
             \brief 이미지 출력

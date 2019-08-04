@@ -293,7 +293,7 @@ namespace BOSS
         typedef std::function<void(ZayPanel&, chars)> SubRenderCB;
 
     public:
-        ZayPanel(Updater* updater, float width, float height, const buffer touch);
+        ZayPanel(FrameUpdater* updater, float width, float height, const buffer touch);
         ZayPanel(id_surface surface, float width, float height, chars uigroup = nullptr);
         ~ZayPanel();
 
@@ -408,7 +408,7 @@ namespace BOSS
 
     protected:
         bool m_dirty;
-        Updater* const m_updater;
+        FrameUpdater* const m_updater;
         const float m_width;
         const float m_height;
         id_surface m_ref_surface;

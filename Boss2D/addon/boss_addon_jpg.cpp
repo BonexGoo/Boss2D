@@ -140,6 +140,95 @@ namespace BOSS
             return NewBitmap;
         }
 
+        // added by BOSS : 회전방향을 적용
+        const int Orientation = Decoder.getOrientation();
+        if(1 < Orientation)
+        {
+            const int Width2 = (Orientation < 5)? Width : Height;
+            const int Height2 = (Orientation < 5)? Height : Width;
+            id_bitmap NewBitmap2 = Bmp::Create(4, Width2, Height2);
+            auto SrcFocus = (Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
+            auto DstFocus = (Bmp::bitmappixel*) Bmp::GetBits(NewBitmap2);
+            switch(Orientation)
+            {
+            case 2:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = (Width2 - 1) + y * Width2;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos -= 1;
+                    }
+                }
+                break;
+            case 3:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = (Width2 - 1) + y * Width2;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos -= 1;
+                    }
+                }
+                break;
+            case 4:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = 0 + (Height2 - y - 1) * Width2;
+                    Memory::Copy(&DstFocus[pos], SrcFocus, sizeof(Bmp::bitmappixel) * Width);
+                    SrcFocus += Width;
+                }
+                break;
+            case 5:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = (Width2 - y - 1) + (Height2 - 1) * Width2;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos -= Width2;
+                    }
+                }
+                break;
+            case 6:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = y + (Height2 - 1) * Width2;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos -= Width2;
+                    }
+                }
+                break;
+            case 7:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = y + 0;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos += Width2;
+                    }
+                }
+                break;
+            case 8:
+                for(int y = 0; y < Height; ++y)
+                {
+                    int pos = (Width2 - y - 1) + 0;
+                    for(int x = 0; x < Width; ++x)
+                    {
+                        DstFocus[pos] = *(SrcFocus++);
+                        pos += Width2;
+                    }
+                }
+                break;
+            }
+            Bmp::Remove(NewBitmap);
+            NewBitmap = NewBitmap2;
+        }
         return NewBitmap;
     }
 }
@@ -288,6 +377,7 @@ JPEGDecoder::JPEGDecoder()
     desiredHeight = 0;
     outputWidth = 0;
     outputHeight = 0;
+    orientationCode = 0;
     output = nullptr;
 }
 
@@ -320,6 +410,10 @@ bool JPEGDecoder::readHeader()
 
     imageWidth = dec.image_width;
     imageHeight = dec.image_height;
+
+    // added by BOSS : 회전방향을 알기 위한 코드추가
+    if(!boss_strcmp((chars) dec.marker_list->data, "Exif"))
+        orientationCode = ((bytes) dec.marker_list->data)[48];
     return true;
 }
 

@@ -966,7 +966,7 @@
             return nullptr;
         }
 
-        void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
+        id_image Platform::Graphics::RemoveImageRoutine(id_image_routine routine, bool keep_image)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }

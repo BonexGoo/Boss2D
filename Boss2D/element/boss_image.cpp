@@ -825,24 +825,26 @@ namespace BOSS
         m_patch_cached_dst_y.AtWherever(m_patch_calced_src_y.Count() - 1);
     }
 
-    id_image_read Image::GetImageCore(sint32 resizing_width, sint32 resizing_height, const Color coloring) const
+    id_image_read Image::GetImageCore(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring) const
     {
         if(!m_bitmap) return nullptr;
         m_builder.ValidBitmap(m_bitmap);
-        return m_builder.GetImage(resizing_width, resizing_height, coloring);
+        return m_builder.GetImage(forced, resizing_width, resizing_height, coloring);
     }
 
     Image::Builder::Builder()
     {
-        mOriginalImage = nullptr;
+        mLastImage = nullptr;
         mRoutine = nullptr;
+        mIsRoutineFinished = true;
         Clear();
     }
 
     Image::Builder::Builder(Builder&& rhs)
     {
-        mOriginalImage = nullptr;
+        mLastImage = nullptr;
         mRoutine = nullptr;
+        mIsRoutineFinished = true;
         operator=(ToReference(rhs));
     }
 
@@ -853,17 +855,19 @@ namespace BOSS
 
     Image::Builder& Image::Builder::operator=(Builder&& rhs)
     {
-        Platform::Graphics::RemoveImage(mOriginalImage);
+        Platform::Graphics::RemoveImage(mLastImage);
         Platform::Graphics::RemoveImageRoutine(mRoutine);
         m_RefBitmap = rhs.m_RefBitmap;
         m_BitmapWidth = rhs.m_BitmapWidth;
         m_BitmapHeight = rhs.m_BitmapHeight;
-        mOriginalImage = rhs.mOriginalImage;
+        mLastImage = rhs.mLastImage;
         mRoutineResize = rhs.mRoutineResize;
         mRoutineColor = rhs.mRoutineColor;
         mRoutine = rhs.mRoutine;
-        rhs.mOriginalImage = nullptr;
+        mIsRoutineFinished = rhs.mIsRoutineFinished;
+        rhs.mLastImage = nullptr;
         rhs.mRoutine = nullptr;
+        rhs.mIsRoutineFinished = true;
         return *this;
     }
 
@@ -872,12 +876,18 @@ namespace BOSS
         m_RefBitmap = nullptr;
         m_BitmapWidth = 0;
         m_BitmapHeight = 0;
-        Platform::Graphics::RemoveImage(mOriginalImage);
-        mOriginalImage = nullptr;
+        Platform::Graphics::RemoveImage(mLastImage);
+        mLastImage = nullptr;
         mRoutineResize.w = mRoutineResize.h = 0;
         mRoutineColor.rgba = Color::ColoringDefault;
         Platform::Graphics::RemoveImageRoutine(mRoutine);
         mRoutine = nullptr;
+        mIsRoutineFinished = true;
+    }
+
+    bool Image::Builder::Finished()
+    {
+        return mIsRoutineFinished;
     }
 
     void Image::Builder::ValidBitmap(id_bitmap_read bitmap)
@@ -891,28 +901,54 @@ namespace BOSS
         }
     }
 
-    id_image_read Image::Builder::GetOriginalImage()
+    id_image_read Image::Builder::GetLastImage()
     {
-        if(!mOriginalImage)
-            mOriginalImage = Platform::Graphics::CreateImage(m_RefBitmap);
-        return mOriginalImage;
+        if(!mLastImage)
+            mLastImage = Platform::Graphics::CreateImage(m_RefBitmap);
+        return mLastImage;
     }
 
-    id_image_read Image::Builder::GetImage(sint32 resizing_width, sint32 resizing_height, const Color coloring)
+    id_image_read Image::Builder::GetImage(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring)
     {
         if((resizing_width == -1 || resizing_width == m_BitmapWidth) &&
             (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.rgba == Color::ColoringDefault)
-            return GetOriginalImage();
+            return GetLastImage();
+
         if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.rgba != coloring.rgba)
         {
             mRoutineResize.w = resizing_width;
             mRoutineResize.h = resizing_height;
             mRoutineColor = coloring;
-            Platform::Graphics::RemoveImageRoutine(mRoutine);
+            if(id_image OldImage = Platform::Graphics::RemoveImageRoutine(mRoutine, true))
+            {
+                Platform::Graphics::RemoveImage(mLastImage);
+                mLastImage = OldImage;
+            }
             mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, resizing_width, resizing_height, coloring);
+            mIsRoutineFinished = false;
         }
-        id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
-            (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-        return (Result)? Result : GetOriginalImage();
+
+        id_image_read Result = nullptr;
+        if(forced)
+        {
+            while(!Result)
+            {
+                Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
+                    (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
+                mIsRoutineFinished |= !!Result;
+            }
+            return Result;
+        }
+
+        const bool NeedWaiting = (mLastImage)? false :
+            (mRoutineResize.w * mRoutineResize.h < m_BitmapWidth * m_BitmapHeight);
+        do
+        {
+            Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
+                (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
+            mIsRoutineFinished |= !!Result;
+        }
+        while(!Result && NeedWaiting);
+        return (Result)? Result : GetLastImage();
     }
 }

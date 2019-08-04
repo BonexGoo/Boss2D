@@ -1014,7 +1014,7 @@
             return nullptr;
         }
 
-        void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
+        id_image Platform::Graphics::RemoveImageRoutine(id_image_routine routine, bool keep_image)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

@@ -1842,9 +1842,19 @@
             return CurImageRoutine->mResultImage;
         }
 
-        void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
+        id_image Platform::Graphics::RemoveImageRoutine(id_image_routine routine, bool keep_image)
         {
-            Buffer::Free((buffer) routine);
+            id_image Result = nullptr;
+            if(auto OldImageRoutine = (ImageRoutine*) routine)
+            {
+                if(keep_image)
+                {
+                    Result = OldImageRoutine->mResultImage;
+                    OldImageRoutine->mResultImage = nullptr;
+                }
+                Buffer::Free((buffer) routine);
+            }
+            return Result;
         }
 
         void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h)
