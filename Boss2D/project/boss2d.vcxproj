@@ -37,6 +37,7 @@
     <ClCompile Include="..\addon\boss_fakewin.cpp" />
     <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp" />
     <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
+    <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp" />
     <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
     <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp" />
     <ClCompile Include="..\addon\boss_integration_libgit2-0.22.2.c" />
@@ -143,6 +144,7 @@
     <ClInclude Include="..\addon\boss_fakewin.h" />
     <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h" />
     <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
+    <ClInclude Include="..\addon\boss_integration_dlib-19.17.h" />
     <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />
     <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h" />
     <ClInclude Include="..\addon\boss_integration_libgit2-0.22.2.h" />
