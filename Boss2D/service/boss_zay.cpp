@@ -589,11 +589,13 @@ namespace BOSS
             if(rebuild)
             {
                 const Color& LastColor = m_stack_color[-1];
-                auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, false);
-                auto RebuildWidth = Platform::Graphics::GetImageWidth(RebuildImage);
-                auto RebuildHeight = Platform::Graphics::GetImageHeight(RebuildImage);
-                Platform::Graphics::DrawImage(RebuildImage, 0, 0, RebuildWidth, RebuildHeight,
-                    LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
+                if(auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, false))
+                {
+                    auto RebuildWidth = Platform::Graphics::GetImageWidth(RebuildImage);
+                    auto RebuildHeight = Platform::Graphics::GetImageHeight(RebuildImage);
+                    Platform::Graphics::DrawImage(RebuildImage, 0, 0, RebuildWidth, RebuildHeight,
+                        LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
+                }
                 if(m_updater &&!image.IsBuildFinished())
                     m_updater->RepaintOnce();
             }

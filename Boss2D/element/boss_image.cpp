@@ -921,34 +921,34 @@ namespace BOSS
             mRoutineColor = coloring;
             if(id_image OldImage = Platform::Graphics::RemoveImageRoutine(mRoutine, true))
             {
-                Platform::Graphics::RemoveImage(mLastImage);
-                mLastImage = OldImage;
+                if(mLastImage)
+                {
+                    auto LastWidth = Platform::Graphics::GetImageWidth(mLastImage);
+                    auto LastHeight = Platform::Graphics::GetImageHeight(mLastImage);
+                    auto OldWidth = Platform::Graphics::GetImageWidth(OldImage);
+                    auto OldHeight = Platform::Graphics::GetImageHeight(OldImage);
+                    if(LastWidth * LastHeight < OldWidth * OldHeight)
+                    {
+                        Platform::Graphics::RemoveImage(mLastImage);
+                        mLastImage = OldImage;
+                    }
+                    else Platform::Graphics::RemoveImage(OldImage);
+                }
+                else mLastImage = OldImage;
             }
             mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, resizing_width, resizing_height, coloring);
             mIsRoutineFinished = false;
         }
 
-        id_image_read Result = nullptr;
         if(forced)
         {
-            while(!Result)
-            {
-                Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
-                    (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-                mIsRoutineFinished |= !!Result;
-            }
-            return Result;
+            mIsRoutineFinished = true;
+            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, m_BitmapHeight);
         }
 
-        const bool NeedWaiting = (mLastImage)? false :
-            (mRoutineResize.w * mRoutineResize.h < m_BitmapWidth * m_BitmapHeight);
-        do
-        {
-            Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
-                (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-            mIsRoutineFinished |= !!Result;
-        }
-        while(!Result && NeedWaiting);
-        return (Result)? Result : GetLastImage();
+        id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
+            (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
+        mIsRoutineFinished |= !!Result;
+        return (Result)? Result : mLastImage;
     }
 }
