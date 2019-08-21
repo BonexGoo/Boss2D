@@ -1600,8 +1600,8 @@
                 mNeedColoring = false;
                 mDstBits = nullptr;
                 mSrcBits = nullptr;
-                mResultFocusBegin = 0;
-                mResultFocusEnd = 0;
+                mResultResizingLine = 0;
+                mResultColoringLine = 0;
                 mResultImage = nullptr;
             }
             ~ImageRoutine()
@@ -1675,12 +1675,7 @@
                     }
                 }
             }
-            void BuildBegin(sint32 build_line)
-            {
-                mResultFocusBegin = mResultFocusEnd;
-                mResultFocusEnd = Math::Min(mResultFocusEnd + build_line, mDstHeight);
-            }
-            void ResizingOnce()
+            bool ResizingOnce(uint64 timeout)
             {
                 if(mNeedResizing && 0 < mDstWidth)
                 {
@@ -1690,7 +1685,7 @@
                     const sint32* sxends = &sxpool_ptr[mDstWidth * 1];
                     const sint32* sxbegin_rates = &sxpool_ptr[mDstWidth * 2];
                     const sint32* sxend_rates = &sxpool_ptr[mDstWidth * 3];
-                    for(sint32 dy = mResultFocusBegin; dy < mResultFocusEnd; ++dy)
+                    for(sint32 dy = mResultResizingLine; dy < mDstHeight; ++dy)
                     {
                         Bmp::bitmappixel* CurDstBits = &mDstBits[dy * mDstWidth];
                         const sint32 sybegin = dy * mSrcHeight / mDstHeight;
@@ -1737,10 +1732,17 @@
                             else CurDstBits->argb = 0x00000000;
                             CurDstBits++;
                         }
+                        if(0 < timeout && timeout < Platform::Utility::CurrentTimeMsec())
+                        {
+                            mResultResizingLine = dy + 1;
+                            return false;
+                        }
                     }
                 }
+                mResultResizingLine = mDstHeight;
+                return true;
             }
-            void ColoringOnce()
+            bool ColoringOnce(uint64 timeout)
             {
                 if(mNeedColoring)
                 {
@@ -1750,7 +1752,7 @@
                     const uint08* CurTableB = &g_colorTable[mColoring.b * 256];
                     if(mNeedResizing)
                     {
-                        for(sint32 y = mResultFocusBegin; y < mResultFocusEnd; ++y)
+                        for(sint32 y = mResultColoringLine; y < mDstHeight; ++y)
                         {
                             Bmp::bitmappixel* CurDstBits = &mDstBits[y * mDstWidth];
                             for(sint32 x = 0; x < mDstWidth; ++x)
@@ -1761,9 +1763,14 @@
                                 CurDstBits->b = CurTableB[CurDstBits->b];
                                 CurDstBits++;
                             }
+                            if(0 < timeout && timeout < Platform::Utility::CurrentTimeMsec())
+                            {
+                                mResultColoringLine = y + 1;
+                                return false;
+                            }
                         }
                     }
-                    else for(sint32 y = mResultFocusBegin; y < mResultFocusEnd; ++y)
+                    else for(sint32 y = mResultColoringLine; y < mDstHeight; ++y)
                     {
                         Bmp::bitmappixel* CurDstBits = &mDstBits[y * mDstWidth];
                         const Bmp::bitmappixel* CurSrcBits = &mSrcBits[(mSrcHeight - 1 - y) * mSrcWidth];
@@ -1776,12 +1783,19 @@
                             CurDstBits++;
                             CurSrcBits++;
                         }
+                        if(0 < timeout && timeout < Platform::Utility::CurrentTimeMsec())
+                        {
+                            mResultColoringLine = y + 1;
+                            return false;
+                        }
                     }
                 }
+                mResultColoringLine = mDstHeight;
+                return true;
             }
-            void BuildEnd()
+            void BuildCheck()
             {
-                if(mResultFocusEnd == mDstHeight)
+                if(mResultResizingLine == mDstHeight && mResultColoringLine == mDstHeight)
                 {
                     buffer NewPixmap = Buffer::Alloc<PixmapPrivate>(BOSS_DBG 1);
                     ((PixmapPrivate*) NewPixmap)->convertFromImage(*mPlatformImage);
@@ -1805,8 +1819,8 @@
             Bmp::bitmappixel* mDstBits;
             const Bmp::bitmappixel* mSrcBits;
             sint32s mSxPool;
-            sint32 mResultFocusBegin;
-            sint32 mResultFocusEnd;
+            sint32 mResultResizingLine;
+            sint32 mResultColoringLine;
             id_image mResultImage;
         };
 
@@ -1829,15 +1843,21 @@
             return (id_image_routine) NewImageRoutine;
         }
 
-        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, sint32 build_line)
+        static uint64 g_ImageRoutineTimeout = 0;
+        void Platform::Graphics::UpdateImageRoutineTimeout(uint64 msec)
+        {
+            g_ImageRoutineTimeout = Platform::Utility::CurrentTimeMsec() + msec;
+        }
+
+        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, bool use_timeout)
         {
             auto CurImageRoutine = (ImageRoutine*) routine;
             if(!CurImageRoutine->mResultImage)
             {
-                CurImageRoutine->BuildBegin(build_line);
-                CurImageRoutine->ResizingOnce();
-                CurImageRoutine->ColoringOnce();
-                CurImageRoutine->BuildEnd();
+                const uint64 Timeout = (use_timeout)? g_ImageRoutineTimeout : 0;
+                if(CurImageRoutine->ResizingOnce(Timeout))
+                    CurImageRoutine->ColoringOnce(Timeout);
+                CurImageRoutine->BuildCheck();
             }
             return CurImageRoutine->mResultImage;
         }

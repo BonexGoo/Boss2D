@@ -977,12 +977,20 @@ namespace BOSS
             static id_image_routine CreateImageRoutine(id_bitmap_read bitmap, sint32 resizing_width = -1, sint32 resizing_height = -1, const Color coloring = Color::ColoringDefault);
 
             /*!
+            \brief 이미지루틴 빌드의 한계시간을 업데이트
+            \param msec : 현재시간부터 앞으로 기다릴 밀리초시간
+            \see BuildImageRoutineOnce
+            */
+            static void UpdateImageRoutineTimeout(uint64 msec);
+
+            /*!
             \brief 이미지루틴에 빌드를 가하여 이미지 생성
             \param routine : 비트맵
             \param build_line : 빌드할 라인수
             \return 생성된 이미지(실패시 nullptr)
+            \see UpdateImageRoutineTimeout
             */
-            static id_image_read BuildImageRoutineOnce(id_image_routine routine, sint32 build_line);
+            static id_image_read BuildImageRoutineOnce(id_image_routine routine, bool use_timeout);
 
             /*!
             \brief 이미지루틴 삭제

@@ -825,11 +825,11 @@ namespace BOSS
         m_patch_cached_dst_y.AtWherever(m_patch_calced_src_y.Count() - 1);
     }
 
-    id_image_read Image::GetImageCore(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring) const
+    id_image_read Image::GetImageCore(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring) const
     {
         if(!m_bitmap) return nullptr;
         m_builder.ValidBitmap(m_bitmap);
-        return m_builder.GetImage(forced, resizing_width, resizing_height, coloring);
+        return m_builder.GetImage(build, resizing_width, resizing_height, coloring);
     }
 
     Image::Builder::Builder()
@@ -908,10 +908,10 @@ namespace BOSS
         return mLastImage;
     }
 
-    id_image_read Image::Builder::GetImage(const bool forced, sint32 resizing_width, sint32 resizing_height, const Color coloring)
+    id_image_read Image::Builder::GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring)
     {
-        if((resizing_width == -1 || resizing_width == m_BitmapWidth) &&
-            (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.rgba == Color::ColoringDefault)
+        if(build == Build::Null || ((resizing_width == -1 || resizing_width == m_BitmapWidth) &&
+            (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.rgba == Color::ColoringDefault))
             return GetLastImage();
 
         if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.rgba != coloring.rgba)
@@ -940,7 +940,7 @@ namespace BOSS
             mIsRoutineFinished = false;
         }
 
-        if(forced)
+        if(build == Build::Force)
         {
             mIsRoutineFinished = true;
             return Platform::Graphics::BuildImageRoutineOnce(mRoutine, m_BitmapHeight);
@@ -948,7 +948,20 @@ namespace BOSS
 
         id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
             (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-        mIsRoutineFinished |= !!Result;
-        return (Result)? Result : mLastImage;
+        if(!Result)
+        {
+            mIsRoutineFinished = false;
+            if(mLastImage)
+                return mLastImage;
+            if(build == Build::AsyncNotNull)
+            {
+                while(!Result)
+                    Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
+                        (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
+                mIsRoutineFinished = true;
+            }
+        }
+        else mIsRoutineFinished = true;
+        return Result;
     }
 }

@@ -960,7 +960,12 @@
             return nullptr;
         }
 
-        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, sint32 build_line)
+        void Platform::Graphics::UpdateImageRoutineTimeout(uint64 msec)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, bool use_timeout)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;

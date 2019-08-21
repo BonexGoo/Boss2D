@@ -311,7 +311,7 @@ namespace BOSS
         haschild icon(float x, float y, const Image& image, UIAlign align, bool visible = true); // 중점식
         haschild iconNative(id_image_read image, UIAlign align);
         haschild iconNative(float x, float y, id_image_read image, UIAlign align); // 중점식
-        haschild stretch(const Image& image, bool rebuild, UIStretchForm form = UISF_Strong, bool visible = true);
+        haschild stretch(const Image& image, Image::Build build, UIStretchForm form = UISF_Strong, bool visible = true);
         haschild stretchNative(id_image_read image, UIStretchForm form = UISF_Strong) const;
         haschild ninepatch(const Image& image, bool visible = true);
         void pattern(const Image& image, UIAlign align, bool reversed_xorder = false, bool reversed_yorder = false) const;

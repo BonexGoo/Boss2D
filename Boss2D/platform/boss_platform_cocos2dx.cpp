@@ -1052,7 +1052,12 @@
             return nullptr;
         }
 
-        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, sint32 build_line)
+        void Platform::Graphics::UpdateImageRoutineTimeout(uint64 msec)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, bool use_timeout)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

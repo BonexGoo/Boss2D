@@ -658,9 +658,9 @@ namespace BOSS
                 {
                     const sint32 Opacity = 128 - 128 * Math::Clamp(mLoadingMsec + 1000 - CurMsec, 0, 1000) / 1000;
                     ZAY_RGBA(p, 128, 128, 128, Opacity)
-                        p.stretch(mImage, true);
+                        p.stretch(mImage, Image::Build::AsyncNotNull);
                 }
-                else p.stretch(mImage, true);
+                else p.stretch(mImage, Image::Build::AsyncNotNull);
             }
             else if(mTasking)
             {

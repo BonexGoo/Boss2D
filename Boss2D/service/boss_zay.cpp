@@ -552,7 +552,7 @@ namespace BOSS
         return haschild_null;
     }
 
-    haschild ZayPanel::stretch(const Image& image, bool rebuild, UIStretchForm form, bool visible)
+    haschild ZayPanel::stretch(const Image& image, Image::Build build, UIStretchForm form, bool visible)
     {
         if(!image.HasBitmap())
             return haschild_null;
@@ -584,12 +584,12 @@ namespace BOSS
             const float YRate = LastClip.Height() / ImageHeight;
             const float DstX = -image.L() * XRate;
             const float DstY = -image.T() * YRate;
-            const float DstWidth = image.GetImageWidth() * XRate;
-            const float DstHeight = image.GetImageHeight() * YRate;
-            if(rebuild)
+            const sint32 DstWidth = (sint32) (image.GetImageWidth() * XRate + 0.5);
+            const sint32 DstHeight = (sint32) (image.GetImageHeight() * YRate + 0.5);
+            if(build != Image::Build::Null)
             {
                 const Color& LastColor = m_stack_color[-1];
-                if(auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, false))
+                if(auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, build))
                 {
                     auto RebuildWidth = Platform::Graphics::GetImageWidth(RebuildImage);
                     auto RebuildHeight = Platform::Graphics::GetImageHeight(RebuildImage);
@@ -637,9 +637,8 @@ namespace BOSS
 
         const float XRate = LastClip.Width() / ImageWidth;
         const float YRate = LastClip.Height() / ImageHeight;
-        const float DstWidth = ImageWidth * XRate;
-        const float DstHeight = ImageHeight * YRate;
-
+        const sint32 DstWidth = (sint32) (ImageWidth * XRate + 0.5);
+        const sint32 DstHeight = (sint32) (ImageHeight * YRate + 0.5);
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l, LastClip.t, DstWidth, DstHeight);
         return haschild_null;
@@ -1672,6 +1671,7 @@ namespace BOSS
         ZAY_XYWH(NewPanel, -l, -t, r, b)
         {
             auto LockID = m_ref_func->m_lock(m_class);
+            Platform::Graphics::UpdateImageRoutineTimeout(10);
             m_ref_func->m_render(NewPanel);
             m_ref_func->m_unlock(LockID);
         }
