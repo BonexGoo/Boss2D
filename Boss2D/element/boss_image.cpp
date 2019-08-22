@@ -943,25 +943,24 @@ namespace BOSS
         if(build == Build::Force)
         {
             mIsRoutineFinished = true;
-            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, m_BitmapHeight);
+            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, false);
         }
 
-        id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
-            (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-        if(!Result)
+        id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true);
+        if(Result)
         {
-            mIsRoutineFinished = false;
-            if(mLastImage)
-                return mLastImage;
-            if(build == Build::AsyncNotNull)
-            {
-                while(!Result)
-                    Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine,
-                        (mRoutineResize.w == 0)? 0 : 40000 / ((mRoutineResize.w == -1)? m_BitmapWidth : mRoutineResize.w) + 1);
-                mIsRoutineFinished = true;
-            }
+            mIsRoutineFinished = true;
+            return Result;
         }
-        else mIsRoutineFinished = true;
-        return Result;
+
+        if(mLastImage)
+            return mLastImage;
+
+        if(build == Build::AsyncNotNull)
+        {
+            mIsRoutineFinished = true;
+            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, false);
+        }
+        return nullptr;
     }
 }

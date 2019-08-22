@@ -986,7 +986,7 @@ namespace BOSS
             /*!
             \brief 이미지루틴에 빌드를 가하여 이미지 생성
             \param routine : 비트맵
-            \param build_line : 빌드할 라인수
+            \param use_timeout : 타임아웃의 사용여부
             \return 생성된 이미지(실패시 nullptr)
             \see UpdateImageRoutineTimeout
             */
