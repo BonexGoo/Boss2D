@@ -8,6 +8,7 @@
 bool __LINK_ADDON_AAC__();
 bool __LINK_ADDON_ALPR__();
 bool __LINK_ADDON_CURL__();
+bool __LINK_ADDON_DLIB__();
 bool __LINK_ADDON_FREETYPE__();
 bool __LINK_ADDON_GIT__();
 bool __LINK_ADDON_H264__();
@@ -24,6 +25,7 @@ static bool _ =
     __LINK_ADDON_AAC__() |
     __LINK_ADDON_ALPR__() |
     __LINK_ADDON_CURL__() |
+    __LINK_ADDON_DLIB__() |
     __LINK_ADDON_FREETYPE__() |
     __LINK_ADDON_GIT__() |
     __LINK_ADDON_H264__() |
@@ -135,6 +137,25 @@ namespace BOSS
 
     sint32 AddOn::Curl::FtpSearch(id_curl curl, chars url, chars dirname, SearchCB cb, payload data)
     {return Core_AddOn_Curl_FtpSearch()(curl, url, dirname, cb, data);}
+
+    ////////////////////////////////////////////////////////////////////////////////
+    static void Dlib_Error() {BOSS_ASSERT("Dlib애드온이 준비되지 않았습니다", false);}
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Create, id_dlib, return nullptr, void)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Release, void, return, id_dlib)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Update, void, return, id_dlib, id_bitmap_read)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, GetFaceLandmark, const point64*, return nullptr, id_dlib, AddOn::Dlib::FaceLandmark68Type)
+
+    id_dlib AddOn::Dlib::Create(void)
+    {return Core_AddOn_Dlib_Create()();}
+
+    void AddOn::Dlib::Release(id_dlib dlib)
+    {Core_AddOn_Dlib_Release()(dlib);}
+
+    void AddOn::Dlib::Update(id_dlib dlib, id_bitmap_read bitmap)
+    {return Core_AddOn_Dlib_Update()(dlib, bitmap);}
+
+    const point64* AddOn::Dlib::GetFaceLandmark(id_dlib dlib, FaceLandmark68Type type)
+    {return Core_AddOn_Dlib_GetFaceLandmark()(dlib, type);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void FreeType_Error() {BOSS_ASSERT("FreeType애드온이 준비되지 않았습니다", false);}

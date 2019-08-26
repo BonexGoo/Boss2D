@@ -6,6 +6,7 @@ namespace BOSS
     BOSS_DECLARE_ID(id_acc);
     BOSS_DECLARE_ID(id_alpr);
     BOSS_DECLARE_ID(id_curl);
+    BOSS_DECLARE_ID(id_dlib);
     BOSS_DECLARE_ID(id_freetype);
     BOSS_DECLARE_ID(id_git);
     BOSS_DECLARE_ID(id_h264);
@@ -68,6 +69,22 @@ namespace BOSS
             static bool FtpCreateFolder(id_curl curl, chars url, chars dirname);
             static bool FtpDeleteFolder(id_curl curl, chars url, chars dirname);
             static sint32 FtpSearch(id_curl curl, chars url, chars dirname, SearchCB cb, payload data);
+        };
+
+        //! \brief DLIB연동
+        class Dlib
+        {
+        public:
+            enum FaceLandmark68Type {
+                FLT_LeftEye_6_Dots, FLT_RightEye_6_Dots,
+                FLT_LeftEyeBrow_5_Dots, FLT_RightEyeBrow_5_Dots,
+                FLT_Nose_9_Dots, FLT_Lips_20_Dots, FLT_Jaw_17_Dots};
+
+        public:
+            static id_dlib Create(void);
+            static void Release(id_dlib dlib);
+            static void Update(id_dlib dlib, id_bitmap_read bmp);
+            static const point64* GetFaceLandmark(id_dlib dlib, FaceLandmark68Type type);
         };
 
         //! \brief FREETYPE연동

@@ -342,6 +342,9 @@
     <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_dlib.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\element\boss_clip.hpp">
@@ -651,6 +654,9 @@
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_dlib-19.17.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_dlib.hpp">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>

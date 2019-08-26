@@ -22,6 +22,7 @@
     <ClCompile Include="..\addon\boss_addon_aac.cpp" />
     <ClCompile Include="..\addon\boss_addon_alpr.cpp" />
     <ClCompile Include="..\addon\boss_addon_curl.cpp" />
+    <ClCompile Include="..\addon\boss_addon_dlib.cpp" />
     <ClCompile Include="..\addon\boss_addon_git.cpp" />
     <ClCompile Include="..\addon\boss_addon_h264.cpp" />
     <ClCompile Include="..\addon\boss_addon_jpg.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="..\addon\boss_addon_aac.hpp" />
     <ClInclude Include="..\addon\boss_addon_alpr.hpp" />
     <ClInclude Include="..\addon\boss_addon_curl.hpp" />
+    <ClInclude Include="..\addon\boss_addon_dlib.hpp" />
     <ClInclude Include="..\addon\boss_addon_git.hpp" />
     <ClInclude Include="..\addon\boss_addon_h264.hpp" />
     <ClInclude Include="..\addon\boss_addon_jpg.hpp" />
