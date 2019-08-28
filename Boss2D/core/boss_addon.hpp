@@ -47,7 +47,7 @@ namespace BOSS
         class Curl
         {
         public:
-            typedef size_t (*CurlReadCB)(void* ptr, size_t size, size_t nitems, payload data);
+            typedef boss_size_t (*CurlReadCB)(void* ptr, boss_size_t size, boss_size_t nitems, payload data);
             typedef void (*SearchCB)(payload data, chars name, sint32 size, id_clock clock);
             enum SendType {ST_NoSend, ST_Put, ST_Post};
 
@@ -140,7 +140,7 @@ namespace BOSS
         {
         public:
             typedef void (*PcmCreateCB)(sint32 channel, sint32 sample_rate, sint32 sample_size, payload data);
-            typedef sint32 (*PcmWriteCB)(void* ptr, size_t size, payload data);
+            typedef sint32 (*PcmWriteCB)(void* ptr, boss_size_t size, payload data);
 
         public:
             static void ToPcmStream(id_file_read oggfile, PcmCreateCB ccb, PcmWriteCB wcb, payload data);

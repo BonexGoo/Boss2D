@@ -130,8 +130,8 @@ namespace BOSS
 #define strpair(NAME)    ("" NAME), (sizeof("" NAME) - 1)
 
 // About allocator
-inline void* operator new(size_t, sblock ptr) {return (void*) ptr;}
-inline void* operator new[](size_t, sblock ptr) {return (void*) ptr;}
+inline void* operator new(boss_size_t, sblock ptr) {return (void*) ptr;}
+inline void* operator new[](boss_size_t, sblock ptr) {return (void*) ptr;}
 inline void operator delete(void*, sblock) {}
 inline void operator delete[](void*, sblock) {}
 

@@ -137,20 +137,20 @@ public:
     }
 
 public:
-    static size_t OnRead(void* ptr, size_t size, size_t nitems, payload data)
+    static boss_size_t OnRead(void* ptr, boss_size_t size, boss_size_t nitems, payload data)
     {
         uint64 BeginTime = Platform::Utility::CurrentTimeMsec();
         while(Platform::Utility::CurrentTimeMsec() - BeginTime < 3000)
         {
             bool IsKilled = false;
-            size_t CopiedSize = 0;
+            boss_size_t CopiedSize = 0;
             BOSS_COMMON_TASK((id_common) data, common_buffer)
             if(auto CodecR = (CodecBroadcastReceiver*) common_buffer)
             {
                 uint08s CurFrame = CodecR->mSavedFrame;
                 CodecR->mSavedFrame.Clear();
 
-                const size_t MaxSize = size * nitems;
+                const boss_size_t MaxSize = size * nitems;
                 while(CopiedSize < MaxSize && !IsKilled)
                 {
                     if(0 < CurFrame.Count())

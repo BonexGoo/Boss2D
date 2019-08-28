@@ -2269,10 +2269,10 @@
                     switch(XAlign)
                     {
                     case 1: // Center
-                        DstX += (w - TextWidth) / 2;
+                        DstX += (sint32(w) - TextWidth) / 2; // sint32(w)를 하지 않으면 연산오차발생
                         break;
                     case 2: // Right
-                        DstX += w - TextWidth;
+                        DstX += sint32(w) - TextWidth;
                         break;
                     default:
                         break;
@@ -2282,13 +2282,13 @@
                     switch(_GetYFontAlignCode(align))
                     {
                     case 1: // Middle
-                        DstY += (h - CurFreeFont.GetAscent(L'A')) / 2;
+                        DstY += (sint32(h) - CurFreeFont.GetAscent(L'A')) / 2; // sint32(h)를 하지 않으면 연산오차발생
                         break;
                     case 2: // Ascent
-                        DstY += h - CurFreeFont.GetAscent(L'A');
+                        DstY += sint32(h) - CurFreeFont.GetAscent(L'A');
                         break;
                     case 3: // Bottom
-                        DstY += h - CanvasClass::get()->font_ft_height();
+                        DstY += sint32(h) - CanvasClass::get()->font_ft_height();
                         break;
                     default:
                         break;
@@ -2409,7 +2409,7 @@
             if(CanvasClass::get()->is_font_ft())
             {
                 FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height());
-                return CurFreeFont.GetWidth(string, count);
+                return CurFreeFont.GetWidth(string, (count == -1)? boss_wcslen(string) : count);
             }
             return CanvasClass::get()->painter().fontMetrics().width(QString::fromWCharArray(string, count));
         }

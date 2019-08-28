@@ -106,6 +106,19 @@ namespace BOSS
         return StaticResult;
     }
 
+    buffer Asset::ToBuffer(chars filename, id_assetpath_read assetpath)
+    {
+        if(auto Asset = OpenForRead(filename, assetpath))
+        {
+            auto AssetSize = Asset::Size(Asset);
+            buffer Result = Buffer::Alloc(BOSS_DBG AssetSize);
+            Asset::Read(Asset, (uint08*) Result, AssetSize);
+            Asset::Close(Asset);
+            return Result;
+        }
+        return nullptr;
+    }
+
     id_asset_read Asset::OpenForRead(chars filename, id_assetpath_read assetpath)
     {
         const roottype RootType = Exist(filename, assetpath);

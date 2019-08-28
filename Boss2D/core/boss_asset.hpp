@@ -30,6 +30,14 @@ namespace BOSS
         static chars GetPathForExist(roottype type, id_assetpath_read assetpath = nullptr);
 
         /*!
+        \brief 어셋을 버퍼로 반환(읽기전용)
+        \param filename : 파일명
+        \param assetpath : 우선탐색용 패스
+        \return 버퍼
+        */
+        static buffer ToBuffer(chars filename, id_assetpath_read assetpath = nullptr);
+
+        /*!
         \brief 어셋열기(읽기전용)
         \param filename : 파일명
         \param assetpath : 우선탐색용 패스

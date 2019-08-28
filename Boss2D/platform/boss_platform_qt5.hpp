@@ -3055,10 +3055,10 @@
                 const GLint Width = ViewPortValues[2];
                 const GLint Height = ViewPortValues[3];
                 BOSS::Rect NewRect;
-                NewRect.l = (rect.l / Width - 0.5) * 2;
-                NewRect.t = (0.5 - rect.t / Height) * 2;
-                NewRect.r = (rect.r / Width - 0.5) * 2;
-                NewRect.b = (0.5 - rect.b / Height) * 2;
+                NewRect.l = 2 * rect.l / Width - 1;
+                NewRect.t = 1 - 2 * rect.t / Height;
+                NewRect.r = 2 * rect.r / Width - 1;
+                NewRect.b = 1 - 2 * rect.b / Height;
 
                 f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
                 f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
@@ -3123,10 +3123,10 @@
                     const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
                 #endif
                 BOSS::Rect NewRect;
-                NewRect.l = (rect.l / DstWidth - 0.5) * 2;
-                NewRect.t = (0.5 - rect.t / DstHeight) * 2;
-                NewRect.r = (rect.r / DstWidth - 0.5) * 2;
-                NewRect.b = (0.5 - rect.b / DstHeight) * 2;
+                NewRect.l = 2 * rect.l / DstWidth - 1;
+                NewRect.t = 1 - 2 * rect.t / DstHeight;
+                NewRect.r = 2 * rect.r / DstWidth - 1;
+                NewRect.b = 1 - 2 * rect.b / DstHeight;
 
                 const bool IsNV21 = (mProgram[1] && Platform::Graphics::IsTextureNV21(tex));
                 if(IsNV21)

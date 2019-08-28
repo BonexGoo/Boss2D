@@ -20,12 +20,13 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF5C0617-444B-4C79-8273-CEC642C286D1}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="..\addon\boss_addon_aac.cpp" />
     <ClCompile Include="..\addon\boss_addon_alpr.cpp" />
     <ClCompile Include="..\addon\boss_addon_curl.cpp" />
+    <ClCompile Include="..\addon\boss_addon_dlib.cpp" />
     <ClCompile Include="..\addon\boss_addon_freetype.cpp" />
     <ClCompile Include="..\addon\boss_addon_git.cpp" />
     <ClCompile Include="..\addon\boss_addon_h264.cpp" />
@@ -41,6 +42,7 @@
     <ClCompile Include="..\addon\boss_fakewin.cpp" />
     <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp" />
     <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
+    <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp" />
     <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
     <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp" />
     <ClCompile Include="..\addon\boss_integration_libgit2-0.22.2.c" />
@@ -124,6 +126,7 @@
     <ClInclude Include="..\addon\boss_addon_aac.hpp" />
     <ClInclude Include="..\addon\boss_addon_alpr.hpp" />
     <ClInclude Include="..\addon\boss_addon_curl.hpp" />
+    <ClInclude Include="..\addon\boss_addon_dlib.hpp" />
     <ClInclude Include="..\addon\boss_addon_freetype.hpp" />
     <ClInclude Include="..\addon\boss_addon_git.hpp" />
     <ClInclude Include="..\addon\boss_addon_h264.hpp" />
@@ -139,6 +142,7 @@
     <ClInclude Include="..\addon\boss_fakewin.h" />
     <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h" />
     <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
+    <ClInclude Include="..\addon\boss_integration_dlib-19.17.h" />
     <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />
     <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h" />
     <ClInclude Include="..\addon\boss_integration_libgit2-0.22.2.h" />
@@ -228,22 +232,22 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

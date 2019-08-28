@@ -472,8 +472,8 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
         const sint32 YAlignCode = GetYAlignCode(align);
-        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - image.GetWidth()) * 0.5f : LastClip.Width() - image.GetWidth()));
-        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - image.GetHeight()) * 0.5f : LastClip.Height() - image.GetHeight()));
+        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - image.GetWidth()) / 2 : LastClip.Width() - image.GetWidth()));
+        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - image.GetHeight()) / 2 : LastClip.Height() - image.GetHeight()));
 
         if(visible)
         {
@@ -501,8 +501,8 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
         const sint32 YAlignCode = GetYAlignCode(align);
-        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - image.GetWidth() * 0.5f : x - image.GetWidth()));
-        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - image.GetHeight() * 0.5f : y - image.GetHeight()));
+        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - image.GetWidth() / 2 : x - image.GetWidth()));
+        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - image.GetHeight() / 2 : y - image.GetHeight()));
 
         if(visible)
         {
@@ -529,8 +529,8 @@ namespace BOSS
         const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) * 0.5f : LastClip.Width() - ImageWidth));
-        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) * 0.5f : LastClip.Height() - ImageHeight));
+        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
+        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
@@ -544,8 +544,8 @@ namespace BOSS
         const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - ImageWidth * 0.5f : x - ImageWidth));
-        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - ImageHeight * 0.5f : y - ImageHeight));
+        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - ImageWidth / 2 : x - ImageWidth));
+        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - ImageHeight / 2 : y - ImageHeight));
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
@@ -769,21 +769,21 @@ namespace BOSS
         switch(align)
         {
         case UIFA_LeftTop: CalcRect.l = x; CalcRect.t = y; break;
-        case UIFA_CenterTop: CalcRect.l = x - Width * 0.5f; CalcRect.t = y; break;
+        case UIFA_CenterTop: CalcRect.l = x - Width / 2; CalcRect.t = y; break;
         case UIFA_RightTop: CalcRect.l = x - Width; CalcRect.t = y; break;
-        case UIFA_JustifyTop: CalcRect.l = x - Width * 0.5f; CalcRect.t = y; break;
-        case UIFA_LeftMiddle: CalcRect.l = x; CalcRect.t = y - Height * 0.5f; break;
-        case UIFA_CenterMiddle: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Height * 0.5f; break;
-        case UIFA_RightMiddle: CalcRect.l = x - Width; CalcRect.t = y - Height * 0.5f; break;
-        case UIFA_JustifyMiddle: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Height * 0.5f; break;
+        case UIFA_JustifyTop: CalcRect.l = x - Width / 2; CalcRect.t = y; break;
+        case UIFA_LeftMiddle: CalcRect.l = x; CalcRect.t = y - Height / 2; break;
+        case UIFA_CenterMiddle: CalcRect.l = x - Width / 2; CalcRect.t = y - Height / 2; break;
+        case UIFA_RightMiddle: CalcRect.l = x - Width; CalcRect.t = y - Height / 2; break;
+        case UIFA_JustifyMiddle: CalcRect.l = x - Width / 2; CalcRect.t = y - Height / 2; break;
         case UIFA_LeftAscent: CalcRect.l = x; CalcRect.t = y - Ascent; break;
-        case UIFA_CenterAscent: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Ascent; break;
+        case UIFA_CenterAscent: CalcRect.l = x - Width / 2; CalcRect.t = y - Ascent; break;
         case UIFA_RightAscent: CalcRect.l = x - Width; CalcRect.t = y - Ascent; break;
-        case UIFA_JustifyAscent: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Ascent; break;
+        case UIFA_JustifyAscent: CalcRect.l = x - Width / 2; CalcRect.t = y - Ascent; break;
         case UIFA_LeftBottom: CalcRect.l = x; CalcRect.t = y - Height; break;
-        case UIFA_CenterBottom: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Height; break;
+        case UIFA_CenterBottom: CalcRect.l = x - Width / 2; CalcRect.t = y - Height; break;
         case UIFA_RightBottom: CalcRect.l = x - Width; CalcRect.t = y - Height; break;
-        case UIFA_JustifyBottom: CalcRect.l = x - Width * 0.5f; CalcRect.t = y - Height; break;
+        case UIFA_JustifyBottom: CalcRect.l = x - Width / 2; CalcRect.t = y - Height; break;
         }
         CalcRect.r = CalcRect.l + 0x2000; // 0xFFFF였으나 cocos2dx의 한계로 인하여 적당히 수정
         CalcRect.b = CalcRect.t + 0x2000;
@@ -1276,12 +1276,19 @@ namespace BOSS
     {
     }
 
-    ZayExtend::Payload::Payload(const ZayExtend* owner, chars uiname, sint32 elementid, const SolverValue* param)
+    ZayExtend::Payload::Payload(const ZayExtend* owner, chars uiname, sint32 elementid)
         : mElementID(elementid)
     {
         mOwner = owner;
         mUIName = uiname;
-        if(param) AddParam(*param);
+    }
+
+    ZayExtend::Payload::Payload(const ZayExtend* owner, const SolverValue& param, chars uiname, sint32 elementid)
+        : mElementID(elementid)
+    {
+        mOwner = owner;
+        mUIName = uiname;
+        AddParam(param);
     }
 
     ZayExtend::Payload::~Payload()
@@ -1462,27 +1469,27 @@ namespace BOSS
 
     ZayExtend::Payload ZayExtend::operator()(const SolverValue& value) const
     {
-        return Payload(this, nullptr, -1, &value);
+        return Payload(this, value);
     }
 
     ZayExtend::Payload ZayExtend::operator()(sint32 value) const
     {
-        return Payload(this, nullptr, -1, &SolverValue::MakeByInteger(value));
+        return Payload(this, SolverValue::MakeByInteger(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(sint64 value) const
     {
-        return Payload(this, nullptr, -1, &SolverValue::MakeByInteger(value));
+        return Payload(this, SolverValue::MakeByInteger(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(SolverValue::Float value) const
     {
-        return Payload(this, nullptr, -1, &SolverValue::MakeByFloat(value));
+        return Payload(this, SolverValue::MakeByFloat(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(SolverValue::Text value) const
     {
-        return Payload(this, nullptr, -1, &SolverValue::MakeByText(value));
+        return Payload(this, SolverValue::MakeByText(value));
     }
 
     bool ZayExtend::HasComponent() const

@@ -448,7 +448,8 @@ namespace BOSS
         {
             BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(Payload, mElementID(-1))
         public:
-            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1, const SolverValue* param = nullptr);
+            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1);
+            Payload(const ZayExtend* owner, const SolverValue& param, chars uiname = nullptr, sint32 elementid = -1);
             ~Payload();
 
         public:

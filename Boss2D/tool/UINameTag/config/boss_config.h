@@ -13,6 +13,7 @@
 #define BOSS_NEED_ADDON_AAC        0
 #define BOSS_NEED_ADDON_ALPR       0
 #define BOSS_NEED_ADDON_CURL       0
+#define BOSS_NEED_ADDON_DLIB       0
 #define BOSS_NEED_ADDON_FREETYPE   0
 #define BOSS_NEED_ADDON_GIT        0
 #define BOSS_NEED_ADDON_H264       0

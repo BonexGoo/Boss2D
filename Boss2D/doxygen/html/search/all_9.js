@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['iconpack_337',['IconPack',['../class_b_o_s_s_1_1_brii_event_1_1_icon_pack.html',1,'BOSS::BriiEvent']]],
+  ['image_338',['Image',['../class_b_o_s_s_1_1_image.html',1,'BOSS']]],
+  ['imagetobitmap_339',['ImageToBitmap',['../class_b_o_s_s_1_1_platform_1_1_utility.html#a04910ec1e6c8af7bb0870cea040ec7f3',1,'BOSS::Platform::Utility']]],
+  ['initclass_340',['InitClass',['../class_b_o_s_s_1_1_brii_event_1_1_init_class.html',1,'BOSS::BriiEvent']]],
+  ['initforgl_341',['InitForGL',['../class_b_o_s_s_1_1_platform.html#afed365c4e18ce2847120e506e4a96434',1,'BOSS::Platform']]],
+  ['initformdi_342',['InitForMDI',['../class_b_o_s_s_1_1_platform.html#ab98e6d267a5d2434a861836c37b5e4f6',1,'BOSS::Platform']]],
+  ['ip4address_343',['ip4address',['../struct_b_o_s_s_1_1ip4address.html',1,'BOSS']]],
+  ['ip6address_344',['ip6address',['../struct_b_o_s_s_1_1ip6address.html',1,'BOSS']]],
+  ['isalive_345',['IsAlive',['../class_b_o_s_s_1_1_tasking.html#a08070de68257ca831deab0ceeb2dcc34',1,'BOSS::Tasking']]],
+  ['isfullscreen_346',['IsFullScreen',['../class_b_o_s_s_1_1_platform_1_1_utility.html#ad4dd605074490bf8592a3c6fb3586f09',1,'BOSS::Platform::Utility']]],
+  ['ispurchased_347',['IsPurchased',['../class_b_o_s_s_1_1_platform_1_1_purchase.html#ae9cc09edbf69f39c76ce9396c5029547',1,'BOSS::Platform::Purchase']]],
+  ['isreleased_348',['IsReleased',['../class_b_o_s_s_1_1_tasking.html#a4fd93f5f989ee71349fe8d1fb33a08b4',1,'BOSS::Tasking']]],
+  ['isscreenconnected_349',['IsScreenConnected',['../class_b_o_s_s_1_1_platform_1_1_utility.html#a589b508d642719429739948cca7538e3',1,'BOSS::Platform::Utility']]],
+  ['isserver_350',['IsServer',['../class_b_o_s_s_1_1_platform_1_1_pipe.html#a76495d226e4e6af45201e40717a853d6',1,'BOSS::Platform::Pipe']]],
+  ['istexturenv21_351',['IsTextureNV21',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#ac209becccf41524160f7c4e987aa471c',1,'BOSS::Platform::Graphics']]],
+  ['isvalid_352',['IsValid',['../class_b_o_s_s_1_1_context.html#a0b6c607de53cdd5fc92d48411b80d2ff',1,'BOSS::Context::IsValid()'],['../class_b_o_s_s_1_1_zen.html#a367524902e55b9d6d27620842c7b7f79',1,'BOSS::Zen::IsValid()']]],
+  ['it_5fshape_353',['it_shape',['../struct_b_o_s_s_1_1it__shape.html',1,'BOSS']]],
+  ['ixzone64_354',['ixzone64',['../struct_b_o_s_s_1_1ixzone64.html',1,'BOSS']]],
+  ['iyzone64_355',['iyzone64',['../struct_b_o_s_s_1_1iyzone64.html',1,'BOSS']]]
+];

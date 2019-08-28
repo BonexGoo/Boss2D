@@ -3,7 +3,7 @@
 
 #pragma warning(disable:4005) // macro redefinition
 
-#if !BOSS_LINUX && (!defined(_MSC_VER) || (_MSC_VER < 1900))
+#if !BOSS_LINUX && (!defined(_MSC_VER) || (_MSC_VER < 1900)) && !BOSS_WINDOWS_MINGW
     #define snprintf(...) boss_snprintf(__VA_ARGS__)
 #endif
 #define WIN32

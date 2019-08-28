@@ -209,7 +209,7 @@ extern "C" char* boss_strcpy(char* dest, const char* src)
     return strcpy(dest, src);
 }
 
-extern "C" char* boss_strncpy(char* dest, const char* src, size_t n)
+extern "C" char* boss_strncpy(char* dest, const char* src, boss_size_t n)
 {
     return strncpy(dest, src, n);
 }
@@ -219,22 +219,22 @@ extern "C" wchar_t* boss_wcscpy(wchar_t* dest, const wchar_t* src)
     return wcscpy(dest, src);
 }
 
-extern "C" wchar_t* boss_wcsncpy(wchar_t* dest, const wchar_t* src, size_t n)
+extern "C" wchar_t* boss_wcsncpy(wchar_t* dest, const wchar_t* src, boss_size_t n)
 {
     return wcsncpy(dest, src, n);
 }
 
-extern "C" size_t boss_strlen(const char* str)
+extern "C" boss_size_t boss_strlen(const char* str)
 {
     return strlen(str);
 }
 
-extern "C" size_t boss_wcslen(const wchar_t* str)
+extern "C" boss_size_t boss_wcslen(const wchar_t* str)
 {
     return wcslen(str);
 }
 
-extern "C" int boss_snprintf(char* str, size_t n, const char* format, ...)
+extern "C" int boss_snprintf(char* str, boss_size_t n, const char* format, ...)
 {
     va_list Args;
     va_start(Args, format);
@@ -243,7 +243,7 @@ extern "C" int boss_snprintf(char* str, size_t n, const char* format, ...)
     return Size;
 }
 
-extern "C" int boss_vsnprintf(char* str, size_t n, const char* format, boss_va_list args)
+extern "C" int boss_vsnprintf(char* str, boss_size_t n, const char* format, boss_va_list args)
 {
     #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE
         char* NewString = nullptr;
@@ -264,7 +264,7 @@ extern "C" int boss_vsnprintf(char* str, size_t n, const char* format, boss_va_l
     #endif
 }
 
-extern "C" int boss_snwprintf(wchar_t* str, size_t n, const wchar_t* format, ...)
+extern "C" int boss_snwprintf(wchar_t* str, boss_size_t n, const wchar_t* format, ...)
 {
     va_list Args;
     va_start(Args, format);
@@ -273,7 +273,7 @@ extern "C" int boss_snwprintf(wchar_t* str, size_t n, const wchar_t* format, ...
     return Size;
 }
 
-extern "C" int boss_vsnwprintf(wchar_t* str, size_t n, const wchar_t* format, boss_va_list args)
+extern "C" int boss_vsnwprintf(wchar_t* str, boss_size_t n, const wchar_t* format, boss_va_list args)
 {
     #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
         return vswprintf(str, n, format, args);
@@ -287,7 +287,7 @@ extern "C" int boss_strcmp(const char* str1, const char* str2)
     return strcmp(str1, str2);
 }
 
-extern "C" int boss_strncmp(const char* str1, const char* str2, size_t maxcount)
+extern "C" int boss_strncmp(const char* str1, const char* str2, boss_size_t maxcount)
 {
     return strncmp(str1, str2, maxcount);
 }
@@ -301,7 +301,7 @@ extern "C" int boss_stricmp(const char* str1, const char* str2)
     #endif
 }
 
-extern "C" int boss_strnicmp(const char* str1, const char* str2, size_t maxcount)
+extern "C" int boss_strnicmp(const char* str1, const char* str2, boss_size_t maxcount)
 {
     #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
         return strncasecmp(str1, str2, maxcount);
@@ -320,7 +320,7 @@ extern "C" int boss_wcscmp(const wchar_t* str1, const wchar_t* str2)
     return wcscmp(str1, str2);
 }
 
-extern "C" int boss_wcsncmp(const wchar_t* str1, const wchar_t* str2, size_t maxcount)
+extern "C" int boss_wcsncmp(const wchar_t* str1, const wchar_t* str2, boss_size_t maxcount)
 {
     return wcsncmp(str1, str2, maxcount);
 }
@@ -334,7 +334,7 @@ extern "C" int boss_wcsicmp(const wchar_t* str1, const wchar_t* str2)
     #endif
 }
 
-extern "C" int boss_wcsnicmp(const wchar_t* str1, const wchar_t* str2, size_t maxcount)
+extern "C" int boss_wcsnicmp(const wchar_t* str1, const wchar_t* str2, boss_size_t maxcount)
 {
     #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
         return wcsncasecmp(str1, str2, maxcount);
@@ -760,7 +760,7 @@ extern "C" long int boss_ftell(boss_file file)
     return EOF;
 }
 
-extern "C" size_t boss_fread(void* ptr, size_t size, size_t count, boss_file file)
+extern "C" boss_size_t boss_fread(void* ptr, boss_size_t size, boss_size_t count, boss_file file)
 {
     FileClass* CurFile = (FileClass*) file;
     if(CurFile)
@@ -778,7 +778,7 @@ extern "C" size_t boss_fread(void* ptr, size_t size, size_t count, boss_file fil
     return 0;
 }
 
-extern "C" size_t boss_fwrite(const void* ptr, size_t size, size_t count, boss_file file)
+extern "C" boss_size_t boss_fwrite(const void* ptr, boss_size_t size, boss_size_t count, boss_file file)
 {
     FileClass* CurFile = (FileClass*) file;
     if(CurFile)
@@ -1177,7 +1177,7 @@ extern "C" int boss_getpeername(int sockfd, void* addr, int* addrlen)
     #endif
 }
 
-extern "C" ssize_t boss_recv(int sockfd, void* buf, size_t len, int flags)
+extern "C" boss_ssize_t boss_recv(int sockfd, void* buf, boss_size_t len, int flags)
 {
     #if BOSS_WINDOWS | BOSS_ANDROID
         return recv(sockfd, (char*) buf, len, flags);
@@ -1186,7 +1186,7 @@ extern "C" ssize_t boss_recv(int sockfd, void* buf, size_t len, int flags)
     #endif
 }
 
-extern "C" ssize_t boss_recvfrom(int sockfd, void* buf, size_t len, int flags, void* src_addr, int* addrlen)
+extern "C" boss_ssize_t boss_recvfrom(int sockfd, void* buf, boss_size_t len, int flags, void* src_addr, int* addrlen)
 {
     #if BOSS_WINDOWS | BOSS_ANDROID
         return recvfrom(sockfd, (char*) buf, len, flags, (struct sockaddr*) src_addr, addrlen);
@@ -1195,7 +1195,7 @@ extern "C" ssize_t boss_recvfrom(int sockfd, void* buf, size_t len, int flags, v
     #endif
 }
 
-extern "C" ssize_t boss_send(int sockfd, const void* buf, size_t len, int flags)
+extern "C" boss_ssize_t boss_send(int sockfd, const void* buf, boss_size_t len, int flags)
 {
     #if BOSS_WINDOWS | BOSS_ANDROID
         return send(sockfd, (const char*) buf, len, flags);
@@ -1204,7 +1204,7 @@ extern "C" ssize_t boss_send(int sockfd, const void* buf, size_t len, int flags)
     #endif
 }
 
-extern "C" ssize_t boss_sendto(int sockfd, const void* buf, size_t len, int flags, const void* dest_addr, int addrlen)
+extern "C" boss_ssize_t boss_sendto(int sockfd, const void* buf, boss_size_t len, int flags, const void* dest_addr, int addrlen)
 {
     #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID
         return sendto(sockfd, (const char*) buf, len, flags, (const struct sockaddr*) dest_addr, addrlen);

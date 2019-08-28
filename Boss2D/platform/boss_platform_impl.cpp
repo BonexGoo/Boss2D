@@ -394,10 +394,20 @@ namespace BOSS
                 return Result;
             }
 
+            static int __stdcall _lpfn(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+            {
+                switch(uMsg)
+                {
+                case BFFM_INITIALIZED:
+                    if(lpData) SendMessageW(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+                    break;
+                }
+                return 0;
+            }
             bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title)
             {
                 bool Result = false;
-                #if BOSS_WINDOWS && defined(_MSC_VER)
+                #if BOSS_WINDOWS
                     CoInitialize(NULL);
                     wchar_t ResultPath[_MAX_PATH] = {L'\0'};
                     WString TitleName = WString::FromChars(title);
@@ -409,16 +419,7 @@ namespace BOSS
                         bi.lpszTitle = (wchars) TitleName;
                         bi.lParam = (LPARAM)(wchars) InitDir;
                         bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-                        bi.lpfn = [](HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)->int
-                            {
-                                switch(uMsg)
-                                {
-                                case BFFM_INITIALIZED:
-                                    if(lpData) SendMessageW(hwnd, BFFM_SETSELECTION, TRUE, lpData);
-                                    break;
-                                }
-                                return 0;
-                            };
+                        bi.lpfn = _lpfn;
 
                         LPITEMIDLIST pidlFolder = SHBrowseForFolderW(&bi);
                         if(pidlFolder && SHGetPathFromIDListW(pidlFolder, ResultPath))

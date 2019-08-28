@@ -11,9 +11,9 @@
     - platform그룹: 하이브리드 환경제공
     - service그룹: 서비스레이어 기능제공
 \section developer 개발자
-    - Bonex Gu
+    - Bonex Goo
 \section contact 연락처
-    - slacealic@gmail.com
+    - bonexgoo@gmail.com
 */
 
 // About disable warning
@@ -105,8 +105,8 @@
 // About type_t
 #if BOSS_WINDOWS
     #if BOSS_X64
-        typedef unsigned __int64 boss_size_t;
-        typedef __int64 boss_ssize_t;
+        typedef unsigned long long boss_size_t;
+        typedef long long boss_ssize_t;
     #else
         typedef unsigned int boss_size_t;
         typedef int boss_ssize_t;
@@ -138,13 +138,6 @@
         typedef unsigned int wchar_t;
     #endif
 #endif
-#define _SIZE_T_DEFINED
-#define _SSIZE_T_DEFINED_
-#define __SSIZE_T
-#define _WCHAR_T_DEFINED
-#define _WCHAR_T
-#define size_t boss_size_t
-#define ssize_t boss_ssize_t
 
 // About user config
 #include <boss_config.h>
@@ -248,24 +241,24 @@
     int boss_isalnum(int c);
     double boss_atof(const char* str);
     char* boss_strcpy(char* dest, const char* src);
-    char* boss_strncpy(char* dest, const char* src, size_t n);
+    char* boss_strncpy(char* dest, const char* src, boss_size_t n);
     wchar_t* boss_wcscpy(wchar_t* dest, const wchar_t* src);
-    wchar_t* boss_wcsncpy(wchar_t* dest, const wchar_t* src, size_t n);
-    size_t boss_strlen(const char* str);
-    size_t boss_wcslen(const wchar_t* str);
-    int boss_snprintf(char* str, size_t n, const char* format, ...);
-    int boss_vsnprintf(char* str, size_t n, const char* format, boss_va_list args);
-    int boss_snwprintf(wchar_t* str, size_t n, const wchar_t* format, ...);
-    int boss_vsnwprintf(wchar_t* str, size_t n, const wchar_t* format, boss_va_list args);
+    wchar_t* boss_wcsncpy(wchar_t* dest, const wchar_t* src, boss_size_t n);
+    boss_size_t boss_strlen(const char* str);
+    boss_size_t boss_wcslen(const wchar_t* str);
+    int boss_snprintf(char* str, boss_size_t n, const char* format, ...);
+    int boss_vsnprintf(char* str, boss_size_t n, const char* format, boss_va_list args);
+    int boss_snwprintf(wchar_t* str, boss_size_t n, const wchar_t* format, ...);
+    int boss_vsnwprintf(wchar_t* str, boss_size_t n, const wchar_t* format, boss_va_list args);
     int boss_strcmp(const char* str1, const char* str2);
-    int boss_strncmp(const char* str1, const char* str2, size_t maxcount);
+    int boss_strncmp(const char* str1, const char* str2, boss_size_t maxcount);
     int boss_stricmp(const char* str1, const char* str2);
-    int boss_strnicmp(const char* str1, const char* str2, size_t maxcount);
+    int boss_strnicmp(const char* str1, const char* str2, boss_size_t maxcount);
     char* boss_strpbrk(const char* str1, const char* str2);
     int boss_wcscmp(const wchar_t* str1, const wchar_t* str2);
-    int boss_wcsncmp(const wchar_t* str1, const wchar_t* str2, size_t maxcount);
+    int boss_wcsncmp(const wchar_t* str1, const wchar_t* str2, boss_size_t maxcount);
     int boss_wcsicmp(const wchar_t* str1, const wchar_t* str2);
-    int boss_wcsnicmp(const wchar_t* str1, const wchar_t* str2, size_t maxcount);
+    int boss_wcsnicmp(const wchar_t* str1, const wchar_t* str2, boss_size_t maxcount);
     wchar_t* boss_wcspbrk(const wchar_t* str1, const wchar_t* str2);
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -285,8 +278,8 @@
     int boss_feof(boss_file file);
     int boss_fseek(boss_file file, long int offset, int origin);
     long int boss_ftell(boss_file file);
-    size_t boss_fread(void* ptr, size_t size, size_t count, boss_file file);
-    size_t boss_fwrite(const void* ptr, size_t size, size_t count, boss_file file);
+    boss_size_t boss_fread(void* ptr, boss_size_t size, boss_size_t count, boss_file file);
+    boss_size_t boss_fwrite(const void* ptr, boss_size_t size, boss_size_t count, boss_file file);
     int boss_fgetc(boss_file file);
     int boss_ungetc(int character, boss_file file);
     int boss_fprintf(boss_file file, const char* format, boss_va_list args);
@@ -319,10 +312,10 @@
     int boss_setsockopt(int sockfd, int level, int optname, const void* optval, int optlen);
     int boss_getsockname(int sockfd, void* addr, int* addrlen);
     int boss_getpeername(int sockfd, void* addr, int* addrlen);
-    ssize_t boss_recv(int sockfd, void* buf, size_t len, int flags);
-    ssize_t boss_recvfrom(int sockfd, void* buf, size_t len, int flags, void* src_addr, int* addrlen);
-    ssize_t boss_send(int sockfd, const void* buf, size_t len, int flags);
-    ssize_t boss_sendto(int sockfd, const void* buf, size_t len, int flags, const void* dest_addr, int addrlen);
+    boss_ssize_t boss_recv(int sockfd, void* buf, boss_size_t len, int flags);
+    boss_ssize_t boss_recvfrom(int sockfd, void* buf, boss_size_t len, int flags, void* src_addr, int* addrlen);
+    boss_ssize_t boss_send(int sockfd, const void* buf, boss_size_t len, int flags);
+    boss_ssize_t boss_sendto(int sockfd, const void* buf, boss_size_t len, int flags, const void* dest_addr, int addrlen);
     int boss_ioctlsocket(int sockfd, long cmd, unsigned long* argp);
     int boss_select(int nfds, boss_fd_set* readfds, boss_fd_set* writefds, boss_fd_set* exceptfds, void* timeout);
     int boss_closesocket(int sockfd);
