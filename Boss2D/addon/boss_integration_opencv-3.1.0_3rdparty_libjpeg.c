@@ -1,5 +1,5 @@
 ﻿#include <boss.h>
-#if BOSS_NEED_ADDON_JPG
+#if BOSS_NEED_ADDON_DLIB | BOSS_NEED_ADDON_JPG
 
 #include "boss_integration_opencv-3.1.0_3rdparty_libjpeg.h"
 

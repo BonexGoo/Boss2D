@@ -96,10 +96,10 @@ namespace BOSS
         const sint32 BmpRow = (bytesperpixel * width + 3) & ~3;
         id_bitmap NewBitmap = (id_bitmap) Memory::Alloc(sizeof(bitmapfile) + sizeof(bitmapinfo) + BmpRow * height);
         bitmapfile* BmpFileHeader = (bitmapfile*) NewBitmap;
-        BmpFileHeader->size = sizeof(bitmapfile) + sizeof(bitmapinfo) + BmpRow * height;
+        BmpFileHeader->size = 2 + sizeof(bitmapfile) + sizeof(bitmapinfo) + BmpRow * height;
         BmpFileHeader->param1 = param1;
         BmpFileHeader->param2 = param2;
-        BmpFileHeader->offbits = sizeof(bitmapfile) + sizeof(bitmapinfo);
+        BmpFileHeader->offbits = 2 + sizeof(bitmapfile) + sizeof(bitmapinfo);
         bitmapinfo* BmpInfoHeader = (bitmapinfo*) (((uint08*) NewBitmap) + sizeof(bitmapfile));
         BmpInfoHeader->size = sizeof(bitmapinfo);
         BmpInfoHeader->width = width;

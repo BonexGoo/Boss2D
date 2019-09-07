@@ -75,16 +75,18 @@ namespace BOSS
         class Dlib
         {
         public:
-            enum FaceLandmark68Type {
-                FLT_LeftEye_6_Dots, FLT_RightEye_6_Dots,
+            enum FaceLandmark68Type {FLT_All_68_Dots,
+                FLT_Jaw_17_Dots,
                 FLT_LeftEyeBrow_5_Dots, FLT_RightEyeBrow_5_Dots,
-                FLT_Nose_9_Dots, FLT_Lips_20_Dots, FLT_Jaw_17_Dots};
+                FLT_Nose_9_Dots,
+                FLT_LeftEye_6_Dots, FLT_RightEye_6_Dots,
+                FLT_Lips_20_Dots};
 
         public:
-            static id_dlib Create(void);
+            static id_dlib Create(chars trainpath); // shape_predictor_68_face_landmarks.dat
             static void Release(id_dlib dlib);
-            static void Update(id_dlib dlib, id_bitmap_read bmp);
-            static const point64* GetFaceLandmark(id_dlib dlib, FaceLandmark68Type type);
+            static sint32 Update(id_dlib dlib, id_bitmap_read bmp24);
+            static const point64* GetFaceLandmark(id_dlib dlib, sint32 index, FaceLandmark68Type type);
         };
 
         //! \brief FREETYPE연동

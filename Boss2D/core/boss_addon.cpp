@@ -140,22 +140,22 @@ namespace BOSS
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Dlib_Error() {BOSS_ASSERT("Dlib애드온이 준비되지 않았습니다", false);}
-    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Create, id_dlib, return nullptr, void)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Create, id_dlib, return nullptr, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Dlib, Release, void, return, id_dlib)
-    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Update, void, return, id_dlib, id_bitmap_read)
-    BOSS_DEFINE_ADDON_FUNCTION(Dlib, GetFaceLandmark, const point64*, return nullptr, id_dlib, AddOn::Dlib::FaceLandmark68Type)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, Update, sint32, return 0, id_dlib, id_bitmap_read)
+    BOSS_DEFINE_ADDON_FUNCTION(Dlib, GetFaceLandmark, const point64*, return nullptr, id_dlib, sint32, AddOn::Dlib::FaceLandmark68Type)
 
-    id_dlib AddOn::Dlib::Create(void)
-    {return Core_AddOn_Dlib_Create()();}
+    id_dlib AddOn::Dlib::Create(chars trainpath)
+    {return Core_AddOn_Dlib_Create()(trainpath);}
 
     void AddOn::Dlib::Release(id_dlib dlib)
     {Core_AddOn_Dlib_Release()(dlib);}
 
-    void AddOn::Dlib::Update(id_dlib dlib, id_bitmap_read bitmap)
-    {return Core_AddOn_Dlib_Update()(dlib, bitmap);}
+    sint32 AddOn::Dlib::Update(id_dlib dlib, id_bitmap_read bmp24)
+    {return Core_AddOn_Dlib_Update()(dlib, bmp24);}
 
-    const point64* AddOn::Dlib::GetFaceLandmark(id_dlib dlib, FaceLandmark68Type type)
-    {return Core_AddOn_Dlib_GetFaceLandmark()(dlib, type);}
+    const point64* AddOn::Dlib::GetFaceLandmark(id_dlib dlib, sint32 index, FaceLandmark68Type type)
+    {return Core_AddOn_Dlib_GetFaceLandmark()(dlib, index, type);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void FreeType_Error() {BOSS_ASSERT("FreeType애드온이 준비되지 않았습니다", false);}

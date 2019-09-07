@@ -17,7 +17,7 @@
 #ifdef DLIB_JPEG_STATIC
 #   include "../external/libjpeg/jpeglib.h"
 #else
-#   include <jpeglib.h>
+#   include BOSS_DLIB_V_jpeglib_h //original-code:<jpeglib.h>
 #endif
 
 namespace dlib
