@@ -2381,16 +2381,16 @@
 
             m_attrib[0].vertices[0] = rect.l;
             m_attrib[0].vertices[1] = rect.t;
-            m_attrib[0].color32 = color.rgba;
+            m_attrib[0].color32 = color.ToABGR();
             m_attrib[1].vertices[0] = rect.r;
             m_attrib[1].vertices[1] = rect.t;
-            m_attrib[1].color32 = color.rgba;
+            m_attrib[1].color32 = color.ToABGR();
             m_attrib[2].vertices[0] = rect.l;
             m_attrib[2].vertices[1] = rect.b;
-            m_attrib[2].color32 = color.rgba;
+            m_attrib[2].color32 = color.ToABGR();
             m_attrib[3].vertices[0] = rect.r;
             m_attrib[3].vertices[1] = rect.b;
-            m_attrib[3].color32 = color.rgba;
+            m_attrib[3].color32 = color.ToABGR();
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); __testGL(BOSS_DBG 0);
         #endif
     }

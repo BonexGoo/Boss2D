@@ -879,7 +879,7 @@ namespace BOSS
         Platform::Graphics::RemoveImage(mLastImage);
         mLastImage = nullptr;
         mRoutineResize.w = mRoutineResize.h = 0;
-        mRoutineColor.rgba = Color::ColoringDefault;
+        mRoutineColor.argb = Color::ColoringDefault;
         Platform::Graphics::RemoveImageRoutine(mRoutine);
         mRoutine = nullptr;
         mIsRoutineFinished = true;
@@ -911,10 +911,10 @@ namespace BOSS
     id_image_read Image::Builder::GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring)
     {
         if(build == Build::Null || ((resizing_width == -1 || resizing_width == m_BitmapWidth) &&
-            (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.rgba == Color::ColoringDefault))
+            (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.argb == Color::ColoringDefault))
             return GetLastImage();
 
-        if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.rgba != coloring.rgba)
+        if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.argb != coloring.argb)
         {
             mRoutineResize.w = resizing_width;
             mRoutineResize.h = resizing_height;

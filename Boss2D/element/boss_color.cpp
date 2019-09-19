@@ -5,17 +5,12 @@ namespace BOSS
 {
     Color::Color()
     {
-        rgba = 0xFF000000;
+        argb = 0xFF000000;
     }
 
-    Color::Color(const Color& rhs)
+    Color::Color(uint32 argb)
     {
-        operator=(rhs);
-    }
-
-    Color::Color(uint32 rgba)
-    {
-        this->rgba = rgba;
+        this->argb = argb;
     }
 
     Color::Color(uint08 r, uint08 g, uint08 b, uint08 a)
@@ -37,13 +32,18 @@ namespace BOSS
         this->a = Math::Clamp(255 * a, 0, 255);
     }
 
+    Color::Color(const Color& rhs)
+    {
+        operator=(rhs);
+    }
+
     Color::~Color()
     {
     }
 
     Color& Color::operator=(const Color& rhs)
     {
-        rgba = rhs.rgba;
+        argb = rhs.argb;
         return *this;
     }
 

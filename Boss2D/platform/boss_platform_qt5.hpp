@@ -3083,25 +3083,25 @@
 
                 mAttrib[0].vertices[0] = NewRect.l;
                 mAttrib[0].vertices[1] = NewRect.t;
-                mAttrib[0].color32 = color.rgba;
+                mAttrib[0].color32 = color.ToABGR();
                 mAttrib[0].texcoords[0] = 0;
                 mAttrib[0].texcoords[1] = 0;
 
                 mAttrib[1].vertices[0] = NewRect.r;
                 mAttrib[1].vertices[1] = NewRect.t;
-                mAttrib[1].color32 = color.rgba;
+                mAttrib[1].color32 = color.ToABGR();
                 mAttrib[1].texcoords[0] = 1;
                 mAttrib[1].texcoords[1] = 0;
 
                 mAttrib[2].vertices[0] = NewRect.l;
                 mAttrib[2].vertices[1] = NewRect.b;
-                mAttrib[2].color32 = color.rgba;
+                mAttrib[2].color32 = color.ToABGR();
                 mAttrib[2].texcoords[0] = 0;
                 mAttrib[2].texcoords[1] = 1;
 
                 mAttrib[3].vertices[0] = NewRect.r;
                 mAttrib[3].vertices[1] = NewRect.b;
-                mAttrib[3].color32 = color.rgba;
+                mAttrib[3].color32 = color.ToABGR();
                 mAttrib[3].texcoords[0] = 1;
                 mAttrib[3].texcoords[1] = 1;
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
@@ -3187,16 +3187,16 @@
 
                 mAttrib[0].vertices[0] = NewRect.l;
                 mAttrib[0].vertices[1] = NewRect.t;
-                mAttrib[0].color32 = color.rgba;
+                mAttrib[0].color32 = color.ToABGR();
                 mAttrib[1].vertices[0] = NewRect.r;
                 mAttrib[1].vertices[1] = NewRect.t;
-                mAttrib[1].color32 = color.rgba;
+                mAttrib[1].color32 = color.ToABGR();
                 mAttrib[2].vertices[0] = NewRect.l;
                 mAttrib[2].vertices[1] = NewRect.b;
-                mAttrib[2].color32 = color.rgba;
+                mAttrib[2].color32 = color.ToABGR();
                 mAttrib[3].vertices[0] = NewRect.r;
                 mAttrib[3].vertices[1] = NewRect.b;
-                mAttrib[3].color32 = color.rgba;
+                mAttrib[3].color32 = color.ToABGR();
 
                 sint32 UV[4] = {2, 3, 1, 0};
                 switch(ori)

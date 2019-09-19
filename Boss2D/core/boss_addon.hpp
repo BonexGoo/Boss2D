@@ -80,7 +80,7 @@ namespace BOSS
                 FLT_LeftEyeBrow_5_Dots, FLT_RightEyeBrow_5_Dots,
                 FLT_Nose_9_Dots,
                 FLT_LeftEye_6_Dots, FLT_RightEye_6_Dots,
-                FLT_Lips_20_Dots};
+                FLT_Mouth_20_Dots};
 
         public:
             static id_dlib Create(chars trainpath); // shape_predictor_68_face_landmarks.dat

@@ -7,7 +7,7 @@ namespace BOSS
     class Color
     {
     public:
-        enum Sample:uint32
+        enum Sample:argb32
         {
             Black =           0xFF000000,
             White =           0xFFFFFFFF,
@@ -31,11 +31,11 @@ namespace BOSS
 
     public:
         Color();
-        Color(const Color& rhs);
-        Color(uint32 rgba);
+        Color(argb32 argb);
         Color(uint08 r, uint08 g, uint08 b, uint08 a = 0xFF);
         Color(chars rgb_or_rgba);
         Color(chars rgb, float a);
+        Color(const Color& rhs);
         ~Color();
 
         Color& operator=(const Color& rhs);
@@ -44,16 +44,19 @@ namespace BOSS
         Color& operator=(chars rhs);
         operator chars() const;
 
+        inline uint32 ToABGR() const
+        {return (argb & 0xFF00FF00) | ((argb & 0x00FF0000) >> 16) | ((argb & 0x000000FF) << 16);}
+
     public:
         union
         {
-            uint32 rgba;
+            argb32 argb;
             struct
             {
-                uint08 r;
-                uint08 g;
-                uint08 b;
-                uint08 a;
+                uint08 b; // 파랑
+                uint08 g; // 초록
+                uint08 r; // 빨강
+                uint08 a; // 알파
             };
         };
     };

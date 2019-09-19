@@ -150,7 +150,7 @@ namespace BOSS
             return &CurDlib->m_shapes[index].m_pos[17 + 5 + 5 + 9];
         case AddOn::Dlib::FLT_RightEye_6_Dots:
             return &CurDlib->m_shapes[index].m_pos[17 + 5 + 5 + 9 + 6];
-        case AddOn::Dlib::FLT_Lips_20_Dots:
+        case AddOn::Dlib::FLT_Mouth_20_Dots:
             return &CurDlib->m_shapes[index].m_pos[17 + 5 + 5 + 9 + 6 + 6];
         }
         return nullptr;

@@ -1834,7 +1834,7 @@
             NewImageRoutine->mDstHeight = (resizing_height == -1)? NewImageRoutine->mSrcHeight : resizing_height;
             NewImageRoutine->mPlatformImage = new ImagePrivate(NewImageRoutine->mDstWidth, NewImageRoutine->mDstHeight, ImagePrivate::Format_ARGB32);
             NewImageRoutine->mNeedResizing = (NewImageRoutine->mDstWidth != NewImageRoutine->mSrcWidth || NewImageRoutine->mDstHeight != NewImageRoutine->mSrcHeight);
-            NewImageRoutine->mNeedColoring = (coloring.rgba != Color::ColoringDefault);
+            NewImageRoutine->mNeedColoring = (coloring.argb != Color::ColoringDefault);
             NewImageRoutine->mColoring = coloring;
             NewImageRoutine->mDstBits = (Bmp::bitmappixel*) NewImageRoutine->mPlatformImage->bits();
             NewImageRoutine->mSrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
