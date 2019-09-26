@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 소스코드생성기
+    /// @brief 소스코드생성기
     class Typolar
     {
     public:

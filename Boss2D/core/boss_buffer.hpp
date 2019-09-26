@@ -14,7 +14,7 @@
 
 namespace BOSS
 {
-    //! \brief 버퍼스펙지원
+    /// @brief 버퍼스펙지원
     class BufferSpec
     {
     public:
@@ -47,7 +47,7 @@ namespace BOSS
         void (*ResetAll)(void*, const sint32);
     };
 
-    //! \brief 버퍼도구지원
+    /// @brief 버퍼도구지원
     class BufferImpl
     {
     public:
@@ -61,7 +61,7 @@ namespace BOSS
         static sblock* DebugLink();
     };
 
-    //! \brief 버퍼스펙풀지원
+    /// @brief 버퍼스펙풀지원
     template<typename TYPE>
     class BufferSpecPool
     {
@@ -164,162 +164,126 @@ namespace BOSS
         static void ResetAll_default(void* dst, const sint32 count) {}
     };
 
-    //! \brief 버퍼지원
+    /// @brief 버퍼지원
     class Buffer
     {
     public:
-        /*!
-        \brief 할당
-        \param count : 배열수량
-        \return 할당된 버퍼주소
-        \see AllocBySample, Realloc, Free
-        */
+        /// @brief 할당
+        /// @param count : 배열수량
+        /// @return 할당된 버퍼주소
+        /// @see AllocBySample, Realloc, Free
         static buffer Alloc(BOSS_DBG_PRM sint32 count)
         {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<uint08>::Summon(EnumToType<datatype_pod_canmemcpy>()), false);}
 
-        /*!
-        \brief 객체할당
-        \param count : 배열수량
-        \param type : 버퍼관리타입
-        \return 할당된 버퍼주소
-        \see AllocBySample, Realloc, Free
-        */
+        /// @brief 객체할당
+        /// @param count : 배열수량
+        /// @param type : 버퍼관리타입
+        /// @return 할당된 버퍼주소
+        /// @see AllocBySample, Realloc, Free
         template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy>
         static buffer Alloc(BOSS_DBG_PRM sint32 count)
         {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), false);}
 
-        /*!
-        \brief 생성자호출 회피식 객체할당
-        \param count : 배열수량
-        \param type : 버퍼관리타입
-        \return 할당된 버퍼주소
-        \see AllocBySample, Realloc, Free
-        */
+        /// @brief 생성자호출 회피식 객체할당
+        /// @param count : 배열수량
+        /// @param type : 버퍼관리타입
+        /// @return 할당된 버퍼주소
+        /// @see AllocBySample, Realloc, Free
         template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy>
         static buffer AllocNoConstructorOnce(BOSS_DBG_PRM sint32 count)
         {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), true);}
 
-        /*!
-        \brief 참고할당(샘플과 동일한 타입으로)
-        \param count : 배열수량
-        \param sample : 참고되는 버퍼주소
-        \return 할당된 버퍼주소
-        \see Alloc, Realloc, Free
-        */
+        /// @brief 참고할당(샘플과 동일한 타입으로)
+        /// @param count : 배열수량
+        /// @param sample : 참고되는 버퍼주소
+        /// @return 할당된 버퍼주소
+        /// @see Alloc, Realloc, Free
         static buffer AllocBySample(BOSS_DBG_PRM sint32 count, const buffer sample);
 
-        /*!
-        \brief 재할당(배열수량이 변경되었을 때만)
-        \param buf : 버퍼주소
-        \param count : 재할당할 배열수량
-        \return 재할당된 버퍼주소
-        \see Alloc, AllocBySample, Free
-        */
+        /// @brief 재할당(배열수량이 변경되었을 때만)
+        /// @param buf : 버퍼주소
+        /// @param count : 재할당할 배열수량
+        /// @return 재할당된 버퍼주소
+        /// @see Alloc, AllocBySample, Free
         static buffer Realloc(BOSS_DBG_PRM buffer buf, sint32 count);
 
-        /*!
-        \brief 복제
-        \param src : 복제할 버퍼
-        \return 복제된 버퍼주소
-        \see Copy
-        */
+        /// @brief 복제
+        /// @param src : 복제할 버퍼
+        /// @return 복제된 버퍼주소
+        /// @see Copy
         static buffer Clone(BOSS_DBG_PRM const buffer src);
 
-        /*!
-        \brief 복사
-        \param dstBuf : 붙여넣을 버퍼
-        \param dstOff : 붙여넣을 오프셋
-        \param srcBuf : 복사할 버퍼
-        \param srcOff : 복사할 오프셋
-        \param count : 복사할 배열수량
-        \see Clone
-        */
+        /// @brief 복사
+        /// @param dstBuf : 붙여넣을 버퍼
+        /// @param dstOff : 붙여넣을 오프셋
+        /// @param srcBuf : 복사할 버퍼
+        /// @param srcOff : 복사할 오프셋
+        /// @param count : 복사할 배열수량
+        /// @see Clone
         static void Copy(buffer dstBuf, sint32 dstOff, const buffer srcBuf, sint32 srcOff, sint32 count);
 
-        /*!
-        \brief 해제
-        \param buf : 버퍼주소
-        \see Alloc, AllocBySample, Realloc
-        */
+        /// @brief 해제
+        /// @param buf : 버퍼주소
+        /// @see Alloc, AllocBySample, Realloc
         static void Free(buffer buf);
 
-        /*!
-        \brief 배열수량 구하기
-        \param buf : 버퍼주소
-        \return 배열수량
-        \see SizeOf, NameOf, TypeOf
-        */
+        /// @brief 배열수량 구하기
+        /// @param buf : 버퍼주소
+        /// @return 배열수량
+        /// @see SizeOf, NameOf, TypeOf
         static sint32 CountOf(const buffer buf);
 
-        /*!
-        \brief 객체사이즈 구하기
-        \param buf : 버퍼주소
-        \return 객체사이즈
-        \see CountOf, NameOf, TypeOf
-        */
+        /// @brief 객체사이즈 구하기
+        /// @param buf : 버퍼주소
+        /// @return 객체사이즈
+        /// @see CountOf, NameOf, TypeOf
         static sint32 SizeOf(const buffer buf);
 
-        /*!
-        \brief 객체이름 구하기
-        \param buf : 버퍼주소
-        \return 객체이름
-        \see CountOf, SizeOf, TypeOf
-        */
+        /// @brief 객체이름 구하기
+        /// @param buf : 버퍼주소
+        /// @return 객체이름
+        /// @see CountOf, SizeOf, TypeOf
         static chars NameOf(const buffer buf);
 
-        /*!
-        \brief 객체타입 구하기
-        \param buf : 버퍼주소
-        \return 객체타입(해당 BufferSpec의 주소)
-        \see CountOf, SizeOf, NameOf, TypeCheck
-        */
+        /// @brief 객체타입 구하기
+        /// @param buf : 버퍼주소
+        /// @return 객체타입(해당 BufferSpec의 주소)
+        /// @see CountOf, SizeOf, NameOf, TypeCheck
         static sblock TypeOf(const buffer buf);
 
-        /*!
-        \brief 객체타입 구하기(BufferSpec을 이용)
-        \return 객체타입(해당 BufferSpec의 주소)
-        \see CountOf, SizeOf, NameOf, TypeCheck
-        */
+        /// @brief 객체타입 구하기(BufferSpec을 이용)
+        /// @return 객체타입(해당 BufferSpec의 주소)
+        /// @see CountOf, SizeOf, NameOf, TypeCheck
         template<typename TYPE, datatype DATATYPE>
         static sblock TypeOf()
         {return (sblock) BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>());}
 
-        /*!
-        \brief 객체타입 확인하기
-        \param buf : 버퍼주소
-        \return 타입일치여부
-        \see TypeOf
-        */
+        /// @brief 객체타입 확인하기
+        /// @param buf : 버퍼주소
+        /// @return 타입일치여부
+        /// @see TypeOf
         template<typename TYPE, datatype DATATYPE>
         static bool TypeCheck(const buffer buf)
         {return (TypeOf(buf) == TypeOf<TYPE, DATATYPE>());}
 
-        /*!
-        \brief 쓰기접근
-        \param buf : 버퍼주소
-        \param index : 인덱스
-        \return 해당 객체
-        */
+        /// @brief 쓰기접근
+        /// @param buf : 버퍼주소
+        /// @param index : 인덱스
+        /// @return 해당 객체
         template<typename TYPE = uint08>
         static TYPE& At(const buffer buf, sint32 index)
         {return *((TYPE*) BufferImpl::At(buf, index, BufferSpecPool<TYPE>::Naming()));}
 
-        /*!
-        \brief 개별초기화
-        \param buf : 버퍼주소
-        \param index : 초기화할 인덱스
-        */
+        /// @brief 개별초기화
+        /// @param buf : 버퍼주소
+        /// @param index : 초기화할 인덱스
         static void ResetOne(buffer buf, sint32 index);
 
-        /*!
-        \brief 전체초기화
-        \param buf : 버퍼주소
-        */
+        /// @brief 전체초기화
+        /// @param buf : 버퍼주소
         static void ResetAll(buffer buf);
 
-        /*!
-        \brief 잔존메모리 현황보고
-        */
+        /// @brief 잔존메모리 현황보고
         static void DebugPrint();
     };
 }

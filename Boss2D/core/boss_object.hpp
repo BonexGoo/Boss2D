@@ -5,37 +5,29 @@ namespace BOSS
 {
     enum class ObjectAllocType {Now, Later};
 
-    //! \brief 공유객체지원
+    /// @brief 공유객체지원
     template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy, ObjectAllocType BASETYPE = ObjectAllocType::Later>
     class Object
     {
     public:
-        /*!
-        \brief 비우기
-        */
+        /// @brief 비우기
         void Clear()
         {
             Share::Remove(share);
             share = nullptr;
         }
 
-        /*!
-        \brief 공유ID 추출
-        \return 공유ID
-        */
+        /// @brief 공유ID 추출
+        /// @return 공유ID
         operator id_share() const {return (id_share) share;}
 
-        /*!
-        \brief 공유ID 추출(복제방식)
-        \return 공유ID
-        */
+        /// @brief 공유ID 추출(복제방식)
+        /// @return 공유ID
         operator id_cloned_share() const {return (id_cloned_share) share->Clone();}
 
-        /*!
-        \brief 복사
-        \param rhs : 복사할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 복사
+        /// @param rhs : 복사할 인스턴스
+        /// @return 자기 객체
         Object& operator=(const Object& rhs)
         {
             Share::Remove(share);
@@ -43,11 +35,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 이동
-        \param rhs : 이동할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 이동
+        /// @param rhs : 이동할 인스턴스
+        /// @return 자기 객체
         Object& operator=(Object&& rhs)
         {
             Share::Remove(share);
@@ -56,11 +46,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 복사
-        \param rhs : 복사할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 복사
+        /// @param rhs : 복사할 인스턴스
+        /// @return 자기 객체
         Object& operator=(const TYPE& rhs)
         {
             Share::Remove(share);
@@ -69,11 +57,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 인수(버퍼로부터)
-        \param rhs : 인수할 버퍼
-        \return 자기 객체
-        */
+        /// @brief 인수(버퍼로부터)
+        /// @param rhs : 인수할 버퍼
+        /// @return 자기 객체
         Object& operator=(buffer rhs)
         {
             Share::Remove(share);
@@ -81,11 +67,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 인수(공유ID로부터)
-        \param rhs : 복사할 공유ID
-        \return 자기 객체
-        */
+        /// @brief 인수(공유ID로부터)
+        /// @param rhs : 복사할 공유ID
+        /// @return 자기 객체
         Object& operator=(id_share_read rhs)
         {
             BOSS_ASSERT("공유ID가 배열로 구성되어서 복사할 수 없습니다", ((Share*) rhs)->count() == 1);
@@ -94,11 +78,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 인수(복제된 공유ID로부터)
-        \param rhs : 복사할 공유ID
-        \return 자기 객체
-        */
+        /// @brief 인수(복제된 공유ID로부터)
+        /// @param rhs : 복사할 공유ID
+        /// @return 자기 객체
         Object& operator=(id_cloned_share_read rhs)
         {
             BOSS_ASSERT("공유ID가 배열로 구성되어서 복사할 수 없습니다", ((Share*) rhs)->count() == 1);
@@ -107,48 +89,38 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 타입명 구하기
-        \return 타입명
-        */
+        /// @brief 타입명 구하기
+        /// @return 타입명
         chars Type() const
         {
             return share->Type();
         }
 
-        /*!
-        \brief 타입ID 구하기
-        \return 타입ID
-        */
+        /// @brief 타입ID 구하기
+        /// @return 타입ID
         sblock TypeID() const
         {
             return share->TypeID();
         }
 
-        /*!
-        \brief 멤버접근
-        \return 자기 타입
-        */
+        /// @brief 멤버접근
+        /// @return 자기 타입
         TYPE* operator->()
         {
             BOSS_ASSERT("빈 객체입니다", share);
             return Ptr();
         }
 
-        /*!
-        \brief 멤버접근(읽기전용)
-        \return 자기 타입
-        */
+        /// @brief 멤버접근(읽기전용)
+        /// @return 자기 타입
         TYPE const* operator->() const
         {
             BOSS_ASSERT("빈 객체입니다", share);
             return ConstPtr();
         }
 
-        /*!
-        \brief 데이터값
-        \return 데이터
-        */
+        /// @brief 데이터값
+        /// @return 데이터
         TYPE& Value()
         {
             BOSS_ASSERT("빈 객체입니다", share);
@@ -156,20 +128,16 @@ namespace BOSS
             return share->At<TYPE>(0);
         }
 
-        /*!
-        \brief 데이터값(읽기전용)
-        \return 데이터
-        */
+        /// @brief 데이터값(읽기전용)
+        /// @return 데이터
         TYPE const& ConstValue() const
         {
             BOSS_ASSERT("빈 객체입니다", share);
             return share->At<TYPE>(0);
         }
 
-        /*!
-        \brief 데이터값(공유방식)
-        \return 데이터
-        */
+        /// @brief 데이터값(공유방식)
+        /// @return 데이터
         TYPE& SharedValue()
         {
             if(!share)
@@ -177,10 +145,8 @@ namespace BOSS
             return share->At<TYPE>(0);
         }
 
-        /*!
-        \brief 주소값
-        \return 주소
-        */
+        /// @brief 주소값
+        /// @return 주소
         TYPE* Ptr()
         {
             if(!share) return nullptr;
@@ -188,30 +154,24 @@ namespace BOSS
             return &share->At<TYPE>(0);
         }
 
-        /*!
-        \brief 주소값(읽기전용)
-        \return 주소
-        */
+        /// @brief 주소값(읽기전용)
+        /// @return 주소
         TYPE const* ConstPtr() const
         {
             if(!share) return nullptr;
             return &share->At<TYPE>(0);
         }
 
-        /*!
-        \brief 버퍼생성
-        \return 버퍼
-        */
+        /// @brief 버퍼생성
+        /// @return 버퍼
         buffer CopiedBuffer() const
         {
             if(!share) return nullptr;
             return share->CopiedBuffer();
         }
 
-        /*!
-        \brief 교환
-        \param other : 교환할 인스턴스
-        */
+        /// @brief 교환
+        /// @param other : 교환할 인스턴스
         void Change(Object&& other)
         {
             const Share* temp = share;
@@ -219,58 +179,42 @@ namespace BOSS
             other.share = temp;
         }
 
-        /*!
-        \brief 생성자
-        \param doalloc : 버퍼 생성여부
-        */
+        /// @brief 생성자
+        /// @param doalloc : 버퍼 생성여부
         Object(ObjectAllocType type = BASETYPE) : share((type == ObjectAllocType::Now)? Share::Create(Buffer::Alloc<TYPE, DATATYPE>(BOSS_DBG 1)) : nullptr) {}
 
-        /*!
-        \brief 복사생성자
-        \param rhs : 복사할 인스턴스
-        */
+        /// @brief 복사생성자
+        /// @param rhs : 복사할 인스턴스
         Object(const Object& rhs) : share(nullptr) {operator=(rhs);}
 
-        /*!
-        \brief 이동생성자
-        \param rhs : 이동할 인스턴스
-        */
+        /// @brief 이동생성자
+        /// @param rhs : 이동할 인스턴스
         Object(Object&& rhs) : share(nullptr) {operator=(ToReference(rhs));}
 
-        /*!
-        \brief 특수생성자
-        \param rhs : 복사할 TYPE 인스턴스
-        */
+        /// @brief 특수생성자
+        /// @param rhs : 복사할 TYPE 인스턴스
         Object(const TYPE& rhs) : share(nullptr) {operator=(rhs);}
 
-        /*!
-        \brief 특수생성자(버퍼로부터)
-        \param rhs : 인수할 버퍼
-        */
+        /// @brief 특수생성자(버퍼로부터)
+        /// @param rhs : 인수할 버퍼
         Object(buffer rhs) : share(nullptr) {operator=(rhs);}
 
-        /*!
-        \brief 특수생성자(공유ID로부터)
-        \param rhs : 복사할 공유ID
-        */
+        /// @brief 특수생성자(공유ID로부터)
+        /// @param rhs : 복사할 공유ID
         Object(id_share_read rhs) : share(nullptr) {operator=(rhs);}
 
-        /*!
-        \brief 생성자(복제된 공유ID로부터)
-        \param rhs : 복사할 공유ID
-        */
+        /// @brief 생성자(복제된 공유ID로부터)
+        /// @param rhs : 복사할 공유ID
         Object(id_cloned_share_read rhs) : share(nullptr) {operator=(rhs);}
 
-        /*!
-        \brief 소멸자
-        */
+        /// @brief 소멸자
         ~Object() {Share::Remove(share);}
 
     private:
         const Share* share;
     };
 
-    //! \brief 기본적인 공유객체
+    /// @brief 기본적인 공유객체
     typedef Object<sint08, datatype_pod_canmemcpy, ObjectAllocType::Now> sint08o;
     typedef Object<uint08, datatype_pod_canmemcpy, ObjectAllocType::Now> uint08o;
     typedef Object<sint16, datatype_pod_canmemcpy, ObjectAllocType::Now> sint16o;

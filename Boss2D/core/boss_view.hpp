@@ -16,7 +16,7 @@ namespace BOSS
         // 특수
         TT_ToolTip, TT_LongPress, TT_Render};
 
-    //! \brief 뷰지원
+    /// @brief 뷰지원
     class View
     {
     public:

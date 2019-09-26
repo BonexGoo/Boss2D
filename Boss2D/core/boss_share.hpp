@@ -6,7 +6,7 @@ namespace BOSS
     BOSS_DECLARE_ID(id_share);
     BOSS_DECLARE_ID(id_cloned_share);
 
-    //! \brief 공유자원관리
+    /// @brief 공유자원관리
     class Share
     {
     public:

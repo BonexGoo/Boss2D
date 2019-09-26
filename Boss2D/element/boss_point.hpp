@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D좌표
+    /// @brief 2D좌표
     class Point : public point64f
     {
     public:

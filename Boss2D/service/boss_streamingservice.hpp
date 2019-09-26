@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 서비스-Streaming
+    /// @brief 서비스-Streaming
     class StreamingService
     {
     BOSS_DECLARE_NONCOPYABLE_CLASS(StreamingService)

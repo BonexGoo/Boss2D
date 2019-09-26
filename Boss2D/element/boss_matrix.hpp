@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D행렬
+    /// @brief 2D행렬
     class Matrix
     {
     public:

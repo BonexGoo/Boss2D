@@ -32,7 +32,7 @@ namespace BOSS
         }
     };
 
-    //! \brief 맵지원
+    /// @brief 맵지원
     template<typename TYPE, sint32 ENDMARK = 0>
     class Map
     {
@@ -40,11 +40,9 @@ namespace BOSS
         typedef void (*AccessCB)(const MapPath*, TYPE*, payload);
 
     public:
-        /*!
-        \brief 정수식 접근(생성가능)
-        \param key : 검색키
-        \return 해당 객체
-        */
+        /// @brief 정수식 접근(생성가능)
+        /// @param key : 검색키
+        /// @return 해당 객체
         TYPE& operator[](uint08 key) {return CreativeByIndexable(key);}
         TYPE& operator[](uint16 key) {return CreativeByIndexable(key);}
         TYPE& operator[](uint32 key) {return CreativeByIndexable(key);}
@@ -54,18 +52,14 @@ namespace BOSS
         TYPE& operator[](sint32 key) {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return CreativeByIndexable((uint32) key);}
         TYPE& operator[](sint64 key) {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return CreativeByIndexable((uint64) key);}
 
-        /*!
-        \brief 정수식 마지막 추가후 접근
-        \return 해당 객체
-        */
+        /// @brief 정수식 마지막 추가후 접근
+        /// @return 해당 객체
         TYPE& AtAdding() {return CreativeByIndexable((uint32) Info->Count);}
 
-        /*!
-        \brief 문자열(UTF8/CP949)식 접근(생성가능)
-        \param key : 검색키
-        \param length : 검색키의 길이(-1이면 자동설정)
-        \return 해당 객체
-        */
+        /// @brief 문자열(UTF8/CP949)식 접근(생성가능)
+        /// @param key : 검색키
+        /// @param length : 검색키의 길이(-1이면 자동설정)
+        /// @return 해당 객체
         TYPE& operator()(chars key, sint32 length = -1)
         {
             Map* CurNode = this;
@@ -103,12 +97,10 @@ namespace BOSS
             return *CurNode->Data;
         }
 
-        /*!
-        \brief 문자열(UTF16)식 접근(생성가능)
-        \param key : 검색키
-        \param length : 검색키의 길이(-1이면 자동설정)
-        \return 해당 객체
-        */
+        /// @brief 문자열(UTF16)식 접근(생성가능)
+        /// @param key : 검색키
+        /// @param length : 검색키의 길이(-1이면 자동설정)
+        /// @return 해당 객체
         TYPE& operator()(wchars key, sint32 length = -1)
         {
             Map* CurNode = this;
@@ -152,11 +144,9 @@ namespace BOSS
             return *CurNode->Data;
         }
 
-        /*!
-        \brief 정수식 접근(생성불가)
-        \param key : 검색키
-        \return 해당 객체의 포인터
-        */
+        /// @brief 정수식 접근(생성불가)
+        /// @param key : 검색키
+        /// @return 해당 객체의 포인터
         TYPE* Access(uint08 key) const {return AccessByIndexable(key);}
         TYPE* Access(uint16 key) const {return AccessByIndexable(key);}
         TYPE* Access(uint32 key) const {return AccessByIndexable(key);}
@@ -166,12 +156,10 @@ namespace BOSS
         TYPE* Access(sint32 key) const {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return AccessByIndexable((uint32) key);}
         TYPE* Access(sint64 key) const {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return AccessByIndexable((uint64) key);}
 
-        /*!
-        \brief 문자열(UTF8/CP949)식 접근(생성불가)
-        \param key : 검색키
-        \param length : 검색키의 길이(-1이면 자동설정)
-        \return 해당 객체의 포인터
-        */
+        /// @brief 문자열(UTF8/CP949)식 접근(생성불가)
+        /// @param key : 검색키
+        /// @param length : 검색키의 길이(-1이면 자동설정)
+        /// @return 해당 객체의 포인터
         TYPE* Access(chars key, sint32 length = -1) const
         {
             const Map* CurNode = this;
@@ -201,12 +189,10 @@ namespace BOSS
             return CurNode->Data;
         }
 
-        /*!
-        \brief 문자열(UTF16)식 접근(생성불가)
-        \param key : 검색키
-        \param length : 검색키의 길이(-1이면 자동설정)
-        \return 해당 객체의 포인터
-        */
+        /// @brief 문자열(UTF16)식 접근(생성불가)
+        /// @param key : 검색키
+        /// @param length : 검색키의 길이(-1이면 자동설정)
+        /// @return 해당 객체의 포인터
         TYPE* Access(wchars key, sint32 length = -1) const
         {
             const Map* CurNode = this;
@@ -242,22 +228,18 @@ namespace BOSS
             return CurNode->Data;
         }
 
-        /*!
-        \brief 순번식 접근(생성불가)
-        \param order : 순번
-        \param getpath : 경로얻기
-        \return 해당 객체의 포인터
-        */
+        /// @brief 순번식 접근(생성불가)
+        /// @param order : 순번
+        /// @param getpath : 경로얻기
+        /// @return 해당 객체의 포인터
         TYPE* AccessByOrder(sint32 order, chararray* getpath = nullptr) const
         {
             return AccessByOrderCore(MapPath(nullptr, 0), order, getpath);
         }
 
-        /*!
-        \brief 콜백식 접근(생성불가)
-        \param cb : 콜백함수
-        \param param : 전달인수
-        */
+        /// @brief 콜백식 접근(생성불가)
+        /// @param cb : 콜백함수
+        /// @param param : 전달인수
         void AccessByCallback(AccessCB cb, payload param) const
         {
             if(Table)
@@ -268,11 +250,9 @@ namespace BOSS
             }
         }
 
-        /*!
-        \brief 정수식 데이터제거
-        \param key : 검색키
-        \return 성공여부
-        */
+        /// @brief 정수식 데이터제거
+        /// @param key : 검색키
+        /// @return 성공여부
         bool Remove(uint08 key) {return RemoveByIndexable(key);}
         bool Remove(uint16 key) {return RemoveByIndexable(key);}
         bool Remove(uint32 key) {return RemoveByIndexable(key);}
@@ -282,11 +262,9 @@ namespace BOSS
         bool Remove(sint32 key) {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return RemoveByIndexable((uint32) key);}
         bool Remove(sint64 key) {BOSS_ASSERT("key가 음수값입니다", 0 <= key); return RemoveByIndexable((uint64) key);}
 
-        /*!
-        \brief 문자열(UTF8/CP949)식 데이터제거
-        \param key : 검색키
-        \return 성공여부
-        */
+        /// @brief 문자열(UTF8/CP949)식 데이터제거
+        /// @param key : 검색키
+        /// @return 성공여부
         bool Remove(chars key)
         {
             if(RemoveCoreByNameable(key))
@@ -297,11 +275,9 @@ namespace BOSS
             return false;
         }
 
-        /*!
-        \brief 문자열(UTF16)식 데이터제거
-        \param key : 검색키
-        \return 성공여부
-        */
+        /// @brief 문자열(UTF16)식 데이터제거
+        /// @param key : 검색키
+        /// @return 성공여부
         bool Remove(wchars key)
         {
             if(RemoveCoreByNameable(key))
@@ -312,9 +288,7 @@ namespace BOSS
             return false;
         }
 
-        /*!
-        \brief 전체초기화
-        */
+        /// @brief 전체초기화
         void Reset()
         {
             if(Info)
@@ -337,31 +311,23 @@ namespace BOSS
             }
         }
 
-        /*!
-        \brief 데이터수량 얻기
-        \return 데이터수량
-        */
+        /// @brief 데이터수량 얻기
+        /// @return 데이터수량
         const sint32 Count() const {return Info->Count;}
 
-        /*!
-        \brief 팁정보 얻기
-        \return operator[]/operator()와 Access등에 의해 발생된 팁정보
-        */
+        /// @brief 팁정보 얻기
+        /// @return operator[]/operator()와 Access등에 의해 발생된 팁정보
         const void* GetLastTip() const {return Info->LastTip;}
 
-        /*!
-        \brief 생성자
-        */
+        /// @brief 생성자
         Map()
         {
             Table = nullptr;
             Info = new VarInfo();
         }
 
-        /*!
-        \brief 복사생성자
-        \param rhs : 복사할 인스턴스
-        */
+        /// @brief 복사생성자
+        /// @param rhs : 복사할 인스턴스
         Map(const Map& rhs)
         {
             Table = nullptr;
@@ -369,10 +335,8 @@ namespace BOSS
             operator=(rhs);
         }
 
-        /*!
-        \brief 이동생성자
-        \param rhs : 이동할 인스턴스
-        */
+        /// @brief 이동생성자
+        /// @param rhs : 이동할 인스턴스
         Map(Map&& rhs)
         {
             Table = nullptr;
@@ -380,9 +344,7 @@ namespace BOSS
             operator=(ToReference(rhs));
         }
 
-        /*!
-        \brief 소멸자
-        */
+        /// @brief 소멸자
         ~Map()
         {
             delete Info;
@@ -390,22 +352,18 @@ namespace BOSS
             Reset();
         }
 
-        /*!
-        \brief 복사
-        \param rhs : 복사할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 복사
+        /// @param rhs : 복사할 인스턴스
+        /// @return 자기 객체
         Map& operator=(const Map& rhs)
         {
             CopyCore(&rhs, true);
             return *this;
         }
 
-        /*!
-        \brief 이동
-        \param rhs : 이동할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 이동
+        /// @param rhs : 이동할 인스턴스
+        /// @return 자기 객체
         Map& operator=(Map&& rhs)
         {
             delete Info;
@@ -417,9 +375,7 @@ namespace BOSS
         }
 
     protected:
-        /*!
-        \brief 생성자(내부호출용)
-        */
+        /// @brief 생성자(내부호출용)
         Map(sint32)
         {
             Table = nullptr;

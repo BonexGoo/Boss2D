@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 가상키보드
+    /// @brief 가상키보드
     class Backey
     {
     public:

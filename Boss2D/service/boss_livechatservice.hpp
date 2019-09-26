@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 서비스-LiveChat
+    /// @brief 서비스-LiveChat
     class LiveChatService
     {
     public:

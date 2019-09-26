@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 서비스-Camera360
+    /// @brief 서비스-Camera360
     class Camera360Service
     {
     BOSS_DECLARE_NONCOPYABLE_CLASS(Camera360Service)

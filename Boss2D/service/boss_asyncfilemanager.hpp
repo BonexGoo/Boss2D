@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 매니저-비동기파일
+    /// @brief 매니저-비동기파일
     class AsyncFileManager
     {
     public:

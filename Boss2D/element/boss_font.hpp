@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 재질-폰트
+    /// @brief 재질-폰트
     class Font
     {
     public:

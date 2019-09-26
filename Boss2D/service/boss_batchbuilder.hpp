@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 빌더-배치
+    /// @brief 빌더-배치
     class BatchBuilder
     {
     public:

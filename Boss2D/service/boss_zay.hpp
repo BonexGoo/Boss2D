@@ -208,7 +208,7 @@ namespace BOSS
         SM_AddChild, SM_InsertChild, SM_RemoveChild, // 자식의 개체관리
         SM_RenameChild, SM_MoveChild, SM_ModifyChild}; // 자식의 에디트
 
-    //! \brief 뷰의 데이터모델
+    /// @brief 뷰의 데이터모델
     class ZayObject
     {
         friend class ZayView;
@@ -283,7 +283,7 @@ namespace BOSS
         sint32 m_resizing_height;
     };
 
-    //! \brief 뷰패널
+    /// @brief 뷰패널
     class ZayPanel
     {
     public:
@@ -429,7 +429,7 @@ namespace BOSS
         bool m_test_scissor;
     };
 
-    //! \brief 뷰패널의 확장모델
+    /// @brief 뷰패널의 확장모델
     class ZayExtend
     {
         BOSS_DECLARE_STANDARD_CLASS(ZayExtend)
@@ -501,7 +501,7 @@ namespace BOSS
         GlueCB mGlueCB;
     };
 
-    //! \brief 뷰의 m인스턴스
+    /// @brief 뷰의 m인스턴스
     template<typename TYPE>
     class ZayInstance
     {
@@ -566,7 +566,7 @@ namespace BOSS
         Map<void*> m_lockmap;
     };
 
-    //! \brief 제이뷰
+    /// @brief 제이뷰
     class ZayView : public View
     {
         friend class ZayObject;

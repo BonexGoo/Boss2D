@@ -69,7 +69,7 @@
 
 namespace BOSS
 {
-    //! \brief 라이브러리지원
+    /// @brief 라이브러리지원
     #if BOSS_ANDROID
         typedef sint32          api_int;
         typedef uint32          api_uint;

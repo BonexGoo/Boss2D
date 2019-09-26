@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 서비스-OAuth2
+    /// @brief 서비스-OAuth2
     class OAuth2Service
     {
     public:

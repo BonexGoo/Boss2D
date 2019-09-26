@@ -7,7 +7,7 @@ namespace BOSS
     class FrameUpdater;
     class OrderUpdater;
 
-    //! \brief 업데이터지원
+    /// @brief 업데이터지원
     class Updater
     {
         friend class FrameUpdater;

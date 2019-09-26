@@ -4,14 +4,12 @@
 
 namespace BOSS
 {
-    //! \brief 공유배열지원
+    /// @brief 공유배열지원
     template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy, sint32 MINCOUNT = 4>
     class Array
     {
     public:
-        /*!
-        \brief 비우기
-        */
+        /// @brief 비우기
         void Clear()
         {
             if(0 < share->count())
@@ -21,35 +19,25 @@ namespace BOSS
             }
         }
 
-        /*!
-        \brief 공유ID 추출
-        \return 공유ID
-        */
+        /// @brief 공유ID 추출
+        /// @return 공유ID
         operator id_share() const {return (id_share) share;}
 
-        /*!
-        \brief 공유ID 추출(복제방식)
-        \return 공유ID
-        */
+        /// @brief 공유ID 추출(복제방식)
+        /// @return 공유ID
         operator id_cloned_share() const {return (id_cloned_share) share->Clone();}
 
-        /*!
-        \brief 강제 현변환에 대한 처리
-        \return nullptr값
-        */
+        /// @brief 강제 현변환에 대한 처리
+        /// @return nullptr값
         operator void*() const {return nullptr;}
 
-        /*!
-        \brief 논리부정연산에 대한 처리
-        \return 데이터가 존재하지 않으면 true
-        */
+        /// @brief 논리부정연산에 대한 처리
+        /// @return 데이터가 존재하지 않으면 true
         bool operator!() const {return (share->count() == 0);}
 
-        /*!
-        \brief 복사
-        \param rhs : 복사할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 복사
+        /// @param rhs : 복사할 인스턴스
+        /// @return 자기 객체
         Array& operator=(const Array& rhs)
         {
             Share::Remove(share);
@@ -57,11 +45,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 이동
-        \param rhs : 이동할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 이동
+        /// @param rhs : 이동할 인스턴스
+        /// @return 자기 객체
         Array& operator=(Array&& rhs)
         {
             Share::Remove(share);
@@ -70,11 +56,9 @@ namespace BOSS
             return *this;
         }
 
-        /*!
-        \brief 읽기접근
-        \param index : 인덱스(음수는 역인덱스)
-        \return 해당 객체
-        */
+        /// @brief 읽기접근
+        /// @param index : 인덱스(음수는 역인덱스)
+        /// @return 해당 객체
         const TYPE& operator[](sint32 index) const
         {
             if(index < 0) index = share->count() + index;
@@ -82,11 +66,9 @@ namespace BOSS
             return share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 쓰기접근
-        \param index : 인덱스(음수는 역인덱스)
-        \return 해당 객체
-        */
+        /// @brief 쓰기접근
+        /// @param index : 인덱스(음수는 역인덱스)
+        /// @return 해당 객체
         TYPE& At(sint32 index)
         {
             if(index < 0) index = share->count() + index;
@@ -95,10 +77,8 @@ namespace BOSS
             return share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 추가(후미+1)하여 쓰기접근
-        \return 해당 객체
-        */
+        /// @brief 추가(후미+1)하여 쓰기접근
+        /// @return 해당 객체
         TYPE& AtAdding()
         {
             const sint32 index = share->count();
@@ -106,11 +86,9 @@ namespace BOSS
             return share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 자율추가하여 쓰기접근
-        \param index : 인덱스
-        \return 해당 객체
-        */
+        /// @brief 자율추가하여 쓰기접근
+        /// @param index : 인덱스
+        /// @return 해당 객체
         TYPE& AtWherever(sint32 index)
         {
             BOSS_ASSERT("배열범위를 초과한 인덱스입니다", 0 <= index);
@@ -118,12 +96,10 @@ namespace BOSS
             return share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 저수준식 쓰기접근
-        \param index : 시작인덱스
-        \param length : 시작인덱스로부터 보장길이
-        \return 해당 객체의 포인터
-        */
+        /// @brief 저수준식 쓰기접근
+        /// @param index : 시작인덱스
+        /// @param length : 시작인덱스로부터 보장길이
+        /// @return 해당 객체의 포인터
         TYPE* AtDumping(sint32 index, sint32 length)
         {
             BOSS_ASSERT("배열범위를 초과한 인덱스입니다", 0 <= index);
@@ -131,11 +107,9 @@ namespace BOSS
             return &share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 저수준식 추가형 쓰기접근
-        \param length : 후미로부터 추가할 길이
-        \return 해당 객체의 포인터
-        */
+        /// @brief 저수준식 추가형 쓰기접근
+        /// @param length : 후미로부터 추가할 길이
+        /// @return 해당 객체의 포인터
         TYPE* AtDumpingAdded(sint32 length)
         {
             BOSS_ASSERT("length는 1이상이어야 합니다", 1 <= length);
@@ -144,10 +118,8 @@ namespace BOSS
             return &share->At<TYPE>(index);
         }
 
-        /*!
-        \brief 후미삭제(메모리공간은 보존)
-        \return 삭제 수행여부(배열수량이 0일 경우 false)
-        */
+        /// @brief 후미삭제(메모리공간은 보존)
+        /// @return 삭제 수행여부(배열수량이 0일 경우 false)
         bool SubtractionOne()
         {
             if(share->count() == 0) return false;
@@ -155,10 +127,8 @@ namespace BOSS
             return true;
         }
 
-        /*!
-        \brief 전체삭제(메모리공간은 보존)
-        \return 삭제 수행여부(배열수량이 0일 경우 false)
-        */
+        /// @brief 전체삭제(메모리공간은 보존)
+        /// @return 삭제 수행여부(배열수량이 0일 경우 false)
         bool SubtractionAll()
         {
             if(share->count() == 0) return false;
@@ -166,12 +136,10 @@ namespace BOSS
             return true;
         }
 
-        /*!
-        \brief 구간삭제(메모리공간은 보존)
-        \param index : 시작인덱스
-        \param length : 시작인덱스로부터 삭제길이
-        \return 삭제 정상수행여부
-        */
+        /// @brief 구간삭제(메모리공간은 보존)
+        /// @param index : 시작인덱스
+        /// @param length : 시작인덱스로부터 삭제길이
+        /// @return 삭제 정상수행여부
         bool SubtractionSection(sint32 index, sint32 length = 1)
         {
             BOSS_ASSERT("length는 0보다 커야 합니다", 0 < length);
@@ -182,11 +150,9 @@ namespace BOSS
             return IsSuccess;
         }
 
-        /*!
-        \brief 개별이동
-        \param index : 삽입할 시작인덱스
-        \param src : 이동할 대상인스턴스
-        */
+        /// @brief 개별이동
+        /// @param index : 삽입할 시작인덱스
+        /// @param src : 이동할 대상인스턴스
         void DeliveryOne(sint32 index, TYPE&& src)
         {
             const Share* OldShare = share;
@@ -199,14 +165,12 @@ namespace BOSS
             Share::Remove(OldShare);
         }
 
-        /*!
-        \brief 구간이동(대상인스턴스의 메모리공간은 보존)
-        \param index : 삽입할 시작인덱스
-        \param src : 이동할 대상인스턴스
-        \param srcindex : 이동할 시작인덱스
-        \param srclength : 시작인덱스로부터 이동길이
-        \return 이동 정상수행여부
-        */
+        /// @brief 구간이동(대상인스턴스의 메모리공간은 보존)
+        /// @param index : 삽입할 시작인덱스
+        /// @param src : 이동할 대상인스턴스
+        /// @param srcindex : 이동할 시작인덱스
+        /// @param srclength : 시작인덱스로부터 이동길이
+        /// @return 이동 정상수행여부
         bool DeliverySection(sint32 index, Array&& src, sint32 srcindex, sint32 srclength = 1)
         {
             BOSS_ASSERT("length는 0보다 커야 합니다", 0 < srclength);
@@ -225,99 +189,75 @@ namespace BOSS
             return src.SubtractionSection(srcindex, srclength);
         }
 
-        /*!
-        \brief 타입명 구하기
-        \return 타입명
-        */
+        /// @brief 타입명 구하기
+        /// @return 타입명
         chars Type() const
         {
             return share->Type();
         }
 
-        /*!
-        \brief 타입ID 구하기
-        \return 타입ID
-        */
+        /// @brief 타입ID 구하기
+        /// @return 타입ID
         sblock TypeID() const
         {
             return share->TypeID();
         }
 
-        /*!
-        \brief 배열수량 구하기
-        \return 배열수량
-        */
+        /// @brief 배열수량 구하기
+        /// @return 배열수량
         sint32 Count() const
         {
             return share->count();
         }
 
-        /*!
-        \brief 생성자
-        */
+        /// @brief 생성자
         Array() : share(Share::Create(SampleBuffer(), MINCOUNT)) {}
 
-        /*!
-        \brief 복사생성자
-        \param rhs : 복사할 인스턴스
-        */
+        /// @brief 복사생성자
+        /// @param rhs : 복사할 인스턴스
         Array(const Array& rhs) : share(rhs.share->Clone()) {}
 
-        /*!
-        \brief 이동생성자
-        \param rhs : 복사할 인스턴스
-        */
+        /// @brief 이동생성자
+        /// @param rhs : 복사할 인스턴스
         Array(Array&& rhs) : share(rhs.share) {rhs.share = Share::Create(SampleBuffer(), MINCOUNT);}
 
-        /*!
-        \brief 특수생성자(값으로부터)
-        \param rhs : 복사할 값
-        */
+        /// @brief 특수생성자(값으로부터)
+        /// @param rhs : 복사할 값
         Array(const TYPE& rhs) : share(Share::Create(SampleBuffer(), MINCOUNT))
         {
             AtAdding() = rhs;
         }
 
-        /*!
-        \brief 특수생성자(공유ID로부터)
-        \param rhs : 복사할 공유ID
-        */
+        /// @brief 특수생성자(공유ID로부터)
+        /// @param rhs : 복사할 공유ID
         Array(id_share_read rhs) : share(((Share*) rhs)->Clone())
         {
             BOSS_ASSERT("공유ID의 객체타입이 달라서 복사할 수 없습니다",
                 share->TypeID() == Buffer::TypeOf(SampleBuffer()));
         }
 
-        /*!
-        \brief 특수생성자(복제된 공유ID로부터)
-        \param rhs : 복사할 공유ID
-        */
+        /// @brief 특수생성자(복제된 공유ID로부터)
+        /// @param rhs : 복사할 공유ID
         Array(id_cloned_share_read rhs) : share((Share*) rhs)
         {
             BOSS_ASSERT("공유ID의 객체타입이 달라서 복사할 수 없습니다",
                 share->TypeID() == Buffer::TypeOf(SampleBuffer()));
         }
 
-        /*!
-        \brief 소멸자
-        */
+        /// @brief 소멸자
         ~Array()
         {
             Share::Remove(share);
         }
 
     public:
-        /*!
-        \brief Null객체 얻기
-        \return Null객체
-        */
+        /// @brief Null객체 얻기
+        /// @return Null객체
         static const Array& Null()
         {return *BOSS_STORAGE_SYS(Array);}
 
-        /*!
-        \brief Sample버퍼 얻기
-        \return Sample버퍼
-        */
+        /// @brief Sample버퍼 얻기
+        /// @return Sample버퍼
         static const buffer& SampleBuffer()
         {return *BOSS_STORAGE_SYS(buffer, Buffer::Alloc<TYPE, DATATYPE>(BOSS_DBG 0));}
 
@@ -325,7 +265,7 @@ namespace BOSS
         const Share* share;
     };
 
-    //! \brief 기본적인 공유배열
+    /// @brief 기본적인 공유배열
     typedef Array<sint08, datatype_pod_canmemcpy> sint08s;
     typedef Array<uint08, datatype_pod_canmemcpy> uint08s;
     typedef Array<sint16, datatype_pod_canmemcpy> sint16s;

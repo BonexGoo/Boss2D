@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 포맷-FLV
+    /// @brief 포맷-FLV
     class Flv
     {
     public:

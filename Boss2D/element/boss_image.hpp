@@ -4,7 +4,7 @@
 
 namespace BOSS
 {
-    //! \brief 재질-이미지
+    /// @brief 재질-이미지
     class Image
     {
     public:

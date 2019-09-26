@@ -19,11 +19,11 @@ namespace BOSS
     BOSS_DECLARE_ID(id_websocket);
     BOSS_DECLARE_ID(id_zip);
 
-    //! \brief 애드온지원
+    /// @brief 애드온지원
     class AddOn
     {
     public:
-        //! \brief AAC연동
+        /// @brief AAC연동
         class Aac
         {
         public:
@@ -33,7 +33,7 @@ namespace BOSS
             static void SilenceTo(id_acc acc, id_flash flash, uint64 timems);
         };
 
-        //! \brief ALPR연동
+        /// @brief ALPR연동
         class Alpr
         {
         public:
@@ -43,7 +43,7 @@ namespace BOSS
             static chars Summary(chars recognizedtext);
         };
 
-        //! \brief CURL연동
+        /// @brief CURL연동
         class Curl
         {
         public:
@@ -71,7 +71,7 @@ namespace BOSS
             static sint32 FtpSearch(id_curl curl, chars url, chars dirname, SearchCB cb, payload data);
         };
 
-        //! \brief DLIB연동
+        /// @brief DLIB연동
         class Dlib
         {
         public:
@@ -89,7 +89,7 @@ namespace BOSS
             static const point64* GetFaceLandmark(id_dlib dlib, sint32 index, FaceLandmark68Type type);
         };
 
-        //! \brief FREETYPE연동
+        /// @brief FREETYPE연동
         class FreeType
         {
         public:
@@ -100,7 +100,7 @@ namespace BOSS
             static void GetInfo(id_freetype_read freetype, sint32 height, uint32 code, sint32* width = nullptr, sint32* ascent = nullptr);
         };
 
-        //! \brief GIT연동
+        /// @brief GIT연동
         class Git
         {
         public:
@@ -113,7 +113,7 @@ namespace BOSS
             static void Update(id_git git, ProgressCB cb = nullptr, payload data = nullptr);
         };
 
-        //! \brief H264연동
+        /// @brief H264연동
         class H264
         {
         public:
@@ -126,7 +126,7 @@ namespace BOSS
             static void DecodeSeek(id_h264 h264, id_flash flash, uint64 timems);
         };
 
-        //! \brief JPG연동
+        /// @brief JPG연동
         class Jpg
         {
         public:
@@ -137,7 +137,7 @@ namespace BOSS
             static id_bitmap ToBmp(bytes jpg, sint32 length);
         };
 
-        //! \brief OGG연동
+        /// @brief OGG연동
         class Ogg
         {
         public:
@@ -148,7 +148,7 @@ namespace BOSS
             static void ToPcmStream(id_file_read oggfile, PcmCreateCB ccb, PcmWriteCB wcb, payload data);
         };
 
-        //! \brief OpenCV연동
+        /// @brief OpenCV연동
         class OpenCV
         {
         public:
@@ -168,7 +168,7 @@ namespace BOSS
             static void GetHoughCircles(id_opencv opencv, HoughCirclesCB cb, payload data = nullptr);
         };
 
-        //! \brief SSL연동
+        /// @brief SSL연동
         class Ssl
         {
         public:
@@ -181,7 +181,7 @@ namespace BOSS
             static buffer FromBASE64(chars base64);
         };
 
-        //! \brief TESSERACT연동
+        /// @brief TESSERACT연동
         class Tesseract
         {
         public:
@@ -190,7 +190,7 @@ namespace BOSS
             static void Training(id_tesseract tesseract, chars workname);
         };
 
-        //! \brief TIF연동
+        /// @brief TIF연동
         class Tif
         {
         public:
@@ -199,7 +199,7 @@ namespace BOSS
             static id_bitmap ToBmp(bytes tif, sint32 length);
         };
 
-        //! \brief WEBRTC연동
+        /// @brief WEBRTC연동
         class WebRtc
         {
         public:
@@ -211,7 +211,7 @@ namespace BOSS
             static void SendData(id_webrtc webrtc, bytes data, sint32 len);
         };
 
-        //! \brief WEBSOCKET연동
+        /// @brief WEBSOCKET연동
         class WebSocket
         {
         public:
@@ -224,7 +224,7 @@ namespace BOSS
             static chars RecvStringOnce(id_websocket websocket);
         };
 
-        //! \brief ZIP연동
+        /// @brief ZIP연동
         class Zip
         {
         public:

@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 파서지원
+    /// @brief 파서지원
     class Parser
     {
     public:

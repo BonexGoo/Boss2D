@@ -5,15 +5,13 @@ namespace BOSS
 {
     typedef void (*QueueFreeCB)(void*);
 
-    //! \brief 큐지원
+    /// @brief 큐지원
     template<typename TYPE, bool FORTHREAD = true, QueueFreeCB FREECB = nullptr>
     class Queue
     {
     public:
-        /*!
-        \brief 큐에 1개 데이터적재
-        \param data : 데이터
-        */
+        /// @brief 큐에 1개 데이터적재
+        /// @param data : 데이터
         void Enqueue(TYPE data)
         {
             if(FORTHREAD) Mutex::Lock(DataMutex);
@@ -24,11 +22,9 @@ namespace BOSS
             if(FORTHREAD) Mutex::Unlock(DataMutex);
         }
 
-        /*!
-        \brief 큐에서 1개 데이터배출
-        \param nullvalue : 데이터가 없을 경우의 값
-        \return 해당 데이터
-        */
+        /// @brief 큐에서 1개 데이터배출
+        /// @param nullvalue : 데이터가 없을 경우의 값
+        /// @return 해당 데이터
         TYPE Dequeue(TYPE nullvalue = TYPE())
         {
             TYPE Data = nullvalue;
@@ -42,10 +38,8 @@ namespace BOSS
             return Data;
         }
 
-        /*!
-        \brief 현재 큐에 적재된 데이터수량
-        \return 데이터수량
-        */
+        /// @brief 현재 큐에 적재된 데이터수량
+        /// @return 데이터수량
         sint32 Count() const
         {
             sint32 Result = 0;
@@ -57,33 +51,25 @@ namespace BOSS
             return Result;
         }
 
-        /*!
-        \brief 생성자
-        */
+        /// @brief 생성자
         Queue() : Head(TYPE())
         {
             DataCount = 0;
             if(FORTHREAD) DataMutex = Mutex::Open();
         }
 
-        /*!
-        \brief 복사생성자(불허)
-        */
+        /// @brief 복사생성자(불허)
         Queue(const Queue&)
         {BOSS_ASSERT("Queue는 복사될 수 없습니다", false);}
 
-        /*!
-        \brief 이동생성자
-        \param rhs : 이동할 인스턴스
-        */
+        /// @brief 이동생성자
+        /// @param rhs : 이동할 인스턴스
         Queue(Queue&& rhs) : Head(TYPE())
         {
             operator=(ToReference(rhs));
         }
 
-        /*!
-        \brief 소멸자
-        */
+        /// @brief 소멸자
         ~Queue()
         {
             if(FORTHREAD) Mutex::Close(DataMutex);
@@ -99,17 +85,13 @@ namespace BOSS
             else BOSS_ASSERT("큐에 해제되지 않은 데이터가 존재합니다", DataCount == 0);
         }
 
-        /*!
-        \brief 복사(불허)
-        */
+        /// @brief 복사(불허)
         Queue& operator=(const Queue&)
         {BOSS_ASSERT("Queue는 복사될 수 없습니다", false); return *this;}
 
-        /*!
-        \brief 이동
-        \param rhs : 이동할 인스턴스
-        \return 자기 객체
-        */
+        /// @brief 이동
+        /// @param rhs : 이동할 인스턴스
+        /// @return 자기 객체
         Queue& operator=(Queue&& rhs)
         {
             Head.Prev = rhs.Head.Prev; rhs.Head.Prev = &rhs.Head;

@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 브리통신
+    /// @brief 브리통신
     class BriiConnector
     {
     public:

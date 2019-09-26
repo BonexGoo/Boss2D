@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 웹게시물형 리소스파서
+    /// @brief 웹게시물형 리소스파서
     class ContactPool;
     class ParaSource
     {

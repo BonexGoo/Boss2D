@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D벡터
+    /// @brief 2D벡터
     class Vector : public vector128f
     {
     public:

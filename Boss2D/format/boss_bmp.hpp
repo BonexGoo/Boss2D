@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 포맷-BMP
+    /// @brief 포맷-BMP
     class Bmp
     {
     public:

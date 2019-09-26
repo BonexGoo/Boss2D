@@ -7,7 +7,7 @@ namespace BOSS
 {
     typedef std::function<bool(bool needRedraw)> TweenUpdateCB;
 
-    //! \brief 1D트윈
+    /// @brief 1D트윈
     class Tween1D : public Updater
     {
     public:
@@ -45,7 +45,7 @@ namespace BOSS
     };
     typedef Array<Tween1D> Tween1Ds;
 
-    //! \brief 2D트윈
+    /// @brief 2D트윈
     class Tween2D : public Updater
     {
     public:

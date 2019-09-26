@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 재질-색상
+    /// @brief 재질-색상
     class Color
     {
     public:

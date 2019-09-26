@@ -4,7 +4,7 @@
 
 namespace BOSS
 {
-    //! \brief 서비스-Firebase
+    /// @brief 서비스-Firebase
     class FirebaseService
     {
     public:

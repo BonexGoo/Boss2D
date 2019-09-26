@@ -4,7 +4,7 @@
 
 namespace BOSS
 {
-    //! \brief 뷰스크립트 문서객체모델
+    /// @brief 뷰스크립트 문서객체모델
     class ZaySonDocument
     {
         BOSS_DECLARE_NONCOPYABLE_CLASS(ZaySonDocument)
@@ -33,7 +33,7 @@ namespace BOSS
         sint32 mExecutedCount;
     };
 
-    //! \brief 뷰스크립트 원형
+    /// @brief 뷰스크립트 원형
     class ZaySonInterface
     {
     public:
@@ -47,7 +47,7 @@ namespace BOSS
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) = 0;
     };
 
-    //! \brief 뷰스크립트 도구
+    /// @brief 뷰스크립트 도구
     class ZaySonUtility
     {
     public:
@@ -57,7 +57,7 @@ namespace BOSS
         static ZaySonInterface::ConditionType ToCondition(chars text, bool* withelse = nullptr);
     };
 
-    //! \brief 뷰스크립트
+    /// @brief 뷰스크립트
     class ZaySon : public ZaySonInterface
     {
         BOSS_DECLARE_NONCOPYABLE_CLASS(ZaySon)

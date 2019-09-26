@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D영역
+    /// @brief 2D영역
     class Rect : public rect128f
     {
     public:

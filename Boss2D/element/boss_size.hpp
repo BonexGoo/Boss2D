@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D구간
+    /// @brief 2D구간
     class Size : public size64f
     {
     public:

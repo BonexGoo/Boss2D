@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 포맷-PNG
+    /// @brief 포맷-PNG
     class Png
     {
     public:

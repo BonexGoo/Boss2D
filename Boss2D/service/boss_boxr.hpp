@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 복서빌더
+    /// @brief 복서빌더
     class BoxrBuilder
     {
     public:

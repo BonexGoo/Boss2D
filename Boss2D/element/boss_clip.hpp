@@ -3,7 +3,7 @@
 
 namespace BOSS
 {
-    //! \brief 2D클리퍼
+    /// @brief 2D클리퍼
     class Clip
     {
     public:

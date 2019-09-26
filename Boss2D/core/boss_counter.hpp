@@ -3,16 +3,14 @@
 
 namespace BOSS
 {
-    //! \brief 카운터지원
+    /// @brief 카운터지원
     template<bool FORTHREAD>
     class Counter
     {
     public:
-        /*!
-        \brief 카운트 증가/감소
-        \param doAdd : 증가여부
-        \see Get
-        */
+        /// @brief 카운트 증가/감소
+        /// @param doAdd : 증가여부
+        /// @see Get
         void Set(bool doAdd)
         {
             if(FORTHREAD) Mutex::Lock(Mutex);
@@ -22,11 +20,9 @@ namespace BOSS
             if(FORTHREAD) Mutex::Unlock(Mutex);
         }
 
-        /*!
-        \brief 현재 카운트값 얻기
-        \return 카운트값
-        \see Set
-        */
+        /// @brief 현재 카운트값 얻기
+        /// @return 카운트값
+        /// @see Set
         sint32 Get()
         {
             sint32 Result = 0;
