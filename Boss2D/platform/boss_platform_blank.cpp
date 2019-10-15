@@ -915,6 +915,15 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
+        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+            const sint32 Count = p.Count();
+            if(Count < 3) return;
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         void Platform::Graphics::DrawTextureToFBO(id_texture_read texture, float tx, float ty, float tw, float th,
             orientationtype ori, bool antialiasing, float x, float y, float w, float h, Color color, uint32 fbo)
         {

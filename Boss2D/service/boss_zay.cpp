@@ -440,6 +440,12 @@ namespace BOSS
         Platform::Graphics::DrawPolyBezier(LastClip.l, LastClip.t, p, thick, showfirst, showlast);
     }
 
+    void ZayPanel::ringbezier(Points p, float thick) const
+    {
+        const Clip& LastClip = m_stack_clip[-1];
+        Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick);
+    }
+
     static inline sint32 GetXAlignCode(UIAlign align)
     {
         sint32 XAlignCode = 0;

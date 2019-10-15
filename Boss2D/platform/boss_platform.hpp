@@ -692,6 +692,13 @@ public:
         /// @param showlast : 끝선 보임여부
         static void DrawPolyBezier(float x, float y, Points p, float thick, bool showfirst, bool showlast);
 
+        /// @brief 링베지어 출력
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param p : 꼭지점들(px)
+        /// @param thick : 두께(px)
+        static void DrawRingBezier(float x, float y, Points p, float thick);
+
         /// @brief 지정한 FBO핸들로 텍스처 출력
         /// @param texture : 출력할 텍스처
         /// @param tx : 텍스처의 좌측위치(px)
