@@ -1535,6 +1535,32 @@
             #endif
         }
 
+        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
+                const sint32 Count = p.Count();
+                if(Count < 3) return;
+
+                PainterPathPrivate NewPath;
+                NewPath.moveTo(x + p[0].x, y + p[0].y);
+                for(sint32 i = 0; i < Count; ++i)
+                {
+                    const sint32 A = (i + Count - 1) % Count, B = i, C = (i + 1) % Count, D = (i + 2) % Count;
+                    const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) / 6;
+                    const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) / 6;
+                    const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) / 6;
+                    const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) / 6;
+                    NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
+                }
+
+                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+                CanvasClass::get()->painter().drawPath(NewPath);
+            #endif
+        }
+
         void Platform::Graphics::DrawTextureToFBO(id_texture_read texture, float tx, float ty, float tw, float th,
             orientationtype ori, bool antialiasing, float x, float y, float w, float h, Color color, uint32 fbo)
         {
