@@ -4164,6 +4164,7 @@
             else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
             connect(Peer, SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(errorPeer(QAbstractSocket::SocketError)));
+            Platform::BroadcastNotify("packettype_entrance", nullptr, NT_SocketReceive);
         }
 
         void readyPeer()
@@ -4179,6 +4180,7 @@
                 PacketQueue.Enqueue(NewPacket);
                 connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
             }
+            Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
         }
 
         void readyPeerWithSizeField()
@@ -4221,6 +4223,7 @@
                     }
                 }
             }
+            Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
         }
 
         void errorPeer(QAbstractSocket::SocketError error)
@@ -4228,8 +4231,17 @@
             QTcpSocket* Peer = (QTcpSocket*) sender();
             TCPPeerData* Data = (TCPPeerData*) Peer->userData(TCPPeerData::ClassID());
             Peers.Remove(Data->ID);
-            PacketQueue.Enqueue(new TCPPacket((error == QAbstractSocket::RemoteHostClosedError)?
-                packettype_leaved : packettype_kicked, Data->ID, 0));
+
+            if(error == QAbstractSocket::RemoteHostClosedError)
+            {
+                PacketQueue.Enqueue(new TCPPacket(packettype_leaved, Data->ID, 0));
+                Platform::BroadcastNotify("packettype_leaved", nullptr, NT_SocketReceive);
+            }
+            else
+            {
+                PacketQueue.Enqueue(new TCPPacket(packettype_kicked, Data->ID, 0));
+                Platform::BroadcastNotify("packettype_kicked", nullptr, NT_SocketReceive);
+            }
         }
 
     public:
@@ -4283,6 +4295,7 @@
                 Peer->disconnectFromHost();
                 Peers.Remove(peerid);
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, peerid, 0));
+                Platform::BroadcastNotify("packettype_kicked", nullptr, NT_SocketReceive);
                 return true;
             }
             return false;
