@@ -1787,6 +1787,13 @@ namespace BOSS
             case TT_WheelPress: case TT_WheelDragging: case TT_WheelDraggingIdle: case TT_WheelRelease:
             case TT_ExtendPress: case TT_ExtendDragging: case TT_ExtendDraggingIdle: case TT_ExtendRelease:
                 CurElement.m_cb(this, &CurElement, (GestureType) (type - TT_WheelUp + GT_WheelUp), x, y);
+                // 스크롤처리
+                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb)
+                {
+                    ScrollElement->m_cb(this, ScrollElement,
+                        (GestureType) (type - TT_WheelUp + GT_WheelUp), x, y);
+                    NeedUpdate = true;
+                }
                 // Peek처리
                 if(&CurElement != CurTouch->background())
                     CurTouch->background()->m_cb(this, CurTouch->background(),
@@ -2166,21 +2173,20 @@ namespace BOSS
                 if(CurRect.l <= x && CurRect.t <= y && x < CurRect.r && y < CurRect.b)
                 {
                     // 관련된 스크롤조사
-                    if(press && press->m_scrollsence == -1) // 스크롤이 아닌 눌러진 영역이 있고
+                    const Element* ScrollBase = (press)? press : &CurElement;
+                    if(ScrollBase->m_scrollsence == -1) // 스크롤이 아닌 눌러진 영역이 있고
+                    for(sint32 j = i; 0 <= j; --j) // 터치영역을 포함하여 바닥까지 조사
                     {
-                        for(sint32 j = i; 0 <= j; --j) // 터치영역을 포함하여 바닥까지 조사
+                        Element& ScrollElement = *CurCell->m_elements[j];
+                        if(ScrollElement.m_scrollsence != -1) // 대상 영역이 스크롤영역이고
                         {
-                            Element& ScrollElement = *CurCell->m_elements[j];
-                            if(ScrollElement.m_scrollsence != -1) // 대상 영역이 스크롤영역이고
+                            const rect128& NextRect = ScrollElement.m_rect;
+                            if(NextRect.l <= x && NextRect.t <= y && x < NextRect.r && y < NextRect.b) // 영역에 들어왔고
                             {
-                                const rect128& NextRect = ScrollElement.m_rect;
-                                if(NextRect.l <= x && NextRect.t <= y && x < NextRect.r && y < NextRect.b) // 영역에 들어왔고
-                                {
-                                    // 스크롤의 명칭이 CurElement의 명칭에 포함관계일때 스크롤찾음
-                                    if(!String::Compare(press->m_name, ScrollElement.m_name, ScrollElement.m_name.Length()))
-                                        scroll = &ScrollElement;
-                                    break; // 관련된 스크롤을 못찾더라도 스크롤영역을 만나면 break
-                                }
+                                // 스크롤의 명칭이 CurElement의 명칭에 포함관계일때 스크롤찾음
+                                if(!String::Compare(ScrollBase->m_name, ScrollElement.m_name, ScrollElement.m_name.Length()))
+                                    scroll = &ScrollElement;
+                                break; // 관련된 스크롤을 못찾더라도 스크롤영역을 만나면 break
                             }
                         }
                     }
