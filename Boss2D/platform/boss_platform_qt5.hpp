@@ -4178,7 +4178,6 @@
                 TCPPacket* NewPacket = new TCPPacket(packettype_message, Data->ID, PacketSize);
                 Peer->read((char*) NewPacket->Buffer, PacketSize);
                 PacketQueue.Enqueue(NewPacket);
-                connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
             }
             Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
         }
@@ -4200,11 +4199,7 @@
                         Peer->read((char*) &GetPacketSize, 4);
                         Data->PacketNeeds = GetPacketSize;
                     }
-                    else
-                    {
-                        connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
-                        break;
-                    }
+                    else break;
                 }
                 if(0 < Data->PacketNeeds)
                 {
@@ -4216,11 +4211,7 @@
                         PacketQueue.Enqueue(NewPacket);
                         Data->PacketNeeds = 0;
                     }
-                    else
-                    {
-                        connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
-                        break;
-                    }
+                    else break;
                 }
             }
             Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
