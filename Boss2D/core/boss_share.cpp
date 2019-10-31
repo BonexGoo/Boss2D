@@ -41,13 +41,12 @@ namespace BOSS
             else if(mincount == -1 && 0 < share->mValidCount) // 후미삭제
             {
                 Share* wshare = (Share*) share;
-                Buffer::ResetOne(wshare->mData, --wshare->mValidCount);
+                Buffer::Realloc(BOSS_DBG wshare->mData, --wshare->mValidCount);
             }
             else if(mincount == -2 && 0 < share->mValidCount) // 전체삭제
             {
                 Share* wshare = (Share*) share;
-                wshare->mValidCount = 0;
-                Buffer::ResetAll(wshare->mData);
+                Buffer::Realloc(BOSS_DBG wshare->mData, wshare->mValidCount = 0);
             }
         }
         return share;
@@ -91,7 +90,7 @@ namespace BOSS
 
     buffer Share::CopiedBuffer() const
     {
-        buffer NewBuffer = Buffer::AllocBySample(BOSS_DBG mValidCount, mData);
+        buffer NewBuffer = Buffer::AllocBySample(BOSS_DBG mValidCount, mValidCount, mData);
         Buffer::Copy(NewBuffer, 0, mData, 0, mValidCount);
         return NewBuffer;
     }
@@ -109,7 +108,7 @@ namespace BOSS
         ++_DebugShareCount();
         mShareCount = 1;
         mValidCount = 0;
-        mData = Buffer::AllocBySample(BOSS_DBG mincount, sample);
+        mData = Buffer::AllocBySample(BOSS_DBG 0, mincount, sample);
     }
 
     Share::Share(const Share& rhs, sint32 mincount, bool duplicate)
@@ -120,7 +119,7 @@ namespace BOSS
         ++_DebugShareCount();
         mShareCount = 1;
         mValidCount = 0;
-        mData = Buffer::AllocBySample(BOSS_DBG maxcount, rhs.mData);
+        mData = Buffer::AllocBySample(BOSS_DBG rhscount, maxcount, rhs.mData);
 
         if(duplicate) // 사본으로 구성
         {

@@ -68,7 +68,6 @@ namespace BOSS
         typedef sint32                        sblock;
         typedef uint32                        ublock;
     #endif
-    typedef sblock*                           nakedbuffer;
     typedef ublock*                           buffer;
     typedef buffer                            nullbuffer;
 
@@ -371,25 +370,3 @@ namespace BOSS
     }
 #endif
 
-// About user-config macro exist check
-#if !defined(BOSS_NEED_FORCED_FAKEWIN) || (BOSS_NEED_FORCED_FAKEWIN != 0 && BOSS_NEED_FORCED_FAKEWIN != 1)
-    #error BOSS_NEED_FORCED_FAKEWIN macro is invalid use
-#endif
-#if !defined(BOSS_NEED_FULLSCREEN) || (BOSS_NEED_FULLSCREEN != 0 && BOSS_NEED_FULLSCREEN != 1)
-    #error BOSS_NEED_FULLSCREEN macro is invalid use
-#endif
-#if !defined(BOSS_NEED_LOW_DEBUGING) || (BOSS_NEED_LOW_DEBUGING != 0 && BOSS_NEED_LOW_DEBUGING != 1)
-    #error BOSS_NEED_LOW_DEBUGING macro is invalid use
-#endif
-#if !defined(BOSS_NEED_MAIN) || (BOSS_NEED_MAIN != 0 && BOSS_NEED_MAIN != 1)
-    #error BOSS_NEED_MAIN macro is invalid use
-#endif
-#if !defined(BOSS_NEED_PLATFORM_FILE) || (BOSS_NEED_PLATFORM_FILE != 0 && BOSS_NEED_PLATFORM_FILE != 1)
-    #error BOSS_NEED_PLATFORM_FILE macro is invalid use
-#endif
-#if !defined(BOSS_NEED_PROFILE) || (BOSS_NEED_PROFILE != 0 && BOSS_NEED_PROFILE != 1)
-    #error BOSS_NEED_PROFILE macro is invalid use
-#endif
-#if !defined(BOSS_NEED_RELEASE_TRACE) || (BOSS_NEED_RELEASE_TRACE != 0 && BOSS_NEED_RELEASE_TRACE != 1)
-    #error BOSS_NEED_RELEASE_TRACE macro is invalid use
-#endif

@@ -1414,9 +1414,6 @@ extern "C" void boss_seterrno(int err)
 #if !defined(BOSS_NEED_FULLSCREEN) || (BOSS_NEED_FULLSCREEN != 0 && BOSS_NEED_FULLSCREEN != 1)
     #error BOSS_NEED_FULLSCREEN macro is invalid use
 #endif
-#if !defined(BOSS_NEED_LOW_DEBUGING) || (BOSS_NEED_LOW_DEBUGING != 0 && BOSS_NEED_LOW_DEBUGING != 1)
-    #error BOSS_NEED_LOW_DEBUGING macro is invalid use
-#endif
 #if !defined(BOSS_NEED_MAIN) || (BOSS_NEED_MAIN != 0 && BOSS_NEED_MAIN != 1)
     #error BOSS_NEED_MAIN macro is invalid use
 #endif

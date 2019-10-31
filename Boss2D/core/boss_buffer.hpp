@@ -42,7 +42,7 @@ namespace BOSS
         void (*Copy)(void*, const void*, const sint32);
         void (*Move)(void*, void*, const sint32);
         void (*Create)(void*, const sint32);
-        void (*Remove)(void*, const sint32);
+        void (*Remove)(void*, const sint32, bool);
         void (*ResetOne)(void*, const sint32);
         void (*ResetAll)(void*, const sint32);
     };
@@ -51,14 +51,9 @@ namespace BOSS
     class BufferImpl
     {
     public:
-        static buffer Alloc(BOSS_DBG_PRM sint32 count, const BufferSpec* spec, bool noConstructorOnce);
+        static buffer Alloc(BOSS_DBG_PRM sint32 count, sint32 max, const BufferSpec* spec, bool noConstructorOnce);
         static void Free(const buffer buf);
-        static const nakedbuffer Convert(const buffer buf);
-        static void* At(const buffer buf, sint32 index, chars castingName);
-        static void Mutex(bool lock);
-        static void DebugAttach(BOSS_DBG_PRM const nakedbuffer naked, sint32 blockLen, sint32 realLen);
-        static void DebugDetach(const nakedbuffer naked);
-        static sblock* DebugLink();
+        static void* At(const buffer buf, sint32 index);
     };
 
     /// @brief 버퍼스펙풀지원
@@ -148,20 +143,20 @@ namespace BOSS
 
     private:
         static void Copy_class_nomemcpy(void* dst, const void* src, const sint32 count) {for(sint32 i = 0; i < count; ++i) ((TYPE*) dst)[i] = ((const TYPE*) src)[i];}
-        static void Copy_default(void* dst, const void* src, const sint32 count) {Memory::Copy(dst, src, sizeof(TYPE) * count);}
-        static void Move_class_nomemcpy(void* dst, void* src, const sint32 count) {for(sint32 i = 0; i < count; ++i) ((TYPE*) dst)[i] = ToReference(((TYPE*) src)[i]);}
-        static void Move_default(void* dst, void* src, const sint32 count) {Memory::Copy(dst, src, sizeof(TYPE) * count);}
-        static void Create_class(void* dst, const sint32 count) {for(sint32 i = 0; i < count; ++i) new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[i])) TYPE;}
-        static void Create_pod_canmemcpy_zeroset(void* dst, const sint32 count) {Memory::Set(dst, 0, sizeof(TYPE) * count);}
-        static void Create_default(void* dst, const sint32 count) {}
-        static void Remove_class(void* dst, const sint32 count) {for(sint32 i = 0; i < count; ++i) ((TYPE*) dst)[i].~TYPE(); BufferImpl::Free((buffer) dst);}
-        static void Remove_default(void* dst, const sint32 count) {BufferImpl::Free((buffer) dst);}
-        static void ResetOne_class(void* dst, const sint32 index) {((TYPE*) dst)[index].~TYPE(); new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[index])) TYPE;}
-        static void ResetOne_pod_canmemcpy_zeroset(void* dst, const sint32 index) {Memory::Set(&(((TYPE*) dst)[index]), 0, sizeof(TYPE));}
-        static void ResetOne_default(void* dst, const sint32 index) {}
-        static void ResetAll_class(void* dst, const sint32 count) {for(sint32 i = 0; i < count; ++i) {((TYPE*) dst)[i].~TYPE(); new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[i])) TYPE;}}
-        static void ResetAll_pod_canmemcpy_zeroset(void* dst, const sint32 count) {Memory::Set(dst, 0, sizeof(TYPE) * count);}
-        static void ResetAll_default(void* dst, const sint32 count) {}
+        static void Copy_default(void* dst, const void* src, const sint32 count)        {Memory::Copy(dst, src, sizeof(TYPE) * count);}
+        static void Move_class_nomemcpy(void* dst, void* src, const sint32 count)       {for(sint32 i = 0; i < count; ++i) ((TYPE*) dst)[i] = ToReference(((TYPE*) src)[i]);}
+        static void Move_default(void* dst, void* src, const sint32 count)              {Memory::Copy(dst, src, sizeof(TYPE) * count);}
+        static void Create_class(void* dst, const sint32 count)                         {for(sint32 i = 0; i < count; ++i) new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[i])) TYPE;}
+        static void Create_pod_canmemcpy_zeroset(void* dst, const sint32 count)         {Memory::Set(dst, 0, sizeof(TYPE) * count);}
+        static void Create_default(void* dst, const sint32 count)                       {}
+        static void Remove_class(void* dst, const sint32 count, bool dofree)            {for(sint32 i = 0; i < count; ++i) ((TYPE*) dst)[i].~TYPE(); if(dofree) BufferImpl::Free((buffer) dst);}
+        static void Remove_default(void* dst, const sint32 count, bool dofree)          {if(dofree) BufferImpl::Free((buffer) dst);}
+        static void ResetOne_class(void* dst, const sint32 index)                       {((TYPE*) dst)[index].~TYPE(); new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[index])) TYPE;}
+        static void ResetOne_pod_canmemcpy_zeroset(void* dst, const sint32 index)       {Memory::Set(&(((TYPE*) dst)[index]), 0, sizeof(TYPE));}
+        static void ResetOne_default(void* dst, const sint32 index)                     {}
+        static void ResetAll_class(void* dst, const sint32 count)                       {for(sint32 i = 0; i < count; ++i) {((TYPE*) dst)[i].~TYPE(); new(BOSS_PTR_TO_SBLOCK(&((TYPE*) dst)[i])) TYPE;}}
+        static void ResetAll_pod_canmemcpy_zeroset(void* dst, const sint32 count)       {Memory::Set(dst, 0, sizeof(TYPE) * count);}
+        static void ResetAll_default(void* dst, const sint32 count)                     {}
     };
 
     /// @brief 버퍼지원
@@ -173,7 +168,7 @@ namespace BOSS
         /// @return 할당된 버퍼주소
         /// @see AllocBySample, Realloc, Free
         static buffer Alloc(BOSS_DBG_PRM sint32 count)
-        {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<uint08>::Summon(EnumToType<datatype_pod_canmemcpy>()), false);}
+        {return BufferImpl::Alloc(BOSS_DBG_ARG count, count, BufferSpecPool<uint08>::Summon(EnumToType<datatype_pod_canmemcpy>()), false);}
 
         /// @brief 객체할당
         /// @param count : 배열수량
@@ -182,7 +177,7 @@ namespace BOSS
         /// @see AllocBySample, Realloc, Free
         template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy>
         static buffer Alloc(BOSS_DBG_PRM sint32 count)
-        {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), false);}
+        {return BufferImpl::Alloc(BOSS_DBG_ARG count, count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), false);}
 
         /// @brief 생성자호출 회피식 객체할당
         /// @param count : 배열수량
@@ -191,14 +186,15 @@ namespace BOSS
         /// @see AllocBySample, Realloc, Free
         template<typename TYPE, datatype DATATYPE = datatype_class_nomemcpy>
         static buffer AllocNoConstructorOnce(BOSS_DBG_PRM sint32 count)
-        {return BufferImpl::Alloc(BOSS_DBG_ARG count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), true);}
+        {return BufferImpl::Alloc(BOSS_DBG_ARG count, count, BufferSpecPool<TYPE>::Summon(EnumToType<DATATYPE>()), true);}
 
         /// @brief 참고할당(샘플과 동일한 타입으로)
         /// @param count : 배열수량
+        /// @param max : 버퍼수량
         /// @param sample : 참고되는 버퍼주소
         /// @return 할당된 버퍼주소
         /// @see Alloc, Realloc, Free
-        static buffer AllocBySample(BOSS_DBG_PRM sint32 count, const buffer sample);
+        static buffer AllocBySample(BOSS_DBG_PRM sint32 count, sint32 max, const buffer sample);
 
         /// @brief 재할당(배열수량이 변경되었을 때만)
         /// @param buf : 버퍼주소
@@ -272,7 +268,7 @@ namespace BOSS
         /// @return 해당 객체
         template<typename TYPE = uint08>
         static TYPE& At(const buffer buf, sint32 index)
-        {return *((TYPE*) BufferImpl::At(buf, index, BufferSpecPool<TYPE>::Naming()));}
+        {return *((TYPE*) BufferImpl::At(buf, index));}
 
         /// @brief 개별초기화
         /// @param buf : 버퍼주소
