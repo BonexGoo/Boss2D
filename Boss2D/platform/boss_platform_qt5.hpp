@@ -4164,7 +4164,7 @@
             else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
             connect(Peer, SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(errorPeer(QAbstractSocket::SocketError)));
-            Platform::BroadcastNotify("packettype_entrance", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
         }
 
         void readyPeer()
@@ -4179,7 +4179,7 @@
                 Peer->read((char*) NewPacket->Buffer, PacketSize);
                 PacketQueue.Enqueue(NewPacket);
             }
-            Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
         void readyPeerWithSizeField()
@@ -4214,7 +4214,7 @@
                     else break;
                 }
             }
-            Platform::BroadcastNotify("packettype_message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
         void errorPeer(QAbstractSocket::SocketError error)
@@ -4226,12 +4226,12 @@
             if(error == QAbstractSocket::RemoteHostClosedError)
             {
                 PacketQueue.Enqueue(new TCPPacket(packettype_leaved, Data->ID, 0));
-                Platform::BroadcastNotify("packettype_leaved", nullptr, NT_SocketReceive);
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
             }
             else
             {
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, Data->ID, 0));
-                Platform::BroadcastNotify("packettype_kicked", nullptr, NT_SocketReceive);
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
             }
         }
 
@@ -4286,7 +4286,6 @@
                 Peer->disconnectFromHost();
                 Peers.Remove(peerid);
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, peerid, 0));
-                Platform::BroadcastNotify("packettype_kicked", nullptr, NT_SocketReceive);
                 return true;
             }
             return false;
@@ -4314,6 +4313,184 @@
             }
             return false;
         }
+    };
+
+    class SocketBox : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        SocketBox()
+        {
+            m_socket = nullptr;
+            m_udp = false;
+            m_udpip.clear();
+            m_udpport = 0;
+        }
+        virtual ~SocketBox()
+        {
+            delete m_socket;
+        }
+
+    public:
+        void Init(bool udp)
+        {
+            m_socket = (udp)? (QAbstractSocket*) new QUdpSocket() : (QAbstractSocket*) new QTcpSocket();
+            connect(m_socket, &QAbstractSocket::connected, this, &SocketBox::OnConnected);
+            connect(m_socket, &QAbstractSocket::disconnected, this, &SocketBox::OnDisconnected);
+            connect(m_socket, &QAbstractSocket::readyRead, this, &SocketBox::OnReadyRead);
+            m_udp = udp;
+        }
+        bool CheckState(chars name)
+        {
+            if(!m_udp)
+            {
+                if(!m_socket->isValid())
+                {
+                    BOSS_TRACE("%s(-1) - Socket is broken", name);
+                    return false;
+                }
+                if(m_socket->state() == QAbstractSocket::UnconnectedState)
+                {
+                    BOSS_TRACE("%s(-1) - Socket is unconnected", name);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    private slots:
+        void OnConnected()
+        {
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive);
+        }
+        void OnDisconnected()
+        {
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive);
+        }
+        void OnReadyRead()
+        {
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+        }
+
+    public:
+        QAbstractSocket* m_socket;
+        bool m_udp;
+        QHostAddress m_udpip;
+        quint16 m_udpport;
+
+    private:
+        class STClass
+        {
+        public:
+            STClass()
+            {
+                static uint64 LastThreadID = 0;
+                m_lastId = (++LastThreadID) << 32;
+            }
+            ~STClass() {}
+        public:
+            Map<SocketBox> m_map;
+            ublock m_lastId;
+        };
+        static inline STClass& ST() {return *BOSS_STORAGE_SYS(STClass);}
+
+    public:
+        static void Create(id_socket& result, bool udp)
+        {
+            STClass& CurClass = ST();
+            CurClass.m_map[++CurClass.m_lastId].Init(udp);
+            result = (id_socket) AnyTypeToPtr(CurClass.m_lastId);
+        }
+        static SocketBox* Access(id_socket id)
+        {
+            if(id == nullptr) return nullptr;
+            BOSS_ASSERT("타 스레드에서 생성된 소켓입니다", (ST().m_lastId >> 32) == (((ublock) id) >> 32));
+            return ST().m_map.Access(PtrToUint64(id));
+        }
+        static void Remove(id_socket id)
+        {
+            ST().m_map.Remove(PtrToUint64(id));
+        }
+    };
+
+    class Hostent
+    {
+    public:
+        Hostent() :
+            h_addrtype(2), // AF_INET
+            h_length(4) // IPv4
+        {
+            h_name = nullptr;
+            h_aliases = nullptr;
+            h_addr_list = nullptr;
+        }
+
+        ~Hostent()
+        {
+            Clear();
+        }
+
+    public:
+        void Clear()
+        {
+            delete[] h_name;
+            if(h_aliases)
+            for(chars* ptr_aliases = h_aliases; *ptr_aliases; ++ptr_aliases)
+                delete[] *ptr_aliases;
+            delete[] h_aliases;
+            if(h_addr_list)
+            for(bytes* ptr_addr_list = h_addr_list; *ptr_addr_list; ++ptr_addr_list)
+                delete[] *ptr_addr_list;
+            delete[] h_addr_list;
+            h_name = nullptr;
+            h_aliases = nullptr;
+            h_addr_list = nullptr;
+        }
+
+    public:
+        chars h_name;
+        chars* h_aliases;
+        const sint16 h_addrtype;
+        const sint16 h_length;
+        bytes* h_addr_list;
+    };
+
+    class Servent
+    {
+    public:
+        Servent()
+        {
+            s_name = nullptr;
+            s_aliases = nullptr;
+            s_port = 0;
+            s_proto = nullptr;
+        }
+
+        ~Servent()
+        {
+            Clear();
+        }
+
+    public:
+        void Clear()
+        {
+            delete[] s_name;
+            for(chars* ptr_aliases = s_aliases; ptr_aliases; ++ptr_aliases)
+                delete[] *ptr_aliases;
+            delete[] s_aliases;
+            delete[] s_proto;
+            s_name = nullptr;
+            s_aliases = nullptr;
+            s_port = 0;
+            s_proto = nullptr;
+        }
+
+    public:
+        chars s_name;
+        chars* s_aliases;
+        sint16 s_port;
+        chars s_proto;
     };
 
     class PipePrivate : public QObject
