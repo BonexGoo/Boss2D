@@ -634,7 +634,9 @@
 
         id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            if(!g_data || !g_window)
+                return nullptr;
+
             if(needout)
             {
                 id_cloned_share Result;
@@ -647,7 +649,9 @@
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            if(!g_data || !g_window)
+                return;
+
             auto Views = View::SearchBegin(viewclass);
             {
                 struct Payload {chars topic; id_share in; NotifyType type;} Param = {topic, in, type};
@@ -662,8 +666,10 @@
 
         void Platform::PassAllViews(PassCB cb, payload data)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             BOSS_ASSERT("콜백함수가 nullptr입니다", cb);
+            if(!g_data || !g_window)
+                return;
+
             auto Views = View::SearchBegin(nullptr);
             {
                 struct Payload {PassCB cb; payload data; bool canceled;} Param = {cb, data, false};
@@ -679,7 +685,9 @@
 
         void Platform::UpdateAllViews()
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            if(!g_data || !g_window)
+                return;
+
             auto Views = View::SearchBegin(nullptr);
             {
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
