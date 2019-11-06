@@ -4346,15 +4346,9 @@
             if(!m_udp)
             {
                 if(!m_socket->isValid())
-                {
-                    BOSS_TRACE("%s(-1) - Socket is broken", name);
                     return false;
-                }
                 if(m_socket->state() == QAbstractSocket::UnconnectedState)
-                {
-                    BOSS_TRACE("%s(-1) - Socket is unconnected", name);
                     return false;
-                }
             }
             return true;
         }

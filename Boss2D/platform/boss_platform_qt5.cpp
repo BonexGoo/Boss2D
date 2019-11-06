@@ -634,6 +634,7 @@
 
         id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
+            BOSS_TRACE("SendNotify(%s)", topic);
             if(!g_data || !g_window)
                 return nullptr;
 
@@ -649,6 +650,7 @@
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
         {
+            BOSS_TRACE("BroadcastNotify(%s)", topic);
             if(!g_data || !g_window)
                 return;
 

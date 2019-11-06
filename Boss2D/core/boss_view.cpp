@@ -8,9 +8,10 @@ namespace BOSS
     static class ViewMutex
     {
     public:
-        ViewMutex() {mMutex = Mutex::Open();}
+        ViewMutex() {mMutex = Mutex::Open(); mLockCount = 0;}
         ~ViewMutex() {Mutex::Close(mMutex);}
         id_mutex mMutex;
+        sint32 mLockCount;
     } gViewMutex;
     typedef Map<h_view> ViewMap;
     static ViewMap gAllViews;
@@ -59,7 +60,8 @@ namespace BOSS
 
     const Map<h_view>* View::SearchBegin(chars viewclass)
     {
-        Mutex::Lock(gViewMutex.mMutex);
+        if(gViewMutex.mLockCount++ == 0)
+            Mutex::Lock(gViewMutex.mMutex);
         if(viewclass)
             return &gViewsByName(viewclass);
         return &gAllViews;
@@ -67,7 +69,8 @@ namespace BOSS
 
     void View::SearchEnd()
     {
-        Mutex::Unlock(gViewMutex.mMutex);
+        if(--gViewMutex.mLockCount == 0)
+            Mutex::Unlock(gViewMutex.mMutex);
     }
 
     h_view View::SetView(h_view view)
