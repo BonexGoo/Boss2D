@@ -1577,7 +1577,7 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(texture == 0) return;
+                if(texture == nullptr) return;
 
                 OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
                     texture, Rect(tx, ty, tx + tw, ty + th), color, ori, antialiasing);
@@ -1933,6 +1933,18 @@
             #endif
         }
 
+        void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point ip[3], float x, float y, const Point p[3], Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            BOSS_ASSERT("image파라미터가 nullptr입니다", image);
+            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
+                if(image == nullptr) return;
+
+                OpenGLPrivate::ST().DrawPixmap(fbo, x, y, p, *((const PixmapPrivate*) image), ip, color);
+            #endif
+        }
+
         static Qt::Alignment _ExchangeAlignment(UIFontAlign align)
         {
             Qt::Alignment Result = Qt::AlignCenter;
@@ -2206,23 +2218,25 @@
             void Render(sint32 x, sint32 y, wchars string, sint32 count, ColorPrivate color, float justifyrate)
             {
                 BOSS_ASSERT("count에는 음수값이 올 수 없습니다", 0 <= count);
-                const Color CurColor(color.red(), color.green(), color.blue(), color.alpha());
-                Platform::Graphics::BeginGL();
-                for(sint32 i = 0; i < count; ++i)
+                if(Platform::Graphics::BeginGL())
                 {
-                    const uint32 CurCode = (uint32) string[i];
-                    if(CurCode == L'\n') continue;
-
-                    auto CurCodeData = mRefGlyph->GetCode(CurCode);
-                    if(CurCodeData)
+                    const Color CurColor(color.red(), color.green(), color.blue(), color.alpha());
+                    for(sint32 i = 0; i < count; ++i)
                     {
-                        Platform::Graphics::DrawTextureToFBO((id_texture_read) CurCodeData->mRefTexture,
-                            CurCodeData->mUVPos.x, CurCodeData->mUVPos.y, CurCodeData->mUVSize.w, CurCodeData->mUVSize.h, orientationtype_normal0,
-                            false, x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
-                        x += CurCodeData->mSavedWidth * justifyrate;
+                        const uint32 CurCode = (uint32) string[i];
+                        if(CurCode == L'\n') continue;
+
+                        auto CurCodeData = mRefGlyph->GetCode(CurCode);
+                        if(CurCodeData)
+                        {
+                            Platform::Graphics::DrawTextureToFBO((id_texture_read) CurCodeData->mRefTexture,
+                                CurCodeData->mUVPos.x, CurCodeData->mUVPos.y, CurCodeData->mUVSize.w, CurCodeData->mUVSize.h, orientationtype_normal0,
+                                false, x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
+                            x += CurCodeData->mSavedWidth * justifyrate;
+                        }
                     }
+                    Platform::Graphics::EndGL();
                 }
-                Platform::Graphics::EndGL();
             }
             sint32 GetLengthOf(sint32 clipping_width, wchars string, sint32 count)
             {
@@ -2476,23 +2490,28 @@
             return CanvasClass::get()->painter().fontMetrics().ascent();
         }
 
-        void Platform::Graphics::BeginGL()
+        bool Platform::Graphics::BeginGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
 
-            g_isBeginGL = true;
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                SurfaceClass::LockForGL();
-                CanvasClass::get()->painter().beginNativePainting();
+                if(QOpenGLContext::currentContext())
+                {
+                    g_isBeginGL = true;
+                    SurfaceClass::LockForGL();
+                    CanvasClass::get()->painter().beginNativePainting();
+                    return true;
+                }
             #endif
+            return false;
         }
 
         void Platform::Graphics::EndGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
 
-            g_isBeginGL = false;
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
+                g_isBeginGL = false;
                 CanvasClass::get()->painter().endNativePainting();
                 SurfaceClass::UnlockForGL();
             #endif

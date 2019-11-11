@@ -308,6 +308,7 @@ namespace BOSS
         void polyline(Points p, float thick) const;
         void polybezier(Points p, float thick, bool showfirst, bool showlast) const;
         void ringbezier(Points p, float thick) const;
+        void polyimage(const Point p[3], const Image& image, const Point ip[3]) const;
         haschild icon(const Image& image, UIAlign align, bool visible = true);
         haschild icon(float x, float y, const Image& image, UIAlign align, bool visible = true); // 중점식
         haschild iconNative(id_image_read image, UIAlign align);

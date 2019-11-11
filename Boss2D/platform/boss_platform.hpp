@@ -771,6 +771,17 @@ public:
         /// @param h : 세로길이(px)
         static void DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h);
 
+
+        /// @brief 지정한 FBO핸들로 폴리곤영역식 이미지 출력
+        /// @param image : 출력할 이미지
+        /// @param ip : 이미지의 꼭지점들(px)
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param p : 꼭지점들(px)
+        /// @param color : 컬러링값
+        /// @param fbo : 출력될 프레임버퍼의 FBO핸들(화면출력시 0)
+        static void DrawPolyImageToFBO(id_image_read image, const Point ip[3], float x, float y, const Point p[3], Color color = Color::White, uint32 fbo = 0);
+
         /// @brief 문자열 출력
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)
@@ -840,7 +851,7 @@ public:
         static sint32 GetStringAscent();
 
         /// @brief GL드로잉 시작
-        static void BeginGL();
+        static bool BeginGL();
 
         /// @brief GL드로잉 끝
         static void EndGL();

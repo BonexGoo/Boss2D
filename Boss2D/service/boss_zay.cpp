@@ -446,6 +446,27 @@ namespace BOSS
         Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick);
     }
 
+    void ZayPanel::polyimage(const Point p[3], const Image& image, const Point ip[3]) const
+    {
+        const Clip& LastClip = m_stack_clip[-1];
+        const Color& LastColor = m_stack_color[-1];
+        if(Platform::Graphics::BeginGL())
+        {
+            Platform::Graphics::DrawPolyImageToFBO(image.GetBuildImage(LastColor), ip, LastClip.l, LastClip.t, p);
+            Platform::Graphics::EndGL();
+        }
+        else
+        {
+            Points Dots;
+            Dots.AtAdding() = p[0];
+            Dots.AtAdding() = p[1];
+            Dots.AtAdding() = p[2];
+            Platform::Graphics::SetColor(255, 0, 0, 128);
+            polygon(Dots);
+            Platform::Graphics::SetColor(LastColor.r, LastColor.g, LastColor.b, LastColor.a);
+        }
+    }
+
     static inline sint32 GetXAlignCode(UIAlign align)
     {
         sint32 XAlignCode = 0;

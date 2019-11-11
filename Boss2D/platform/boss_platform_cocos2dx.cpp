@@ -1084,6 +1084,13 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point ip[3], float x, float y, const Point p[3], Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         static cocos2d::TextHAlignment _ExchangeHAlignment(UIFontAlign align)
         {
             cocos2d::TextHAlignment Result = cocos2d::TextHAlignment::CENTER;
@@ -1224,11 +1231,12 @@
             return 0;
         }
 
-        void Platform::Graphics::BeginGL()
+        bool Platform::Graphics::BeginGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
 
             BOSS_ASSERT("Further development is needed.", false);
+            return false;
         }
 
         void Platform::Graphics::EndGL()
