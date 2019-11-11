@@ -3123,7 +3123,8 @@
                     const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
                 #endif
 
-                GLuint CurTexture = QGLContext(QGLFormat::defaultFormat()).bindTexture(pixmap);
+                auto CurContext = QGLContext::fromOpenGLContext(ctx);
+                GLuint CurTexture = CurContext->bindTexture(pixmap);
                 f->glActiveTexture(GL_TEXTURE0);
                 f->glBindTexture(GL_TEXTURE_2D, CurTexture);
 
