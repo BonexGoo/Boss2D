@@ -12,18 +12,18 @@ bool PlatformInit()
     Platform::SetWindowName("Boss2D Tools");
     Platform::SetWindowView("sourcetoolView"); //("toolsView");
 
-    const String InfoString = String::FromAsset("windowinfo.json");
+    String InfoString = String::FromAsset("windowinfo.json");
     if(0 < InfoString.Length())
     {
-        const Context Info(ST_Json, SO_OnlyReference, InfoString, InfoString.Length());
+        Context Info(ST_Json, SO_OnlyReference, InfoString, InfoString.Length());
         Platform::SetWindowRect(
             Info("x").GetInt(0), Info("y").GetInt(0),
             Info("w").GetInt(640), Info("h").GetInt(480));
     }
     else Platform::SetWindowSize(640, 480);
 
-    const String AtlasInfoString = String::FromAsset("atlasinfo.json");
-    const Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
+    String AtlasInfoString = String::FromAsset("atlasinfo.json");
+    Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
     R::AddAtlas("ui_atlaskey.png", "atlas.png", AtlasInfo);
     if(R::IsAtlasUpdated())
@@ -49,7 +49,7 @@ bool PlatformInit()
 
 void PlatformQuit()
 {
-    const rect128 WindowRect = Platform::GetWindowRect(true);
+    rect128 WindowRect = Platform::GetWindowRect(true);
 
     Context Info;
     Info.At("x").Set(String::FromInteger(WindowRect.l));
