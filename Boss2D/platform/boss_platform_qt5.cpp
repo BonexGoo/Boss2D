@@ -1933,7 +1933,7 @@
             #endif
         }
 
-        void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point ip[3], float x, float y, const Point p[3], Color color, uint32 fbo)
+        void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ip)[3], float x, float y, const Point (&p)[3], Color color, uint32 fbo)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);

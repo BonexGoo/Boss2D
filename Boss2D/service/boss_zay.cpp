@@ -446,7 +446,7 @@ namespace BOSS
         Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick);
     }
 
-    void ZayPanel::polyimage(const Point p[3], const Image& image, const Point ip[3]) const
+    void ZayPanel::polyimage(const Point (&p)[3], const Image& image, const Point (&ip)[3]) const
     {
         const Clip& LastClip = m_stack_clip[-1];
         const Color& LastColor = m_stack_color[-1];
