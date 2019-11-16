@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <service/boss_zay.hpp>
+#include <service/boss_zaywidget.hpp>
 
 class helloworldData : public ZayObject
 {
@@ -8,5 +9,6 @@ public:
     ~helloworldData();
 
 public:
-    String mMessage;
+    // 제이에디터 위젯
+    ZayWidget mWidget;
 };

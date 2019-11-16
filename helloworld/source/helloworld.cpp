@@ -7,6 +7,12 @@ ZAY_DECLARE_VIEW_CLASS("helloworldView", helloworldData)
 
 ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_share* out)
 {
+    if(type == CT_Tick)
+    {
+        // 제이위젯에 틱전달
+        if(m->mWidget.TickOnce())
+            m->invalidate();
+    }
 }
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -19,19 +25,10 @@ ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
 {
-    ZAY_RGB(panel, 255, 255, 255)
-        panel.fill();
+    // 제이에디터식 랜더링
+    m->mWidget.Render(panel);
 
-    ZAY_RGBA(panel, 160, 128, 128, 16)
-    {
-        panel.icon(R("mark_img"), UIA_CenterMiddle);
-
-        ZAY_RGBA(panel, 64, 64, 64, 255)
-        ZAY_FONT(panel, 1.5, "arial black")
-        ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() / 3)
-            panel.text(m->mMessage, UIFA_CenterMiddle, UIFE_Right);
-    }
-
+    // 소스코드식 랜더링
     ZAY_LTRB(panel, 0, panel.h() * 2 / 3, panel.w(), panel.h())
     ZAY_INNER_UI(panel, 30, "exit",
         ZAY_GESTURE_T(type)
@@ -59,7 +56,16 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 helloworldData::helloworldData()
 {
-    mMessage = "Hello World!";
+    // 제이위젯 리소스로드
+    // 앱실행시 제이에디터를 켜면 실시간연동 GUI작업이 가능
+    // 제이에디터에서 제이박스식으로 GUI를 작업하며 F5를 누르세요
+    mWidget.Init("helloworld", nullptr, [](chars name)->const Image* {return &((const Image&) R(name));});
+    mWidget.Reload("widget/helloworld.json");
+
+    // 제이위젯에 문서를 전달
+    // 제이에디터에서도 표현됩니다
+    ZayWidgetDOM::Add("message", "\"Hello World!\"");
+    ZayWidgetDOM::AddFlush();
 }
 
 helloworldData::~helloworldData()

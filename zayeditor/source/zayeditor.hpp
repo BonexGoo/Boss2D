@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <service/boss_zay.hpp>
 #include <service/boss_zayson.hpp>
+#include <service/boss_zaywidget.hpp>
 #include <element/boss_tween.hpp>
-#include "zaywidget.hpp"
 #include "zaybox.hpp"
 
 class ZEFakeZaySon : public ZaySonInterface
@@ -236,7 +236,7 @@ public:
     void RenderLogList(ZayPanel& panel);
 
 public:
-    ZEWidget::ResourceCB mResourceCB;
+    ZayWidget::ResourceCB mResourceCB;
     ZEFakeZaySon mZaySonAPI;
     ZEZayBoxMap mBoxMap;
     sint32 mDraggingHook;

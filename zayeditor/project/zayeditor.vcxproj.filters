@@ -36,9 +36,6 @@
     <ClInclude Include="..\source\zaybox.hpp">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\zaywidget.hpp">
-      <Filter>source</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\zayeditor.cpp">
@@ -51,9 +48,6 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\source\zaybox.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\zaywidget.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

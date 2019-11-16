@@ -724,8 +724,8 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     mEasySaveEffect.Reset(0);
 
     // 위젯 컴포넌트 추가
-    ZEWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
-    ZEWidget::BuildGlues(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
+    ZayWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
+    ZayWidget::BuildGlues(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
 
     // 분기문 컴포넌트 추가
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithOperation, "if → 만약", nullptr);

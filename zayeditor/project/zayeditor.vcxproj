@@ -29,13 +29,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\boss_config.h" />
-    <ClInclude Include="..\source\zaywidget.hpp" />
     <ClInclude Include="..\source\zaybox.hpp" />
     <ClInclude Include="..\source\zayeditor.hpp" />
     <ClInclude Include="..\source\resource.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\zaywidget.cpp" />
     <ClCompile Include="..\source\zaybox.cpp" />
     <ClCompile Include="..\source\zayeditor.cpp" />
     <ClCompile Include="..\source\main.cpp" />
