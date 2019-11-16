@@ -485,7 +485,7 @@ void ZEWidgetPipe::RunPipe()
         {
             Platform::Pipe::Close(mPipe);
             const uint32 RandomValue = Platform::Utility::Random();
-            PipeName = String::Format("GGGUI:%08X", RandomValue);
+            PipeName = String::Format("zayeditor:%08X", RandomValue);
             mPipe = Platform::Pipe::Open(PipeName);
         }
         while(!mPipe || !Platform::Pipe::IsServer(mPipe));

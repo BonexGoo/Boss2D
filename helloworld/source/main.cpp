@@ -6,7 +6,7 @@
 
 bool PlatformInit()
 {
-    Platform::InitForGL();
+    Platform::InitForMDI();
     Platform::SetViewCreator(ZayView::Creator);
 
     Platform::SetWindowName("Hello World");

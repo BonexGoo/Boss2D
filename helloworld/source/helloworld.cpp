@@ -9,9 +9,11 @@ ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_sha
 {
     if(type == CT_Tick)
     {
-        // 제이위젯에 틱전달
+        // 제이에디터에 틱전달
         if(m->mWidget.TickOnce())
             m->invalidate();
+        if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
+            m->invalidate(2);
     }
 }
 
@@ -56,10 +58,20 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 helloworldData::helloworldData()
 {
+    mUpdateMsec = 0;
+
     // 제이위젯 리소스로드
     // 앱실행시 제이에디터를 켜면 실시간연동 GUI작업이 가능
     // 제이에디터에서 제이박스식으로 GUI를 작업하며 F5를 누르세요
-    mWidget.Init("helloworld", nullptr, [](chars name)->const Image* {return &((const Image&) R(name));});
+    mWidget.Init("helloworld", nullptr, [](chars name)->const Image* {return &((const Image&) R(name));})
+        .AddGlue("update", ZAY_DECLARE_GLUE(params, this) // 업데이트를 위한 글루함수를 추가
+        {
+            if(params.ParamCount() == 1)
+            {
+                auto Msec = sint32(params.Param(0).ToFloat() * 1000);
+                mUpdateMsec = Platform::Utility::CurrentTimeMsec() + Msec;
+            }
+        });
     mWidget.Reload("widget/helloworld.json");
 
     // 제이위젯에 문서를 전달

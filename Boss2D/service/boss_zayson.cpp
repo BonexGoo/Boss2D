@@ -582,6 +582,16 @@ namespace BOSS
                 mRSolvers.At(0).Link(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
                 mRSolvers.At(0).Execute();
             }
+            else if(mRequestType == ZaySonInterface::RequestType::Function)
+            {
+                if(mGlueFunction)
+                {
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload();
+                    for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                        ParamCollector(mRSolvers[i].ExecuteOnly());
+                    // ParamCollector가 소멸되면서 Glue함수가 호출됨
+                }
+            }
         }
         void InitForClick(Map<String>& collector)
         {

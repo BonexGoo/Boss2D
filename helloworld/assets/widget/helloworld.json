@@ -1,4 +1,14 @@
 ﻿{
+	"oncreate":
+	[
+		{
+			"ani":"1.5"
+		},
+		{
+			"pos":"0 ~ 1 : ani"
+		},
+		"update(ani)"
+	],
 	"ui":
 	[
 		{
@@ -86,19 +96,19 @@
 							[
 								{
 									"comment":"화면상측을 지정",
-									"compid":"6",
-									"compname":"ltrb",
+									"compid":"8",
+									"compname":"xywh",
 									"compvalues":
 									[
 										[
-											"0",
+											"pW * pos - pW",
 											"0",
 											"pW",
 											"pH / 3"
 										]
 									],
-									"posx":"1228",
-									"posy":"428",
+									"posx":"1230",
+									"posy":"418",
 									"ui":
 									[
 										{
@@ -113,8 +123,8 @@
 													"right"
 												]
 											],
-											"posx":"1557",
-											"posy":"435"
+											"posx":"1556",
+											"posy":"429"
 										}
 									]
 								}

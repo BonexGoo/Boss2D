@@ -9,6 +9,8 @@ public:
     ~helloworldData();
 
 public:
+    // 업데이트요청
+    uint64 mUpdateMsec;
     // 제이에디터 위젯
     ZayWidget mWidget;
 };
