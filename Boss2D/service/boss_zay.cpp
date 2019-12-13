@@ -311,8 +311,6 @@ namespace BOSS
 
         m_clipped_width = m_width;
         m_clipped_height = m_height;
-        m_child_image = nullptr;
-        m_child_guide = Rect(0, 0, m_width, m_height);
         m_test_scissor = true;
 
         Platform::Graphics::SetScissor(0, 0, m_width, m_height);
@@ -332,8 +330,6 @@ namespace BOSS
             m_ref_touch_collector = nullptr;
             m_clipped_width = m_width;
             m_clipped_height = m_height;
-            m_child_image = nullptr;
-            m_child_guide = Rect(0, 0, m_width, m_height);
             m_test_scissor = false;
             return;
         }
@@ -367,8 +363,6 @@ namespace BOSS
 
             m_clipped_width = m_width;
             m_clipped_height = m_height;
-            m_child_image = nullptr;
-            m_child_guide = Rect(0, 0, m_width, m_height);
             m_test_scissor = true;
 
             Platform::Graphics::SetScissor(0, 0, m_width, m_height);
@@ -491,10 +485,10 @@ namespace BOSS
         return YAlignCode;
     }
 
-    sagolresult ZayPanel::icon(const Image& image, UIAlign align, bool visible)
+    ZayPanel::InsideBinder ZayPanel::icon(const Image& image, UIAlign align, bool visible)
     {
         if(!image.HasBitmap())
-            return sagolresult_null;
+            return InsideBinder(nullptr); // 안쪽영역없음
 
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -512,18 +506,14 @@ namespace BOSS
         }
 
         if(image.HasChild())
-        {
-            m_child_image = &image;
-            m_child_guide = Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight()));
-            return sagolresult_included;
-        }
-        return sagolresult_null;
+            return InsideBinder(&image, Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight())));
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::icon(float x, float y, const Image& image, UIAlign align, bool visible)
+    ZayPanel::InsideBinder ZayPanel::icon(float x, float y, const Image& image, UIAlign align, bool visible)
     {
         if(!image.HasBitmap())
-            return sagolresult_null;
+            return InsideBinder(nullptr); // 안쪽영역없음
 
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -541,15 +531,11 @@ namespace BOSS
         }
 
         if(image.HasChild())
-        {
-            m_child_image = &image;
-            m_child_guide = Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight()));
-            return sagolresult_included;
-        }
-        return sagolresult_null;
+            return InsideBinder(&image, Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight())));
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::iconNative(id_image_read image, UIAlign align)
+    ZayPanel::InsideBinder ZayPanel::iconNative(id_image_read image, UIAlign align)
     {
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -561,10 +547,10 @@ namespace BOSS
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
-        return sagolresult_null;
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::iconNative(float x, float y, id_image_read image, UIAlign align)
+    ZayPanel::InsideBinder ZayPanel::iconNative(float x, float y, id_image_read image, UIAlign align)
     {
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -576,13 +562,13 @@ namespace BOSS
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
-        return sagolresult_null;
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::stretch(const Image& image, Image::Build build, UIStretchForm form, bool visible)
+    ZayPanel::InsideBinder ZayPanel::stretch(const Image& image, Image::Build build, UIStretchForm form, bool visible)
     {
         if(!image.HasBitmap())
-            return sagolresult_null;
+            return InsideBinder(nullptr); // 안쪽영역없음
 
         Clip LastClip = m_stack_clip[-1];
         const sint32 ImageWidth = image.GetWidth();
@@ -631,15 +617,11 @@ namespace BOSS
         }
 
         if(image.HasChild())
-        {
-            m_child_image = &image;
-            m_child_guide = Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b);
-            return sagolresult_included;
-        }
-        return sagolresult_null;
+            return InsideBinder(&image, Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b));
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::stretchNative(id_image_read image, UIStretchForm form) const
+    ZayPanel::InsideBinder ZayPanel::stretchNative(id_image_read image, UIStretchForm form) const
     {
         Clip LastClip = m_stack_clip[-1];
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
@@ -668,13 +650,13 @@ namespace BOSS
         const sint32 DstHeight = (sint32) (ImageHeight * YRate + 0.5);
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l, LastClip.t, DstWidth, DstHeight);
-        return sagolresult_null;
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    sagolresult ZayPanel::ninepatch(const Image& image, bool visible)
+    ZayPanel::InsideBinder ZayPanel::ninepatch(const Image& image, bool visible)
     {
         if(!image.HasBitmap())
-            return sagolresult_null;
+            return InsideBinder(nullptr); // 안쪽영역없음
 
         const Clip& LastClip = m_stack_clip[-1];
         if(visible && image.UpdatePatchBy(LastClip.Width(), LastClip.Height()))
@@ -693,12 +675,8 @@ namespace BOSS
         }
 
         if(image.HasChild())
-        {
-            m_child_image = &image;
-            m_child_guide = Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b);
-            return sagolresult_included;
-        }
-        return sagolresult_null;
+            return InsideBinder(&image, Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b));
+        return InsideBinder(nullptr); // 안쪽영역없음
     }
 
     void ZayPanel::pattern(const Image& image, UIAlign align, bool reversed_xorder, bool reversed_yorder) const
@@ -960,11 +938,11 @@ namespace BOSS
         return _push_clip_ui(r.l, r.t, r.r, r.b, doScissor, uiname, cb, hoverpass);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_clip_by_sagol(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor)
+    ZayPanel::StackBinder ZayPanel::_push_clip_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor)
     {
-        Rect CalcedRect;
-        if(!m_child_image) CalcedRect = m_child_guide;
-        else CalcedRect = m_child_image->CalcChildRect(m_child_guide, ix, iy, xcount, ycount);
+        if(!inside)
+            return StackBinder(this); // 하위진입불가
+        const Rect CalcedRect = inside.flush(ix, iy, xcount, ycount);
 
         const Clip& LastClip = m_stack_clip[-1];
         const float l = CalcedRect.l - LastClip.l;
@@ -974,9 +952,9 @@ namespace BOSS
         return _push_clip(l, t, r, b, doScissor);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_clip_ui_by_sagol(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor, chars uiname, SubGestureCB cb, bool hoverpass)
+    ZayPanel::StackBinder ZayPanel::_push_clip_ui_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor, chars uiname, SubGestureCB cb, bool hoverpass)
     {
-        if(auto CurBinder = _push_clip_by_sagol(ix, iy, xcount, ycount, doScissor))
+        if(auto CurBinder = _push_clip_by_inside(inside, ix, iy, xcount, ycount, doScissor))
         {
             _add_ui(uiname, cb, -1, hoverpass);
             return StackBinder(ToReference(CurBinder));

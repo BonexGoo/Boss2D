@@ -104,7 +104,6 @@ namespace BOSS
         datatype_class_canmemcpy,
         datatype_pod_canmemcpy,
         datatype_pod_canmemcpy_zeroset};
-    enum sagolresult:bool {sagolresult_null = false, sagolresult_included = true};
     enum roottype:uint08 {roottype_null = 0,
         roottype_assets, roottype_assetsrem,
         roottype_assets_syspath0, roottype_assetsrem_syspath0,

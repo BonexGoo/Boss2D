@@ -12,7 +12,7 @@
 #include <element/boss_vector.hpp>
 #include <functional>
 
-// 옵션스택
+// 옵션스택 - 영역
 #define ZAY_LTRB(PANEL, L, T, R, B) \
     if(auto _ = (PANEL)._push_clip(L, T, R, B, false))
 #define ZAY_LTRB_UI(PANEL, L, T, R, B, ...) \
@@ -67,36 +67,42 @@
 #define ZAY_MOVE_UI_SCISSOR(PANEL, X, Y, ...) \
     if(auto _ = (PANEL)._push_clip_ui(X, Y, (PANEL).w() + (X), (PANEL).h() + (Y), true, __VA_ARGS__))
 
-#define ZAY_SAGOL(PANEL) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(0, 0, 0xFFFF, 0xFFFF, false))
-#define ZAY_SAGOL_UI(PANEL, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(0, 0, 0xFFFF, 0xFFFF, false, __VA_ARGS__))
-#define ZAY_SAGOL_SCISSOR(PANEL) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(0, 0, 0xFFFF, 0xFFFF, true))
-#define ZAY_SAGOL_UI_SCISSOR(PANEL, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(0, 0, 0xFFFF, 0xFFFF, true, __VA_ARGS__))
+// 옵션스택 - 인사이드
+#define ZAY_BIND_INSIDE(CODE) \
+    if(auto _inside_ = CODE)
 
-#define ZAY_SAGOL_AT(PANEL, IX, IY) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(IX, IY, 1, 1, false))
-#define ZAY_SAGOL_AT_UI(PANEL, IX, IY, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(IX, IY, 1, 1, false, __VA_ARGS__))
-#define ZAY_SAGOL_AT_SCISSOR(PANEL, IX, IY) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(IX, IY, 1, 1, true))
-#define ZAY_SAGOL_AT_UI_SCISSOR(PANEL, IX, IY, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(IX, IY, 1, 1, true, __VA_ARGS__))
+#define ZAY_INSIDE(PANEL) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, 0, 0, 0xFFFF, 0xFFFF, false))
+#define ZAY_INSIDE_UI(PANEL, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, 0, 0, 0xFFFF, 0xFFFF, false, __VA_ARGS__))
+#define ZAY_INSIDE_SCISSOR(PANEL) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, 0, 0, 0xFFFF, 0xFFFF, true))
+#define ZAY_INSIDE_UI_SCISSOR(PANEL, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, 0, 0, 0xFFFF, 0xFFFF, true, __VA_ARGS__))
 
-#define ZAY_SAGOL_SECTION(PANEL, IX, IY, XC, YC) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(IX, IY, XC, YC, false))
-#define ZAY_SAGOL_SECTION_UI(PANEL, IX, IY, XC, YC, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(IX, IY, XC, YC, false, __VA_ARGS__))
-#define ZAY_SAGOL_SECTION_SCISSOR(PANEL, IX, IY, XC, YC) \
-    if(auto _ = (PANEL)._push_clip_by_sagol(IX, IY, XC, YC, true))
-#define ZAY_SAGOL_SECTION_UI_SCISSOR(PANEL, IX, IY, XC, YC, ...) \
-    if(auto _ = (PANEL)._push_clip_ui_by_sagol(IX, IY, XC, YC, true, __VA_ARGS__))
+#define ZAY_INSIDE_AT(PANEL, IX, IY) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, IX, IY, 1, 1, false))
+#define ZAY_INSIDE_AT_UI(PANEL, IX, IY, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, IX, IY, 1, 1, false, __VA_ARGS__))
+#define ZAY_INSIDE_AT_SCISSOR(PANEL, IX, IY) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, IX, IY, 1, 1, true))
+#define ZAY_INSIDE_AT_UI_SCISSOR(PANEL, IX, IY, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, IX, IY, 1, 1, true, __VA_ARGS__))
 
+#define ZAY_INSIDE_SECTION(PANEL, IX, IY, XC, YC) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, IX, IY, XC, YC, false))
+#define ZAY_INSIDE_SECTION_UI(PANEL, IX, IY, XC, YC, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, IX, IY, XC, YC, false, __VA_ARGS__))
+#define ZAY_INSIDE_SECTION_SCISSOR(PANEL, IX, IY, XC, YC) \
+    if(auto _ = (PANEL)._push_clip_by_inside(_inside_, IX, IY, XC, YC, true))
+#define ZAY_INSIDE_SECTION_UI_SCISSOR(PANEL, IX, IY, XC, YC, ...) \
+    if(auto _ = (PANEL)._push_clip_ui_by_inside(_inside_, IX, IY, XC, YC, true, __VA_ARGS__))
+
+// 옵션스택 - 스크롤
 #define ZAY_SCROLL_UI(PANEL, CW, CH, ...) \
     if(auto _ = (PANEL)._push_scroll_ui(CW, CH, __VA_ARGS__))
 
+// 옵션스택 - 색상
 #define ZAY_RGB(PANEL, R, G, B) \
     if(auto _ = (PANEL)._push_color(R, G, B, 0xFF))
 #define ZAY_RGB_IF(PANEL, R, G, B, QUERY) \
@@ -112,6 +118,7 @@
 #define ZAY_COLOR_CLEAR(PANEL) \
     if(auto _ = (PANEL)._push_color_clear())
 
+// 옵션스택 - 기타
 #define ZAY_MASK(PANEL, MASK) \
     if(auto _ = (PANEL)._push_mask(MASK))
 #define ZAY_FONT(PANEL, ...) \
@@ -298,6 +305,32 @@ namespace BOSS
         ~ZayPanel();
 
     public:
+        class InsideBinder
+        {
+            BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(InsideBinder, mRefImage(rhs.mRefImage), mGuideRect(rhs.mGuideRect))
+            friend class ZayPanel;
+        private:
+            InsideBinder(const Image* image, Rect rect = Rect()) : mRefImage(image), mGuideRect(rect) {}
+        public:
+            ~InsideBinder() {}
+        public:
+            InsideBinder(InsideBinder&& rhs) : mRefImage(ToReference(rhs.mRefImage)), mGuideRect(ToReference(rhs.mGuideRect)) {}
+            InsideBinder& operator=(InsideBinder&& rhs)
+            {
+                mRefImage = ToReference(rhs.mRefImage);
+                mGuideRect = ToReference(rhs.mGuideRect);
+                return *this;
+            }
+            operator bool() const {return (mRefImage != nullptr);}
+        public:
+            Rect flush(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
+            {return mRefImage->CalcChildRect(mGuideRect, ix, iy, xcount, ycount);}
+        private:
+            const Image* mRefImage;
+            Rect mGuideRect;
+        };
+
+    public:
         void erase() const;
         void fill() const;
         void rect(float thick) const;
@@ -309,13 +342,13 @@ namespace BOSS
         void polybezier(Points p, float thick, bool showfirst, bool showlast) const;
         void ringbezier(Points p, float thick) const;
         void polyimage(const Point (&p)[3], const Image& image, const Point (&ip)[3]) const;
-        sagolresult icon(const Image& image, UIAlign align, bool visible = true);
-        sagolresult icon(float x, float y, const Image& image, UIAlign align, bool visible = true); // 중점식
-        sagolresult iconNative(id_image_read image, UIAlign align);
-        sagolresult iconNative(float x, float y, id_image_read image, UIAlign align); // 중점식
-        sagolresult stretch(const Image& image, Image::Build build, UIStretchForm form = UISF_Strong, bool visible = true);
-        sagolresult stretchNative(id_image_read image, UIStretchForm form = UISF_Strong) const;
-        sagolresult ninepatch(const Image& image, bool visible = true);
+        InsideBinder icon(const Image& image, UIAlign align, bool visible = true);
+        InsideBinder icon(float x, float y, const Image& image, UIAlign align, bool visible = true); // 중점식
+        InsideBinder iconNative(id_image_read image, UIAlign align);
+        InsideBinder iconNative(float x, float y, id_image_read image, UIAlign align); // 중점식
+        InsideBinder stretch(const Image& image, Image::Build build, UIStretchForm form = UISF_Strong, bool visible = true);
+        InsideBinder stretchNative(id_image_read image, UIStretchForm form = UISF_Strong) const;
+        InsideBinder ninepatch(const Image& image, bool visible = true);
         void pattern(const Image& image, UIAlign align, bool reversed_xorder = false, bool reversed_yorder = false) const;
         bool text(chars string, UIFontAlign align = UIFA_CenterMiddle, UIFontElide elide = UIFE_None) const;
         bool text(chars string, sint32 count, UIFontAlign align = UIFA_CenterMiddle, UIFontElide elide = UIFE_None) const;
@@ -377,8 +410,8 @@ namespace BOSS
         StackBinder _push_clip_ui(float l, float t, float r, float b, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
         StackBinder _push_clip_by_rect(const Rect& r, bool doScissor);
         StackBinder _push_clip_ui_by_rect(const Rect& r, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
-        StackBinder _push_clip_by_sagol(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor);
-        StackBinder _push_clip_ui_by_sagol(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
+        StackBinder _push_clip_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor);
+        StackBinder _push_clip_ui_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
         StackBinder _push_scroll_ui(float contentw, float contenth, chars uiname, SubGestureCB cb = nullptr, sint32 sensitive = 0, sint32 senseborder = 0, bool loop = false, float loopw = 0, float looph = 0);
         StackBinder _push_color(sint32 r, sint32 g, sint32 b, sint32 a);
         StackBinder _push_color(const Color& color);
@@ -426,8 +459,6 @@ namespace BOSS
     protected:
         float m_clipped_width;
         float m_clipped_height;
-        const Image* m_child_image;
-        Rect m_child_guide;
         bool m_test_scissor;
     };
 

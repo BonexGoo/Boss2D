@@ -44,9 +44,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
         ZAY_RGBA_IF(panel, 220, 220, 128, 128, IsFocused)
         {
-            if(panel.ninepatch(R("button_img")) == sagolresult_included)
+            ZAY_BIND_INSIDE(panel.ninepatch(R("button_img")))
             {
-                ZAY_SAGOL_SCISSOR(panel)
+                ZAY_INSIDE_SCISSOR(panel)
                 ZAY_FONT(panel, 3.0)
                 ZAY_RGBA(panel, 0, 0, 0, 64)
                 ZAY_RGBA_IF(panel, 255, 0, 0, 64, IsPressed)
