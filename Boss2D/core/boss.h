@@ -17,11 +17,12 @@
 */
 
 // About disable warning
-#pragma warning(disable:4117) // 미리 정의된 매크로를 정의 또는 정의 해제하려고 합니다
-#pragma warning(disable:4244) // type1에서 type2로 변환하면서 데이터가 손실될 수 있습니다
-#pragma warning(disable:4273) // dll 링크가 일치하지 않습니다
-#pragma warning(disable:4800) // true 또는 false로 bool 값을 강제하고 있습니다
-#pragma warning(disable:4996) // 컴파일러가 사용되지 않는 선언을 발견했습니다
+#pragma warning(disable:4117)  // 미리 정의된 매크로를 정의 또는 정의 해제하려고 합니다
+#pragma warning(disable:4244)  // type1에서 type2로 변환하면서 데이터가 손실될 수 있습니다
+#pragma warning(disable:4273)  // dll 링크가 일치하지 않습니다
+#pragma warning(disable:4800)  // true 또는 false로 bool 값을 강제하고 있습니다
+#pragma warning(disable:4996)  // 컴파일러가 사용되지 않는 선언을 발견했습니다
+#pragma warning(disable:26444) // 사용자 지정 생성 및 소멸이 있는 명명 되지 않은 개체를 사용 하지 않습니다
 #ifndef _SCL_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
 #endif
