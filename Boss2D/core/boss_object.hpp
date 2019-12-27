@@ -223,7 +223,7 @@ namespace BOSS
     typedef Object<uint32, datatype_pod_canmemcpy, ObjectAllocType::Now> uint32o;
     typedef Object<sint64, datatype_pod_canmemcpy, ObjectAllocType::Now> sint64o;
     typedef Object<uint64, datatype_pod_canmemcpy, ObjectAllocType::Now> uint64o;
-    typedef Object<buffer, datatype_pod_canmemcpy, ObjectAllocType::Now> buffero;
+    typedef Object<payload, datatype_pod_canmemcpy, ObjectAllocType::Now> payloado;
     typedef Object<bool, datatype_pod_canmemcpy, ObjectAllocType::Now> boolo;
     typedef Object<float, datatype_pod_canmemcpy, ObjectAllocType::Now> floato;
     typedef Object<double, datatype_pod_canmemcpy, ObjectAllocType::Now> doubleo;

@@ -368,4 +368,3 @@ namespace BOSS
         BOSS_DECLARE_HANDLE(h_web_native);
     }
 #endif
-
