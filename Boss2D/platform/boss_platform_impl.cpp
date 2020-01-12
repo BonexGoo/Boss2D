@@ -7,6 +7,7 @@
     #pragma comment(lib, "comdlg32.lib")
     #pragma comment(lib, "ole32.lib")
     #pragma comment(lib, "shell32.lib")
+    #pragma comment(lib, "advapi32.lib")
 #elif BOSS_LINUX
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         #include <gtk/gtk.h>
