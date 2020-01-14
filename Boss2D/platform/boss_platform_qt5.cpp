@@ -375,8 +375,9 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType != MainData::WindowType::Normal && normally)
                 return g_data->m_lastWindowNormalRect;
-            return {g_window->x(), g_window->y(),
-                g_window->x() + g_window->width(), g_window->y() + g_window->height()};
+            const QRect LastGeometry = g_window->geometry();
+            return {LastGeometry.x(), LastGeometry.y(),
+                LastGeometry.x() + LastGeometry.width(), LastGeometry.y() + LastGeometry.height()};
         }
 
         void Platform::SetWindowVisible(bool visible)

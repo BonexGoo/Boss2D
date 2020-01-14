@@ -395,16 +395,19 @@ namespace BOSS
                 return Result;
             }
 
-            static int __stdcall _lpfn(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
-            {
-                switch(uMsg)
+            #if BOSS_WINDOWS
+                static int __stdcall _lpfn(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
                 {
-                case BFFM_INITIALIZED:
-                    if(lpData) SendMessageW(hwnd, BFFM_SETSELECTION, TRUE, lpData);
-                    break;
+                    switch(uMsg)
+                    {
+                    case BFFM_INITIALIZED:
+                        if(lpData) SendMessageW(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+                        break;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
+            #endif
+
             bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title)
             {
                 bool Result = false;

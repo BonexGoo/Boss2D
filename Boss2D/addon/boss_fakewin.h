@@ -154,7 +154,7 @@
     typedef unsigned long long DWORDLONG;
     typedef ULONG_PTR SIZE_T, *PSIZE_T;
     typedef LONG_PTR SSIZE_T, *PSSIZE_T;
-    typedef size_t rsize_t;
+    typedef boss_size_t rsize_t;
     typedef void VOID;
     typedef void* PVOID;
     typedef void* LPVOID;
