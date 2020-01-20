@@ -41,25 +41,25 @@ qtHaveModule(purchasing){
 # QT Build Flags
 ###########################################################
 equals(QT_ENABLE_GRAPHICS, "ok"){
-	message("QT_ENABLE_GRAPHICS : Included.")
+    message("QT_ENABLE_GRAPHICS : Included.")
 } else {
     equals(QT_ENABLE_GRAPHICS, "no"){
-		message("QT_ENABLE_GRAPHICS : Excluded.")
+        message("QT_ENABLE_GRAPHICS : Excluded.")
     } else {
-		error("QT_ENABLE_GRAPHICS flag is required.")
+        error("QT_ENABLE_GRAPHICS flag is required.")
     }
 }
 equals(QT_ADD_PLUGINS_FIREBASE, "ok"){
-	include(../../Boss2D_plugins/firebase_cpp_sdk_4.5.1/firebase_cpp_sdk.pri){
+    include(../../Boss2D_plugins/firebase_cpp_sdk_4.5.1/firebase_cpp_sdk.pri){
         message("QT_ADD_PLUGINS_FIREBASE : The plug-in connected.")
     } else {
         message("QT_ADD_PLUGINS_FIREBASE : The plug-in is not ready and the module connection is canceled.")
     }
 } else {
     equals(QT_ADD_PLUGINS_FIREBASE, "no"){
-		message("QT_ADD_PLUGINS_FIREBASE : Excluded.")
+        message("QT_ADD_PLUGINS_FIREBASE : Excluded.")
     } else {
-		error("QT_ADD_PLUGINS_FIREBASE flag is required.")
+        error("QT_ADD_PLUGINS_FIREBASE flag is required.")
     }
 }
 
