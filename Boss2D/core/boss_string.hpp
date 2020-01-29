@@ -209,6 +209,10 @@ namespace BOSS
         /// @return URL스트링
         String ToUrlString(chars safeword = "-_.!~*'()") const;
 
+        /// @brief HTML스트링으로 저장
+        /// @return HTML스트링
+        String ToHtmlString() const;
+
     public:
         /// @brief sprintf식 객체생성
         /// @param text : 문자열

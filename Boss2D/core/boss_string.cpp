@@ -393,6 +393,54 @@ namespace BOSS
         return String(NewWords);
     }
 
+    String String::ToHtmlString() const
+    {
+        auto AddHtmlCode = [](chararray& dst, const char word)->void
+        {
+            sint32 AsciiNumber = (word & 0xFF);
+            dst.AtAdding() = '&';
+            dst.AtAdding() = '#';
+            if(100 <= AsciiNumber)
+            {
+                dst.AtAdding() = '0' + ((AsciiNumber / 100) % 10);
+                dst.AtAdding() = '0' + ((AsciiNumber / 10) % 10);
+                dst.AtAdding() = '0' + (AsciiNumber % 10);
+            }
+            else if(10 <= AsciiNumber)
+            {
+                dst.AtAdding() = '0' + (AsciiNumber / 10);
+                dst.AtAdding() = '0' + (AsciiNumber % 10);
+            }
+            else dst.AtAdding() = '0' + AsciiNumber;
+            dst.AtAdding() = ';';
+        };
+
+        chararray NewWords;
+        for(sint32 i = 0, iend = m_words.Count() - 1; i < iend; ++i)
+        {
+            const char OneWord = m_words[i];
+            if(OneWord & 0x80)
+            {
+                AddHtmlCode(NewWords, OneWord);
+                while(m_words[i + 1] & 0x80)
+                    AddHtmlCode(NewWords, m_words[++i]);
+            }
+            else
+            {
+                bool SafeMatched = false;
+                branch;
+                jump('A' <= OneWord && OneWord <= 'Z') SafeMatched = true;
+                jump('a' <= OneWord && OneWord <= 'z') SafeMatched = true;
+                jump('0' <= OneWord && OneWord <= '9') SafeMatched = true;
+                if(SafeMatched)
+                    NewWords.AtAdding() = OneWord;
+                else AddHtmlCode(NewWords, OneWord);
+            }
+        }
+        NewWords.AtAdding() = '\0';
+        return String(NewWords);
+    }
+
     String String::Format(chars text, ...)
     {
         va_list Args;
