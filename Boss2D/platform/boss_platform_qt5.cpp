@@ -927,6 +927,10 @@
 
             FilePath = QCoreApplication::applicationFilePath().toUtf8().constData();
             FilePath = boss_normalpath(FilePath, nullptr);
+            #if !BOSS_WINDOWS
+                FilePath = "Q:/" + FilePath;
+            #endif
+
             for(sint32 i = FilePath.Length() - 1; 0 <= i; --i)
             {
                 if(FilePath[i] == '/')
