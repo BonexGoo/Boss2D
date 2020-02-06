@@ -2044,7 +2044,7 @@
                 point64 mUVPos;
                 size64 mUVSize;
                 point64 mRenderPos;
-                sint32 mSavedWidth, mSavedAscent; // TTF크기정보
+                sint32 mSavedWidth, mSavedAscent, mSavedDescent; // TTF크기정보
             };
 
         private:
@@ -2153,7 +2153,8 @@
                     NewCodePack.mCode.mUVSize.h = BitmapHeight;
                     NewCodePack.mCode.mRenderPos.x = RenderPosX;
                     NewCodePack.mCode.mRenderPos.y = RenderPosY;
-                    AddOn::FreeType::GetInfo(CurFreeType, mFontHeight, code, &NewCodePack.mCode.mSavedWidth, &NewCodePack.mCode.mSavedAscent);
+                    AddOn::FreeType::GetInfo(CurFreeType, mFontHeight, code,
+                        &NewCodePack.mCode.mSavedWidth, &NewCodePack.mCode.mSavedAscent, &NewCodePack.mCode.mSavedDescent);
 
                     mLastOffsetX += SpaceWidth;
                     return &NewCodePack.mCode;
@@ -2161,15 +2162,16 @@
                 else BOSS_ASSERT(String::Format("NickName이 \"%s\"인 폰트는 등록되어 있지 않습니다", (chars) mNickName), false);
                 return nullptr;
             }
-            void GetInfo(uint32 code, sint32* width = nullptr, sint32* ascent = nullptr)
+            void GetInfo(uint32 code, sint32* width = nullptr, sint32* ascent = nullptr, sint32* descent = nullptr)
             {
                 if(auto CurCodePack = mCodeMap.Access(code))
                 {
                     if(width) *width = CurCodePack->mCode.mSavedWidth;
                     if(ascent) *ascent = CurCodePack->mCode.mSavedAscent;
+                    if(descent) *descent = CurCodePack->mCode.mSavedDescent;
                 }
                 else if(auto CurFreeType = AddOn::FreeType::Get(mNickName))
-                    AddOn::FreeType::GetInfo(CurFreeType, mFontHeight, code, width, ascent);
+                    AddOn::FreeType::GetInfo(CurFreeType, mFontHeight, code, width, ascent, descent);
             }
 
         private:
@@ -2294,6 +2296,12 @@
                 mRefGlyph->GetInfo((uint32) code, nullptr, &GetAscent);
                 return GetAscent;
             }
+            sint32 GetDescent(wchar_t code)
+            {
+                sint32 GetDescent = 0;
+                mRefGlyph->GetInfo((uint32) code, nullptr, nullptr, &GetDescent);
+                return GetDescent;
+            }
 
         private:
             FreeFontGlyph* mRefGlyph;
@@ -2320,7 +2328,7 @@
                         else TextWidth = CurFreeFont.GetWidth((wchars) string, (count < 0)? boss_wcslen((wchars) string) : count);
                     }
 
-                    sint32 DstX = x;
+                    sint32 DstX = x; // Left
                     switch(XAlign)
                     {
                     case 1: // Center
@@ -2333,17 +2341,17 @@
                         break;
                     }
 
-                    sint32 DstY = y;
+                    sint32 DstY = y; // Top
                     switch(_GetYFontAlignCode(align))
                     {
                     case 1: // Middle
-                        DstY += (sint32(h) - CurFreeFont.GetAscent(L'A')) / 2; // sint32(h)를 하지 않으면 연산오차발생
+                        DstY += (sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A')) / 2; // sint32(h)를 하지 않으면 연산오차발생
                         break;
                     case 2: // Ascent
                         DstY += sint32(h) - CurFreeFont.GetAscent(L'A');
                         break;
                     case 3: // Bottom
-                        DstY += sint32(h) - CanvasClass::get()->font_ft_height();
+                        DstY += sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A');
                         break;
                     default:
                         break;
@@ -2480,7 +2488,10 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             if(CanvasClass::get()->is_font_ft())
-                return CanvasClass::get()->font_ft_height();
+            {
+                FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height());
+                return CurFreeFont.GetAscent(L'A') + CurFreeFont.GetDescent(L'A');
+            }
             return CanvasClass::get()->painter().fontMetrics().height();
         }
 

@@ -22,7 +22,7 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(FreeType, Get, id_freetype_read, chars)
     BOSS_DECLARE_ADDON_FUNCTION(FreeType, Release, void, id_freetype)
     BOSS_DECLARE_ADDON_FUNCTION(FreeType, ToBmp, id_bitmap, id_freetype_read, sint32, uint32)
-    BOSS_DECLARE_ADDON_FUNCTION(FreeType, GetInfo, void, id_freetype_read, sint32, uint32, sint32*, sint32*)
+    BOSS_DECLARE_ADDON_FUNCTION(FreeType, GetInfo, void, id_freetype_read, sint32, uint32, sint32*, sint32*, sint32*)
 
     static autorun Bind_AddOn_FreeType()
     {
@@ -2887,13 +2887,14 @@ namespace BOSS
         return NewBitmap;
     }
 
-    void Customized_AddOn_FreeType_GetInfo(id_freetype_read freetype, sint32 height, uint32 code, sint32* width, sint32* ascent)
+    void Customized_AddOn_FreeType_GetInfo(id_freetype_read freetype, sint32 height, uint32 code, sint32* width, sint32* ascent, sint32* descent)
     {
         const FaceInfo* Info = (const FaceInfo*) freetype;
         if(!Info)
         {
             if(width) *width = height / 2;
             if(ascent) *ascent = height * 2 / 3;
+            if(descent) *descent = height * 1 / 3;
         }
 
         CheckHeight(Info, height);
@@ -2910,6 +2911,8 @@ namespace BOSS
         }
         if(ascent)
             *ascent = Info->mFace->size->metrics.ascender / 64;
+        if(descent)
+            *descent = -Info->mFace->size->metrics.descender / 64;
     }
 }
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
