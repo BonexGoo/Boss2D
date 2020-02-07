@@ -1783,7 +1783,7 @@
             return &CurServent;
         }
 
-        ip4address Platform::Socket::GetLocalAddress()
+        ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return {};

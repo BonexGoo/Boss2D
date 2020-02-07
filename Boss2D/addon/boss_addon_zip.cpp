@@ -13,7 +13,9 @@ bool __LINK_ADDON_ZIP__() {return true;} // 링크옵션 /OPT:NOREF가 안되서
 
 extern "C"
 {
-    extern const char* strstr(const char*, char const* const);
+    #if !BOSS_LINUX
+        extern const char* strstr(const char*, char const* const);
+    #endif
 }
 
 // 도구준비
@@ -293,7 +295,7 @@ namespace BOSS
 
         const sint32 FileSize = ZipEntry.unc_size;
         buffer Result = Buffer::Alloc(BOSS_DBG FileSize);
-        UnzipItem((HZIP) zip, fileindex, (byte*) Result, FileSize);
+        UnzipItem((HZIP) zip, fileindex, (uint08*) Result, FileSize);
         return Result;
     }
 

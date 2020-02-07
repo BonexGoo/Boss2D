@@ -3750,18 +3750,26 @@
             return &LastServent;
         }
 
-        ip4address Platform::Socket::GetLocalAddress()
+        ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
             ip4address Result = {};
             foreach(const QHostAddress& CurAddress, QNetworkInterface::allAddresses())
             {
-                if(CurAddress.protocol() == QAbstractSocket::IPv4Protocol && CurAddress != QHostAddress(QHostAddress::LocalHost))
+                if(CurAddress != QHostAddress(QHostAddress::LocalHost))
                 {
-                    auto IPv4Address = CurAddress.toIPv4Address();
-                    Result.ip[0] = (IPv4Address >> 24) & 0xFF;
-                    Result.ip[1] = (IPv4Address >> 16) & 0xFF;
-                    Result.ip[2] = (IPv4Address >>  8) & 0xFF;
-                    Result.ip[3] = (IPv4Address >>  0) & 0xFF;
+                    if(CurAddress.protocol() == QAbstractSocket::IPv4Protocol)
+                    {
+                        auto IPv4Address = CurAddress.toIPv4Address();
+                        Result.ip[0] = (IPv4Address >> 24) & 0xFF;
+                        Result.ip[1] = (IPv4Address >> 16) & 0xFF;
+                        Result.ip[2] = (IPv4Address >>  8) & 0xFF;
+                        Result.ip[3] = (IPv4Address >>  0) & 0xFF;
+                    }
+                    else if(ip6 && CurAddress.protocol() == QAbstractSocket::IPv6Protocol)
+                    {
+                        auto IPv6Address = CurAddress.toIPv6Address();
+                        *ip6 = *((ip6address*) &IPv6Address);
+                    }
                 }
             }
             return Result;

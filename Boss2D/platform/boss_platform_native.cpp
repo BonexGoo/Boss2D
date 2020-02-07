@@ -1875,7 +1875,7 @@
             return &CurServent;
         }
 
-        ip4address Platform::Socket::GetLocalAddress()
+        ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return {};

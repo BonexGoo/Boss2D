@@ -1386,8 +1386,9 @@ public:
         static void* GetServByName(chars name, chars proto);
 
         /// @brief 자신의 IP주소 얻기
-        /// @return IP주소
-        static ip4address GetLocalAddress();
+        /// @param ip6 : IP6주소
+        /// @return IP4주소
+        static ip4address GetLocalAddress(ip6address* ip6 = nullptr);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

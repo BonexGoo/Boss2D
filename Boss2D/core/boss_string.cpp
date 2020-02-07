@@ -395,23 +395,22 @@ namespace BOSS
 
     String String::ToHtmlString() const
     {
-        auto AddHtmlCode = [](chararray& dst, const char word)->void
+        auto AddHtmlCode = [](chararray& dst, uint32 code)->void
         {
-            sint32 AsciiNumber = (word & 0xFF);
             dst.AtAdding() = '&';
             dst.AtAdding() = '#';
-            if(100 <= AsciiNumber)
+            char Temp[10];
+            BOSS_TRACE("=====> [%u]", code);
+            for(sint32 i = 0; i < 10; ++i)
             {
-                dst.AtAdding() = '0' + ((AsciiNumber / 100) % 10);
-                dst.AtAdding() = '0' + ((AsciiNumber / 10) % 10);
-                dst.AtAdding() = '0' + (AsciiNumber % 10);
+                const sint32 CurCode = code % 10;
+                Temp[i] = '0' + CurCode;
+                if((code /= 10) == 0)
+                {
+                    do {dst.AtAdding() = Temp[i];} while(i--);
+                    break;
+                }
             }
-            else if(10 <= AsciiNumber)
-            {
-                dst.AtAdding() = '0' + (AsciiNumber / 10);
-                dst.AtAdding() = '0' + (AsciiNumber % 10);
-            }
-            else dst.AtAdding() = '0' + AsciiNumber;
             dst.AtAdding() = ';';
         };
 
@@ -419,11 +418,26 @@ namespace BOSS
         for(sint32 i = 0, iend = m_words.Count() - 1; i < iend; ++i)
         {
             const char OneWord = m_words[i];
-            if(OneWord & 0x80)
+            branch;
+            jump((OneWord & 0xF0) == 0xF0) // 4Bytes
             {
-                AddHtmlCode(NewWords, OneWord);
-                while(m_words[i + 1] & 0x80)
-                    AddHtmlCode(NewWords, m_words[++i]);
+                const char NewValue = (((m_words[i + 0] & 0x07) << 2) | ((m_words[i + 1] & 0x30) >> 4)) - 1;
+                uint32 NewCode = 0xD800 | (NewValue << 6) | ((m_words[i + 1] & 0x0F) << 2) | ((m_words[i + 2] & 0x30) >> 4);
+                NewCode |= (0xDC00 | ((m_words[i + 2] & 0x0F) << 6) | (m_words[i + 3] & 0x3F)) << 16;
+                AddHtmlCode(NewWords, NewCode);
+                i += 3;
+            }
+            jump((OneWord & 0xF0) == 0xE0) // 3Bytes
+            {
+                const uint32 NewCode = ((m_words[i + 0] & 0x0F) << 12) | ((m_words[i + 1] & 0x3F) << 6) | (m_words[i + 2] & 0x3F);
+                AddHtmlCode(NewWords, NewCode);
+                i += 2;
+            }
+            jump((OneWord & 0xE0) == 0xC0) // 2Bytes
+            {
+                const uint32 NewCode = ((m_words[i + 0] & 0x1F) << 6) | (m_words[i + 1] & 0x3F);
+                AddHtmlCode(NewWords, NewCode);
+                i += 1;
             }
             else
             {
@@ -434,7 +448,7 @@ namespace BOSS
                 jump('0' <= OneWord && OneWord <= '9') SafeMatched = true;
                 if(SafeMatched)
                     NewWords.AtAdding() = OneWord;
-                else AddHtmlCode(NewWords, OneWord);
+                else AddHtmlCode(NewWords, OneWord & 0xFF);
             }
         }
         NewWords.AtAdding() = '\0';
