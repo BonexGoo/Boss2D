@@ -198,6 +198,12 @@ namespace BOSS
         /// @return 새로운 객체
         String Trim() const;
 
+        /// @brief 파일로 저장
+        /// @param filename : 파일명
+        /// @param bom : BOM코드 삽입
+        /// @return 성공여부
+        bool ToFile(chars filename, bool bom = false) const;
+
         /// @brief 어셋으로 저장
         /// @param filename : 파일명
         /// @param bom : BOM코드 삽입
@@ -219,6 +225,11 @@ namespace BOSS
         /// @param ... : 가변인자
         /// @return 객체
         static String Format(chars text, ...);
+
+        /// @brief 파일로드식 객체생성
+        /// @param filename : 파일명
+        /// @return 객체
+        static String FromFile(chars filename);
 
         /// @brief 어셋로드식 객체생성
         /// @param filename : 파일명

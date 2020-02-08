@@ -1220,6 +1220,13 @@
             return (id_clock) NewClock;
         }
 
+        id_clock Platform::Clock::CreateAsWindowTime(uint64 msec)
+        {
+            buffer NewClock = Buffer::Alloc<ClockClass>(BOSS_DBG 1);
+            ((ClockClass*) NewClock)->SetClock(msec);
+            return (id_clock) NewClock;
+        }
+
         id_clock Platform::Clock::CreateAsCurrent()
         {
             buffer NewClock = Buffer::Alloc<ClockClass>(BOSS_DBG 1);

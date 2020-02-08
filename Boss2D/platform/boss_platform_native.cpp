@@ -743,6 +743,12 @@
             return nullptr;
         }
 
+        id_clock Platform::Clock::CreateAsWindowTime(uint64 msec)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
         id_clock Platform::Clock::CreateAsCurrent()
         {
             BOSS_ASSERT("Further development is needed.", false);

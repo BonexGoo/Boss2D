@@ -1,6 +1,8 @@
 ﻿#include <boss.hpp>
 #include "boss_bmp.hpp"
 
+#include <platform/boss_platform.hpp>
+
 #define CASE256(A) \
 	case 0x00: A case 0x01: A case 0x02: A case 0x03: A \
 	case 0x04: A case 0x05: A case 0x06: A case 0x07: A \
@@ -69,9 +71,37 @@
 
 namespace BOSS
 {
+    id_bitmap Bmp::FromFile(chars filename)
+    {
+        id_file_read BmpAsset = Platform::File::OpenForRead(filename);
+        if(!BmpAsset) return nullptr;
+
+        const sint32 FileSize = Platform::File::Size(BmpAsset);
+        buffer BmpBuffer = Buffer::Alloc(BOSS_DBG FileSize - 2);
+        Platform::File::Seek(BmpAsset, 2);
+        Platform::File::Read(BmpAsset, (uint08*) BmpBuffer, FileSize - 2);
+        Platform::File::Close(BmpAsset);
+        id_bitmap NewBitmap = Bmp::Clone((id_bitmap) BmpBuffer);
+        Buffer::Free(BmpBuffer);
+        return NewBitmap;
+    }
+
+    void Bmp::ToFile(id_bitmap_read bitmap, chars filename)
+    {
+        id_file BmpAsset = Platform::File::OpenForWrite(filename, true);
+        if(!BmpAsset) return;
+
+        const uint32 BmpSize = Bmp::GetFileSizeWithoutBM(bitmap);
+        Platform::File::Write(BmpAsset, (bytes) "BM", 2);
+        Platform::File::Write(BmpAsset, (bytes) bitmap, BmpSize);
+        Platform::File::Close(BmpAsset);
+    }
+
     id_bitmap Bmp::FromAsset(chars filename)
     {
         id_asset_read BmpAsset = Asset::OpenForRead(filename);
+        if(!BmpAsset) return nullptr;
+
         const sint32 FileSize = Asset::Size(BmpAsset);
         buffer BmpBuffer = Buffer::Alloc(BOSS_DBG FileSize - 2);
         Asset::Skip(BmpAsset, 2);
@@ -85,6 +115,8 @@ namespace BOSS
     void Bmp::ToAsset(id_bitmap_read bitmap, chars filename)
     {
         id_asset BmpAsset = Asset::OpenForWrite(filename, true);
+        if(!BmpAsset) return;
+
         const uint32 BmpSize = Bmp::GetFileSizeWithoutBM(bitmap);
         Asset::Write(BmpAsset, (bytes) "BM", 2);
         Asset::Write(BmpAsset, (bytes) bitmap, BmpSize);

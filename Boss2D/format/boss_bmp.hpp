@@ -14,6 +14,8 @@ namespace BOSS
         typedef union {argb32 argb; struct {uint08 b; uint08 g; uint08 r; uint08 a;};} bitmappixel;
 
     public:
+        static id_bitmap FromFile(chars filename);
+        static void ToFile(id_bitmap_read bitmap, chars filename);
         static id_bitmap FromAsset(chars filename);
         static void ToAsset(id_bitmap_read bitmap, chars filename);
 

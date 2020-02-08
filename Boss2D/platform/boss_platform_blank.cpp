@@ -694,6 +694,12 @@
             return nullptr;
         }
 
+        id_clock Platform::Clock::CreateAsWindowTime(uint64 msec)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
         id_clock Platform::Clock::CreateAsCurrent()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

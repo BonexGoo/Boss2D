@@ -3992,6 +3992,12 @@
             const sint64 NewClockMSec = ((sint64) EpochToJulian(NewTime.toMSecsSinceEpoch())) + GetLocalTimeMSecFromUtc();
             m_laptime = (NewClockMSec - GetTotalMSecFromJulianDay()) * 1000000 + nsec;
         }
+        void SetClock(uint64 windowtime_msec)
+        {
+            const uint64 NewWindowMSec = WindowToEpoch(windowtime_msec);
+            const sint64 NewClockMSec = ((sint64) EpochToJulian(NewWindowMSec)) + GetLocalTimeMSecFromUtc();
+            m_laptime = (NewClockMSec - GetTotalMSecFromJulianDay()) * 1000000;
+        }
 
     public:
         inline ClockClass& operator=(const ClockClass& rhs)

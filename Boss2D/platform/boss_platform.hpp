@@ -490,6 +490,11 @@ public:
         /// @return 생성된 클럭
         static id_clock Create(sint32 year, sint32 month, sint32 day, sint32 hour, sint32 min, sint32 sec, sint64 nsec);
 
+        /// @brief 윈도우타임으로 클럭생성
+        /// @param msec : 밀리초기준 윈도우타임
+        /// @return 생성된 클럭
+        static id_clock CreateAsWindowTime(uint64 msec);
+
         /// @brief 현재시간으로 클럭생성
         /// @return 생성된 클럭
         static id_clock CreateAsCurrent();
