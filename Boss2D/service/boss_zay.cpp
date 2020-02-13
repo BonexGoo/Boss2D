@@ -881,6 +881,12 @@ namespace BOSS
         }
     }
 
+    void ZayPanel::repaintOnce()
+    {
+        if(m_updater)
+            m_updater->RepaintOnce();
+    }
+
     VisibleState ZayPanel::visible() const
     {
         const Clip& LastClip = m_stack_clip[-1];
