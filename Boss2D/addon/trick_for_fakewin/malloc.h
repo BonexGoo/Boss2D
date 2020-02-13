@@ -5,8 +5,8 @@
     extern "C" {
 #endif
 
-extern void* malloc(size_t size);
-#if BOSS_WINDOWS
+extern void* malloc(boss_size_t size);
+#if BOSS_WINDOWS | BOSS_LINUX
     extern void free(void* ptr);
 #else
     extern int free(void* ptr);
