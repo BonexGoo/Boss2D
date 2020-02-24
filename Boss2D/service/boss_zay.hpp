@@ -359,6 +359,7 @@ namespace BOSS
         PanelState state(chars uiname = nullptr) const;
         Point toview(float x, float y) const;
         void test(UITestOrder order);
+        void repaintOnce();
         VisibleState visible() const;
         uint32 fbo() const;
 
