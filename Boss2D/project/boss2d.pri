@@ -88,6 +88,10 @@ equals(QT_ENABLE_GRAPHICS, "ok"){
     # sudo apt-get install build-essential libgtk-3-dev
     # sudo apt-get install build-essential libgl1-mesa-dev
 }
+equals(QT_PACKAGE_RPATH, "ok"){
+    linux-g++: QMAKE_LFLAGS_RPATH=
+    linux-g++: QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN/lib\'"
+}
 TOPPATH = $$PWD/../../Boss2D
 INCLUDEPATH += $$TOPPATH/core
 !android: INCLUDEPATH += $$TOPPATH/addon/trick_for_fakewin

@@ -14,9 +14,9 @@ namespace BOSS
         {"", "", "",
          "ㅆ", "ㅅ", "",
          "ㅉ", "ㅈ", "ㅊ"},
-        {"", "", "ⓔ",
-         "", "ⓢ", "ㅁ",
-         "←", "ㅎ", "ㅇ"},
+        {"", "", "ⓔ", // Enter
+         "", "ⓢ", "ㅁ", // Space
+         "←", "ㅎ", "ㅇ"}, // BackSpace
         {"", "", "ㅗ",
          "", "ㅛ", "ㅡ",
          "", "ㅠ", "ㅜ"},
@@ -31,7 +31,6 @@ namespace BOSS
     {
         mButton = (button)? button : DefaultButton;
         mSelector = (selector)? selector : DefaultSelector;
-        SelectorCB mSelector;
         mSelectedId = -1;
         mSelectedLetter = -1;
     }

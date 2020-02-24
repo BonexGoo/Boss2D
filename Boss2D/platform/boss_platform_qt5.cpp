@@ -146,6 +146,7 @@
             {
                 QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
                 ApplicationPrivate app(argc, argv);
+
                 MainWindow mainWindow;
                 g_window = &mainWindow;
                 g_argc = argc;
