@@ -52,9 +52,8 @@ namespace BOSS
         }
 
         /// @brief 생성자
-        Queue() : Head(TYPE())
+        Queue() : Head(TYPE()), DataCount(0), DataMutex(nullptr)
         {
-            DataCount = 0;
             if(FORTHREAD) DataMutex = Mutex::Open();
         }
 

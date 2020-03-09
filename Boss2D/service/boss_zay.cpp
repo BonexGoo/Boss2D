@@ -434,10 +434,10 @@ namespace BOSS
         Platform::Graphics::DrawPolyBezier(LastClip.l, LastClip.t, p, thick, showfirst, showlast);
     }
 
-    void ZayPanel::ringbezier(Points p, float thick) const
+    void ZayPanel::ringbezier(Points p, float thick, float curve) const
     {
         const Clip& LastClip = m_stack_clip[-1];
-        Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick);
+        Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick, curve);
     }
 
     void ZayPanel::polyimage(const Point (&p)[3], const Image& image, const Point (&ip)[3]) const

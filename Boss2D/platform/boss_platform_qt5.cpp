@@ -1558,7 +1558,7 @@
             #endif
         }
 
-        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick)
+        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick, float curve)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
@@ -1570,10 +1570,10 @@
                 for(sint32 i = 0; i < Count; ++i)
                 {
                     const sint32 A = (i + Count - 1) % Count, B = i, C = (i + 1) % Count, D = (i + 2) % Count;
-                    const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) / 6;
-                    const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) / 6;
-                    const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) / 6;
-                    const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) / 6;
+                    const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) * curve;
+                    const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) * curve;
+                    const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) * curve;
+                    const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) * curve;
                     NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
                 }
 

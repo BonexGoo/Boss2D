@@ -340,7 +340,7 @@ namespace BOSS
         void polygon(Points p) const;
         void polyline(Points p, float thick) const;
         void polybezier(Points p, float thick, bool showfirst, bool showlast) const;
-        void ringbezier(Points p, float thick) const;
+        void ringbezier(Points p, float thick, float curve = 0.2) const;
         void polyimage(const Point (&p)[3], const Image& image, const Point (&ip)[3]) const;
         InsideBinder icon(const Image& image, UIAlign align, bool visible = true);
         InsideBinder icon(float x, float y, const Image& image, UIAlign align, bool visible = true); // 중점식

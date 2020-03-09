@@ -23,6 +23,7 @@
 #pragma warning(disable:4800)  // true 또는 false로 bool 값을 강제하고 있습니다
 #pragma warning(disable:4996)  // 컴파일러가 사용되지 않는 선언을 발견했습니다
 #pragma warning(disable:26444) // 사용자 지정 생성 및 소멸이 있는 명명 되지 않은 개체를 사용 하지 않습니다
+#pragma warning(disable:26812) // enum보다 enum class를 선호하십시오
 #ifndef _SCL_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
 #endif

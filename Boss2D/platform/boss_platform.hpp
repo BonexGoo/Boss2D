@@ -702,7 +702,8 @@ public:
         /// @param y : 상단위치(px)
         /// @param p : 꼭지점들(px)
         /// @param thick : 두께(px)
-        static void DrawRingBezier(float x, float y, Points p, float thick);
+        /// @param curve : 커브율
+        static void DrawRingBezier(float x, float y, Points p, float thick, float curve = 0.2);
 
         /// @brief 지정한 FBO핸들로 텍스처 출력
         /// @param texture : 출력할 텍스처

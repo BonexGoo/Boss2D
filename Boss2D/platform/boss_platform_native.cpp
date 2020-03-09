@@ -969,7 +969,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick)
+        void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick, float curve)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
             const sint32 Count = p.Count();
