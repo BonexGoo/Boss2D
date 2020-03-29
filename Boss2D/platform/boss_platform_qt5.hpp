@@ -4351,19 +4351,20 @@
 
         bool SendPacket(int peerid, const void* buffer, sint32 buffersize)
         {
-            if(QTcpSocket* Peer = Peers[peerid])
-                return (Peer->write((chars) buffer, buffersize) == buffersize);
+            if(QTcpSocket** Peer = Peers.Access(peerid))
+                return ((*Peer)->write((chars) buffer, buffersize) == buffersize);
             Peers.Remove(peerid);
             return false;
         }
 
         bool KickPeer(int peerid)
         {
-            if(QTcpSocket* Peer = Peers[peerid])
+            if(QTcpSocket** Peer = Peers.Access(peerid))
             {
-                Peer->disconnectFromHost();
+                (*Peer)->disconnectFromHost();
                 Peers.Remove(peerid);
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, peerid, 0));
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
                 return true;
             }
             return false;
@@ -4371,11 +4372,11 @@
 
         bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port)
         {
-            if(QTcpSocket* Peer = Peers[peerid])
+            if(QTcpSocket** Peer = Peers.Access(peerid))
             {
                 if(ip4)
                 {
-                    auto IPv4Address = Peer->peerAddress().toIPv4Address();
+                    auto IPv4Address = (*Peer)->peerAddress().toIPv4Address();
                     ip4->ip[0] = (IPv4Address >> 24) & 0xFF;
                     ip4->ip[1] = (IPv4Address >> 16) & 0xFF;
                     ip4->ip[2] = (IPv4Address >>  8) & 0xFF;
@@ -4383,10 +4384,10 @@
                 }
                 if(ip6)
                 {
-                    auto IPv6Address = Peer->peerAddress().toIPv6Address();
+                    auto IPv6Address = (*Peer)->peerAddress().toIPv6Address();
                     *ip6 = *((ip6address*) &IPv6Address);
                 }
-                if(port) *port = Peer->peerPort();
+                if(port) *port = (*Peer)->peerPort();
                 return true;
             }
             return false;
