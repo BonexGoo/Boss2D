@@ -557,19 +557,19 @@ namespace BOSS
         const sint32 DstHeight = Bmp::GetHeight(NewBitmap);
         auto DstBits = (Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
 
-        const float CosV = Math::Cos(Math::PI() * 2 - radian);
-        const float SinV = Math::Sin(Math::PI() * 2 - radian);
-        const float SrcWH = SrcWidth * 0.5f;
-        const float SrcHH = SrcHeight * 0.5f;
-        const float DstWH = DstWidth * 0.5f;
-        const float DstHH = DstHeight * 0.5f;
+        const double CosV = Math::Cos(Math::PI() * 2 - radian);
+        const double SinV = Math::Sin(Math::PI() * 2 - radian);
+        const double SrcWH = SrcWidth * 0.5f;
+        const double SrcHH = SrcHeight * 0.5f;
+        const double DstWH = DstWidth * 0.5f;
+        const double DstHH = DstHeight * 0.5f;
         for(sint32 y = 0; y < DstHeight; ++y)
         for(sint32 x = 0; x < DstWidth; ++x)
         {
             const sint32 CurDstIndex = x + y * DstWidth;
-            const float OX = x - DstWH, OY = y - DstHH;
-            const sint32 CurSrcX = sint32(SrcWH + OY * SinV + OX * CosV + 0.5f);
-            const sint32 CurSrcY = sint32(SrcHH + OY * CosV - OX * SinV + 0.5f);
+            const double OX = x - DstWH, OY = y - DstHH;
+            const sint32 CurSrcX = sint32(SrcWH + OY * SinV + OX * CosV + 0.5);
+            const sint32 CurSrcY = sint32(SrcHH + OY * CosV - OX * SinV + 0.5);
             if(CurSrcX < 0 || SrcWidth <= CurSrcX || CurSrcY < 0 || SrcHeight <= CurSrcY)
                 DstBits[CurDstIndex].argb = 0x00000000;
             else DstBits[CurDstIndex] = SrcBits[CurSrcX + CurSrcY * SrcWidth];
