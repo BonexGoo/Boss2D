@@ -28,6 +28,7 @@
     <ClCompile Include="..\addon\boss_addon_jpg.cpp" />
     <ClCompile Include="..\addon\boss_addon_ogg.cpp" />
     <ClCompile Include="..\addon\boss_addon_opencv.cpp" />
+    <ClCompile Include="..\addon\boss_addon_psd.cpp" />
     <ClCompile Include="..\addon\boss_addon_ssl.cpp" />
     <ClCompile Include="..\addon\boss_addon_tesseract.cpp" />
     <ClCompile Include="..\addon\boss_addon_freetype.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="..\addon\boss_addon_jpg.hpp" />
     <ClInclude Include="..\addon\boss_addon_ogg.hpp" />
     <ClInclude Include="..\addon\boss_addon_opencv.hpp" />
+    <ClInclude Include="..\addon\boss_addon_psd.hpp" />
     <ClInclude Include="..\addon\boss_addon_ssl.hpp" />
     <ClInclude Include="..\addon\boss_addon_tesseract.hpp" />
     <ClInclude Include="..\addon\boss_addon_freetype.hpp" />

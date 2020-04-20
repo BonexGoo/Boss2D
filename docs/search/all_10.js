@@ -27,7 +27,8 @@ var searchData=
   ['profile_492',['Profile',['../class_b_o_s_s_1_1_profile.html',1,'BOSS']]],
   ['profileclass_493',['ProfileClass',['../class_profile_class.html',1,'']]],
   ['programdialog_494',['ProgramDialog',['../class_b_o_s_s_1_1_platform_1_1_popup.html#a16c297bd6e0c7a85c85bb2b61b8e652a',1,'BOSS::Platform::Popup']]],
-  ['ptr_495',['Ptr',['../class_b_o_s_s_1_1_object.html#ade2d9ee8d2714b81412379f4a3dcb91a',1,'BOSS::Object']]],
-  ['purchase_496',['Purchase',['../class_b_o_s_s_1_1_platform_1_1_purchase.html',1,'BOSS::Platform']]],
-  ['purchasing_497',['Purchasing',['../class_b_o_s_s_1_1_platform_1_1_purchase.html#abdccd2df2ee320e78ef60c355d7abc9b',1,'BOSS::Platform::Purchase']]]
+  ['psd_495',['Psd',['../class_b_o_s_s_1_1_add_on_1_1_psd.html',1,'BOSS::AddOn']]],
+  ['ptr_496',['Ptr',['../class_b_o_s_s_1_1_object.html#ade2d9ee8d2714b81412379f4a3dcb91a',1,'BOSS::Object']]],
+  ['purchase_497',['Purchase',['../class_b_o_s_s_1_1_platform_1_1_purchase.html',1,'BOSS::Platform']]],
+  ['purchasing_498',['Purchasing',['../class_b_o_s_s_1_1_platform_1_1_purchase.html#abdccd2df2ee320e78ef60c355d7abc9b',1,'BOSS::Platform::Purchase']]]
 ];

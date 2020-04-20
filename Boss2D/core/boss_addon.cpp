@@ -15,6 +15,7 @@ bool __LINK_ADDON_H264__();
 bool __LINK_ADDON_JPG__();
 bool __LINK_ADDON_OGG__();
 bool __LINK_ADDON_OPENCV__();
+bool __LINK_ADDON_PSD__();
 bool __LINK_ADDON_SSL__();
 bool __LINK_ADDON_TESSERACT__();
 bool __LINK_ADDON_TIF__();
@@ -32,6 +33,7 @@ static bool _ =
     __LINK_ADDON_JPG__() |
     __LINK_ADDON_OGG__() |
     __LINK_ADDON_OPENCV__() |
+    __LINK_ADDON_PSD__() |
     __LINK_ADDON_SSL__() |
     __LINK_ADDON_TESSERACT__() |
     __LINK_ADDON_TIF__() |
@@ -294,6 +296,25 @@ namespace BOSS
 
     void AddOn::OpenCV::GetHoughCircles(id_opencv opencv, HoughCirclesCB cb, payload data)
     {Core_AddOn_OpenCV_GetHoughCircles()(opencv, cb, data);}
+
+    ////////////////////////////////////////////////////////////////////////////////
+    static void Psd_Error() {BOSS_ASSERT("Psd애드온이 준비되지 않았습니다", false);}
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Create, id_psd, return nullptr, void)
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Release, void, return, id_psd)
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Insert, void, return, id_psd, id_bitmap_read, sint32, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Build, buffer, return nullptr, id_psd)
+
+    id_psd AddOn::Psd::Create(void)
+    {return Core_AddOn_Psd_Create()();}
+
+    void AddOn::Psd::Release(id_psd psd)
+    {Core_AddOn_Psd_Release()(psd);}
+
+    void AddOn::Psd::Insert(id_psd psd, id_bitmap_read bmp, sint32 x, sint32 y)
+    {Core_AddOn_Psd_Insert()(psd, bmp, x, y);}
+
+    buffer AddOn::Psd::Build(id_psd psd)
+    {return Core_AddOn_Psd_Build()(psd);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Ssl_Error() {BOSS_ASSERT("Ssl애드온이 준비되지 않았습니다", false);}

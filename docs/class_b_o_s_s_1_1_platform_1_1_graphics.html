@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="boss2d.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">API
-   &#160;<span id="projectnumber">2.0.16</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
   </td>
  </tr>
@@ -130,9 +130,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a844048d2ab2168c111f7109f3797c9b8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a844048d2ab2168c111f7109f3797c9b8">DrawPolyBezier</a> (float x, float y, <a class="el" href="class_b_o_s_s_1_1_array.html">Points</a> p, float thick, bool showfirst, bool showlast)</td></tr>
 <tr class="memdesc:a844048d2ab2168c111f7109f3797c9b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">폴리베지어 출력  <a href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a844048d2ab2168c111f7109f3797c9b8">More...</a><br /></td></tr>
 <tr class="separator:a844048d2ab2168c111f7109f3797c9b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6777a870c724578ba2cb814967915c95"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a6777a870c724578ba2cb814967915c95">DrawRingBezier</a> (float x, float y, <a class="el" href="class_b_o_s_s_1_1_array.html">Points</a> p, float thick)</td></tr>
-<tr class="memdesc:a6777a870c724578ba2cb814967915c95"><td class="mdescLeft">&#160;</td><td class="mdescRight">링베지어 출력  <a href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a6777a870c724578ba2cb814967915c95">More...</a><br /></td></tr>
-<tr class="separator:a6777a870c724578ba2cb814967915c95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ac545fe5b9d8885fdb7f921cac8c474"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a4ac545fe5b9d8885fdb7f921cac8c474">DrawRingBezier</a> (float x, float y, <a class="el" href="class_b_o_s_s_1_1_array.html">Points</a> p, float thick, float curve=0.2)</td></tr>
+<tr class="memdesc:a4ac545fe5b9d8885fdb7f921cac8c474"><td class="mdescLeft">&#160;</td><td class="mdescRight">링베지어 출력  <a href="class_b_o_s_s_1_1_platform_1_1_graphics.html#a4ac545fe5b9d8885fdb7f921cac8c474">More...</a><br /></td></tr>
+<tr class="separator:a4ac545fe5b9d8885fdb7f921cac8c474"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab245c488d6fd90b0fbe1d5b6af135ee9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_b_o_s_s_1_1_platform_1_1_graphics.html#ab245c488d6fd90b0fbe1d5b6af135ee9">DrawTextureToFBO</a> (id_texture_read texture, float tx, float ty, float tw, float th, orientationtype ori, bool antialiasing, float x, float y, float w, float h, <a class="el" href="class_b_o_s_s_1_1_color.html">Color</a> color=Color::White, uint32 fbo=0)</td></tr>
 <tr class="memdesc:ab245c488d6fd90b0fbe1d5b6af135ee9"><td class="mdescLeft">&#160;</td><td class="mdescRight">지정한 FBO핸들로 텍스처 출력  <a href="class_b_o_s_s_1_1_platform_1_1_graphics.html#ab245c488d6fd90b0fbe1d5b6af135ee9">More...</a><br /></td></tr>
 <tr class="separator:ab245c488d6fd90b0fbe1d5b6af135ee9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1201,8 +1201,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 
 </div>
 </div>
-<a id="a6777a870c724578ba2cb814967915c95"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6777a870c724578ba2cb814967915c95">&#9670;&nbsp;</a></span>DrawRingBezier()</h2>
+<a id="a4ac545fe5b9d8885fdb7f921cac8c474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ac545fe5b9d8885fdb7f921cac8c474">&#9670;&nbsp;</a></span>DrawRingBezier()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1232,7 +1232,13 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>thick</em>&#160;</td>
+          <td class="paramname"><em>thick</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>curve</em> = <code>0.2</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1254,6 +1260,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
     <tr><td class="paramname">y</td><td>: 상단위치(px) </td></tr>
     <tr><td class="paramname">p</td><td>: 꼭지점들(px) </td></tr>
     <tr><td class="paramname">thick</td><td>: 두께(px) </td></tr>
+    <tr><td class="paramname">curve</td><td>: 커브율 </td></tr>
   </table>
   </dd>
 </dl>

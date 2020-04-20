@@ -222,6 +222,9 @@
     <ClCompile Include="..\addon\boss_addon_opencv.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_psd.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
     <ClCompile Include="..\addon\boss_addon_ssl.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
@@ -546,6 +549,9 @@
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_addon_opencv.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_psd.hpp">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_addon_ssl.hpp">

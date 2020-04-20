@@ -13,6 +13,7 @@ namespace BOSS
     BOSS_DECLARE_ID(id_jpg);
     BOSS_DECLARE_ID(id_md5);
     BOSS_DECLARE_ID(id_opencv);
+    BOSS_DECLARE_ID(id_psd);
     BOSS_DECLARE_ID(id_tesseract);
     BOSS_DECLARE_ID(id_tif);
     BOSS_DECLARE_ID(id_webrtc);
@@ -166,6 +167,16 @@ namespace BOSS
             static void GetFindContours(id_opencv opencv, FindContoursCB cb, payload data = nullptr);
             static void GetHoughLines(id_opencv opencv, HoughLinesCB cb, payload data = nullptr);
             static void GetHoughCircles(id_opencv opencv, HoughCirclesCB cb, payload data = nullptr);
+        };
+
+        /// @brief Psd연동
+        class Psd
+        {
+        public:
+            static id_psd Create(void);
+            static void Release(id_psd psd);
+            static void Insert(id_psd psd, id_bitmap_read bmp, sint32 x, sint32 y);
+            static buffer Build(id_psd psd);
         };
 
         /// @brief SSL연동

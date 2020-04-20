@@ -21,7 +21,7 @@ var searchData=
   ['drawpolyimagetofbo_193',['DrawPolyImageToFBO',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#ab0bd28a1835a513f23f85883adb350d1',1,'BOSS::Platform::Graphics']]],
   ['drawpolyline_194',['DrawPolyLine',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#aa4081a457cd11ac643c0d0545183e288',1,'BOSS::Platform::Graphics']]],
   ['drawrect_195',['DrawRect',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#a195cf5203f9a6ec06a2652c0dc24e1a7',1,'BOSS::Platform::Graphics']]],
-  ['drawringbezier_196',['DrawRingBezier',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#a6777a870c724578ba2cb814967915c95',1,'BOSS::Platform::Graphics']]],
+  ['drawringbezier_196',['DrawRingBezier',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#a4ac545fe5b9d8885fdb7f921cac8c474',1,'BOSS::Platform::Graphics']]],
   ['drawstring_197',['DrawString',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#a4996c065c6bbc509ad92034d71821727',1,'BOSS::Platform::Graphics']]],
   ['drawstringw_198',['DrawStringW',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#ab3ab819a2cc502148f32b2be11f88e74',1,'BOSS::Platform::Graphics']]],
   ['drawsurface_199',['DrawSurface',['../class_b_o_s_s_1_1_platform_1_1_graphics.html#a62bf180057fea1aaa17dc2c54ca7a124',1,'BOSS::Platform::Graphics']]],
