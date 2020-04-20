@@ -55,6 +55,7 @@
     <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_decoder.cpp" />
     <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_encoder.cpp" />
     <ClCompile Include="..\addon\boss_integration_openssl-1.1.1a.c" />
+    <ClCompile Include="..\addon\boss_integration_psd_sdk-commit23.cpp" />
     <ClCompile Include="..\addon\boss_integration_rnnoise-chromium.cpp" />
     <ClCompile Include="..\addon\boss_integration_rtmpdump-2.4.c" />
     <ClCompile Include="..\addon\boss_integration_tensorflow-1.2.1.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.h" />
     <ClInclude Include="..\addon\boss_integration_openh264-1.6.0.h" />
     <ClInclude Include="..\addon\boss_integration_openssl-1.1.1a.h" />
+    <ClInclude Include="..\addon\boss_integration_psd_sdk-commit23.h" />
     <ClInclude Include="..\addon\boss_integration_rnnoise-chromium.h" />
     <ClInclude Include="..\addon\boss_integration_rtmpdump-2.4.h" />
     <ClInclude Include="..\addon\boss_integration_tensorflow-1.2.1.h" />

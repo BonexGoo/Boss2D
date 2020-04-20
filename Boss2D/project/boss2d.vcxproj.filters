@@ -348,6 +348,9 @@
     <ClCompile Include="..\service\boss_zaywidget.cpp">
       <Filter>Boss2D\service</Filter>
     </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_psd_sdk-commit23.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\element\boss_clip.hpp">
@@ -664,6 +667,9 @@
     </ClInclude>
     <ClInclude Include="..\service\boss_zaywidget.hpp">
       <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_psd_sdk-commit23.h">
+      <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
