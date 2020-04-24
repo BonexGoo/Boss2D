@@ -63,6 +63,7 @@ CProjectCreatorDlg::CProjectCreatorDlg(CWnd* pParent /*=NULL*/)
 void CProjectCreatorDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_COMBO1, mTemplateCombo);
     DDX_Text(pDX, IDC_EDIT1, mTitleName);
     DDX_Text(pDX, IDC_EDIT2, mProjName);
     DDX_Text(pDX, IDC_EDIT3, mCorpName);
@@ -81,8 +82,6 @@ END_MESSAGE_MAP()
 BOOL CProjectCreatorDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-
-	// 시스템 메뉴에 "정보..." 메뉴 항목을 추가합니다.
 
 	// IDM_ABOUTBOX는 시스템 명령 범위에 있어야 합니다.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -107,7 +106,9 @@ BOOL CProjectCreatorDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	mTemplateCombo.AddString(_T("Basic"));
+    mTemplateCombo.AddString(_T("Daddy"));
+    mTemplateCombo.SetCurSel(0);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -211,9 +212,16 @@ void CProjectCreatorDlg::OnCreateClick()
     String CorpName = String::FromWChars((LPCWSTR) mCorpName);
     if(CorpName.Length() == 0) CorpName = "mycompany";
 
+    int ResourceID = IDR_ZIP_BASIC;
+    switch(mTemplateCombo.GetCurSel())
+    {
+    case 0: ResourceID = IDR_ZIP_BASIC; break;
+    case 1: ResourceID = IDR_ZIP_DADDY; break;
+    }
+
     String GetPath;
     if(Platform::Popup::FileDialog(DST_Dir, GetPath, nullptr, "압축을 풀 폴더를 지정하세요"))
-    if(HRSRC ResInfo = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_ZIP1), L"ZIP"))
+    if(HRSRC ResInfo = FindResourceW(NULL, MAKEINTRESOURCEW(ResourceID), L"ZIP"))
     if(HANDLE Res = LoadResource(NULL, ResInfo))
     {
         DWORD ResSize = SizeofResource(NULL, ResInfo);

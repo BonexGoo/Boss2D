@@ -247,11 +247,11 @@ BEGIN
     BEGIN
         BLOCK "041204B0"
         BEGIN
-            VALUE "CompanyName", "FinalBossBehindTheDoor"
+            VALUE "CompanyName", "BonexGoo"
             VALUE "FileDescription", "UINameTag"
             VALUE "FileVersion",     "1.0.0.1"
             VALUE "InternalName",    "UINameTag.exe"
-            VALUE "LegalCopyright", "TODO: (c) FinalBossBehindTheDoor.  All rights reserved."
+            VALUE "LegalCopyright", "BonexGoo.  All rights reserved."
             VALUE "OriginalFilename","UINameTag.exe"
             VALUE "ProductName", "UINameTag"
             VALUE "ProductVersion",  "1.0.0.1"

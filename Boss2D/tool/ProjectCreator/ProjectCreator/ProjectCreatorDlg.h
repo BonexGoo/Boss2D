@@ -32,6 +32,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	CComboBox mTemplateCombo;
     CString mTitleName;
     CString mProjName;
     CString mCorpName;

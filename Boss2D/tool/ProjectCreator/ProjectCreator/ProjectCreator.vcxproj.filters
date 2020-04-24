@@ -60,6 +60,8 @@
     <None Include="res\template_0.zip">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="res\template_basic.zip" />
+    <None Include="res\template_daddy.zip" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ProjectCreator.ico">
