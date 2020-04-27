@@ -446,7 +446,8 @@ namespace BOSS
         const Color& LastColor = m_stack_color[-1];
         if(Platform::Graphics::BeginGL())
         {
-            Platform::Graphics::DrawPolyImageToFBO(image.GetBuildImage(LastColor), ip, LastClip.l, LastClip.t, p);
+            Platform::Graphics::DrawPolyImageToFBO(image.GetBuildImage(LastColor),
+                ip, LastClip.l, LastClip.t, p, Color::White, fbo());
             Platform::Graphics::EndGL();
         }
         else
