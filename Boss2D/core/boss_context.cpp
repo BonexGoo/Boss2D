@@ -67,22 +67,22 @@ namespace BOSS
         const sint32 tab = 0;
         if(0 < m_namableChild.Count())
         {
-            dst += "{\r\n";
+            dst.AddTailFast("{\r\n");
             sint32 count = m_namableChild.Count();
             const void* param[3] = {&tab, &dst, &count};
             m_namableChild.AccessByCallback(SaveJsonCoreCB, param);
-            dst += "}\r\n";
+            dst.AddTailFast("}\r\n");
         }
 
         if(0 < m_indexableChild.Count())
         {
-            dst += "[\r\n";
+            dst.AddTailFast("[\r\n");
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
                 Context* CurChild = m_indexableChild.Access(i);
                 CurChild->SaveJsonCore(tab + 1, String::FromInteger(i), dst, true, i + 1 == iend);
             }
-            dst += "]\r\n";
+            dst.AddTailFast("]\r\n");
         }
         return dst;
     }
@@ -575,72 +575,77 @@ namespace BOSS
         if(!indexable)
         {
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += "\"";
+                dst += '\t';
+            dst += '\"';
             dst += name;
-            dst += "\":";
+            dst.AddTailFast("\":");
             if(!HasChild)
             {
                 if(m_valueNeedQuotation)
                 {
-                    dst += "\"";
+                    dst += '\"';
                     if(m_valueOffset)
                         dst.AddTail(m_valueOffset, m_valueLength);
-                    dst += (lastchild)? "\"" : "\",";
+                    if(lastchild) dst += '\"';
+                    else dst.AddTailFast("\",");
                 }
                 else
                 {
                     if(m_valueOffset)
                         dst.AddTail(m_valueOffset, m_valueLength);
-                    if(!lastchild) dst += ",";
+                    else dst.AddTailFast("\"\"");
+                    if(!lastchild) dst += ',';
                 }
             }
-            dst += "\r\n";
+            dst.AddTailFast("\r\n");
         }
         else if(m_valueOffset && *m_valueOffset)
         {
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
+                dst += '\t';
             if(m_valueNeedQuotation)
             {
-                dst += "\"";
+                dst += '\"';
                 dst.AddTail(m_valueOffset, m_valueLength);
-                dst += (lastchild)? "\"" : "\",";
+                if(lastchild) dst += '\"';
+                else dst.AddTailFast("\",");
             }
             else
             {
                 dst.AddTail(m_valueOffset, m_valueLength);
-                if(!lastchild) dst += ",";
+                if(!lastchild) dst += ',';
             }
-            dst += "\r\n";
+            dst.AddTailFast("\r\n");
         }
         else if(!HasChild)
         {
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += (lastchild)? "{}" : "{},";
-            dst += "\r\n";
+                dst += '\t';
+            if(lastchild) dst.AddTailFast("{}");
+            else dst.AddTailFast("{},");
+            dst.AddTailFast("\r\n");
         }
 
         if(HasNamableChild)
         {
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += "{\r\n";
+                dst += '\t';
+            dst.AddTailFast("{\r\n");
 
             sint32 count = m_namableChild.Count();
             const void* param[3] = {&tab, &dst, &count};
             m_namableChild.AccessByCallback(SaveJsonCoreCB, param);
 
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += (lastchild && !HasIndexableChild)? "}\r\n" : "},\r\n";
+                dst += '\t';
+            if(lastchild && !HasIndexableChild) dst.AddTailFast("}\r\n");
+            else dst.AddTailFast("},\r\n");
         }
         if(HasIndexableChild)
         {
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += "[\r\n";
+                dst += '\t';
+            dst.AddTailFast("[\r\n");
 
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
@@ -649,8 +654,9 @@ namespace BOSS
             }
 
             for(sint32 i = 0; i < tab; ++i)
-                dst += "\t";
-            dst += (lastchild)? "]\r\n" : "],\r\n";
+                dst += '\t';
+            if(lastchild) dst.AddTailFast("]\r\n");
+            else dst.AddTailFast("],\r\n");
         }
     }
 
@@ -839,7 +845,7 @@ namespace BOSS
             if(!HasChild)
             {
                 HasChild = true;
-                dst += ">\r\n";
+                dst.AddTailFast(">\r\n");
             }
             for(sint32 i = 0, iend = TreeOption->m_indexableChild.Count(); i < iend; ++i)
             {
@@ -852,15 +858,15 @@ namespace BOSS
         // 마감
         if(HasChild)
         {
-            dst += "</";
+            dst.AddTailFast("</");
             dst += Name;
-            dst += ">\r\n";
+            dst.AddTailFast(">\r\n");
         }
         else if(IsComment)
-            dst += "-->\r\n";
+            dst.AddTailFast("-->\r\n");
         else if(0 < Name.Length() && Name[0] == '?')
-            dst += "?>\r\n";
-        else dst += "/>\r\n";
+            dst.AddTailFast("?>\r\n");
+        else dst.AddTailFast("/>\r\n");
     }
 
     void Context::SaveXmlCoreCB(const MapPath* path, Context* data, payload param)
@@ -871,7 +877,7 @@ namespace BOSS
         {
             dst += ' ';
             dst += Name;
-            dst += "=\"";
+            dst.AddTailFast("=\"");
             sint32 ValueLength = 0;
             chars_endless Value = data->GetStringFast(ValueLength);
             dst.AddTail(Value, ValueLength);

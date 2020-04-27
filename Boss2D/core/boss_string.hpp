@@ -173,6 +173,17 @@ namespace BOSS
         /// @return 자기 객체
         String& AddTail(chars other, sint32 length = -1);
 
+        /// @brief 빠른 후방추가(상수 스트링으로부터)
+        /// @param other : 상수 스트링
+        /// @return 자기 객체
+        template<sint32 length>
+        String& AddTailFast(const char(&other)[length])
+        {
+            Memory::Copy(m_words.AtDumpingAdded(length - 1) - 1, other, sizeof(char) * length);
+            m_findmap.Clear();
+            return *this;
+        }
+
         /// @brief 후방감소
         /// @param length : 감소할 길이
         /// @return 자기 객체
