@@ -412,7 +412,7 @@ bool JPEGDecoder::readHeader()
     imageHeight = dec.image_height;
 
     // added by BOSS : 회전방향을 알기 위한 코드추가
-    if(!boss_strcmp((chars) dec.marker_list->data, "Exif"))
+    if(dec.marker_list && !boss_strcmp((chars) dec.marker_list->data, "Exif"))
         orientationCode = ((bytes) dec.marker_list->data)[48];
     return true;
 }
