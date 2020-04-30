@@ -173,9 +173,9 @@ namespace BOSS
         class Psd
         {
         public:
-            static id_psd Create(void);
+            static id_psd Create(uint32 width, uint32 height);
             static void Release(id_psd psd);
-            static void Insert(id_psd psd, id_bitmap_read bmp, sint32 x, sint32 y);
+            static void Insert(id_psd psd, chars layername, id_bitmap_read bmp, sint32 x, sint32 y);
             static buffer Build(id_psd psd);
         };
 

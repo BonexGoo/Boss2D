@@ -299,19 +299,19 @@ namespace BOSS
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Psd_Error() {BOSS_ASSERT("Psd애드온이 준비되지 않았습니다", false);}
-    BOSS_DEFINE_ADDON_FUNCTION(Psd, Create, id_psd, return nullptr, void)
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Create, id_psd, return nullptr, uint32, uint32)
     BOSS_DEFINE_ADDON_FUNCTION(Psd, Release, void, return, id_psd)
-    BOSS_DEFINE_ADDON_FUNCTION(Psd, Insert, void, return, id_psd, id_bitmap_read, sint32, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Psd, Insert, void, return, id_psd, chars, id_bitmap_read, sint32, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Psd, Build, buffer, return nullptr, id_psd)
 
-    id_psd AddOn::Psd::Create(void)
-    {return Core_AddOn_Psd_Create()();}
+    id_psd AddOn::Psd::Create(uint32 width, uint32 height)
+    {return Core_AddOn_Psd_Create()(width, height);}
 
     void AddOn::Psd::Release(id_psd psd)
     {Core_AddOn_Psd_Release()(psd);}
 
-    void AddOn::Psd::Insert(id_psd psd, id_bitmap_read bmp, sint32 x, sint32 y)
-    {Core_AddOn_Psd_Insert()(psd, bmp, x, y);}
+    void AddOn::Psd::Insert(id_psd psd, chars layername, id_bitmap_read bmp, sint32 x, sint32 y)
+    {Core_AddOn_Psd_Insert()(psd, layername, bmp, x, y);}
 
     buffer AddOn::Psd::Build(id_psd psd)
     {return Core_AddOn_Psd_Build()(psd);}
