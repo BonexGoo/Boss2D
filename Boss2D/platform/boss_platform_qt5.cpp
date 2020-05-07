@@ -1597,7 +1597,7 @@
             #endif
         }
 
-        id_image Platform::Graphics::CreateImage(id_bitmap_read bitmap)
+        id_image Platform::Graphics::CreateImage(id_bitmap_read bitmap, bool mirrored)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             const sint32 SrcWidth = Bmp::GetWidth(bitmap);
@@ -1606,7 +1606,9 @@
 
             Bmp::bitmappixel* DstBits = (Bmp::bitmappixel*) NewImage.bits();
             const Bmp::bitmappixel* SrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
-            for(sint32 y = 0; y < SrcHeight; ++y)
+            if(mirrored)
+                Memory::Copy(DstBits, SrcBits, sizeof(Bmp::bitmappixel) * SrcWidth * SrcHeight);
+            else for(sint32 y = 0; y < SrcHeight; ++y)
                 Memory::Copy(&DstBits[y * SrcWidth], &SrcBits[(SrcHeight - 1 - y) * SrcWidth], sizeof(Bmp::bitmappixel) * SrcWidth);
 
             buffer NewPixmap = Buffer::Alloc<PixmapPrivate>(BOSS_DBG 1);

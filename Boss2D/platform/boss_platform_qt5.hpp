@@ -3133,10 +3133,7 @@
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-                const GLint SrcWidth = pixmap.width();
-                const GLint SrcHeight = pixmap.height();
                 f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
-
                 f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
                 f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
                 f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
@@ -3162,20 +3159,20 @@
                 mAttrib[0].vertices[0] = 2 * (x + p[0].x) / DstWidth - 1;
                 mAttrib[0].vertices[1] = 1 - 2 * (y + p[0].y) / DstHeight;
                 mAttrib[0].color32 = color.ToABGR();
-                mAttrib[0].texcoords[0] = ip[0].x / SrcWidth;
-                mAttrib[0].texcoords[1] = (SrcHeight - ip[0].y) / SrcHeight;
+                mAttrib[0].texcoords[0] = ip[0].x;
+                mAttrib[0].texcoords[1] = ip[0].y;
 
                 mAttrib[1].vertices[0] = 2 * (x + p[1].x) / DstWidth - 1;
                 mAttrib[1].vertices[1] = 1 - 2 * (y + p[1].y) / DstHeight;
                 mAttrib[1].color32 = color.ToABGR();
-                mAttrib[1].texcoords[0] = ip[1].x / SrcWidth;
-                mAttrib[1].texcoords[1] = (SrcHeight - ip[1].y) / SrcHeight;
+                mAttrib[1].texcoords[0] = ip[1].x;
+                mAttrib[1].texcoords[1] = ip[1].y;
 
                 mAttrib[2].vertices[0] = 2 * (x + p[2].x) / DstWidth - 1;
                 mAttrib[2].vertices[1] = 1 - 2 * (y + p[2].y) / DstHeight;
                 mAttrib[2].color32 = color.ToABGR();
-                mAttrib[2].texcoords[0] = ip[2].x / SrcWidth;
-                mAttrib[2].texcoords[1] = (SrcHeight - ip[2].y) / SrcHeight;
+                mAttrib[2].texcoords[0] = ip[2].x;
+                mAttrib[2].texcoords[1] = ip[2].y;
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); TestGL(BOSS_DBG 0);
             }
             void DrawTexture(uint32 fbo, const BOSS::Rect& rect, id_texture_read tex, const BOSS::Rect& texrect, const BOSS::Color& color, orientationtype ori, bool antialiasing)
@@ -3234,7 +3231,6 @@
                 const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
                 const sint32 SelectedProgram = (IsNV21)? 1 : 0;
                 f->glUseProgram(mProgram[SelectedProgram]); TestGL(BOSS_DBG 0);
-
                 f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
                 f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
                 f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);

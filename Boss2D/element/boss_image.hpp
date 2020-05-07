@@ -94,7 +94,7 @@ namespace BOSS
             Builder& operator=(Builder&& rhs);
         public:
             void Clear();
-            bool Finished();
+            bool Finished() const;
             void ValidBitmap(id_bitmap_read bitmap);
             id_image_read GetLastImage();
             id_image_read GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring);

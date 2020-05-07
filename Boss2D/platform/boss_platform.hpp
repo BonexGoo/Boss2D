@@ -723,8 +723,9 @@ public:
 
         /// @brief 이미지 생성
         /// @param bitmap : 비트맵
+        /// @param mirrored : 상하반전여부
         /// @return 생성된 이미지
-        static id_image CreateImage(id_bitmap_read bitmap);
+        static id_image CreateImage(id_bitmap_read bitmap, bool mirrored);
 
         /// @brief 이미지 가로길이 얻기
         /// @param image : 이미지
@@ -780,7 +781,7 @@ public:
 
         /// @brief 지정한 FBO핸들로 폴리곤영역식 이미지 출력
         /// @param image : 출력할 이미지
-        /// @param ip : 이미지의 꼭지점들(px)
+        /// @param ip : 이미지의 꼭지점들(uv값, x는 0~1, y는 0~1)
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)
         /// @param p : 꼭지점들(px)

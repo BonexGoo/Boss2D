@@ -440,14 +440,29 @@ namespace BOSS
         Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick, curve);
     }
 
-    void ZayPanel::polyimage(const Point (&p)[3], const Image& image, const Point (&ip)[3]) const
+    void ZayPanel::polyimage(const Point (&p)[3], const Image& image, Image::Build build, const Point (&ip)[3]) const
     {
         const Clip& LastClip = m_stack_clip[-1];
         const Color& LastColor = m_stack_color[-1];
         if(Platform::Graphics::BeginGL())
         {
-            Platform::Graphics::DrawPolyImageToFBO(image.GetBuildImage(LastColor),
-                ip, LastClip.l, LastClip.t, p, Color::White, fbo());
+            const sint32 ImageWidth = image.GetWidth();
+            const sint32 ImageHeight = image.GetHeight();
+            const float XRate = LastClip.Width() / ImageWidth;
+            const float YRate = LastClip.Height() / ImageHeight;
+            const sint32 DstWidth = (sint32) (image.GetImageWidth() * XRate + 0.5);
+            const sint32 DstHeight = (sint32) (image.GetImageHeight() * YRate + 0.5);
+
+            if(build != Image::Build::Null)
+            {
+                if(id_image_read RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, build))
+                    Platform::Graphics::DrawPolyImageToFBO(RebuildImage, ip,
+                        LastClip.l, LastClip.t, p, Color::White, fbo());
+                if(m_updater && !image.IsBuildFinished())
+                    m_updater->RepaintOnce();
+            }
+            else Platform::Graphics::DrawPolyImageToFBO(image.GetImage(), ip,
+                LastClip.l, LastClip.t, p, Color::White, fbo());
             Platform::Graphics::EndGL();
         }
         else
@@ -610,7 +625,7 @@ namespace BOSS
                     Platform::Graphics::DrawImage(RebuildImage, 0, 0, RebuildWidth, RebuildHeight,
                         LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
                 }
-                if(m_updater &&!image.IsBuildFinished())
+                if(m_updater && !image.IsBuildFinished())
                     m_updater->RepaintOnce();
             }
             else Platform::Graphics::DrawImage(image.GetImage(), 0, 0, image.GetImageWidth(), image.GetImageHeight(),

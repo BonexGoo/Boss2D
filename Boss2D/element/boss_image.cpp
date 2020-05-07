@@ -916,7 +916,7 @@ namespace BOSS
         mIsRoutineFinished = true;
     }
 
-    bool Image::Builder::Finished()
+    bool Image::Builder::Finished() const
     {
         return mIsRoutineFinished;
     }
@@ -935,14 +935,15 @@ namespace BOSS
     id_image_read Image::Builder::GetLastImage()
     {
         if(!mLastImage)
-            mLastImage = Platform::Graphics::CreateImage(m_RefBitmap);
+            mLastImage = Platform::Graphics::CreateImage(m_RefBitmap, false);
         return mLastImage;
     }
 
     id_image_read Image::Builder::GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring)
     {
-        if(build == Build::Null || ((resizing_width == -1 || resizing_width == m_BitmapWidth) &&
-            (resizing_height == -1 || resizing_height == m_BitmapHeight) && coloring.argb == Color::ColoringDefault))
+        if(build == Build::Null || (coloring.argb == Color::ColoringDefault &&
+            (resizing_width == -1 || resizing_width == m_BitmapWidth) &&
+            (resizing_height == -1 || resizing_height == m_BitmapHeight)))
             return GetLastImage();
 
         if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.argb != coloring.argb)
@@ -950,23 +951,11 @@ namespace BOSS
             mRoutineResize.w = resizing_width;
             mRoutineResize.h = resizing_height;
             mRoutineColor = coloring;
-            if(id_image OldImage = Platform::Graphics::RemoveImageRoutine(mRoutine, true))
-            {
-                if(mLastImage)
-                {
-                    auto LastWidth = Platform::Graphics::GetImageWidth(mLastImage);
-                    auto LastHeight = Platform::Graphics::GetImageHeight(mLastImage);
-                    auto OldWidth = Platform::Graphics::GetImageWidth(OldImage);
-                    auto OldHeight = Platform::Graphics::GetImageHeight(OldImage);
-                    if(LastWidth * LastHeight < OldWidth * OldHeight)
-                    {
-                        Platform::Graphics::RemoveImage(mLastImage);
-                        mLastImage = OldImage;
-                    }
-                    else Platform::Graphics::RemoveImage(OldImage);
-                }
-                else mLastImage = OldImage;
-            }
+
+            Platform::Graphics::RemoveImage(mLastImage);
+            mLastImage = nullptr;
+
+            Platform::Graphics::RemoveImageRoutine(mRoutine);
             mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, resizing_width, resizing_height, coloring);
             mIsRoutineFinished = false;
         }
@@ -977,8 +966,7 @@ namespace BOSS
             return Platform::Graphics::BuildImageRoutineOnce(mRoutine, false);
         }
 
-        id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true);
-        if(Result)
+        if(id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true))
         {
             mIsRoutineFinished = true;
             return Result;
