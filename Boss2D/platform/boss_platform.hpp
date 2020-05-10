@@ -763,8 +763,7 @@ public:
 
         /// @brief 이미지루틴 삭제
         /// @param routine : 이미지루틴
-        /// @param keep_image : 빌드된 결과를 리턴받을지의 여부
-        static id_image RemoveImageRoutine(id_image_routine routine, bool keep_image = false);
+        static void RemoveImageRoutine(id_image_routine routine);
 
         /// @brief 이미지 출력
         /// @param image : 출력할 이미지

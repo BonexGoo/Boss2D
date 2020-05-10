@@ -1034,10 +1034,9 @@
             return nullptr;
         }
 
-        id_image Platform::Graphics::RemoveImageRoutine(id_image_routine routine, bool keep_image)
+        void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
         }
 
         void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h)
