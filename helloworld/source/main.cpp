@@ -62,3 +62,7 @@ void PlatformQuit()
     R::SaveAtlas(AtlasInfo);
     AtlasInfo.SaveJson().ToAsset("atlasinfo.json");
 }
+
+void PlatformFree()
+{
+}

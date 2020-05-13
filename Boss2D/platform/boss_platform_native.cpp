@@ -81,6 +81,7 @@
     #if BOSS_NEED_MAIN
         extern bool PlatformInit();
         extern void PlatformQuit();
+        extern void PlatformFree();
 
         int main(int argc, char* argv[])
         {

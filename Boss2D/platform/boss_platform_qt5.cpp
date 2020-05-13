@@ -138,6 +138,7 @@
     #if BOSS_NEED_MAIN
         extern bool PlatformInit();
         extern void PlatformQuit();
+        extern void PlatformFree();
 
         int main(int argc, char* argv[])
         {
@@ -173,6 +174,7 @@
 
             // 스토리지(TLS) 영구제거
             Storage::ClearAll(SCL_SystemAndUser);
+            PlatformFree();
             return result;
         }
     #endif

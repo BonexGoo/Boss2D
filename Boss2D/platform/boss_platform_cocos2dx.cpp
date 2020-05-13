@@ -109,28 +109,31 @@
     #if BOSS_NEED_MAIN
         extern bool PlatformInit();
         extern void PlatformQuit();
+        extern void PlatformFree();
 
         int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
         {
-            int result = 0;
-            {
-                UNREFERENCED_PARAMETER(hPrevInstance);
-                UNREFERENCED_PARAMETER(lpCmdLine);
+            UNREFERENCED_PARAMETER(hPrevInstance);
+            UNREFERENCED_PARAMETER(lpCmdLine);
 
+            int result = 0;
+            Platform::Option::SetFlag("AssertPopup", true);
+            {
                 MainWindow mainWindow;
                 g_window = &mainWindow;
 
-                Platform::Option::SetFlag("AssertPopup", true);
-                PlatformInit();
-                result = cocos2d::Application::getInstance()->run();
-                PlatformQuit();
-                Platform::Option::SetFlag("AssertPopup", false);
-
+                if(PlatformInit())
+                {
+                    result = cocos2d::Application::getInstance()->run();
+                    PlatformQuit();
+                }
                 g_window = nullptr;
             }
+            Platform::Option::SetFlag("AssertPopup", false);
 
             // 스토리지(TLS) 영구제거
             Storage::ClearAll(CL_SystemAndUser);
+            PlatformFree();
             return result;
         }
     #endif
