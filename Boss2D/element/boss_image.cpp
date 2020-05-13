@@ -546,7 +546,7 @@ namespace BOSS
         return (m_bitmap)? Bmp::Copy(m_bitmap, l, t, r, b) : nullptr;
     }
 
-    id_bitmap Image::RotatedBitmap(float radian) const
+    id_bitmap Image::RotatedBitmap(double radian) const
     {
         const sint32 SrcWidth = Bmp::GetWidth(m_bitmap);
         const sint32 SrcHeight = Bmp::GetHeight(m_bitmap);

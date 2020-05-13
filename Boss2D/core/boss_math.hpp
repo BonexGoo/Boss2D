@@ -115,35 +115,35 @@ namespace BOSS
         /// @brief 코사인 구하기
         /// @param rad : 라디안
         /// @return 코사인값
-        static float Cos(const float rad);
+        static double Cos(const double rad);
 
         /// @brief 사인 구하기
         /// @param rad : 라디안
         /// @return 사인값
-        static float Sin(const float rad);
+        static double Sin(const double rad);
 
         /// @brief 탄젠트 구하기
         /// @param rad : 라디안
         /// @return 탄젠트값
-        static float Tan(const float rad);
+        static double Tan(const double rad);
 
         /// @brief 아크탄젠트 구하기
         /// @param x : 변화량X
         /// @param y : 변화량Y
         /// @return 아크탄젠트
-        static float Atan(const float x, const float y);
+        static double Atan(const double x, const double y);
 
         /// @brief 각도를 라디안으로 변환하기
         /// @param deg : 각도
         /// @return 라디안
-        inline static float ToRadian(const float deg)
-        {return deg * PI() / 180.0f;}
+        inline static double ToRadian(const double deg)
+        {return deg * PI() / 180.0;}
 
         /// @brief 라디안을 각도로 변환하기
         /// @param rad : 라디안
         /// @return 각도
-        inline static float ToDegree(const float rad)
-        {return rad * 180.0f / PI();}
+        inline static double ToDegree(const double rad)
+        {return rad * 180.0 / PI();}
 
         /// @brief 거리 구하기
         /// @param x1 : 좌표X1
@@ -159,8 +159,8 @@ namespace BOSS
 
         /// @brief PI값 얻기
         /// @return PI값
-        inline static float PI()
-        {return 3.1415926535897932385F;}
+        inline static double PI()
+        {return 3.1415926535897932385;}
 
         /// @brief float의 최대값 얻기
         /// @return float의 최대값

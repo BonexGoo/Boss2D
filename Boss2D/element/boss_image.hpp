@@ -29,7 +29,7 @@ namespace BOSS
         id_bitmap ChangeBitmap(id_bitmap bitmap);
         void Crear();
         id_bitmap CopiedBitmap(sint32 l = 0, sint32 t = 0, sint32 r = -1, sint32 b = -1) const;
-        id_bitmap RotatedBitmap(float radian) const;
+        id_bitmap RotatedBitmap(double radian) const;
         void ChangeToMagentaAlpha();
         void RestoreFromMagentaAlpha();
         void ReplaceAlphaChannelBy(id_bitmap_read src);
