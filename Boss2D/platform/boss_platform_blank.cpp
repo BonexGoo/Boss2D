@@ -422,9 +422,9 @@
             return false;
         }
 
-        bool Platform::Popup::FileDialog(DialogShellType type, String& path, String* shortpath, chars title)
+        bool Platform::Popup::FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult)
         {
-            return PlatformImpl::Wrap::Popup_FileDialog(type, path, shortpath, title);
+            return PlatformImpl::Wrap::Popup_FileDialog(type, path, shortpath, title, filters, filterresult);
         }
 
         sint32 Platform::Popup::MessageDialog(chars title, chars text, DialogButtonType type)

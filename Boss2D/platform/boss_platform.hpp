@@ -267,8 +267,11 @@ public:
         /// @param path : 입력(초기값 필요) 및 결과
         /// @param shortpath : 아이템명
         /// @param title : 창제목
+        /// @param filters : 파일필터들
+        /// @param filterresult : 필터선택결과
         /// @return 유효성(확인버튼이 아닌 종료는 무효)
-        static bool FileDialog(DialogShellType type, String& path, String* shortpath, chars title);
+        static bool FileDialog(DialogShellType type, String& path, String* shortpath, chars title,
+            wchars filters = L"All File(*.*)\0*.*\0Text File\0*.txt;*.doc\0", sint32* filterresult = nullptr);
 
         /// @brief 메시지 다이얄로그
         /// @param title : 창제목

@@ -408,7 +408,7 @@ namespace BOSS
                 }
             #endif
 
-            bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title)
+            bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult)
             {
                 bool Result = false;
                 #if BOSS_WINDOWS
@@ -438,21 +438,25 @@ namespace BOSS
                         ofn.lStructSize = sizeof(OPENFILENAMEW);
                         ofn.lpstrTitle = (wchars) TitleName;
                         ofn.lpstrInitialDir = (wchars) InitDir;
-                        ofn.lpstrFilter =
-                            L"All File(*.*)\0"
-                            L"*.*\0"
-                            L"Text File\0"
-                            L"*.txt;*.doc\0";
+                        ofn.lpstrFilter = filters;
                         ofn.lpstrFile = ResultPath;
                         ofn.nMaxFile = _MAX_PATH - 4;
 
                         if(type == DST_FileSave)
                         {
                             if(GetSaveFileNameW(&ofn))
+                            {
+                                if(filterresult)
+                                    *filterresult = sint32(ofn.nFilterIndex) - 1;
                                 Result = true;
+                            }
                         }
                         else if(GetOpenFileNameW(&ofn))
+                        {
+                            if(filterresult)
+                                *filterresult = sint32(ofn.nFilterIndex) - 1;
                             Result = true;
+                        }
                     }
 
                     if(Result)
