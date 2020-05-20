@@ -656,6 +656,12 @@
             return nullptr;
         }
 
+        sint32 Platform::Utility::GetScreenID(const point64& pos)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return -1;
+        }
+
         sint32 Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
         {
             BOSS_ASSERT("Further development is needed.", false);

@@ -391,6 +391,11 @@ public:
         /// @return 프로그램 URL스키마로 동작된 경우 인수반환(없으면 nullptr)
         static chars GetArgumentForUrlSchema(chars schema);
 
+        /// @brief 위치에 따른 스크린ID 얻기
+        /// @param pos : 윈도우좌표계 위치(px)
+        /// @return 스크린ID(위치가 어떤 스크린에도 속해있지 않다면 -1)
+        static sint32 GetScreenID(const point64& pos);
+
         /// @brief 스크린영역 얻기
         /// @param rect : 스크린영역(px)
         /// @param screenid : 스크린ID(-1일 경우 모든 스크린)

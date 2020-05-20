@@ -870,26 +870,33 @@
 
         void Platform::Utility::SetMinimize()
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Minimize)
                 return;
 
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
                 g_data->m_lastWindowNormalRect = Platform::GetWindowRect();
             g_data->m_lastWindowType = MainData::WindowType::Minimize;
-            g_data->getMainWindow()->showMinimized();
+            g_window->showMinimized();
         }
 
         void Platform::Utility::SetFullScreen()
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Maximize)
                 return;
+
+            point64 CursorPos;
+            Platform::Utility::GetCursorPos(CursorPos);
+            sint32 ScreenID = Platform::Utility::GetScreenID(CursorPos);
+            rect128 FullScreenRect;
+            Platform::Utility::GetScreenRect(FullScreenRect, ScreenID);
 
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
                 g_data->m_lastWindowNormalRect = Platform::GetWindowRect();
             g_data->m_lastWindowType = MainData::WindowType::Maximize;
-            g_data->getMainWindow()->showFullScreen();
+            g_window->setGeometry(FullScreenRect.l, FullScreenRect.t,
+                FullScreenRect.r - FullScreenRect.l, FullScreenRect.b - FullScreenRect.t);
         }
 
         bool Platform::Utility::IsFullScreen()
@@ -900,13 +907,13 @@
 
         void Platform::Utility::SetNormalWindow()
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
                 return;
 
-            g_data->getMainWindow()->showNormal(); // 매우 느림! 대책 강구해야 함!
+            g_window->showNormal();
             g_data->m_lastWindowType = MainData::WindowType::Normal;
-            Platform::SetWindowRect(g_data->m_lastWindowNormalRect.l, g_data->m_lastWindowNormalRect.t,
+            g_window->setGeometry(g_data->m_lastWindowNormalRect.l, g_data->m_lastWindowNormalRect.t,
                 g_data->m_lastWindowNormalRect.r - g_data->m_lastWindowNormalRect.l,
                 g_data->m_lastWindowNormalRect.b - g_data->m_lastWindowNormalRect.t);
         }
@@ -1013,6 +1020,12 @@
             if(g_argc == 3 && !String::Compare(g_argv[1], SchemaToken))
                 return g_argv[2] + boss_strlen(schema) + 3; // schema + "://"
             return "";
+        }
+
+        sint32 Platform::Utility::GetScreenID(const point64& pos)
+        {
+            QPoint GeometryPoint(pos.x, pos.y);
+            return ApplicationPrivate::desktop()->screenNumber(GeometryPoint);
         }
 
         sint32 Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)

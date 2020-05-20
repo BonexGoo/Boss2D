@@ -584,6 +584,12 @@
             return nullptr;
         }
 
+        sint32 Platform::Utility::GetScreenID(const point64& pos)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return -1;
+        }
+
         sint32 Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

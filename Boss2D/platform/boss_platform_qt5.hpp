@@ -2536,11 +2536,6 @@
             return m_viewMDI->m_api;
         }
 
-        WidgetPrivate* getMainWindow()
-        {
-            return m_parent;
-        }
-
         GLWidgetPrivate* getGLWidget()
         {
             return m_viewGL;
