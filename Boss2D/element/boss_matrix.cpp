@@ -65,6 +65,17 @@ namespace BOSS
         return Matrix(*this).operator*=(rhs);
     }
 
+    bool Matrix::operator==(const Matrix& rhs) const
+    {
+        return (m11 == rhs.m11 && m12 == rhs.m12 && m21 == rhs.m21 && m22 == rhs.m22
+            && dx == rhs.dx && dy == rhs.dy);
+    }
+
+    bool Matrix::operator!=(const Matrix& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
     void Matrix::AddOffset(const float x, const float y)
     {
         operator*=(Matrix(1, 0, 0, 1, x, y));

@@ -15,6 +15,8 @@ namespace BOSS
         Matrix& operator=(const Matrix& rhs);
         Matrix& operator*=(const Matrix& rhs);
         Matrix operator*(const Matrix& rhs) const;
+        bool operator==(const Matrix& rhs) const;
+        bool operator!=(const Matrix& rhs) const;
 
         void AddOffset(const float x, const float y);
         void AddRotate(const float angle, const float cx, const float cy);
