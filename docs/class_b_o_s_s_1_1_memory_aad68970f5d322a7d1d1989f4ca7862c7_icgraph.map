@@ -1,0 +1,16 @@
+<map id="BOSS::Memory::Copy" name="BOSS::Memory::Copy">
+<area shape="rect" id="node1" title="복사" alt="" coords="455,233,607,260"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_w_string.html#a2f0992392e24953ed40cffb4a599822a" title="후방추가(네이티브 와이드스트링으로부터)" alt="" coords="235,5,400,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#af22b4d249e19877c5623245db60986a3" title="후방추가(네이티브 스트링으로부터)" alt="" coords="241,56,393,83"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a9b46119811ad1a234f47d9ac28595047" title="빠른 후방추가(상수 스트링으로부터)" alt="" coords="228,107,407,133"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_zen.html#a5278b36193f92637ef4c273ffa6f7ac1" title="Zen소스 제작" alt="" coords="255,157,380,184"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_context.html#a1da92d36ca2babc2bb19a30994a27cce" title="자신의 문자열값 얻기" alt="" coords="230,208,405,235"/>
+<area shape="rect" id="node9" href="$class_b_o_s_s_1_1_zen.html#a8c28be6215c480df5e5665ecf43e5c8e" title="복사" alt="" coords="242,259,393,285"/>
+<area shape="rect" id="node11" href="$class_b_o_s_s_1_1_context.html#a690d30c1761e7fc309082a9d80f75c3a" title="Bin바이너리로 세이브" alt="" coords="234,309,401,336"/>
+<area shape="rect" id="node12" href="$class_b_o_s_s_1_1_string.html#a1287821f57bd5e2ad96561fb75fe5102" title="특수생성자(네이티브 스트링으로부터)" alt="" coords="246,360,389,387"/>
+<area shape="rect" id="node13" href="$class_b_o_s_s_1_1_w_string.html#a657e7639976c286dd5a9d79f9a613e4b" title="특수생성자(네이티브 와이드스트링으로부터)" alt="" coords="233,411,402,437"/>
+<area shape="rect" id="node14" href="$class_b_o_s_s_1_1_zen.html#a92a302bd377e3e174608f1f7110024cd" title="생성자" alt="" coords="259,461,376,488"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_context.html#a1a8f51b77657fb4f094f1000ae160279" title="Json소스로 세이브" alt="" coords="5,107,180,133"/>
+<area shape="rect" id="node8" href="$class_b_o_s_s_1_1_context.html#abf5d4b4822fe32ef019db718934086e8" title="자신의 문자열값 얻기(디폴트처리)" alt="" coords="5,208,180,235"/>
+<area shape="rect" id="node10" href="$class_b_o_s_s_1_1_zen.html#a84eed814da2613cbd566155763bed9ea" title="복사생성자" alt="" coords="34,259,151,285"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="BOSS::ZayPanel" name="BOSS::ZayPanel">
+<area shape="rect" id="node1" title="뷰패널" alt="" coords="523,195,644,222"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="167,5,371,47"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="195,71,343,98"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="171,123,366,164"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="167,188,371,229"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="171,253,366,295"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_array.html" title=" " alt="" coords="167,319,371,360"/>
+<area shape="rect" id="node8" href="$class_b_o_s_s_1_1_frame_updater.html" title=" " alt="" coords="194,385,343,411"/>
+<area shape="rect" id="node9" href="$class_b_o_s_s_1_1_updater.html" title="업데이터지원" alt="" coords="5,385,117,411"/>
+</map>

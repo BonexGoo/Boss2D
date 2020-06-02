@@ -1,0 +1,4 @@
+<map id="BOSS::Platform::Graphics::DrawPolyLine" name="BOSS::Platform::Graphics::DrawPolyLine">
+<area shape="rect" id="node1" title="폴리라인 출력" alt="" coords="5,5,180,47"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="228,13,368,39"/>
+</map>

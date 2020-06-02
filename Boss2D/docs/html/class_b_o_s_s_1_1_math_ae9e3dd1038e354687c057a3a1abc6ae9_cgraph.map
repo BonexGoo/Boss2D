@@ -1,0 +1,4 @@
+<map id="BOSS::Math::ToDegree" name="BOSS::Math::ToDegree">
+<area shape="rect" id="node1" title="라디안을 각도로 변환하기" alt="" coords="5,5,164,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_math.html#aad02db325e6fd14b73496d276577c806" title="PI값 얻기" alt="" coords="212,5,328,32"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="BOSS::Context::GetString" name="BOSS::Context::GetString">
+<area shape="rect" id="node1" title="자신의 문자열값 얻기(디폴트처리)" alt="" coords="5,5,180,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#a1da92d36ca2babc2bb19a30994a27cce" title="자신의 문자열값 얻기" alt="" coords="228,5,403,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_memory.html#aad68970f5d322a7d1d1989f4ca7862c7" title="복사" alt="" coords="451,5,603,32"/>
+</map>

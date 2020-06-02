@@ -1,0 +1,11 @@
+<map id="BOSS::BriiEventClass" name="BOSS::BriiEventClass">
+<area shape="rect" id="node1" title=" " alt="" coords="5,209,156,236"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_brii_event_1_1_call_event.html" title=" " alt="" coords="230,5,410,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_brii_event_1_1_event_result___done.html" title=" " alt="" coords="204,56,436,83"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_brii_event_1_1_event_result___exit_script.html" title=" " alt="" coords="223,107,417,149"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_brii_event_1_1_event_result___not_found.html" title=" " alt="" coords="223,173,417,214"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_brii_event_1_1_icon_pack.html" title=" " alt="" coords="230,239,410,265"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_brii_event_1_1_init_class.html" title=" " alt="" coords="232,289,408,316"/>
+<area shape="rect" id="node8" href="$class_b_o_s_s_1_1_brii_event_1_1_quit_class.html" title=" " alt="" coords="229,340,411,367"/>
+<area shape="rect" id="node9" href="$class_b_o_s_s_1_1_brii_event_1_1_run_script.html" title=" " alt="" coords="229,391,411,417"/>
+</map>

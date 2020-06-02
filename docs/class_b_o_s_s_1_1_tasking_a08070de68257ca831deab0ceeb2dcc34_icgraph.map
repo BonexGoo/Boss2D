@@ -1,0 +1,4 @@
+<map id="BOSS::Tasking::IsAlive" name="BOSS::Tasking::IsAlive">
+<area shape="rect" id="node1" title="해당 태스킹의 생존여부" alt="" coords="220,5,377,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_tasking.html#a9d395eb52c9e042332313db2f30ad115" title="태스킹 해제" alt="" coords="5,5,172,32"/>
+</map>

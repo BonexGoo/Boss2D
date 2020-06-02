@@ -1,0 +1,9 @@
+<map id="BOSS::ZayUIElement" name="BOSS::ZayUIElement">
+<area shape="rect" id="node1" title=" " alt="" coords="5,132,153,159"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_zay_asset_element.html" title=" " alt="" coords="217,5,388,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_zay_component_element.html" title=" " alt="" coords="201,56,404,83"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_zay_condition_element.html" title=" " alt="" coords="207,107,398,133"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_zay_param_element.html" title=" " alt="" coords="215,157,390,184"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_zay_request_element.html" title=" " alt="" coords="211,208,395,235"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_zay_view_element.html" title=" " alt="" coords="221,259,385,285"/>
+</map>

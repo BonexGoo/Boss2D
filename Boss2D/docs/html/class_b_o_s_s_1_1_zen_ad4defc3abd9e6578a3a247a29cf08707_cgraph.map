@@ -1,0 +1,4 @@
+<map id="BOSS::Zen::GetFloat" name="BOSS::Zen::GetFloat">
+<area shape="rect" id="node1" title="자신의 소수값 얻기" alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_zen.html#a367524902e55b9d6d27620842c7b7f79" title="자신의 유효여부" alt="" coords="200,5,335,32"/>
+</map>

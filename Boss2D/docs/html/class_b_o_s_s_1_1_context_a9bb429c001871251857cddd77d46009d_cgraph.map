@@ -1,0 +1,9 @@
+<map id="BOSS::Context::Context" name="BOSS::Context::Context">
+<area shape="rect" id="node1" title="생성자(스크립트를 파싱)" alt="" coords="5,31,171,57"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#ad589ab7039105c805ecbbfb7b83a45ab" title="Json소스를 파싱하여 로드(buffer)" alt="" coords="219,5,393,32"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_context.html#ac8c0f58dc8d6db946cc3ee3246554aab" title="Xml소스를 파싱하여 로드(buffer)" alt="" coords="221,56,391,83"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_context.html#ac8bfa29a51c66de8be16110eaf3beaaa" title="초기화" alt="" coords="441,81,592,108"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_object.html#ac288d2824b2186b5a0b3d3ab03b3e2f4" title="데이터값(공유방식)" alt="" coords="828,31,1015,57"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_object.html#a3aae72c0060d7273ee451b474b11cc38" title="비우기" alt="" coords="850,107,993,133"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_context.html#a33ce4fdcb9a7cdf200617a903fc4ca98" title="자신의 값 설정" alt="" coords="640,81,780,108"/>
+</map>

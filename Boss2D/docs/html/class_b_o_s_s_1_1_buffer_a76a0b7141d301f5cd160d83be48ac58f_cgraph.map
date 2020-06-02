@@ -1,0 +1,7 @@
+<map id="BOSS::Buffer::Clone" name="BOSS::Buffer::Clone">
+<area shape="rect" id="node1" title="복제" alt="" coords="5,56,147,83"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_buffer.html#a3746db755af8f18f3cc070a51bda23d0" title="참고할당(샘플과 동일한 타입으로)" alt="" coords="195,5,392,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_buffer.html#a153dee23e1c7cb161bb428a998c59703" title="복사" alt="" coords="224,56,363,83"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_buffer.html#a9294938290f766be3645ae1142c907d3" title="배열수량 구하기" alt="" coords="216,107,371,133"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_buffer.html#a1efc3d7c06299fbb67fec56871203aa6" title="객체사이즈 구하기" alt="" coords="440,56,587,83"/>
+</map>

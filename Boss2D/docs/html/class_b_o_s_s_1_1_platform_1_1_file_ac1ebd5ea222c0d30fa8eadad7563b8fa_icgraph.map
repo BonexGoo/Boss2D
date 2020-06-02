@@ -1,0 +1,9 @@
+<map id="BOSS::Platform::File::Close" name="BOSS::Platform::File::Close">
+<area shape="rect" id="node1" title="파일닫기" alt="" coords="435,99,579,141"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_asset.html#a9417b9e0f2457c17aba85ee4f0a8bb05" title="어셋닫기" alt="" coords="235,56,378,83"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_string.html#a66a3a4873fd48ec1c8dbd85474af6d96" title="파일로드식 객체생성" alt="" coords="227,107,387,133"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_string.html#aa9113b3edef42b01f6b4ec1bb287f436" title="파일로 저장" alt="" coords="235,157,379,184"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#a0fb8b385b3865776914a9c36869001e7" title="어셋로드식 객체생성" alt="" coords="5,5,179,32"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a712c2c9fd1001ee15ee3a2be3ab72929" title="어셋으로 저장" alt="" coords="13,56,171,83"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_asset.html#a0bcbfdd0d08d3d585031669c4e8cabe4" title="어셋을 버퍼로 반환(읽기전용)" alt="" coords="14,107,170,133"/>
+</map>

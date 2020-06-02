@@ -1,0 +1,6 @@
+<map id="BOSS::Asset::Close" name="BOSS::Asset::Close">
+<area shape="rect" id="node1" title="어셋닫기" alt="" coords="227,56,369,83"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a0fb8b385b3865776914a9c36869001e7" title="어셋로드식 객체생성" alt="" coords="5,5,179,32"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#a712c2c9fd1001ee15ee3a2be3ab72929" title="어셋으로 저장" alt="" coords="13,56,171,83"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_asset.html#a0bcbfdd0d08d3d585031669c4e8cabe4" title="어셋을 버퍼로 반환(읽기전용)" alt="" coords="14,107,170,133"/>
+</map>

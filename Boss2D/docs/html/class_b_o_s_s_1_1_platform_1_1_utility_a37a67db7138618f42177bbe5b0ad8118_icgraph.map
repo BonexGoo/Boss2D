@@ -1,0 +1,4 @@
+<map id="BOSS::Platform::Utility::Sleep" name="BOSS::Platform::Utility::Sleep">
+<area shape="rect" id="node1" title="슬립처리" alt="" coords="220,5,376,47"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_tasking.html#a9d395eb52c9e042332313db2f30ad115" title="태스킹 해제" alt="" coords="5,13,172,39"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="BOSS::Platform::File::FDOpen" name="BOSS::Platform::File::FDOpen">
+<area shape="rect" id="node1" title="FD타입 파일열기" alt="" coords="5,23,149,65"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a4ff11f90045d746b8d0858330f9ed7c7" title="컨버팅식 객체생성" alt="" coords="197,31,384,57"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a32bb766090e0ad7d2755bda02256c31d" title="추가(후미+1)하여 쓰기접근" alt="" coords="432,5,591,32"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#afc2908a34872b7b649b005c6c20fd9d8" title="생성자" alt="" coords="440,56,583,83"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="BOSS::String::FromInteger" name="BOSS::String::FromInteger">
+<area shape="rect" id="node1" title="정수식 객체생성(sint32)" alt="" coords="460,56,639,83"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#a9e555141be97c5fab48a6ab2e6bab1a8" title="자식콘텍스트 현황보고" alt="" coords="228,5,412,32"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_context.html#a1a8f51b77657fb4f094f1000ae160279" title="Json소스로 세이브" alt="" coords="233,56,407,83"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_context.html#ac17964a50d81d5b2450625de3f2916a5" title="Xml소스로 세이브" alt="" coords="235,107,405,133"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_profile.html#a1d44ea3706816ac733f53f9e502495e1" title="현재 프로파일을 디버그창에 출력" alt="" coords="5,5,180,32"/>
+</map>

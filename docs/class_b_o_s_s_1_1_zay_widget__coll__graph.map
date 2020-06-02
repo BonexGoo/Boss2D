@@ -1,0 +1,4 @@
+<map id="BOSS::ZayWidget" name="BOSS::ZayWidget">
+<area shape="rect" id="node1" title="제이에디터연동 위젯" alt="" coords="5,95,135,121"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_image.html" title="재질&#45;이미지" alt="" coords="19,5,121,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="BOSS::Platform::File::GetAttributes" name="BOSS::Platform::File::GetAttributes">
+<area shape="rect" id="node1" title="아이템의 속성값 조사" alt="" coords="228,5,372,47"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_asset.html#aed55e7ed106f4885cc493d0f5dae4127" title="캐시의 유효성검사(수정시간 비교방식)" alt="" coords="5,13,180,39"/>
+</map>

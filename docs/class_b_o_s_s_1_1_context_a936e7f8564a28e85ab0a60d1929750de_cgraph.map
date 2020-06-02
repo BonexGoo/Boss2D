@@ -1,0 +1,4 @@
+<map id="BOSS::Context::GetFloat" name="BOSS::Context::GetFloat">
+<area shape="rect" id="node1" title="자신의 소수값 얻기(디폴트처리)" alt="" coords="5,5,176,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#a2018efb830f9c452bbb147af78a030d2" title="자신의 소수값 얻기" alt="" coords="224,5,395,32"/>
+</map>

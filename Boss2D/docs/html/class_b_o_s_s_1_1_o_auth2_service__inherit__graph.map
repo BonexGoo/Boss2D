@@ -1,0 +1,7 @@
+<map id="BOSS::OAuth2Service" name="BOSS::OAuth2Service">
+<area shape="rect" id="node1" title="서비스&#45;OAuth2" alt="" coords="261,5,414,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_o_auth2_service_impl.html" title=" " alt="" coords="249,80,426,107"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_o_auth2_facebook_service.html" title=" " alt="" coords="5,155,216,181"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_o_auth2_google_service.html" title=" " alt="" coords="240,155,435,181"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_o_auth2_kakao_service.html" title=" " alt="" coords="459,155,650,181"/>
+</map>

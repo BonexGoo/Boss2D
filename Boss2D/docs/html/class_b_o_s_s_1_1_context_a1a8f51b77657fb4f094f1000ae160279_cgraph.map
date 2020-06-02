@@ -1,0 +1,9 @@
+<map id="BOSS::Context::SaveJson" name="BOSS::Context::SaveJson">
+<area shape="rect" id="node1" title="Json소스로 세이브" alt="" coords="5,101,180,128"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a9b46119811ad1a234f47d9ac28595047" title="빠른 후방추가(상수 스트링으로부터)" alt="" coords="228,69,407,96"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_string.html#a5a36a1528eca28bd60eae6556b9c6204" title="정수식 객체생성(sint32)" alt="" coords="228,132,407,159"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a5e352bbb2a48b66fbef105bab7af6bbb" title="저수준식 추가형 쓰기접근" alt="" coords="455,5,661,32"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_array.html#a58bf6d82141b09f1616b8cc3caa1b64b" title="비우기" alt="" coords="490,56,626,83"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_memory.html#aad68970f5d322a7d1d1989f4ca7862c7" title="복사" alt="" coords="482,107,634,133"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_string.html#afc2908a34872b7b649b005c6c20fd9d8" title="생성자" alt="" coords="487,157,629,184"/>
+</map>

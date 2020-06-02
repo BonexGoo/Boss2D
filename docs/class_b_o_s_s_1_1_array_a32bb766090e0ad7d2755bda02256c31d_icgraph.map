@@ -1,0 +1,28 @@
+<map id="BOSS::Array::AtAdding" name="BOSS::Array::AtAdding">
+<area shape="rect" id="node1" title="추가(후미+1)하여 쓰기접근" alt="" coords="467,473,625,500"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#a6ea889a8433b256bab4b88c0a04c6706" title="특수생성자(값으로부터)" alt="" coords="232,5,415,61"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a9ede9002292deab6c7bc856462176902" title="개별이동" alt="" coords="232,85,415,141"/>
+<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_array.html#a150b75b710ce75caebb9db68a9707ba1" title="구간이동(대상인스턴스의 메모리공간은 보존)" alt="" coords="232,165,415,221"/>
+<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_w_string.html#ad59a9746b6289dcaaab736a2d91733d4" title="컨버팅식 객체생성" alt="" coords="230,245,417,272"/>
+<area shape="rect" id="node8" href="$class_b_o_s_s_1_1_w_string.html#adb3c55d4d60c07637e9f552757c2adf5" title="컨버팅식 객체생성(CP949)" alt="" coords="229,296,418,323"/>
+<area shape="rect" id="node9" href="$class_b_o_s_s_1_1_string.html#a857436c475a7bf179d3cc03f21d0cd06" title="컨버팅식 객체생성(URL스트링)" alt="" coords="229,347,418,373"/>
+<area shape="rect" id="node10" href="$class_b_o_s_s_1_1_string.html#a4ff11f90045d746b8d0858330f9ed7c7" title="컨버팅식 객체생성" alt="" coords="230,397,417,424"/>
+<area shape="rect" id="node18" href="$class_b_o_s_s_1_1_w_string.html#ad4e13462d4821b91f7e5a51a153ba0f7" title="CP949형 스트링으로 컨버팅하여 반환" alt="" coords="228,448,419,475"/>
+<area shape="rect" id="node19" href="$class_b_o_s_s_1_1_string.html#acea565275933fc5f78e397a346e0047f" title="추가(chars)" alt="" coords="237,499,409,525"/>
+<area shape="rect" id="node20" href="$class_b_o_s_s_1_1_w_string.html#ac8860de02c615f34a4d062265c2ec778" title="추가(wchars)" alt="" coords="231,549,416,576"/>
+<area shape="rect" id="node21" href="$class_b_o_s_s_1_1_string.html#a714707a69c23953eaf3abdb2a0aad1be" title="복사(chars)" alt="" coords="241,600,405,627"/>
+<area shape="rect" id="node22" href="$class_b_o_s_s_1_1_w_string.html#a7cc96dff76318a3ce95d8fb717476868" title="복사(wchars)" alt="" coords="235,651,412,677"/>
+<area shape="rect" id="node23" href="$class_b_o_s_s_1_1_w_string.html#ab941f285666808efc944ecfc69fa4f48" title="후방감소" alt="" coords="241,701,406,728"/>
+<area shape="rect" id="node24" href="$class_b_o_s_s_1_1_string.html#a26a0c25a65ff94dc2e2567c70ffe47f8" title="후방감소" alt="" coords="247,752,399,779"/>
+<area shape="rect" id="node25" href="$class_b_o_s_s_1_1_string.html#aef5b7ac3f08b28d5544933007367dd66" title="HTML스트링으로 저장" alt="" coords="231,803,415,829"/>
+<area shape="rect" id="node26" href="$class_b_o_s_s_1_1_string.html#a3f232e047fa58fa43ff59890e74e5a72" title="URL스트링으로 저장" alt="" coords="237,853,410,880"/>
+<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a727727aac15b44fec7782007063d2abb" title="아이템의 풀패스명 조사" alt="" coords="21,217,165,258"/>
+<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_asset.html#aed55e7ed106f4885cc493d0f5dae4127" title="캐시의 유효성검사(수정시간 비교방식)" alt="" coords="5,165,180,192"/>
+<area shape="rect" id="node11" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a14a59c58c3c6c514dfe09a43271fb246" title="아이템 존재확인" alt="" coords="21,282,165,323"/>
+<area shape="rect" id="node12" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a5e9bcc21981956281545f1b6166f0b1a" title="아이템 쓰기확인" alt="" coords="21,347,165,389"/>
+<area shape="rect" id="node13" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a1b39d3bca2a1766872776e09e871b44f" title="폴더 생성" alt="" coords="21,413,165,454"/>
+<area shape="rect" id="node14" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a1620a4d0b95b30e849e372b9e6f312be" title="FD타입 파일열기" alt="" coords="21,478,165,519"/>
+<area shape="rect" id="node15" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a6c84ce191a3617219c6d6a3a33ca606c" title="아이템 삭제" alt="" coords="21,543,165,585"/>
+<area shape="rect" id="node16" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a70dd7c01287643495155729afa04f480" title="폴더 삭제" alt="" coords="21,609,165,650"/>
+<area shape="rect" id="node17" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a3d8e095b172e4e3e091e0836c23b072a" title="아이템 이름변경" alt="" coords="21,674,165,715"/>
+</map>

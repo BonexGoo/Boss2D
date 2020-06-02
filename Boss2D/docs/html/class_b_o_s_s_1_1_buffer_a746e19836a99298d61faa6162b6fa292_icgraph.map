@@ -1,0 +1,5 @@
+<map id="BOSS::Buffer::TypeOf" name="BOSS::Buffer::TypeOf">
+<area shape="rect" id="node1" title="객체타입 구하기(BufferSpec을 이용)" alt="" coords="236,53,385,80"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#abba42dce1a403c2915dbd5f9e466742c" title="특수생성자(공유ID로부터)" alt="" coords="5,5,188,61"/>
+<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_buffer.html#ad99424458ac494a50d4ba66011de1447" title="객체타입 확인하기" alt="" coords="10,85,183,112"/>
+</map>

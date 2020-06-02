@@ -1,0 +1,4 @@
+<map id="BOSS::Buffer::Realloc" name="BOSS::Buffer::Realloc">
+<area shape="rect" id="node1" title="재할당(배열수량이 변경되었을 때만)" alt="" coords="5,5,156,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_buffer.html#aa83e74d940d588d09aaa8090ce0bec65" title="해제" alt="" coords="204,5,339,32"/>
+</map>

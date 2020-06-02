@@ -1,0 +1,4 @@
+<map id="BOSS::Tasking::Create" name="BOSS::Tasking::Create">
+<area shape="rect" id="node1" title="태스킹 생성" alt="" coords="5,13,164,39"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_utility.html#ac783bcfcba7d47d177682a6707ad454e" title="콜백함수(ThreadCB)를 스레드방식으로 실행" alt="" coords="212,5,368,47"/>
+</map>

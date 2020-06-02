@@ -1,0 +1,4 @@
+<map id="BOSS::Context::LoadJson" name="BOSS::Context::LoadJson">
+<area shape="rect" id="node1" title="Json소스를 파싱하여 로드(buffer)" alt="" coords="219,5,393,32"/>
+<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#a5c06e7afe6ef1df593944e1dd58aaa40" title="생성자(스크립트를 파싱)" alt="" coords="5,5,171,32"/>
+</map>
