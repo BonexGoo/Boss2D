@@ -113,35 +113,40 @@ extern "C"
     void _except_handler4_common() {}
 
     #if BOSS_WINDOWS
-        extern SOCKET socket(int domain, int type, int protocol);
-        extern int connect(SOCKET s, const struct sockaddr* name, int namelen);
-        extern int bind(SOCKET s, const struct sockaddr* name, int namelen);
-        extern SOCKET accept(SOCKET s, struct sockaddr* addr, int* addrlen);
-        extern int listen(SOCKET s, int backlog);
-        extern int shutdown(SOCKET s, int how);
-        extern int getsockopt(SOCKET s, int level, int optname, char* optval, int* optlen);
-        extern int setsockopt(SOCKET s, int level, int optname, const char* optval, int optlen);
-        extern int getsockname(SOCKET s, struct sockaddr* name, int* namelen);
-        extern int getpeername(SOCKET s, struct sockaddr* name, int* namelen);
-        extern int recv(SOCKET s, char* buf, int len, int flags);
-        extern int recvfrom(SOCKET s, char* buf, int len, int flags, struct sockaddr* from, int* fromlen);
-        extern int send(SOCKET s, const char* buf, int len, int flags);
-        extern int sendto(SOCKET s, const char* buf, int len, int flags, const struct sockaddr* to, int tolen);
-        extern int ioctlsocket(SOCKET s, long cmd, unsigned long* argp);
-        #if BOSS_WINDOWS_MINGW
-            extern int select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const PTIMEVAL timeout);
+        #if BOSS_X64
+            #define BOSS_WINAPI
         #else
-            extern int select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timeval* timeout);
+            #define BOSS_WINAPI __stdcall
         #endif
-        extern int closesocket(SOCKET s);
-        extern struct hostent* gethostbyaddr(const char* addr, int len, int type);
-        extern struct hostent* gethostbyname(const char* name);
-        extern int getaddrinfo(const char* node, const char* service, const struct addrinfo* hints, struct addrinfo** result);
-        extern void freeaddrinfo(struct addrinfo* ai);
-        extern struct servent* getservbyname(const char* name, const char* proto);
-        extern struct servent* getservbyport(int port, const char* proto);
-        extern char* inet_ntoa(struct in_addr in);
-        extern unsigned long inet_addr(const char* cp);
+        extern SOCKET BOSS_WINAPI socket(int domain, int type, int protocol);
+        extern int BOSS_WINAPI connect(SOCKET s, const struct sockaddr* name, int namelen);
+        extern int BOSS_WINAPI bind(SOCKET s, const struct sockaddr* name, int namelen);
+        extern SOCKET BOSS_WINAPI accept(SOCKET s, struct sockaddr* addr, int* addrlen);
+        extern int BOSS_WINAPI listen(SOCKET s, int backlog);
+        extern int BOSS_WINAPI shutdown(SOCKET s, int how);
+        extern int BOSS_WINAPI getsockopt(SOCKET s, int level, int optname, char* optval, int* optlen);
+        extern int BOSS_WINAPI setsockopt(SOCKET s, int level, int optname, const char* optval, int optlen);
+        extern int BOSS_WINAPI getsockname(SOCKET s, struct sockaddr* name, int* namelen);
+        extern int BOSS_WINAPI getpeername(SOCKET s, struct sockaddr* name, int* namelen);
+        extern int BOSS_WINAPI recv(SOCKET s, char* buf, int len, int flags);
+        extern int BOSS_WINAPI recvfrom(SOCKET s, char* buf, int len, int flags, struct sockaddr* from, int* fromlen);
+        extern int BOSS_WINAPI send(SOCKET s, const char* buf, int len, int flags);
+        extern int BOSS_WINAPI sendto(SOCKET s, const char* buf, int len, int flags, const struct sockaddr* to, int tolen);
+        extern int BOSS_WINAPI ioctlsocket(SOCKET s, long cmd, unsigned long* argp);
+        #if BOSS_WINDOWS_MINGW
+            extern int BOSS_WINAPI select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const PTIMEVAL timeout);
+        #else
+            extern int BOSS_WINAPI select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timeval* timeout);
+        #endif
+        extern int BOSS_WINAPI closesocket(SOCKET s);
+        extern struct hostent* BOSS_WINAPI gethostbyaddr(const char* addr, int len, int type);
+        extern struct hostent* BOSS_WINAPI gethostbyname(const char* name);
+        extern int BOSS_WINAPI getaddrinfo(const char* node, const char* service, const struct addrinfo* hints, struct addrinfo** result);
+        extern void BOSS_WINAPI freeaddrinfo(struct addrinfo* ai);
+        extern struct servent* BOSS_WINAPI getservbyname(const char* name, const char* proto);
+        extern struct servent* BOSS_WINAPI getservbyport(int port, const char* proto);
+        extern char* BOSS_WINAPI inet_ntoa(struct in_addr in);
+        extern unsigned long BOSS_WINAPI inet_addr(const char* cp);
     #else
         extern int socket(int domain, int type, int protocol) THROW;
         extern int connect(int sockfd, const struct sockaddr* addr, socklen_t addrlen);
