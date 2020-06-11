@@ -327,14 +327,8 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
             {
-                if(gSavedFrameless)
-                    g_window->move(x, y);
-                else
-                {
-                    auto TitleBarHeight = ApplicationPrivate::style()->pixelMetric(StylePrivate::PM_TitleBarHeight);
-                    auto WindowFrame = ApplicationPrivate::style()->pixelMetric(StylePrivate::PM_MdiSubWindowFrameWidth);
-                    g_window->move(x - WindowFrame, y - TitleBarHeight - WindowFrame / 2);
-                }
+                const QRect LastGeometry = g_window->geometry();
+                g_window->setGeometry(x, y, LastGeometry.width(), LastGeometry.height());
             }
             else
             {
@@ -351,7 +345,10 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
-                g_window->resize(width, height);
+            {
+                const QRect LastGeometry = g_window->geometry();
+                g_window->setGeometry(LastGeometry.x(), LastGeometry.y(), width, height);
+            }
             else
             {
                 g_data->m_lastWindowNormalRect.r = g_data->m_lastWindowNormalRect.l + width;
