@@ -3312,18 +3312,22 @@
                 return Result;
 
             #if BOSS_WINDOWS
-                String NewPath = String::Format("%s/../assets/", QCoreApplication::applicationDirPath().toUtf8().constData());
-                // Qt크레이터에서 바로 실행
-                const String AssetsPath1 = String::Format("%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                if(Platform::File::ExistForDir(AssetsPath1 + "/assets"))
-                    NewPath = AssetsPath1 + "/assets/";
-                else
+                String NewPath = String::Format("%s/..", QCoreApplication::applicationDirPath().toUtf8().constData());
+                if(!Platform::File::ExistForDir(NewPath + "/assets"))
                 {
-                    // 비주얼스튜디오에서 바로 실행
-                    const String AssetsPath2 = String::Format("%s/../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                    if(Platform::File::ExistForDir(AssetsPath2 + "/assets"))
-                        NewPath = AssetsPath2 + "/assets/";
+                    // Qt크레이터에서 바로 실행
+                    const String AssetsPath1 = String::Format("%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
+                    if(Platform::File::ExistForDir(AssetsPath1 + "/assets"))
+                        NewPath = AssetsPath1 + "/assets/";
+                    else
+                    {
+                        // 비주얼스튜디오에서 바로 실행
+                        const String AssetsPath2 = String::Format("%s/../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
+                        if(Platform::File::ExistForDir(AssetsPath2 + "/assets"))
+                            NewPath = AssetsPath2 + "/assets/";
+                    }
                 }
+                else NewPath += "/assets/";
             #elif BOSS_LINUX
                 String NewPath = String::Format("Q:%s/../assets/", QCoreApplication::applicationDirPath().toUtf8().constData());
                 const String AssetsPath = String::Format("Q:%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
@@ -3353,16 +3357,19 @@
 
             #if BOSS_WINDOWS
                 String NewPath = String::Format("%s/..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                // Qt크레이터에서 바로 실행
-                const String AssetsPath1 = String::Format("%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                if(Platform::File::ExistForDir(AssetsPath1 + "/assets"))
-                    NewPath = AssetsPath1;
-                else
+                if(!Platform::File::ExistForDir(NewPath + "/assets"))
                 {
-                    // 비주얼스튜디오에서 바로 실행
-                    const String AssetsPath2 = String::Format("%s/../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                    if(Platform::File::ExistForDir(AssetsPath2 + "/assets"))
-                        NewPath = AssetsPath2;
+                    // Qt크레이터에서 바로 실행
+                    const String AssetsPath1 = String::Format("%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
+                    if(Platform::File::ExistForDir(AssetsPath1 + "/assets"))
+                        NewPath = AssetsPath1;
+                    else
+                    {
+                        // 비주얼스튜디오에서 바로 실행
+                        const String AssetsPath2 = String::Format("%s/../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
+                        if(Platform::File::ExistForDir(AssetsPath2 + "/assets"))
+                            NewPath = AssetsPath2;
+                    }
                 }
             #elif BOSS_LINUX
                 String NewPath = String::Format("Q:%s/..", QCoreApplication::applicationDirPath().toUtf8().constData());
