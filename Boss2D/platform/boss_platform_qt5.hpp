@@ -2362,15 +2362,15 @@
             TypeCollector |= Qt::WindowStaysOnTopHint;
             m_ref_menu->setWindowFlags(TypeCollector);
             m_ref_menu->installEventFilter(this);
-            connect(this, SIGNAL(activated(SystemTrayIconPrivate::ActivationReason)),
-                this, SLOT(iconActivated(SystemTrayIconPrivate::ActivationReason)));
+            connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+                this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
         }
         ~TrayIcon()
         {
         }
 
     private slots:
-        void iconActivated(SystemTrayIconPrivate::ActivationReason reason)
+        void iconActivated(QSystemTrayIcon::ActivationReason reason)
         {
             switch(reason)
             {
