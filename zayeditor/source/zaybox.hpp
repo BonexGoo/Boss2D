@@ -80,7 +80,8 @@ protected: // 데이터
 protected: // UI정보
     Color mColor;
     bool mExpanded;
-    Point mPos;
+    double mPosX;
+    double mPosY;
     Point mTitleDrag;
     Size mBodySize;
     bool mHooked;

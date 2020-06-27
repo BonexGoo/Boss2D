@@ -957,7 +957,7 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                         chararray Variable;
                         auto& CurDOM = *DOM.AccessByOrder(i, &Variable);
                         String Text;
-                        if(!CurDOM.mResult.Compare(CurDOM.mFormula))
+                        if(!CurDOM.mResult.Compare(CurDOM.mFormula) || !CurDOM.mResult.Compare('\'' + CurDOM.mFormula + '\''))
                             Text = String::Format("%s = %s", &Variable[0], (chars) CurDOM.mResult);
                         else Text = String::Format("%s = %s ← %s", &Variable[0], (chars) CurDOM.mResult, (chars) CurDOM.mFormula);
 

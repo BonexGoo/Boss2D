@@ -66,6 +66,8 @@
     if(auto _ = (PANEL)._push_clip(X, Y, (PANEL).w() + (X), (PANEL).h() + (Y), true))
 #define ZAY_MOVE_UI_SCISSOR(PANEL, X, Y, ...) \
     if(auto _ = (PANEL)._push_clip_ui(X, Y, (PANEL).w() + (X), (PANEL).h() + (Y), true, __VA_ARGS__))
+#define ZAY_MOVE_IF(PANEL, X, Y, QUERY) \
+    if(auto _ = (QUERY)? (PANEL)._push_clip(X, Y, (PANEL).w() + (X), (PANEL).h() + (Y), false) : (PANEL)._push_pass())
 
 // 옵션스택 - 인사이드
 #define ZAY_BIND_INSIDE(CODE) \

@@ -41,9 +41,12 @@ sint32 ZEZayBox::ValidLastID(sint32 id)
 
 void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB cb)
 {
-    Point TopPos;
+    double TopPosX = 0, TopPosY = 0;
     if(const auto TopBox = boxmap.Access(0))
-        TopPos = TopBox->ConstValue().mPos;
+    {
+        TopPosX = TopBox->ConstValue().mPosX;
+        TopPosY = TopBox->ConstValue().mPosY;
+    }
 
     mChildren.Clear();
     for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
@@ -58,8 +61,8 @@ void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB 
             // 자식구성
             auto NewChildBox = cb(CurCompName);
             NewChildBox->ReadJson(fish);
-            NewChildBox->mPos.x = TopPos.x + fish("posx").GetFloat(mPos.x + mBodySize.w + 30 - TopPos.x);
-            NewChildBox->mPos.y = TopPos.y + fish("posy").GetFloat(mPos.y + (TitleBarHeight + 20) * i - TopPos.y);
+            NewChildBox->mPosX = TopPosX + fish("posx").GetFloat(mPosX + mBodySize.w + 30 - TopPosX);
+            NewChildBox->mPosY = TopPosY + fish("posy").GetFloat(mPosY + (TitleBarHeight + 20) * i - TopPosY);
             AddChild(NewChildBox.Value()); // 자식의 HookPos설정
 
             // 자식재귀 및 박스추가
@@ -71,9 +74,12 @@ void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB 
 
 void ZEZayBox::SaveChildren(Context& json, const ZEZayBoxMap& boxmap) const
 {
-    Point TopPos;
-    if(auto TopBox = boxmap.Access(0))
-        TopPos = TopBox->ConstValue().mPos;
+    double TopPosX = 0, TopPosY = 0;
+    if(const auto TopBox = boxmap.Access(0))
+    {
+        TopPosX = TopBox->ConstValue().mPosX;
+        TopPosY = TopBox->ConstValue().mPosY;
+    }
 
     for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
     {
@@ -81,8 +87,8 @@ void ZEZayBox::SaveChildren(Context& json, const ZEZayBoxMap& boxmap) const
         if(auto CurBox = boxmap.Access(mChildren[i]))
         {
             CurBox->ConstValue().WriteJson(fish);
-            fish.At("posx").Set(String::FromFloat(CurBox->ConstValue().mPos.x - TopPos.x));
-            fish.At("posy").Set(String::FromFloat(CurBox->ConstValue().mPos.y - TopPos.y));
+            fish.At("posx").Set(String::FromInteger(sint32(CurBox->ConstValue().mPosX - TopPosX + 0.5)));
+            fish.At("posy").Set(String::FromInteger(sint32(CurBox->ConstValue().mPosY - TopPosY + 0.5)));
             if(0 < CurBox->ConstValue().mChildren.Count())
                 CurBox->ConstValue().SaveChildren(fish.At("ui"), boxmap);
         }
@@ -131,8 +137,8 @@ void ZEZayBox::Init(sint32 id, chars type, Color color, bool expand, sint32 x, s
     mCompType = type;
     mColor = color;
     mExpanded = expand;
-    mPos.x = x;
-    mPos.y = y;
+    mPosX = x;
+    mPosY = y;
     mBodySize.w = BodyWidth;
     mBodySize.h = 0;
     RecalcSize();
@@ -148,7 +154,7 @@ void ZEZayBox::AddChild(ZEZayBox& child)
     child.mParent = mID;
     child.mOrder = mChildren.Count();
     child.mHooked = true;
-    child.mHookPos = GetBallPos() - child.mPos - Point(0, TitleBarHeight / 2);
+    child.mHookPos = GetBallPos() - Point(child.mPosX, child.mPosY + TitleBarHeight / 2);
     mChildren.AtAdding() = child.mID;
 }
 
@@ -174,7 +180,7 @@ void ZEZayBox::ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild)
             newchild.mParent = mID;
             newchild.mOrder = i;
             newchild.mHooked = true;
-            newchild.mHookPos = GetBallPos() - newchild.mPos - Point(0, TitleBarHeight / 2);
+            newchild.mHookPos = GetBallPos() - Point(newchild.mPosX, newchild.mPosY + TitleBarHeight / 2);
             mChildren.At(i) = newchild.mID;
             break;
         }
@@ -195,7 +201,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
     const bool HasFocusing = !!(panel.state(UITitle) & (PS_Focused | PS_Dragging));
 
     // 타이틀
-    ZAY_XYWH_UI(panel, (sint32) mPos.x, (sint32) mPos.y, mBodySize.w, TitleBarHeight, UITitle,
+    ZAY_XYWH_UI(panel, sint32(mPosX), sint32(mPosY), mBodySize.w, TitleBarHeight, UITitle,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             if(t == GT_Moving)
@@ -564,12 +570,14 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
 
 void ZEZayBox::Move(Point drag)
 {
-    mPos += drag;
+    mPosX += drag.x;
+    mPosY += drag.y;
 }
 
 void ZEZayBox::FlushTitleDrag(ZEZayBoxMap& boxmap)
 {
-    mPos += mTitleDrag;
+    mPosX += mTitleDrag.x;
+    mPosY += mTitleDrag.y;
     if(mHooked)
         mHookPos -= mTitleDrag;
     for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
@@ -580,7 +588,8 @@ void ZEZayBox::FlushTitleDrag(ZEZayBoxMap& boxmap)
 
 void ZEZayBox::FlushTitleDragWith(ZEZayBoxMap& boxmap, bool withhook)
 {
-    mPos += mTitleDrag;
+    mPosX += mTitleDrag.x;
+    mPosY += mTitleDrag.y;
     if(mHooked && withhook)
         mHookPos -= mTitleDrag;
     for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
@@ -608,7 +617,8 @@ sint32 ZEZayBox::Copy(ZEZayBoxMap& boxmap, CreatorCB cb)
     {
         auto NewParentBox = cb(CurCompName);
         NewParentBox->ReadJson(Json);
-        NewParentBox->mPos = mPos;
+        NewParentBox->mPosX = mPosX;
+        NewParentBox->mPosY = mPosY;
         NewParentBox->mHookPos = mHookPos;
         // 박스추가
         NewID = NewParentBox->mID;
@@ -634,7 +644,7 @@ void ZEZayBox::Sort(ZEZayBoxMap& boxmap)
     {
         auto CurBox = boxmap.Access(mChildren[i]);
         auto NextBox = boxmap.Access(mChildren[i + 1]);
-        if(NextBox->ConstValue().mPos.y < CurBox->ConstValue().mPos.y)
+        if(NextBox->ConstValue().mPosY < CurBox->ConstValue().mPosY)
         {
             CurBox->Value().mOrder = i + 1;
             NextBox->Value().mOrder = i;
@@ -648,12 +658,12 @@ void ZEZayBox::Sort(ZEZayBoxMap& boxmap)
 
 Rect ZEZayBox::GetRect() const
 {
-    return Rect(Point((sint32) mPos.x, (sint32) mPos.y), Size(mBodySize.w, TitleBarHeight + mBodySize.h));
+    return Rect(Point(sint32(mPosX), sint32(mPosY)), Size(mBodySize.w, TitleBarHeight + mBodySize.h));
 }
 
 Point ZEZayBox::GetBallPos() const
 {
-    return Point((sint32) mPos.x, (sint32) mPos.y) + Size(mBodySize.w + BallX, TitleBarHeight / 2);
+    return Point(sint32(mPosX), sint32(mPosY)) + Size(mBodySize.w + BallX, TitleBarHeight / 2);
 }
 
 void ZEZayBox::RemoveChildren(ZEZayBoxMap& boxmap)
@@ -1685,7 +1695,7 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
 
     // 바디
     if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, (sint32) mPos.x, ((sint32) mPos.y) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
+    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
     {
         ZAY_RGBA(panel, 64, 64, 64, 128)
             panel.fill();
@@ -1776,7 +1786,7 @@ void ZEZayBoxContent::Render(ZayPanel& panel)
 
     // 바디
     if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, (sint32) mPos.x, ((sint32) mPos.y) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
+    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
     {
         ZAY_RGBA(panel, 64, 64, 64, 128)
             panel.fill();
@@ -1868,7 +1878,7 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 
     // 바디
     if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, (sint32) mPos.x, ((sint32) mPos.y) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
+    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
     {
         ZAY_RGBA(panel, 64, 64, 64, 128)
             panel.fill();
@@ -1962,7 +1972,7 @@ void ZEZayBoxLoop::Render(ZayPanel& panel)
 
     // 바디
     if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, (sint32) mPos.x, ((sint32) mPos.y) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
+    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
     {
         ZAY_RGBA(panel, 64, 64, 64, 128)
             panel.fill();
@@ -2042,7 +2052,7 @@ void ZEZayBoxCondition::Render(ZayPanel& panel)
 
     // 바디
     if(mExpanded && mHasElseAndOperation)
-    ZAY_XYWH_UI_SCISSOR(panel, (sint32) mPos.x, ((sint32) mPos.y) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
+    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w, mBodySize.h, UIBody)
     {
         ZAY_RGBA(panel, 64, 64, 64, 128)
             panel.fill();
