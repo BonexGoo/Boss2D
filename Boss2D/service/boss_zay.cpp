@@ -452,17 +452,20 @@ namespace BOSS
             const float YRate = LastClip.Height() / ImageHeight;
             const sint32 DstWidth = (sint32) (image.GetImageWidth() * XRate + 0.5);
             const sint32 DstHeight = (sint32) (image.GetImageHeight() * YRate + 0.5);
+            const Color MultiplyBlend = {
+                (uint08) Math::Min(LastColor.r * 2, 255), (uint08) Math::Min(LastColor.g * 2, 255),
+                (uint08) Math::Min(LastColor.b * 2, 255), (uint08) Math::Min(LastColor.a * 2, 255)};
 
             if(build != Image::Build::Null)
             {
-                if(id_image_read RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, build))
+                if(id_image_read RebuildImage = image.GetBuildImage(DstWidth, DstHeight, build))
                     Platform::Graphics::DrawPolyImageToFBO(RebuildImage, ip,
-                        LastClip.l, LastClip.t, p, Color::White, fbo());
+                        LastClip.l, LastClip.t, p, MultiplyBlend, fbo());
                 if(m_updater && !image.IsBuildFinished())
                     m_updater->RepaintOnce();
             }
             else Platform::Graphics::DrawPolyImageToFBO(image.GetImage(), ip,
-                LastClip.l, LastClip.t, p, Color::White, fbo());
+                LastClip.l, LastClip.t, p, MultiplyBlend, fbo());
             Platform::Graphics::EndGL();
         }
         else
