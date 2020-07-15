@@ -3101,7 +3101,8 @@
                 mAttrib[3].texcoords[1] = 1;
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
             }
-            void DrawPixmap(uint32 fbo, float x, float y, const BOSS::Point p[3], const PixmapPrivate& pixmap, const BOSS::Point ip[3], const BOSS::Color& color)
+            void DrawPixmap(uint32 fbo, float x, float y, const BOSS::Point (&ps)[3],
+                const PixmapPrivate& pixmap, const BOSS::Point (&ips)[3], const BOSS::Color (&colors)[3])
             {
                 QOpenGLContext* ctx = QOpenGLContext::currentContext();
                 QOpenGLFunctions* f = ctx->functions();
@@ -3144,23 +3145,14 @@
                     CurScissor.width(), CurScissor.height());
 
                 const bool NeedReverse = !(fbo == 0 && pixmap.devicePixelRatio() == 1);
-                mAttrib[0].vertices[0] = 2 * (x + p[0].x) / DstWidth - 1;
-                mAttrib[0].vertices[1] = 1 - 2 * (y + p[0].y) / DstHeight;
-                mAttrib[0].color32 = color.ToABGR();
-                mAttrib[0].texcoords[0] = ip[0].x;
-                mAttrib[0].texcoords[1] = (NeedReverse)? 1 - ip[0].y : ip[0].y;
-
-                mAttrib[1].vertices[0] = 2 * (x + p[1].x) / DstWidth - 1;
-                mAttrib[1].vertices[1] = 1 - 2 * (y + p[1].y) / DstHeight;
-                mAttrib[1].color32 = color.ToABGR();
-                mAttrib[1].texcoords[0] = ip[1].x;
-                mAttrib[1].texcoords[1] = (NeedReverse)? 1 - ip[1].y : ip[1].y;
-
-                mAttrib[2].vertices[0] = 2 * (x + p[2].x) / DstWidth - 1;
-                mAttrib[2].vertices[1] = 1 - 2 * (y + p[2].y) / DstHeight;
-                mAttrib[2].color32 = color.ToABGR();
-                mAttrib[2].texcoords[0] = ip[2].x;
-                mAttrib[2].texcoords[1] = (NeedReverse)? 1 - ip[2].y : ip[2].y;
+                for(int i = 0; i < 3; ++i)
+                {
+                    mAttrib[i].vertices[0] = 2 * (x + ps[i].x) / DstWidth - 1;
+                    mAttrib[i].vertices[1] = 1 - 2 * (y + ps[i].y) / DstHeight;
+                    mAttrib[i].color32 = colors[i].ToABGR();
+                    mAttrib[i].texcoords[0] = ips[i].x;
+                    mAttrib[i].texcoords[1] = (NeedReverse)? 1 - ips[i].y : ips[i].y;
+                }
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); TestGL(BOSS_DBG 0);
             }
             void DrawTexture(uint32 fbo, const BOSS::Rect& rect, id_texture_read tex, const BOSS::Rect& texrect, const BOSS::Color& color, orientationtype ori, bool antialiasing)

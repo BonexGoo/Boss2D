@@ -440,10 +440,29 @@ namespace BOSS
         Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick, curve);
     }
 
-    void ZayPanel::polyimage(const Point (&p)[3], const Image& image, Image::Build build, const Point (&ip)[3]) const
+    void ZayPanel::polyimage(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3]) const
+    {
+        const Color& LastColor = m_stack_color[-1];
+        const Color MultiplyBlend = {
+            (uint08) Math::Min(LastColor.r * 2, 255), (uint08) Math::Min(LastColor.g * 2, 255),
+            (uint08) Math::Min(LastColor.b * 2, 255), (uint08) Math::Min(LastColor.a * 2, 255)};
+        const Color MultiplyBlends[3] = {MultiplyBlend, MultiplyBlend, MultiplyBlend};
+
+        if(!polyimageNative(ps, image, build, ips, MultiplyBlends))
+        {
+            Points Dots;
+            Dots.AtAdding() = ps[0];
+            Dots.AtAdding() = ps[1];
+            Dots.AtAdding() = ps[2];
+            Platform::Graphics::SetColor(255, 0, 0, 128);
+            polygon(Dots);
+            Platform::Graphics::SetColor(LastColor.r, LastColor.g, LastColor.b, LastColor.a);
+        }
+    }
+
+    bool ZayPanel::polyimageNative(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3], const Color (&colors)[3]) const
     {
         const Clip& LastClip = m_stack_clip[-1];
-        const Color& LastColor = m_stack_color[-1];
         if(Platform::Graphics::BeginGL())
         {
             const sint32 ImageWidth = image.GetWidth();
@@ -452,32 +471,21 @@ namespace BOSS
             const float YRate = LastClip.Height() / ImageHeight;
             const sint32 DstWidth = (sint32) (image.GetImageWidth() * XRate + 0.5);
             const sint32 DstHeight = (sint32) (image.GetImageHeight() * YRate + 0.5);
-            const Color MultiplyBlend = {
-                (uint08) Math::Min(LastColor.r * 2, 255), (uint08) Math::Min(LastColor.g * 2, 255),
-                (uint08) Math::Min(LastColor.b * 2, 255), (uint08) Math::Min(LastColor.a * 2, 255)};
 
             if(build != Image::Build::Null)
             {
                 if(id_image_read RebuildImage = image.GetBuildImage(DstWidth, DstHeight, build))
-                    Platform::Graphics::DrawPolyImageToFBO(RebuildImage, ip,
-                        LastClip.l, LastClip.t, p, MultiplyBlend, fbo());
+                    Platform::Graphics::DrawPolyImageToFBO(RebuildImage, ips,
+                        LastClip.l, LastClip.t, ps, colors, fbo());
                 if(m_updater && !image.IsBuildFinished())
                     m_updater->RepaintOnce();
             }
-            else Platform::Graphics::DrawPolyImageToFBO(image.GetImage(), ip,
-                LastClip.l, LastClip.t, p, MultiplyBlend, fbo());
+            else Platform::Graphics::DrawPolyImageToFBO(image.GetImage(), ips,
+                LastClip.l, LastClip.t, ps, colors, fbo());
             Platform::Graphics::EndGL();
+            return true;
         }
-        else
-        {
-            Points Dots;
-            Dots.AtAdding() = p[0];
-            Dots.AtAdding() = p[1];
-            Dots.AtAdding() = p[2];
-            Platform::Graphics::SetColor(255, 0, 0, 128);
-            polygon(Dots);
-            Platform::Graphics::SetColor(LastColor.r, LastColor.g, LastColor.b, LastColor.a);
-        }
+        return false;
     }
 
     static inline sint32 GetXAlignCode(UIAlign align)

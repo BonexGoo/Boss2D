@@ -788,13 +788,13 @@ public:
 
         /// @brief 지정한 FBO핸들로 폴리곤영역식 이미지 출력
         /// @param image : 출력할 이미지
-        /// @param ip : 이미지의 꼭지점들(uv값, x는 0~1, y는 0~1)
+        /// @param ips : 이미지의 꼭지점들(uv값, x는 0~1, y는 0~1)
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)
-        /// @param p : 꼭지점들(px)
-        /// @param color : 컬러링값
+        /// @param ps : 꼭지점들(px)
+        /// @param colors : 컬러링값들(multiply블랜드값)
         /// @param fbo : 출력될 프레임버퍼의 FBO핸들(화면출력시 0)
-        static void DrawPolyImageToFBO(id_image_read image, const Point (&ip)[3], float x, float y, const Point (&p)[3], Color color = Color::White, uint32 fbo = 0);
+        static void DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo = 0);
 
         /// @brief 문자열 출력
         /// @param x : 좌측위치(px)
