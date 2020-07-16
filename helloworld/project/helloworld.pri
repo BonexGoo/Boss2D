@@ -3,6 +3,7 @@ TEMPLATE = app
 
 QT_ENABLE_GRAPHICS = ok #ok #no
 QT_ADD_PLUGINS_FIREBASE = no #ok #no
+QT_PACKAGE_RPATH = no #ok #no
 
 !include(../../Boss2D/project/boss2d.pri) {
     error("Couldn't find the boss2d.pri file...")
