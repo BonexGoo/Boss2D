@@ -1159,19 +1159,24 @@
             return PlatformImpl::Wrap::Utility_GetDeviceID();
         }
 
-        void Platform::Utility::Threading(ThreadCB cb, payload data)
+        void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
         {
-            ThreadClass::Begin(cb, data);
+            ThreadClass::Begin(cb, data, priority);
         }
 
-        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data)
+        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data, prioritytype priority)
         {
-            return ThreadClass::BeginEx(cb, data);
+            return ThreadClass::BeginEx(cb, data, priority);
         }
 
         uint64 Platform::Utility::CurrentThreadID()
         {
             return (uint64) QThread::currentThreadId();
+        }
+
+        uint32 Platform::Utility::IdealThreadCount()
+        {
+            return (uint32) QThread::idealThreadCount();
         }
 
         uint64 Platform::Utility::CurrentTimeMsec()

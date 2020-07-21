@@ -3889,24 +3889,31 @@
         Q_OBJECT
 
     public:
-        static void Begin(ThreadCB cb, payload data)
+        static void Begin(ThreadCB cb, payload data, prioritytype priority)
         {
-            new ThreadClass(cb, nullptr, data);
+            new ThreadClass(cb, nullptr, data, priority);
         }
-        static void* BeginEx(ThreadExCB cb, payload data)
+        static void* BeginEx(ThreadExCB cb, payload data, prioritytype priority)
         {
-            return new ThreadClass(nullptr, cb, data);
+            return new ThreadClass(nullptr, cb, data, priority);
         }
 
     private:
-        ThreadClass(ThreadCB cb1, ThreadExCB cb2, payload data)
+        ThreadClass(ThreadCB cb1, ThreadExCB cb2, payload data, prioritytype priority)
         {
             BOSS_ASSERT("cb1와 cb2가 모두 nullptr일 순 없습니다", cb1 || cb2);
             m_cb1 = cb1;
             m_cb2 = cb2;
             m_data = data;
             connect(this, SIGNAL(finished()), SLOT(OnFinished()));
-            start();
+            switch(priority)
+            {
+            case prioritytype_lowest: start(QThread::Priority::LowestPriority); break;
+            case prioritytype_low: start(QThread::Priority::LowPriority); break;
+            case prioritytype_normal: start(QThread::Priority::NormalPriority); break;
+            case prioritytype_high: start(QThread::Priority::HighPriority); break;
+            case prioritytype_highest: start(QThread::Priority::HighestPriority); break;
+            }
         }
         virtual ~ThreadClass() {}
 

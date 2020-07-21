@@ -25,9 +25,10 @@ namespace BOSS
         /// @brief 태스킹 생성
         /// @param cb : 태스크를 진행할 콜백(-1을 리턴하면 태스킹종료)
         /// @param self : 콜백에서 사용될 인스턴스
+        /// @param priority : 우선순위
         /// @return 생성된 태스킹ID
         /// @see Release
-        static id_tasking Create(TaskCB cb, buffer self = nullptr);
+        static id_tasking Create(TaskCB cb, buffer self = nullptr, prioritytype priority = prioritytype_normal);
 
         /// @brief 태스킹 해제
         /// @param tasking : 태스킹ID

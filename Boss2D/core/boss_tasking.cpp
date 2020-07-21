@@ -179,13 +179,13 @@ static void _TaskCore(void* arg)
 
 namespace BOSS
 {
-    id_tasking Tasking::Create(TaskCB cb, buffer self)
+    id_tasking Tasking::Create(TaskCB cb, buffer self, prioritytype priority)
     {
         TaskingClass* NewTasking = (TaskingClass*) Buffer::Alloc<TaskingClass>(BOSS_DBG 1);
         NewTasking->m_cb = cb;
         NewTasking->m_self = self;
         NewTasking->m_common.SetParent((id_tasking) NewTasking);
-        Platform::Utility::Threading(_TaskCore, NewTasking);
+        Platform::Utility::Threading(_TaskCore, NewTasking, priority);
         return (id_tasking) NewTasking;
     }
 

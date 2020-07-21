@@ -687,12 +687,12 @@
             return PlatformImpl::Wrap::Utility_GetDeviceID();
         }
 
-        void Platform::Utility::Threading(ThreadCB cb, payload data)
+        void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data)
+        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data, prioritytype priority)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -702,6 +702,12 @@
         {
             BOSS_ASSERT("Further development is needed.", false);
             return 0;
+        }
+
+        uint32 Platform::Utility::IdealThreadCount()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 3;
         }
 
         uint64 Platform::Utility::CurrentTimeMsec()

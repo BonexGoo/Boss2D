@@ -446,17 +446,23 @@ public:
         /// @brief 콜백함수(ThreadCB)를 스레드방식으로 실행
         /// @param cb : 콜백함수
         /// @param data : 콜백함수에 전달할 데이터
-        static void Threading(ThreadCB cb, payload data);
+        /// @param priority : 우선순위
+        static void Threading(ThreadCB cb, payload data, prioritytype priority);
 
         /// @brief 콜백함수(ThreadExCB)를 스레드방식으로 실행
         /// @param cb : 콜백함수
         /// @param data : 콜백함수에 전달할 데이터
+        /// @param priority : 우선순위
         /// @return 스레드핸들
-        static void* ThreadingEx(ThreadExCB cb, payload data);
+        static void* ThreadingEx(ThreadExCB cb, payload data, prioritytype priority);
 
         /// @brief 소속된 스레드ID 구하기
         /// @return 스레드ID
         static uint64 CurrentThreadID();
+
+        /// @brief 최적의 스레드수 구하기
+        /// @return 스레드수량
+        static uint32 IdealThreadCount();
 
         /// @brief 현재시간 구하기
         /// @return 현재시간(ms)

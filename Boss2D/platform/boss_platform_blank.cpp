@@ -646,12 +646,12 @@
             return PlatformImpl::Wrap::Utility_GetDeviceID();
         }
 
-        void Platform::Utility::Threading(ThreadCB cb, payload data)
+        void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data)
+        void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data, prioritytype priority)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
@@ -661,6 +661,12 @@
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return 0;
+        }
+
+        uint32 Platform::Utility::IdealThreadCount()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return 3;
         }
 
         uint64 Platform::Utility::CurrentTimeMsec()

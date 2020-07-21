@@ -114,6 +114,8 @@ namespace BOSS
     enum orientationtype:uint08 {
         orientationtype_normal0, orientationtype_normal90, orientationtype_normal180, orientationtype_normal270,
         orientationtype_fliped0, orientationtype_fliped90, orientationtype_fliped180, orientationtype_fliped270};
+    enum prioritytype:uint08 {
+        prioritytype_lowest, prioritytype_low, prioritytype_normal, prioritytype_high, prioritytype_highest};
     enum jumper:sint32   {jumper_null = 0};
     enum jumper16:sint16 {jumper16_null = 0};
     template<sint32 ENUM> struct EnumToType {};
