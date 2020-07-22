@@ -75,7 +75,7 @@ static sint32 boss_storage_unitcount = 0;
     __declspec(thread) StorageUnitMap* boss_storage_root;
 #elif defined(__GNUC__)
     #if BOSS_IPHONE
-        static StorageUnitMap* boss_storage_root; // 수정해야 함!!!!!
+        thread_local StorageUnitMap* boss_storage_root;
     #else
         __thread StorageUnitMap* boss_storage_root;
     #endif

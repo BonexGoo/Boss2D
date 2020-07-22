@@ -3,8 +3,8 @@
 
 extern "C"
 {
-    #include "boss_integration_openssl-1.1.0c.h"
-    #include <addon/openssl-1.1.0c_for_boss/include/openssl/md5.h>
+    #include "boss_integration_openssl-1.1.1a.h"
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/md5.h>
 }
 
 #include <boss.hpp>

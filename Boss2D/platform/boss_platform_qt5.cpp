@@ -3427,9 +3427,17 @@
 
         const String Platform::File::RootForDesktop()
         {
-            String NewPath = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation).value(0).toUtf8().constData();
+            #if BOSS_LINUX | BOSS_MAC_OSX
+                String NewPath = String::Format("Q:%s", QStandardPaths::standardLocations(QStandardPaths::DesktopLocation).value(0).toUtf8().constData());
+            #elif BOSS_IPHONE
+                String NewPath = String::Format("Q:%s", QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toUtf8().constData());
+            #else
+                String NewPath = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation).value(0).toUtf8().constData();
+            #endif
+
             NewPath = PlatformImpl::Core::NormalPath(NewPath + '/', false);
             _CreateMiddleDir(NewPath);
+            BOSS_TRACE("Platform::File::RootForDesktop() ==> [%s]", (chars) NewPath);
             return NewPath;
         }
 

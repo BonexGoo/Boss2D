@@ -543,11 +543,11 @@ NON_EMPTY_TRANSLATION_UNIT
 #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_egd.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_err.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_lib.c>
-#if BOSS_WINDOWS && !BOSS_NEED_FORCED_FAKEWIN
+#if BOSS_WINDOWS & !BOSS_NEED_FORCED_FAKEWIN
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_unix.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_vms.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_win.c>
-#elif BOSS_MAC_OSX
+#elif BOSS_MAC_OSX | BOSS_IPHONE
     static uint64_t get_time_stamp(void)
     {
         return time(NULL);

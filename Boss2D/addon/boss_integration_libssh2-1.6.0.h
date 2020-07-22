@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <addon/boss_fakewin.h>
-#include <addon/boss_integration_openssl-1.1.0c.h>
+#include <addon/boss_integration_openssl-1.1.1a.h>
 
 #define LIBSSH2_OPENSSL
 #define LIBSSH2_GETTIMEOFDAY_WIN32
