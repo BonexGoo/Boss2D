@@ -49,13 +49,9 @@
 #include <addon/curl-7.51.0_for_boss/lib/dotdot.c>
 #include <addon/curl-7.51.0_for_boss/lib/easy.c>
 #include <addon/curl-7.51.0_for_boss/lib/escape.c>
-#define struct_stat struct_stat_BOSS
 #include <addon/curl-7.51.0_for_boss/lib/file.c>
-#undef struct_stat
 #include <addon/curl-7.51.0_for_boss/lib/fileinfo.c>
-#define struct_stat struct_stat_BOSS
 #include <addon/curl-7.51.0_for_boss/lib/formdata.c>
-#undef struct_stat
 #include <addon/curl-7.51.0_for_boss/lib/ftp.c>
 #include <addon/curl-7.51.0_for_boss/lib/ftplistparser.c>
 #include <addon/curl-7.51.0_for_boss/lib/getenv.c>

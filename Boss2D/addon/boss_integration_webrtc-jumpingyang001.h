@@ -5,7 +5,7 @@
 #define _UNICODE
 #include <addon/boss_fakewin.h>
 #define BOSS_OPENSSL_DETOUR
-#include <addon/boss_integration_openssl-1.1.1a.h>
+#include <addon/boss_integration_openssl-1.1.0c.h>
 #include <addon/boss_integration_libsrtp-2.2.0.h>
 #include <addon/boss_integration_abseil-cpp-20180600.h>
 #include <addon/boss_integration_jsoncpp-1.8.4.h>

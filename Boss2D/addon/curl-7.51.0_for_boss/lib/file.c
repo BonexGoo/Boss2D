@@ -312,7 +312,7 @@ static CURLcode file_upload(struct connectdata *conn)
   size_t nwrite;
   curl_off_t bytecount = 0;
   struct timeval now = Curl_tvnow();
-  struct_stat file_stat;
+  struct_stat_BOSS file_stat; //modified by BOSS: struct_stat file_stat;
   const char* buf2;
 
   /*
@@ -426,7 +426,8 @@ static CURLcode file_do(struct connectdata *conn, bool *done)
      (via NFS, Samba, NT sharing) can be accessed through a file:// URL
   */
   CURLcode result = CURLE_OK;
-  struct_stat statbuf; /* struct_stat instead of struct stat just to allow the
+  struct_stat_BOSS statbuf; //modified by BOSS: struct_stat statbuf;
+                          /* struct_stat instead of struct stat just to allow the
                           Windows version to have a different struct without
                           having to redefine the simple word 'stat' */
   curl_off_t expected_size=0;

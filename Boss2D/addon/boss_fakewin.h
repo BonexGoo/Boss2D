@@ -28,7 +28,7 @@
 #define BOSS_FAKEWIN_DECLSPEC_DLLIMPORT //__declspec(dllimport)
 #define BOSS_FAKEWIN_STDCALL            //__stdcall
 
-#if BOSS_LINUX | BOSS_MAC_OSX | BOSS_WINDOWS_MINGW
+#if BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE | BOSS_WINDOWS_MINGW
     #define alloca(N) __builtin_alloca(N)
     #define _alloca(N) __builtin_alloca(N)
 #endif
@@ -162,8 +162,10 @@
     typedef void* HANDLE;
     typedef int SOCKET;
     typedef USHORT ADDRESS_FAMILY;
-    typedef int socklen_t;
-    #define __socklen_t_defined
+    #if BOSS_IPHONE
+        typedef int socklen_t;
+        #define __socklen_t_defined
+    #endif
     typedef HANDLE HWND;
     typedef HANDLE HLOCAL;
     typedef HINSTANCE HMODULE;
@@ -185,6 +187,7 @@
     #define __int64 long long
     #define u_short USHORT
     typedef unsigned int u_int;
+    typedef unsigned long u_long;
     typedef int errno_t;
     #if !BOSS_LINUX
         typedef unsigned short mode_t;
@@ -215,7 +218,7 @@
     #if !BOSS_MAC_OSX & !BOSS_IPHONE & !BOSS_ANDROID
         #include <malloc.h>
     #endif
-    #if BOSS_LINUX
+    #if BOSS_LINUX | BOSS_MAC_OSX
         #include <sys/types.h>
         #include <sys/socket.h>
     #elif BOSS_MAC_OSX | BOSS_IPHONE | BOSS_ANDROID
@@ -584,7 +587,6 @@
         #define _vsntprintf _vsnprintf
     #endif
     #define fd_set boss_fd_set
-    #define errno (*boss_errno())
 
     struct boss_fakewin_struct_timeb {
         //long  time;
@@ -599,34 +601,74 @@
     #undef st_atime
     #undef st_mtime
     #undef st_ctime
-    struct boss_fakewin_struct_stat {
-        dev_t           st_dev;
-        ino_t           st_ino;
-        mode_t          st_mode;
-        nlink_t         st_nlink;
-        uid_t           st_uid;
-        gid_t           st_gid;
-        dev_t           st_rdev;
-        off_t           st_size;
-        blksize_t       st_blksize;
-        blkcnt_t        st_blocks;
-        time_t          st_atime;
-        time_t          st_mtime;
-        time_t          st_ctime;
-    };
-    struct boss_fakewin_struct_stat64 {
-        _dev_t          st_dev;
-        _ino_t          st_ino;
-        unsigned short  st_mode;
-        short           st_nlink;
-        short           st_uid;
-        short           st_gid;
-        _dev_t          st_rdev;
-        __int64         st_size;
-        __time64_t      st_atime;
-        __time64_t      st_mtime;
-        __time64_t      st_ctime;
-    };
+    #if BOSS_MAC_OSX
+        struct boss_fakewin_struct_stat {
+            dev_t    st_dev;    /* device inode resides on */
+            ino_t    st_ino;    /* inode's number */
+            mode_t   st_mode;   /* inode protection mode */
+            nlink_t  st_nlink;  /* number or hard links to the file */
+            uid_t    st_uid;    /* user-id of owner */
+            gid_t    st_gid;    /* group-id of owner */
+            dev_t    st_rdev;   /* device type, for special file inode */
+            struct timespec st_atimespec;  /* time of last access */
+            struct timespec st_mtimespec;  /* time of last data modification */
+            struct timespec st_ctimespec;  /* time of last file status change */
+            off_t    st_size;   /* file size, in bytes */
+            quad_t   st_blocks; /* blocks allocated for file */
+            u_long   st_blksize;/* optimal file sys I/O ops blocksize */
+            u_long   st_flags;  /* user defined flags for file */
+            u_long   st_gen;    /* file generation number */
+        };
+        struct boss_fakewin_struct_stat64 {
+            dev_t           st_dev;           /* ID of device containing file */
+            mode_t          st_mode;          /* Mode of file (see below) */
+            nlink_t         st_nlink;         /* Number of hard links */
+            ino64_t         st_ino;          /* File serial number */
+            uid_t           st_uid;           /* User ID of the file */
+            gid_t           st_gid;           /* Group ID of the file */
+            dev_t           st_rdev;          /* Device ID */
+            struct timespec st_atimespec;     /* time of last access */
+            struct timespec st_mtimespec;     /* time of last data modification */
+            struct timespec st_ctimespec;     /* time of last status change */
+            struct timespec st_birthtimespec; /* time of file creation(birth) */
+            off_t           st_size;          /* file size, in bytes */
+            blkcnt_t        st_blocks;        /* blocks allocated for file */
+            blksize_t       st_blksize;       /* optimal blocksize for I/O */
+            uint32_t        st_flags;         /* user defined flags for file */
+            uint32_t        st_gen;           /* file generation number */
+            int32_t         st_lspare;        /* RESERVED: DO NOT USE! */
+            int64_t         st_qspare[2];     /* RESERVED: DO NOT USE! */
+        };
+    #else
+        struct boss_fakewin_struct_stat {
+            dev_t           st_dev;
+            ino_t           st_ino;
+            mode_t          st_mode;
+            nlink_t         st_nlink;
+            uid_t           st_uid;
+            gid_t           st_gid;
+            dev_t           st_rdev;
+            off_t           st_size;
+            blksize_t       st_blksize;
+            blkcnt_t        st_blocks;
+            time_t          st_atime;
+            time_t          st_mtime;
+            time_t          st_ctime;
+        };
+        struct boss_fakewin_struct_stat64 {
+            _dev_t          st_dev;
+            _ino_t          st_ino;
+            unsigned short  st_mode;
+            short           st_nlink;
+            short           st_uid;
+            short           st_gid;
+            _dev_t          st_rdev;
+            __int64         st_size;
+            __time64_t      st_atime;
+            __time64_t      st_mtime;
+            __time64_t      st_ctime;
+        };
+    #endif
 
     #ifdef __cplusplus
         extern "C" {

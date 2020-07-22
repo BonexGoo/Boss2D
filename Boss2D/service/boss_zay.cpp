@@ -367,7 +367,7 @@ namespace BOSS
 
             Platform::Graphics::SetScissor(0, 0, m_width, m_height);
             Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-            Platform::Graphics::SetFont("Arial", 10);
+            Platform::Graphics::SetFont("Arial", m_stack_font[-1].system_size);
             Platform::Graphics::SetZoom(1);
         }
         else m_ref_surface = nullptr;

@@ -13,7 +13,7 @@
 
 #if !BOSS_WINDOWS | BOSS_NEED_FORCED_FAKEWIN
     #define __pragma(...)
-    #define struct_stat_BOSS struct boss_fakewin_struct_stat64
+    #define struct_stat_BOSS struct boss_fakewin_struct_stat
 #else
     #define struct_stat_BOSS struct stat
 #endif

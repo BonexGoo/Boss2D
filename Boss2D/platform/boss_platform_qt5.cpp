@@ -237,7 +237,7 @@
                 case IDABORT: delete[] AssertMessageW; return 0;
                 case IDIGNORE: delete[] AssertMessageW; return 1;
                 }
-            #elif !defined(BOSS_SILENT_NIGHT_IS_ENABLED)
+            #elif !defined(BOSS_SILENT_NIGHT_IS_ENABLED) & !BOSS_MAC_OSX
                 QString AssertMessage;
                 AssertMessage.sprintf(
                     "%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
@@ -1396,7 +1396,12 @@
         void Platform::Graphics::SetFont(chars name, float size)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            CanvasClass::get()->SetFont(name, (sint32) size);
+            #if BOSS_MAC_OSX
+                const float Rate = 1.25;
+            #else
+                const float Rate = 1.0;
+            #endif
+            CanvasClass::get()->SetFont(name, (sint32) (size * Rate));
         }
 
         void Platform::Graphics::SetFontForFreeType(chars nickname, sint32 height)

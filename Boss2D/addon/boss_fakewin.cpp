@@ -362,13 +362,13 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
 
     extern "C" int boss_fakewin_connect(SOCKET s, const struct boss_fakewin_struct_sockaddr* name, int namelen)
     {
-        BOSS_SOCKET_TRACE("########## connect(sin_family:%d)", (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_family);
-        BOSS_SOCKET_TRACE("########## connect(sin_addr:%d.%d.%d.%d)",
+        BOSS_SOCKET_TRACE("########## connect(family:%d)", (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_family);
+        BOSS_SOCKET_TRACE("########## connect(ip4:%d.%d.%d.%d)",
             (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_addr.S_un.S_un_b.s_b1,
             (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_addr.S_un.S_un_b.s_b2,
             (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_addr.S_un.S_un_b.s_b3,
             (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_addr.S_un.S_un_b.s_b4);
-        BOSS_SOCKET_TRACE("########## connect(sin_port:%d)", (sint32) ((boss_fakewin_struct_sockaddr_in*) name)->sin_port);
+        BOSS_SOCKET_TRACE("########## connect(port:%d)", (sint32) boss_htons(((boss_fakewin_struct_sockaddr_in*) name)->sin_port));
         int Result = boss_connect(s, *((const void**) &name), namelen);
         BOSS_SOCKET_TRACE("########## connect() -> %d", Result);
         return Result;
@@ -563,8 +563,13 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     class FWHandle
     {
     private:
-        FWHandle(FWHandleManager& manager) : mManager(manager), mID(manager.GetLastID()) {}
-        ~FWHandle() {mManager.Close(mID);}
+        FWHandle(FWHandleManager& manager) : mManager(manager), mID(manager.GetLastID())
+        {
+        }
+        ~FWHandle()
+        {
+            mManager.Close(mID);
+        }
     public:
         static HANDLE Create(FWHandleManager& manager)
         {return (HANDLE) new FWHandle(manager);}
@@ -1305,7 +1310,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
 
     extern "C" void boss_fakewin_Sleep(DWORD dwMilliseconds)
     {
-        Platform::Utility::Sleep(dwMilliseconds, false, false);
+        Platform::Utility::Sleep(dwMilliseconds, true, true);
     }
 
     extern "C" void boss_fakewin_SleepEx(DWORD, BOOL)
@@ -1424,7 +1429,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
                 if(CurThread->mFinished)
                     return WAIT_OBJECT_0;
             }
-            Platform::Utility::Sleep(10, false, false);
+            Platform::Utility::Sleep(10, true, true);
         }
         return WAIT_TIMEOUT;
     }
@@ -1458,7 +1463,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
                 return WAIT_FAILED;
             if(Finded)
                 return WAIT_OBJECT_0;
-            Platform::Utility::Sleep(10, false, false);
+            Platform::Utility::Sleep(10, true, true);
         }
         return WAIT_TIMEOUT;
     }
@@ -1824,9 +1829,18 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
         _Stat->st_gid = 0;
         _Stat->st_rdev = 0;
         _Stat->st_size = GetSize;
-        _Stat->st_atime = WindowToEpoch(GetAccessTime / 10000) / 1000;
-        _Stat->st_mtime = WindowToEpoch(GetModifyTime / 10000) / 1000;
-        _Stat->st_ctime = WindowToEpoch(GetCreateTime / 10000) / 1000;
+        #if BOSS_MAC_OSX // 시간입력 확인해 봐야 함!
+            _Stat->st_atimespec.tv_sec = WindowToEpoch(GetAccessTime / 10000) / 1000;
+            _Stat->st_atimespec.tv_nsec = 0;
+            _Stat->st_mtimespec.tv_sec = WindowToEpoch(GetModifyTime / 10000) / 1000;
+            _Stat->st_mtimespec.tv_nsec = 0;
+            _Stat->st_ctimespec.tv_sec = WindowToEpoch(GetCreateTime / 10000) / 1000;
+            _Stat->st_ctimespec.tv_nsec = 0;
+        #else
+            _Stat->st_atime = WindowToEpoch(GetAccessTime / 10000) / 1000;
+            _Stat->st_mtime = WindowToEpoch(GetModifyTime / 10000) / 1000;
+            _Stat->st_ctime = WindowToEpoch(GetCreateTime / 10000) / 1000;
+        #endif
         return 0;
     }
 
@@ -1855,9 +1869,18 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
         _Stat->st_gid = 0;
         _Stat->st_rdev = 0;
         _Stat->st_size = GetSize;
-        _Stat->st_atime = WindowToEpoch(GetAccessTime / 10000) / 1000;
-        _Stat->st_mtime = WindowToEpoch(GetModifyTime / 10000) / 1000;
-        _Stat->st_ctime = WindowToEpoch(GetCreateTime / 10000) / 1000;
+        #if BOSS_MAC_OSX // 시간입력 확인해 봐야 함!
+            _Stat->st_atimespec.tv_sec = WindowToEpoch(GetAccessTime / 10000) / 1000;
+            _Stat->st_atimespec.tv_nsec = 0;
+            _Stat->st_mtimespec.tv_sec = WindowToEpoch(GetModifyTime / 10000) / 1000;
+            _Stat->st_mtimespec.tv_nsec = 0;
+            _Stat->st_ctimespec.tv_sec = WindowToEpoch(GetCreateTime / 10000) / 1000;
+            _Stat->st_ctimespec.tv_nsec = 0;
+        #else
+            _Stat->st_atime = WindowToEpoch(GetAccessTime / 10000) / 1000;
+            _Stat->st_mtime = WindowToEpoch(GetModifyTime / 10000) / 1000;
+            _Stat->st_ctime = WindowToEpoch(GetCreateTime / 10000) / 1000;
+        #endif
         return 0;
     }
 

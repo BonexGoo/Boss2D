@@ -11,10 +11,10 @@ bool __LINK_ADDON_SSL__() {return true;} // 링크옵션 /OPT:NOREF가 안되서
 
 extern "C"
 {
-    #include <addon/openssl-1.1.1a_for_boss/include/openssl/bio.h>
-    #include <addon/openssl-1.1.1a_for_boss/include/openssl/evp.h>
-    #include <addon/openssl-1.1.1a_for_boss/include/openssl/buffer.h>
-    #include <addon/openssl-1.1.1a_for_boss/include/openssl/crypto.h>
+    #include <addon/openssl-1.1.0c_for_boss/include/openssl/bio.h>
+    #include <addon/openssl-1.1.0c_for_boss/include/openssl/evp.h>
+    #include <addon/openssl-1.1.0c_for_boss/include/openssl/buffer.h>
+    #include <addon/openssl-1.1.0c_for_boss/include/openssl/crypto.h>
 }
 
 #include <boss.hpp>

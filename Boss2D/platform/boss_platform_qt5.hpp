@@ -2461,6 +2461,7 @@
     public:
         void onCloseEvent(CloseEventPrivate* event)
         {
+            Platform::Popup::CloseAllTracker();
             if(m_viewGL)
                 m_viewGL->onCloseEvent(event);
             else if(m_viewMDI)

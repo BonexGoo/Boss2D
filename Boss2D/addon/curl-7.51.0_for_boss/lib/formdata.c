@@ -762,7 +762,7 @@ CURLFORMcode curl_formadd(struct curl_httppost **httppost,
  *
  */
 curl_off_t VmsRealFileSize(const char * name,
-                           const struct_stat * stat_buf)
+                           const struct_stat_BOSS * stat_buf) //modified by BOSS: const struct_stat * stat_buf)
 {
   char buffer[8192];
   curl_off_t count;
@@ -792,7 +792,7 @@ curl_off_t VmsRealFileSize(const char * name,
  *
  */
 static curl_off_t VmsSpecialSize(const char * name,
-                                 const struct_stat * stat_buf)
+                                 const struct_stat_BOSS * stat_buf) //modified by BOSS: const struct_stat * stat_buf)
 {
   switch(stat_buf->st_fab_rfm) {
   case FAB$C_VAR:
@@ -879,7 +879,7 @@ static CURLcode AddFormData(struct FormData **formp,
       /* Since this is a file to be uploaded here, add the size of the actual
          file */
       if(strcmp("-", newform->line)) {
-        struct_stat file;
+        struct_stat_BOSS file; //modified by BOSS: struct_stat file;
         if(!stat(newform->line, &file) && !S_ISDIR(file.st_mode))
           *size += filesize(newform->line, file);
         else {

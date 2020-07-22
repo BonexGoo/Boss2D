@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <boss.h>
 #include <addon/boss_fakewin.h>
-#include <addon/boss_integration_openssl-1.1.1a.h>
+#include <addon/boss_integration_openssl-1.1.0c.h>
 
 #define OPENSSL
 #define HAVE_CONFIG_H

@@ -103,8 +103,7 @@ int Curl_thread_join(curl_thread_t *hnd)
 curl_thread_t Curl_thread_create(unsigned int (CURL_STDCALL *func) (void*),
                                  void *arg)
 {
-// removed by BOSS: #ifdef _WIN32_WCE
-#if 0 // added by BOSS
+#ifdef _WIN32_WCE
   return CreateThread(NULL, 0, func, arg, 0, NULL);
 #else
   curl_thread_t t;

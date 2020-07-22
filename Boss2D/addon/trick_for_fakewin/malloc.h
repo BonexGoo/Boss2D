@@ -8,7 +8,7 @@
 extern void* malloc(boss_size_t size);
 #if BOSS_WINDOWS | BOSS_LINUX
     extern void free(void* ptr);
-#elif !BOSS_MAC_OSX
+#elif !BOSS_MAC_OSX && !BOSS_IPHONE
     extern int free(void* ptr);
 #endif
 
