@@ -231,17 +231,6 @@
     #include <stdint.h>
     #include <fcntl.h>
 
-    //#define _CMATH_
-    //#define _CSTDLIB_
-
-    #ifdef __cplusplus
-        #if BOSS_WINDOWS
-            //#include <iostream>
-            //#include <fstream>
-            //#include <sstream>
-        #endif
-    #endif
-
     #define socket boss_fakewin_socket
     #define connect boss_fakewin_connect
     #define getsockopt boss_fakewin_getsockopt
@@ -486,6 +475,7 @@
     #define _feof boss_fakewin_feof
     #define _ftime_s boss_fakewin_ftime_s
     #define _localtime_s boss_fakewin_localtime_s
+    #define _gmtime_s boss_fakewin_gmtime_s
     #define _wopen boss_fakewin_wopen
     #define _open boss_fakewin_open
     #define _close boss_fakewin_close
@@ -580,6 +570,7 @@
     #define feof _feof
     #define ftime_s _ftime_s
     #define localtime_s _localtime_s
+    #define gmtime_s _gmtime_s
     #define lseek _lseek
     #define lseeki64 _lseeki64
     #define chsize_s _chsize_s
@@ -592,8 +583,8 @@
     #else
         #define _vsntprintf _vsnprintf
     #endif
-
     #define fd_set boss_fd_set
+    #define errno (*boss_errno())
 
     struct boss_fakewin_struct_timeb {
         //long  time;
@@ -661,6 +652,7 @@
     int boss_fakewin_feof(FILE*);
     errno_t boss_fakewin_ftime_s(struct boss_fakewin_struct_timeb*);
     errno_t boss_fakewin_localtime_s(struct tm*, const time_t*);
+    errno_t boss_fakewin_gmtime_s(struct tm*, const time_t*);
     int boss_fakewin_wopen(const wchar_t*, int, int);
     int boss_fakewin_open(const char*, int);
     int boss_fakewin_close(int);

@@ -14,22 +14,22 @@
 #if !BOSS_WINDOWS | BOSS_NEED_FORCED_FAKEWIN
     #define __pragma(...)
     #define struct_stat_BOSS struct boss_fakewin_struct_stat64
+    void OutputDebugString(const TCHAR* buf)
+    {
+        BOSS_TRACE("%s", buf);
+    }
 #else
     #define struct_stat_BOSS struct stat
 #endif
 
 NON_EMPTY_TRANSLATION_UNIT
 
-#include <addon/openssl-1.1.1a_for_boss/crypto/armcap.c>
+//#include <addon/openssl-1.1.1a_for_boss/crypto/armcap.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/cpt_err.c>
-#define OPENSSL_cpuid_setup OPENSSL_cpuid_setup_cryptlib_BOSS
-#define OPENSSL_rdtsc OPENSSL_rdtsc_cryptlib_BOSS
 #include <addon/openssl-1.1.1a_for_boss/crypto/cryptlib.c>
-#undef OPENSSL_cpuid_setup
-#undef OPENSSL_rdtsc
 #include <addon/openssl-1.1.1a_for_boss/crypto/ctype.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/cversion.c>
-#include <addon/openssl-1.1.1a_for_boss/crypto/dllmain.c>
+//#include <addon/openssl-1.1.1a_for_boss/crypto/dllmain.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/ebcdic.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/ex_data.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/getenv.c>
@@ -143,7 +143,9 @@ NON_EMPTY_TRANSLATION_UNIT
 #include <addon/openssl-1.1.1a_for_boss/crypto/md5/md5_dgst.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/md5/md5_one.c>
 
+#define u128 u128_BOSS
 #include <addon/openssl-1.1.1a_for_boss/crypto/ec/curve25519.c>
+#undef u128
 #include <addon/openssl-1.1.1a_for_boss/crypto/ec/ec2_oct.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/ec/ec2_smpl.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/ec/ec_ameth.c>
@@ -545,6 +547,68 @@ NON_EMPTY_TRANSLATION_UNIT
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_unix.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_vms.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_win.c>
+#elif BOSS_MAC_OSX
+    static uint64_t get_time_stamp(void)
+    {
+        return time(NULL);
+    }
+    static uint64_t get_timer_bits(void)
+    {
+        uint64_t res = OPENSSL_rdtsc();
+        if (res != 0)
+            return res;
+        return time(NULL);
+    }
+    int rand_pool_init(void)
+    {
+        return 1;
+    }
+    void rand_pool_cleanup(void)
+    {
+    }
+    void rand_pool_keep_random_devices_open(int keep)
+    {
+    }
+    size_t rand_pool_acquire_entropy(RAND_POOL *pool)
+    {
+        return rand_pool_entropy_available(pool);
+    }
+    int rand_pool_add_nonce_data(RAND_POOL *pool)
+    {
+        struct {
+            pid_t pid;
+            CRYPTO_THREAD_ID tid;
+            uint64_t time;
+        } data = { 0 };
+
+        /*
+         * Add process id, thread id, and a high resolution timestamp to
+         * ensure that the nonce is unique with high probability for
+         * different process instances.
+         */
+        data.pid = getpid();
+        data.tid = CRYPTO_THREAD_get_current_id();
+        data.time = get_time_stamp();
+
+        return rand_pool_add(pool, (unsigned char *)&data, sizeof(data), 0);
+    }
+    int rand_pool_add_additional_data(RAND_POOL *pool)
+    {
+        struct {
+            CRYPTO_THREAD_ID tid;
+            uint64_t time;
+        } data = { 0 };
+
+        /*
+         * Add some noise from the thread id and a high resolution timer.
+         * The thread id adds a little randomness if the drbg is accessed
+         * concurrently (which is the case for the <master> drbg).
+         */
+        data.tid = CRYPTO_THREAD_get_current_id();
+        data.time = get_timer_bits();
+
+        return rand_pool_add(pool, (unsigned char *)&data, sizeof(data), 0);
+    }
 #else
     unsigned int arc4random()
     {

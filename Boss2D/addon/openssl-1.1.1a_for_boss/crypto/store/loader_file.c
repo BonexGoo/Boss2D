@@ -758,7 +758,7 @@ static OSSL_STORE_LOADER_CTX *file_open(const OSSL_STORE_LOADER *loader,
                                         void *ui_data)
 {
     OSSL_STORE_LOADER_CTX *ctx = NULL;
-    struct stat st;
+    struct_stat_BOSS st; //modified by BOSS: struct stat st;
     struct {
         const char *path;
         unsigned int check_absolute:1;

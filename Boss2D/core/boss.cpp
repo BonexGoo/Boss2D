@@ -641,7 +641,15 @@ extern "C" boss_file boss_fopen(const char* filename, const char* mode)
         if(Drive != drive_assets)
         {
             FILE* NewFilePointer = fopen(filename, (SaveFlag)? "r+b" : "rb");
-            if(!NewFilePointer) return nullptr;
+            if(!NewFilePointer)
+            {
+                #ifdef ENXIO
+                    boss_seterrno(ENXIO);
+                #else
+                    boss_seterrno(ENOENT);
+                #endif
+                return nullptr;
+            }
             FileClass* NewFile = &gAllFiles[++gLastFileID];
             NewFile->mFileID = gLastFileID;
             NewFile->mFileName = filename;
@@ -1394,10 +1402,18 @@ extern "C" int boss_FD_ISSET(int fd, boss_fd_set* fdset)
     #endif
 }
 
+static int gErrno = 0;
+extern "C" int* boss_errno()
+{
+    return &gErrno;
+}
+
 extern "C" int boss_geterrno()
 {
     #if BOSS_WINDOWS
         return WSAGetLastError() - 10000;
+    #elif BOSS_MAC_OSX
+        return *boss_errno();
     #else
         return errno;
     #endif
@@ -1408,6 +1424,8 @@ extern "C" void boss_seterrno(int err)
     #if BOSS_WINDOWS
         if(err == 0) WSASetLastError(0);
         else WSASetLastError(err + 10000);
+    #elif BOSS_MAC_OSX
+        *boss_errno() = err;
     #else
         errno = err;
     #endif

@@ -425,13 +425,14 @@ static void get_current_time(struct timeval *t)
     GetSystemTime(&st);
     SystemTimeToFileTime(&st, &now.ft);
     /* re-bias to 1/1/1970 */
-# ifdef  __MINGW32__
-    now.ul -= 116444736000000000ULL;
-# else
+//removed by BOSS: # ifdef  __MINGW32__
+//removed by BOSS:     now.ul -= 116444736000000000ULL;
+//removed by BOSS: # else
     /* *INDENT-OFF* */
-    now.ul -= 116444736000000000UI64;
+//removed by BOSS:     now.ul -= 116444736000000000UI64;
     /* *INDENT-ON* */
-# endif
+//removed by BOSS: # endif
+    now.ul -= U64(116444736000000000); //added by BOSS
     t->tv_sec = (long)(now.ul / 10000000);
     t->tv_usec = ((int)(now.ul % 10000000)) / 10;
 #else

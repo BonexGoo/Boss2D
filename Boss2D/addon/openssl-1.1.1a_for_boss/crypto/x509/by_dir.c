@@ -303,11 +303,11 @@ static int get_cert_by_subject(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
                              "%s%c%08lx.%s%d", ent->dir, c, h, postfix, k);
             }
 #ifndef OPENSSL_NO_POSIX_IO
-# ifdef _WIN32
-#  define stat _stat
-# endif
+//removed by BOSS: # ifdef _WIN32
+//removed by BOSS: #  define stat _stat
+//removed by BOSS: # endif
             {
-                struct stat st;
+                struct_stat_BOSS st; //modified by BOSS: struct stat st;
                 if (stat(b->data, &st) < 0)
                     break;
             }

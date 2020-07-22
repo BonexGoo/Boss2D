@@ -339,6 +339,7 @@
     void boss_FD_SET(int fd, boss_fd_set* fdset);
     void boss_FD_CLR(int fd, boss_fd_set* fdset);
     int boss_FD_ISSET(int fd, boss_fd_set* fdset);
+    int* boss_errno();
     int boss_geterrno();
     void boss_seterrno(int err);
 #ifdef __cplusplus

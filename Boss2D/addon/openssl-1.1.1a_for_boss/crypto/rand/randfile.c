@@ -86,7 +86,7 @@ int RAND_load_file(const char *file, long bytes)
     unsigned char buf[RAND_LOAD_BUF_SIZE];
 
 #ifndef OPENSSL_NO_POSIX_IO
-    struct stat sb;
+    struct_stat_BOSS sb; //modified by BOSS: struct stat sb;
 #endif
     int i, n, ret = 0;
     FILE *in;
@@ -177,7 +177,7 @@ int RAND_write_file(const char *file)
     int ret = -1;
     FILE *out = NULL;
 #ifndef OPENSSL_NO_POSIX_IO
-    struct stat sb;
+    struct_stat_BOSS sb; //modified by BOSS: struct stat sb;
 
     if (stat(file, &sb) >= 0 && !S_ISREG(sb.st_mode)) {
         RANDerr(RAND_F_RAND_WRITE_FILE, RAND_R_NOT_A_REGULAR_FILE);

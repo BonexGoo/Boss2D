@@ -61,11 +61,12 @@
 #define NO_WINDOWS_BRAINDEATH
 #define OPENSSL_USE_NODELETE
 #define OPENSSL_RAND_SEED_OS
+#define OPENSSL_SYS_WINDOWS
 
 #define DECLARE_DEPRECATED(...)
-
 #define OPENSSLDIR "demoCA"
 #define RC4_INT int
+#define PASCAL
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // _BOSS_BATCH_COMMAND_ {"type" : "include-alias", "prm" : "BOSS_OPENSSL_", "restore-comment" : " //original-code:"}

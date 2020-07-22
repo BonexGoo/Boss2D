@@ -240,6 +240,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     #undef _feof
     #undef _ftime_s
     #undef _localtime_s
+    #undef _gmtime_s
     #undef _wopen
     #undef _open
     #undef _close
@@ -334,6 +335,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     #undef feof
     #undef ftime_s
     #undef localtime_s
+    #undef gmtime_s
     #undef lseek
     #undef lseeki64
     #undef chsize_s
@@ -341,6 +343,9 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     #undef unlink
     #undef ltoa
     #undef _snprintf
+    #undef _vsntprintf
+    #undef fd_set
+    #undef errno
 
     #define BOSS_NEED_SOCKET_TRACE 0
     #if BOSS_NEED_SOCKET_TRACE
@@ -689,7 +694,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
                             Result = self->mCB(self->mPayload);
                         self->mFinished = true;
                         return Result;
-                    }, this);
+                    }, this, prioritytype_normal);
             }
         public:
             ThreadExCB mCB;
@@ -1716,6 +1721,12 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
         return 0;
     }
 
+    extern "C" errno_t boss_fakewin_gmtime_s(struct tm* tmp, const time_t* timer)
+    {
+        BOSS_ASSERT("########## __gmtime_s준비중", false);
+        return 0;
+    }
+
     extern "C" int boss_fakewin_wopen(const wchar_t* filename, int oflag, int pmode)
     {
         int TotalOFlags = O_RDONLY | O_WRONLY | O_RDWR | O_APPEND | O_CREAT |
@@ -2027,7 +2038,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
 
     extern "C" uintptr_t boss_fakewin_beginthreadex(void* security, unsigned stack_size, unsigned (*start_address)(void*), void* arglist, unsigned initflag, unsigned* thrdaddr)
     {
-        return (uintptr_t) Platform::Utility::ThreadingEx(start_address, arglist);
+        return (uintptr_t) Platform::Utility::ThreadingEx(start_address, arglist, prioritytype_normal);
     }
 
     extern "C" char* boss_fakewin_fullpath(char* absPath, const char* relPath, size_t maxLength)
@@ -2090,7 +2101,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     }
     extern "C" errno_t boss_fakewin_set_errno(int value)
     {
-        //BOSS_ASSERT("########## _set_errno준비중", false);
+        boss_seterrno(value);
         return 0;
     }
     extern "C" LPCH boss_fakewin_GetEnvironmentStrings(void)
@@ -2407,8 +2418,10 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     }
     extern "C" char* boss_fakewin_strdup(const char *strSource)
     {
-        BOSS_ASSERT("########## _strdup준비중", false);
-        return 0;
+        auto Length = boss_strlen(strSource);
+        auto NewSource = malloc(Length + 1);
+        memcpy(NewSource, strSource, Length + 1);
+        return (char*) NewSource;
     }
     extern "C" wchar_t* boss_fakewin_wcsdup(const wchar_t *strSource)
     {
