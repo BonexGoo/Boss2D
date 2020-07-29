@@ -22,6 +22,7 @@ bool __LINK_ADDON_TIF__();
 bool __LINK_ADDON_WEBRTC__();
 bool __LINK_ADDON_WEBSOCKET__();
 bool __LINK_ADDON_ZIP__();
+bool __LINK_ADDON_ZIPA__();
 static bool _ =
     __LINK_ADDON_AAC__() |
     __LINK_ADDON_ALPR__() |
@@ -39,7 +40,8 @@ static bool _ =
     __LINK_ADDON_TIF__() |
     __LINK_ADDON_WEBRTC__() |
     __LINK_ADDON_WEBSOCKET__() |
-    __LINK_ADDON_ZIP__();
+    __LINK_ADDON_ZIP__() |
+    __LINK_ADDON_ZIPA__();
 
 namespace BOSS
 {
@@ -457,4 +459,19 @@ namespace BOSS
         bool* archive, bool* hidden, bool* readonly, bool* system)
     {return Core_AddOn_Zip_GetFileInfo()(zip, fileindex,
         isdir, ctime, mtime, atime, archive, hidden, readonly, system);}
+
+    ////////////////////////////////////////////////////////////////////////////////
+    static void Zipa_Error() {BOSS_ASSERT("Zipa애드온이 준비되지 않았습니다", false);}
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Create, id_zipa, return nullptr, wchars, sint32*)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Release, void, return, id_zipa)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Extract, bool, return false, id_zipa, sint32, wchars)
+
+    id_zipa AddOn::Zipa::Create(wchars zippath, sint32* filecount)
+    {return Core_AddOn_Zipa_Create()(zippath, filecount);}
+
+    void AddOn::Zipa::Release(id_zipa zipa)
+    {Core_AddOn_Zipa_Release()(zipa);}
+
+    bool AddOn::Zipa::Extract(id_zipa zipa, sint32 fileindex, wchars newzippath)
+    {return Core_AddOn_Zipa_Extract()(zipa, fileindex, newzippath);}
 }

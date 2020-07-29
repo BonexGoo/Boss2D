@@ -19,6 +19,7 @@ namespace BOSS
     BOSS_DECLARE_ID(id_webrtc);
     BOSS_DECLARE_ID(id_websocket);
     BOSS_DECLARE_ID(id_zip);
+    BOSS_DECLARE_ID(id_zipa);
 
     /// @brief 애드온지원
     class AddOn
@@ -245,6 +246,15 @@ namespace BOSS
             static chars GetFileInfo(id_zip zip, sint32 fileindex,
                 bool* isdir = nullptr, uint64* ctime = nullptr, uint64* mtime = nullptr, uint64* atime = nullptr,
                 bool* archive = nullptr, bool* hidden = nullptr, bool* readonly = nullptr, bool* system = nullptr);
+        };
+
+        /// @brief ZIPA연동
+        class Zipa
+        {
+        public:
+            static id_zipa Create(wchars zippath, sint32* filecount = nullptr);
+            static void Release(id_zipa zipa);
+            static bool Extract(id_zipa zipa, sint32 fileindex, wchars newzippath = nullptr);
         };
     };
 }
