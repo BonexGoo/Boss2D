@@ -1,0 +1,519 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#unicode">Using Unicode in Filenames and File Comments (Full Version Only)</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#unicodeIntro">Introduction</a></li>
+<li><a class="linkindex" href="#unicodeUsage">Usage</a></li>
+<li><a class="linkindex" href="#unicodeCompat">Preserving the Compatibility</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#unicodeStrings">Setting Unicode Password and Archive Comment (Windows Only)</a></li>
+<li><a class="linkindex" href="#stllocale">Setting Locale in STL Applications</a></li>
+<li><a class="linkindex" href="#consider">Additional Considerations (Windows Only)</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#considerNormal">Unicode Normalization</a></li>
+<li><a class="linkindex" href="#considerSafeApi">Safe Windows API</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#custom">Custom Unicode Handling (Windows Only)</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#customFilenames">Storing Unicode Filenames in a Zip Archive</a></li>
+<li><a class="linkindex" href="#customCompat">Preserving Compatibility with the Standard Zip Format</a></li>
+<li><a class="linkindex" href="#customComment">Choosing a Code Page for Comments in a Zip Archive</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#customCommentglobal">Archive Global Comment Encoding and Decoding</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#customExtra">ZipArchive Library Extra Field Format</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="intro" name="intro" class="kb">
+			Introduction</h2>
+		<ul>
+			<li>You should use the Unicode features of the ZipArchive Library when the filenames,
+				comments or passwords in the archives you use contain non-ASCII characters.</li>
+			<li>Without the Unicode support, the strings in archives are stored under Windows using
+				the following code page:
+				<ul>
+					<li>filenames - current system OEM code page (<code>CP_OEMCP</code>),</li>
+					<li>comments, passwords - current system ANSI code page (<code>CP_ACP</code>).</li>
+				</ul>
+				Under other platforms, all strings are stored using the current system's code page.
+			</li>
+			<li>To use the Unicode functionality under Windows, you should compile the library and
+				your application for Unicode. Under systems that use Unicode UTF-8 as the default
+				code page (like Linux and OS X), there are no special considerations needed.
+				On other systems, the Unicode support is not available.</li>
+			<li>When calling the <a class="linkapi" href="classCZipFileHeader.html#acb4610d5d027a306f51e36ae45e69df5">CZipFileHeader::SetFileName()</a> method,
+				the current Unicode mode will be applied to the file being renamed. This will also
+				affect the Unicode mode used for the file's comment.</li>
+		</ul>
+		<h2 id="unicode" name="unicode" class="kb">
+			Using Unicode in Filenames and File Comments (Full Version Only)</h2>
+		<h3 id="unicodeIntro" name="unicodeIntro" class="kb">
+			Introduction</h3>
+		<ul>
+			<li>This feature is compatible with WinZip Unicode support and allows creating cross-platform
+				Unicode archives that are extractable by utilities provided with the system under
+				Linux and OS X.</li>
+			<li>To use this functionality, make sure <span class="preproc">_ZIP_UNICODE</span> is
+				defined in the <span class="file">_features.h</span> file. Rebuild the ZipArchive
+				Library and your application, if you modify this definition. </li>
+		</ul>
+		<h3 id="unicodeUsage" name="unicodeUsage" class="kb">
+			Usage</h3>
+		Call the <a class="linkapi" href="classCZipArchive.html#a56e17863ae02b8a6dc6c1149b71568a4">CZipArchive::SetUnicodeMode()</a> method and pass
+		<code>CZipArchive::umExtra</code> or <code>CZipArchive::umString</code>
+		as the parameter. You can also use a combination of these two parameters.
+		<ul>
+			<li><code>CZipArchive::umExtra</code> will store Unicode information
+				in extra headers. This will cause to use the extra headers for a filename or comment
+				only when the string contains non-ASCII characters. This value is used by default
+				under Windows.</li>
+			<li><code>CZipArchive::umString</code> will store filename and comment
+				directly in Unicode and will set a special flag in the file header inside of the
+				archive. Some utilities under Windows may display an invalid strings in this case.
+				This value is used by default under Linux/OS X.</li>
+			<li>To determine what Unicode mode is used by a file, use the <a class="linkapi" href="classCZipFileHeader.html#ab0447369350fe5dd150b63dcc00592aa">CZipFileHeader::GetState()</a> method.</li>
+		</ul>
+		<h3 id="unicodeCompat" name="unicodeCompat" class="kb">
+			Preserving the Compatibility</h3>
+		The ZipArchive Library correctly decompresses archives created under different systems
+		without additional settings.
+		<ul>
+			<li>If you need an archive created under Windows to be extracted correctly by Linux
+				utilities, set the archive compatibility to <a class="linkapi" href="namespaceZipCompatibility.html#ae66702f3e1756c3a13834602f8861209a5e253388a2ec345b03c84b36883ff63e">ZipCompatibility::zcUnix</a>
+				with the<br />
+				<a class="linkapi" href="classCZipArchive.html#a3b22230148bd8a11a9f1f92bff446e1b">CZipArchive::SetSystemCompatibility()</a> method. To make
+				the archive readable also by Windows utilities, set additionally one of the Unicode
+				modes. Not all Windows utilities support the Unicode modes.</li>
+			<li>If you need an archive created under Windows to be extracted correctly by Mac OS
+				X utilities, set the Unicode mode to <code>CZipArchive::umString</code>
+				or use the same way as for the Linux platform. </li>
+			<li>If you need an archive created under Linux/OS X to be extracted correctly by
+				WinZip under Windows there is no need to change anything as the <code>CZipArchive::umString</code> mode is set by default, but you may need to set
+				<code>CZipArchive::umExtra</code> for other Windows utilities that
+				do not support the <code>CZipArchive::umString</code> mode.</li>
+		</ul>
+		<h2 id="unicodeStrings" name="unicodeStrings" class="kb">
+			Setting Unicode Password and Archive Comment (Windows Only)</h2>
+		<ul>
+			<li>You can set a code page to be used while setting a password with the<br />
+				<a class="linkapi" href="classCZipArchive.html#af68297f88e912ec811ba1c27496a6683">CZipArchive::SetPassword()</a> method. </li>
+			<li>You can set a code page to be used while setting an archive global comment with
+				the<br />
+				<a class="linkapi" href="classCZipArchive.html#a2a017ad5c8dcde52e5515b8510271780">CZipArchive::SetGlobalComment()</a> method.</li>
+			<li>If your password or a comment contains non-ASCII characters and you intend to compress
+				files under Windows and extract them under Linux/OS X or vice versa, set the
+				appropriate code page to <code>CP_UTF8</code>. </li>
+		</ul>
+		<h2 id="stllocale" name="stllocale" class="kb">
+			Setting Locale in STL Applications</h2>
+		If your locale is different from English and you wish to use non-English characters
+		in archives, you need to set your locale globally; <code>setlocale()</code> function
+		is not sufficient in this case.
+		<ul>
+			<li>To set the global locale to be the same as your system locale use the function:<br />
+				<code>std::locale::global(std::locale(""));</code></li>
+			<li>To set the global locale to a particular value, use the function e.g. this way:<br />
+				<code>std::locale::global(std::locale("German"));</code></li>
+			<li>When you use Unicode, do not use <span class="preproc">_T()</span> macro in the
+				above calls.</li>
+			<li>Remember about putting <code>#include &lt;locale&gt;</code> in your code.</li>
+		</ul>
+		Remember to restore the global locale to the previous value (returned by <code>std:locale::global</code>
+		) after processing (it may affect other parts of your application).
+		<h2 id="consider" name="consider" class="kb">
+			Additional Considerations (Windows Only)</h2>
+		<h3 id="considerNormal" name="considerNormal" class="kb">
+			Unicode Normalization</h3>
+		When you decompress archives that store filenames using different Unicode Normalization
+		than form C (used by Windows), you should define <span class="preproc">_ZIP_UNICODE_NORMALIZE</span>
+		in the <span class="file">_features.h</span> file, because some software under Windows
+		may be unable to open files with filenames in a different form. This will convert
+		any other normalization form to form C. This is e.g. the case when extracting archives
+		created under OS X (it uses form D).
+		<ul>
+			<li>Under Windows Vista and later you need to use the appropriate for your system Windows
+				SDK and make sure that you compile for that platform (<span class="preproc">WINVER</span>
+				should be defined to be at least 0x600).</li>
+			<li>Under Windows XP and Windows Server 2003, you need to download <i>Microsoft Internationalized
+				Domain Name (IDN) Mitigation APIs</i> to use this functionality.</li>
+			<li>Under Windows 95/98/Me this functionality is unsupported.</li>
+		</ul>
+		<h3 id="considerSafeApi" name="considerSafeApi" class="kb">
+			Safe Windows API</h3>
+		The Unicode version the library uses Windows API <code>WideCharToMultiByte</code>
+		and <code>MultiByteToWideChar</code> functions to perform conversions from ANSI
+		code page to OEM code page and vice versa. It takes four function's calls to perform
+		one conversion. The alternative is to use the <code>CharToOemBuffA</code> and <code>
+			OemToCharBuffA</code> functions and it takes only one function call per conversion
+		in that case. However, this functions are considered unsafe and banned by Microsoft.
+		If you prefer using the fast solution with unsafe functions, comment out the <span class="preproc">_ZIP_SAFE_WINDOWS_API</span> definition in the <span class="file">ZipPlatform_win.cpp</span>
+		file.
+		<h2 id="custom" name="custom" class="kb">
+			Custom Unicode Handling (Windows Only)</h2>
+		<ul>			
+			<li>This functionality is specific to the ZipArchive Library and external software will
+				not be able to benefit from it.</li>
+			<li>To use this functionality, make sure <span class="preproc">_ZIP_UNICODE_CUSTOM</span>
+				is defined in the <span class="file">_features.h</span> file. Rebuild the ZipArchive
+				Library and your application, if you modify this definition. You also need to set
+				the Unicode mode with the <a class="linkapi" href="classCZipArchive.html#a56e17863ae02b8a6dc6c1149b71568a4">CZipArchive::SetUnicodeMode()</a>
+				method to the <a class="linkapi" href="classCZipArchive.html#ac5c98aebbf9defcb4b5e16683b51d80eacf7f0e438c63ad9562aad7d2d990093c">CZipArchive::umCustom</a> value.</li>
+			<li>The ZipArchive Library will save the code pages used during compression and automatically
+				use them during extraction. The code pages are saved in zip extra fields. See <a class="linkindex" href="#customExtra">below</a> for more information.</li>
+			<li>Setting string store settings with one of the <a class="linkindex" href="#api">API</a>
+				calls does not affect existing files and comments.</li>
+			<li>If you open an existing archive with intent to add new files to it and you want
+				the new files to use the same string store settings as the existing files, then:
+				<ul class="dec">
+					<li>Retrieve the settings from one of the existing files with the<br />
+						<a class="linkapi" href="classCZipFileHeader.html#ad4d29775356f406d8f1e6864f90681a0">CZipFileHeader::GetStringStoreSettings()</a> method.</li>
+					<li>Set the retrieved settings to be active for the new files with the<br />
+						<a class="linkapi" href="classCZipArchive.html#ac497dc2ebb4b65be1f5b7d08fe024a29">CZipArchive::SetStringStoreSettings(const CZipStringStoreSettings&amp;)</a>
+						method.</li>
+				</ul>
+				Otherwise the library will use the default settings for the current system (<a class="linkapi" href="namespaceZipPlatform.html#acdfcdd6eb3e4e93497a551b7c007d0bd">ZipPlatform::GetSystemID()</a>). </li>
+			<li>If you want to open an archive created with a previous version of the ZipArchive
+				library or any program, that uses a different filename of comment encoding code
+				pages than the standard ones, set the code pages before opening the archive. The
+				library will use them while decoding filenames and comments. The settings will be
+				ignored, if the archive contains extra fields with code pages created by the ZipArchive
+				Library. In this case, code pages from extra fields will be used instead. Note,
+				that these settings will be used during compression in the same archive (unless
+				changed).</li>
+			<li>When you close an archive, the string store settings are reset to its default values
+				for the current system, just like with the <a class="linkapi" href="classCZipStringStoreSettings.html#ab8b0cd2222b54117896d4207b199f5e6">CZipStringStoreSettings::Reset()</a>
+				method call. This way, if you open the next archive using the same <code>CZipArchive</code>
+				object, its string store settings are not affected by the previous archive settings.</li>
+		</ul>
+		<h3 id="customFilenames" name="customFilenames" class="kb">
+			Storing Unicode Filenames in a Zip Archive</h3>
+		You may control the way the ZipArchive Library stores filenames in archives by adjusting
+		the first parameter of the
+		<br />
+		<a class="linkapi" href="classCZipArchive.html#a6eadc5f798ca0897e025c2d79771bbd4">CZipArchive::SetStringStoreSettings(UINT, bool)</a> method.
+		<ul>
+			<li>If you plan that the archive will be extracted under Linux/OS X, set this parameter
+				to the identifier of the code page used by the system under which you want to
+				extract the archive. You may try setting it to <code>CP_ACP</code>, then the current
+				system ANSI code page will be used - it will work correctly if the target platform
+				uses the same code page as your system. </li>
+			<li>If you use e.g. Japanese or Korean characters, you may set this parameter to <code>
+				CP_UTF8</code>. Unicode UTF-8 will be used.</li>
+			<li>You can set the code page directly using its identifier. Be sure it is installed
+				on your system and on the system you plan to extract the archive on.</li>
+			<li>To restore the OEM encoding under Windows, set this parameter back to <code>CP_OEMCP</code>.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipMemFile emptyFile;</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// by default the current OEM code page is used, change it to UTF-8</span></div>
+<div class="line">zip.SetStringStoreSettings(CP_UTF8);</div>
+<div class="line"><span class="comment">// use some non-English characters</span></div>
+<div class="line">zip.AddNewFile(emptyFile, _T(<span class="stringliteral">"\u0391\u03A9"</span>));</div>
+<div class="line"><span class="comment">// set the code page using its identifier</span></div>
+<div class="line">zip.SetStringStoreSettings(1250);</div>
+<div class="line">zip.AddNewFile(emptyFile, _T(<span class="stringliteral">"\u010D\u011B"</span>));</div>
+<div class="line"><span class="comment">// restore the OEM code page</span></div>
+<div class="line">zip.SetStringStoreSettings(CP_OEMCP);</div>
+<div class="line">zip.AddNewFile(emptyFile, _T(<span class="stringliteral">"English characters only"</span>));    </div>
+<div class="line">zip.Close();</div>
+<div class="line"><span class="comment">// extract one file now</span></div>
+<div class="line">zip.Open(zipFileName);</div>
+<div class="line">zip.ExtractFile(1, _T(<span class="stringliteral">"C:\\Temp"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h3 id="customCompat" name="customCompat" class="kb">
+			Preserving Compatibility with the Standard Zip Format</h3>
+		It is assumed that under Windows filenames are stored using the current system OEM
+		code page (<code>CP_OEMCP</code>). Hence external software will not be able to properly
+		decode filenames if they are stored using a different code page. For this reason,
+		the ZipArchive Library allows storing filenames encoded with a custom code page
+		in extra fields. The filenames in the standard location (the central directory and
+		local headers) are encoded using OEM code page. This way, external software will
+		see a typically encoded filenames and the ZipArchive Library will know the original
+		filenames while extraction.
+		<p />
+		You should note that this method takes additional space needed for storing a filename
+		in an extra field.&nbsp;<p />
+		To store filenames in extra fields, set the second parameter of the
+		<br />
+		<a class="linkapi" href="classCZipArchive.html#a6eadc5f798ca0897e025c2d79771bbd4">CZipArchive::SetStringStoreSettings(UINT, bool)</a> method
+		to <code>true</code>.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipMemFile emptyFile;</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// set the code page and request storing it in the extra field</span></div>
+<div class="line"><span class="comment">// the filename encoded using this code page</span></div>
+<div class="line">zip.SetStringStoreSettings(1250, <span class="keyword">true</span>);</div>
+<div class="line"><span class="comment">// use some non-English characters</span></div>
+<div class="line">zip.AddNewFile(emptyFile, _T(<span class="stringliteral">"\u0104\u0118"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h3 id="customComment" name="customComment" class="kb">
+			Choosing a Code Page for Comments in a Zip Archive</h3>
+		You can specify a different code page for file comments, e.g. by modifying the object
+		returned by the
+		<br />
+		<a class="linkapi" href="classCZipArchive.html#a54f26713f4bc6c808250fe5a0b8b0565">CZipArchive::GetStringStoreSettings()</a> method call.
+		<h4 id="customCommentglobal" name="customCommentglobal" class="kb">
+			Archive Global Comment Encoding and Decoding</h4>
+		The comment code page settings does not affect the global comment. Use <a class="linkapi" href="classCZipArchive.html#a2a017ad5c8dcde52e5515b8510271780">CZipArchive::SetGlobalComment()</a> to use a different code page in this
+		case.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipMemFile emptyFile;</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line">zip.AddNewFile(emptyFile, _T(<span class="stringliteral">"empty file"</span>));</div>
+<div class="line"><span class="comment">// set a specific code page for comments</span></div>
+<div class="line">zip.GetStringStoreSettings().m_uCommentCodePage = CP_UTF8;</div>
+<div class="line"><span class="comment">// use some non-English characters</span></div>
+<div class="line">LPCTSTR comment = _T(<span class="stringliteral">"\u0104\u0118"</span>);</div>
+<div class="line">zip[0]-&gt;SetComment(comment);</div>
+<div class="line"><span class="comment">// the comment code page setting affects the global comment encoding as well</span></div>
+<div class="line">zip.SetGlobalComment(comment);</div>
+<div class="line">zip.Close();    </div>
+<div class="line"><span class="comment">// extract the comments</span></div>
+<div class="line">zip.Open(zipFileName);</div>
+<div class="line">CZipFileHeader* info = zip.GetFileInfo(0);</div>
+<div class="line"><span class="comment">// the file comment, the comment code page is read from the stored settings</span></div>
+<div class="line">CZipString result = info-&gt;GetComment();</div>
+<div class="line"><span class="comment">// adjust the settings to properly decode the global comment</span></div>
+<div class="line">zip.SetStringStoreSettings(info-&gt;GetStringStoreSettings());    </div>
+<div class="line">result = zip.GetGlobalComment();    </div>
+</div><!-- fragment --> </div>
+		<h3 id="customExtra" name="customExtra" class="kb">
+			ZipArchive Library Extra Field Format</h3>
+		The ZipArchive Library stores code page information and if requested, encoded filename,
+		in extra fields in the central directory. The global format of the ZipArchive extra
+		field is as follows:<br />
+		<br />
+		<div style="text-align: center">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td style="text-align: left;">
+						Sub-field
+					</td>
+					<td>
+						Size in bytes
+					</td>
+					<td>
+						Value
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Header ID
+					</td>
+					<td>
+						2
+					</td>
+					<td>
+						0x5A4C
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Data Size
+					</td>
+					<td>
+						2
+					</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Data
+					</td>
+					<td>
+						as specified by <strong>Data Size</strong>
+					</td>
+					<td>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br />
+		The format of the <strong>Data</strong> field is as follows (not all sub-fields
+		may be present):
+		<br />
+		<br />
+		<div style="text-align: center">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td style="text-align: left;">
+						Sub-field
+					</td>
+					<td>
+						Size in bytes
+					</td>
+					<td>
+						Values
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Version
+					</td>
+					<td>
+						1
+					</td>
+					<td>
+						0x01
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Flag
+					</td>
+					<td>
+						1
+					</td>
+					<td>
+						1, 3, 4
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;">
+						Filename Code Page
+					</td>
+					<td>
+						4
+					</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">
+						Encoded Filename
+					</td>
+					<td>
+						variable
+					</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">
+						Comment Code Page
+					</td>
+					<td>
+						4
+					</td>
+					<td>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br />
+		The <strong>Flag</strong> field values have the following meaning:<br />
+		<br />
+		<div style="text-align: center">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td>
+						Bits Set
+					</td>
+					<td>
+						Value
+					</td>
+					<td>
+						Meaning
+					</td>
+				</tr>
+				<tr>
+					<td>
+						0
+					</td>
+					<td>
+						1
+					</td>
+					<td>
+						the <strong>Filename Code Page</strong> field is present
+					</td>
+				</tr>
+				<tr>
+					<td>
+						0 and 1
+					</td>
+					<td>
+						3
+					</td>
+					<td>
+						the <strong>Encoded Filename</strong> field is present<br />
+						(and the <strong>Filename Code Page</strong> field must be present too)
+					</td>
+				</tr>
+				<tr>
+					<td>
+						2
+					</td>
+					<td>
+						4
+					</td>
+					<td>
+						the <strong>Comment Code Page</strong> field is present
+					</td>
+				</tr>
+			</table>
+		</div>
+		<h2 id="api" name="api" class="kb">
+			See Also API Links</h2>
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#a56e17863ae02b8a6dc6c1149b71568a4">CZipArchive::SetUnicodeMode()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a25603e19d2c08a0399a7c2ea890bce6f">CZipArchive::GetUnicodeMode()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ac497dc2ebb4b65be1f5b7d08fe024a29">CZipArchive::SetStringStoreSettings(const CZipStringStoreSettings&amp;)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a6eadc5f798ca0897e025c2d79771bbd4">CZipArchive::SetStringStoreSettings(UINT, bool, UINT)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a6eadc5f798ca0897e025c2d79771bbd4">CZipArchive::SetStringStoreSettings(UINT, bool)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a81a15f347bad84ffaeee0c8eff3b98db">CZipArchive::ResetStringStoreSettings()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a54f26713f4bc6c808250fe5a0b8b0565">CZipArchive::GetStringStoreSettings()</a></li>
+			<li><a class="linkapi" href="classCZipFileHeader.html#ad4d29775356f406d8f1e6864f90681a0">CZipFileHeader::GetStringStoreSettings()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610051525</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Self-Extracting Archives
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Self-Extracting Archives
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All But Multi-Segment Archives</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#sf">Creating a Self-Extracting Archive</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#append">Appending Archive to Self-Extracting Stub</a></li>
+<li><a class="linkindex" href="#convert">Converting Existing Archive to Self-Extracting Archive</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#callbacks">Callbacks Called</a></li>
+<li><a class="linkindex" href="#convertConsiderations">Additional Considerations</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#prepend">Binary Prepending</a></li>
+</ul>
+</li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+        <h2 id="intro" name="intro" class="kb">
+            Introduction</h2>
+        <ul>
+            <li>A self-extracting archive contains an executable stub added at the beginning, which
+                handles the archive extraction.</li>
+            <li>The ZipArchive Library automatically detects self-extracting archives.</li>
+        </ul>
+        <h2 id="sf" name="sf" class="kb">
+            Creating a Self-Extracting Archive</h2>
+        First you need to create a self-extracting executable stub. The following sample
+        code shows an example of it.
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">//Windows code</span></div>
+<div class="line"><span class="keywordtype">int</span> APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR,    <span class="keywordtype">int</span>)</div>
+<div class="line">{</div>
+<div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// get the path of the executable</span></div>
+<div class="line">    TCHAR szBuff[_MAX_PATH];</div>
+<div class="line">    <span class="keywordflow">if</span> (!::GetModuleFileName(hInstance, szBuff, _MAX_PATH))</div>
+<div class="line">        <span class="keywordflow">return</span> -1;</div>
+<div class="line"></div>
+<div class="line">    CZipString szDest;</div>
+<div class="line">    <span class="comment">// ...</span></div>
+<div class="line">    <span class="comment">// add some code here to get additional information from the user</span></div>
+<div class="line">    <span class="comment">// such as the destination directory or a password, if needed</span></div>
+<div class="line">    zip.Open(szBuff, CZipArchive::zipOpenReadOnly); </div>
+<div class="line">    <span class="comment">// zipOpenReadOnly mode is necessary for self extract archives</span></div>
+<div class="line">    <span class="keywordflow">for</span> (ZIP_INDEX_TYPE i = 0; i &lt; zip.GetCount(); i++)</div>
+<div class="line">        zip.ExtractFile(i, szDest);</div>
+<div class="line">    zip.Close();</div>
+<div class="line">    <span class="keywordflow">return</span> 0;</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+        <h3 id="append" name="append" class="kb">
+            Appending Archive to Self-Extracting Stub</h3>
+        To create a self-extracting archive, create a new archive using the <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdba16ee2398b435a10f65b718e0ec1abd73">CZipArchive::zipCreateAppend</a> mode and pass the path of your self-extracting
+        stub to the<br />
+        <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a> method.
+        Then, you can for example add some files to it. This will create a self-extracting archive
+        that is compatible with popular archivers.
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\my-sf-stub.exe"</span>), CZipArchive::zipCreateAppend);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// now add some files</span></div>
+<div class="line">zip.AddNewFiles(_T(<span class="stringliteral">"d:\\My Documents"</span>), _T(<span class="stringliteral">"*.doc"</span>));</div>
+<div class="line"></div>
+<div class="line">zip.Close();</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// now your file z:\Temp\my-sf-stub.exe is a self-extracting archive.</span></div>
+</div><!-- fragment --> </div>
+        <br />
+        You can later open the archive for modifications. In case you need it, the offset
+        of the first file in the archive tells you the size of the self-extracting stub:
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\my-sf-stub.exe"</span>));</div>
+<div class="line"></div>
+<div class="line">ZIP_SIZE_TYPE stubSize = zip.GetFileInfo(0)-&gt;m_uOffset;</div>
+<div class="line"><span class="comment">//...</span></div>
+<div class="line"></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="convert" name="convert" class="kb">
+            Converting Existing Archive to Self-Extracting Archive</h3>
+        To convert an existing archive into a self-extracting archive, use one of the following
+        methods:
+        <ul>
+            <li><a class="linkapi" href="classCZipArchive.html#ae9ab401bd0569b77730b94133477257b">CZipArchive::ShiftData()</a> - to make space at the beginning
+                of the archive for a self-extracting stub. You can then copy your stub into this
+                free space.</li>
+            <li><a class="linkapi" href="classCZipArchive.html#aea5a7eae3002f347c903547862c70517">CZipArchive::PrependData(CZipAbstractFile&amp;, LPCTSTR)</a>
+                - to copy your self-extracting stub contained in a file (it can be a memory file)
+                to the beginning of the archive. This method can also change the extension of the
+                archive (in this case the archive is closed). This method performs necessary shifting
+                of the data.</li>
+            <li><a class="linkapi" href="classCZipArchive.html#ab96f80a3fa5f6a224f853ec7441cbf6a">CZipArchive::PrependData(LPCTSTR, LPCTSTR)</a> - behaves
+                similarly to the above method, but reads a self-extracting stub from a disk file.</li>
+        </ul>
+        All these method create self-extracting archives compatible with popular archivers.
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">zip.PrependData(_T(<span class="stringliteral">"C:\\Temp\\my-sf-stub.exe"</span>));</div>
+<div class="line"><span class="comment">// renaming is performed (lpszExt is not NULL) </span></div>
+<div class="line"><span class="comment">// so the archive will be closed after prepending</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// now we have z:\temp\test.exe file that can be executed</span></div>
+</div><!-- fragment --> </div>
+        <h4 id="callbacks" name="callbacks" class="kb">
+            Callbacks Called</h4>
+        While shifting data, the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a1d8d913bae0e790f596774fd5aa69e5a">CZipActionCallback::cbMoveData</a>
+        callback is called. To read more about using callback objects, see <a class="linkkb" href="0610231200.html">Progress Notifications: Using Callback Objects</a>.
+        <h4 id="convertConsiderations" name="convertConsiderations" class="kb">
+            Additional Considerations</h4>
+        For the data shifting and prepending methods to work, the following conditions must
+        be satisfied:
+        <ul>
+            <li>The archive must be opened.</li>
+            <li>No file must be opened for compression or extraction.</li>
+            <li>The archive must not be a segmented archive.</li>
+            <li>There must be no bytes before the archive (the <a class="linkapi" href="classCZipArchive.html#aca3e489f54afcd72390093e853af822e">CZipArchive::GetBytesBeforeZip()</a>
+                method should return <code>0</code>).</li>
+        </ul>
+        <h3 id="prepend" name="prepend" class="kb">
+            Binary Prepending</h3>
+        You can prepend a self-extracting stub to an existing archive without shifting data,
+        e.g. using the following DOS command: <span class="command">copy /b Stub.exe + Archive.zip
+            SelfExtract.exe</span>
+        <ul>
+            <li>The ZipArchive Library will correctly operate on such archives, but they may be
+                not compatible with other software.</li>
+            <li>You can request the size of the executable stub with the<br /><a class="linkapi" href="classCZipArchive.html#aca3e489f54afcd72390093e853af822e">CZipArchive::GetBytesBeforeZip()</a>
+                method.</li>
+            <li>This method will not work for archives in the Zip64 format (for the information
+                about the Zip64 format, see <a class="linkkb" href="0610051629.html">Zip64 Format: Crossing the Limits of File Sizes and Number of Files and Segments</a>).</li>
+        </ul>
+    
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610242241</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

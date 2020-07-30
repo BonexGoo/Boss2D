@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Modification of Archives: Replacing, Renaming, Deleting and Changing Data
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Modification of Archives: Replacing, Renaming, Deleting and Changing Data
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All But Multi-Segment Archives</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#replace">Replacing</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#replcallback">Callbacks Called</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#delete">Deleting</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#delcallback">Callbacks Called</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#commit">Committing Modification Changes</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#commitMode">Commit Mode</a></li>
+<li><a class="linkindex" href="#rencallback">Callback Called</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#rename">Renaming</a></li>
+<li><a class="linkindex" href="#time">Changing the Modification Time of Files Inside an Archive</a></li>
+<li><a class="linkindex" href="#filetimes">Storing Modification, Creation and Last Access File Time (High Resolution)</a></li>
+<li><a class="linkindex" href="#comment">Writing and Reading File and Archive Comments</a></li>
+<li><a class="linkindex" href="#cache">Controlling Windows System File Cache</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+        <h2 id="intro" name="intro" class="kb">
+            Introduction
+        </h2>
+        <ul>
+            <li>The operations described in this article report progress using callback objects.
+				For more information about using callback objects, see <a class="linkkb" href="0610231200.html">Progress Notifications: Using Callback Objects</a>.</li>
+            <li>To read about preventing archive corruption in some cases, see <a class="linkkb" href="0610231446.html#finalize">Compressing Data</a>.</li>
+            <li>To access a file inside an archive, request its information using methods described
+				here: <a class="linkkb" href="0610242128.html#file">Requesting Information, Predicting Names and Sizes</a>.</li>
+        </ul>
+        <h2 id="replace" name="replace" class="kb">
+            Replacing
+        </h2>
+        <ul>
+            <li>To replace an existing file in an archive with a new file, use the<br />
+                <a class="linkapi" href="classCZipArchive.html#a835a92a9a94ae71ab1742c50d282d0d2">CZipArchive::AddNewFile(CZipAddNewFileInfo&amp;)</a> method
+				and specify the index of the file to be replaced in <a class="linkapi" href="structCZipAddNewFileInfo.html#a8c754f0148639ec63dab981ea111d662">CZipAddNewFileInfo::m_uReplaceIndex</a>.
+            </li>
+            <li>The operation replaces the file physically and no information from the file being
+				replaced is retained (such as attributes, modification time, encryption method,
+				etc.).</li>
+            <li>If <a class="linkapi" href="structCZipAddNewFileInfo.html#a9a636d5fec970c50215b0a4537539070">CZipAddNewFileInfo::m_iComprLevel</a> is not <code>0</code>
+                then a file to be added is first compressed to a temporary archive which is created
+				in:
+				<ul>
+                    <li>the temporary directory (see the <a class="linkapi" href="classCZipArchive.html#ac20345ce4f4760630d6514600fe3cbe0">CZipArchive::SetTempPath()</a>
+                        method)</li>
+                    <li>or in the memory, if you specify <a class="linkapi" href="classCZipArchive.html#a578cdd94533678eb97c099102eaf669fac565ef877f837250f6e6c72239e3e7e2">CZipArchive::zipsmMemoryFlag</a>
+                        in <a class="linkapi" href="structCZipAddNewFileInfo.html#a987a635097bd3c9da5ec206fbe0dffec">CZipAddNewFileInfo::m_iSmartLevel</a>.</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">CZipAddNewFileInfo info(_T(<span class="stringliteral">"C:\\Temp\\file.dat"</span>), _T(<span class="stringliteral">"replacement.dat"</span>));</div>
+<div class="line"><span class="comment">// replace the first file in the archive</span></div>
+<div class="line">info.m_uReplaceIndex = 0;</div>
+<div class="line">zip.AddNewFile(info);</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="replcallback" name="replcallback" class="kb">
+            Callbacks Called
+        </h3>
+        <ul>
+            <li>If a temporary archive is used (see above), then the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a4e48c2f0d8f6bd1de700e56927c55de8">CZipActionCallback::cbAdd</a>
+                callback is called while compressing a file to a temporary archive.</li>
+            <li>If you have additionally specified <a class="linkapi" href="classCZipArchive.html#a578cdd94533678eb97c099102eaf669fac8091f3b3088e300ce6eb90ee0e79858">CZipArchive::zipsmCheckForEff</a>
+                in <a class="linkapi" href="structCZipAddNewFileInfo.html#a987a635097bd3c9da5ec206fbe0dffec">CZipAddNewFileInfo::m_iSmartLevel</a> and the compression
+				to the temporary archive proved to be inefficient, then the file is stored instead
+				in a temporary archive and this process calls the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734aa4792345795d95ef78e25826b893b58c">CZipActionCallback::cbAddStore</a>
+                callback.</li>
+            <li>If the space size taken by the old file is different from the space size needed
+				by the new file, the space needs to be adjusted for the new file to fit and this
+				operation calls the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a1d8d913bae0e790f596774fd5aa69e5a">CZipActionCallback::cbMoveData</a>
+                callback.</li>
+        </ul>
+        <h2 id="delete" name="delete" class="kb">
+            Deleting
+        </h2>
+        You can delete files in an archive by specifying either of:
+		<ul>
+            <li>an <span class="emphasize">index</span> of the file to delete with the method<br />
+                <a class="linkapi" href="classCZipArchive.html#a77fc0cecc99d05de69b07e96c839e2a4">CZipArchive::RemoveFile</a>,</li>
+            <li>an array of <span class="emphasize">indexes</span> of files to delete with the method
+				<br />
+                <a class="linkapi" href="classCZipArchive.html#ab8cc831dc75b44094a0e4a4ff53e9b03">CZipArchive::RemoveFiles(CZipIndexesArray&amp;)</a>,</li>
+            <li>an array of <span class="emphasize">names</span> of files to delete with the method
+				<br />
+                <a class="linkapi" href="classCZipArchive.html#a6a390c387b466f73ce6647152d8ba149">CZipArchive::RemoveFiles(const CZipStringArray&amp;)</a>.</li>
+        </ul>
+        If you plan to delete more files at once, use the methods that take arrays as arguments
+		- they are optimized for multiple file deletion.
+		<p>
+            If you don't want to physically remove the file from the archive, but only from
+			the central directory (e.g. to save the processing time or for safer archive modifications),
+			use the <a class="linkapi" href="classCZipArchive.html#a77fc0cecc99d05de69b07e96c839e2a4">CZipArchive::RemoveFile</a> method and set the
+			<code>bRemoveData</code> parameter to <code>false</code>.
+        </p>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line"><span class="comment">// delete the first file</span></div>
+<div class="line">zip.RemoveFile(0);</div>
+<div class="line"><span class="comment">// delete two first files</span></div>
+<div class="line">CZipIndexesArray indexes;</div>
+<div class="line">indexes.Add(0);</div>
+<div class="line">indexes.Add(1);</div>
+<div class="line">zip.RemoveFiles(indexes);</div>
+<div class="line"><span class="comment">// delete files by their names</span></div>
+<div class="line">CZipStringArray names;</div>
+<div class="line">names.Add(_T(<span class="stringliteral">"Temp\\file1.dat"</span>));</div>
+<div class="line">names.Add(_T(<span class="stringliteral">"file4.dat"</span>));</div>
+<div class="line">zip.RemoveFiles(names);</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="delcallback" name="delcallback" class="kb">
+            Callbacks Called
+        </h3>
+        <ul>
+            <li>When a map of areas of data to be moved inside an archive is being calculated, the
+				<a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a9564a0b741f08d4ab4e1ee727e092bf9">CZipActionCallback::cbDeleteCnt</a> callback is called.</li>
+            <li>When the space inside the archive needs to be adjusted, this operation notifies
+				about the progress using the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a813c4e651a845e818792e8ad3a1b3e9f">CZipActionCallback::cbDelete</a>
+                callback.</li>
+        </ul>
+        <h2 id="commit" name="commit" class="kb">
+            Committing Modification Changes
+        </h2>
+        <ul>
+            <li>Commit changes functionality currently concerns only renaming of files.</li>
+            <li>The ZipArchive Library allows grouping multiple operations and writing the necessary
+				changes to an archive at once, which is more efficient than modifying files separately.</li>
+            <li>To examine, if a file has been modified, call the <a class="linkapi" href="classCZipFileHeader.html#a505da23d289b2d4e9a2f1e2b0e276d21">CZipFileHeader::IsModified()</a>
+                method.</li>
+            <li>To examine, if there are any pending modification in an archive, call the <a class="linkapi" href="classCZipArchive.html#a871adedb7077a464d52a2ab6ef36b4b7">CZipArchive::IsModified()</a> method.</li>
+        </ul>
+        <h3 id="commitMode" name="commitMode" class="kb">
+            Commit Mode
+        </h3>
+        <ul>
+            <li>The commit mode can be set with the <a class="linkapi" href="classCZipArchive.html#a28f18c652496e2599bd49d0f0648769d">CZipArchive::SetCommitMode()</a>
+                method to one of <a class="linkapi" href="classCZipArchive.html#aec499339bf3f20e7a198289b4288d7a4">CZipArchive::CommitMode</a> values.</li>
+            <li>Regardless of the mode, all uncommitted changes will committed when closing an archive.
+            </li>
+            <li>When using <a class="linkapi" href="classCZipArchive.html#aec499339bf3f20e7a198289b4288d7a4a1fc91e619248861ee0b182ed90bea791">CZipArchive::cmManual</a> mode, you can commit
+				the changes manually with the <a class="linkapi" href="classCZipArchive.html#a817d828483c57299b4de7b7b6319a88a">CZipArchive::CommitChanges()</a>
+                method.</li>
+        </ul>
+        <h3 id="rencallback" name="rencallback" class="kb">
+            Callback Called
+        </h3>
+        If data sizes of modified files differ after modifications, then the space inside
+		the archive needs to be adjusted and the <a class="linkapi" href="classCZipArchive.html#a817d828483c57299b4de7b7b6319a88a">CZipArchive::CommitChanges()</a>
+        method notifies about the progress using the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734ab22f5bc26e3bf0785fe31eb24e1225b4">CZipActionCallback::cbModify</a>
+        callback.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">zip.SetCommitMode(CZipArchive::cmManual);</div>
+<div class="line"><span class="comment">// rename the first file in the archive</span></div>
+<div class="line">zip[0]-&gt;SetFileName(_T(<span class="stringliteral">"renamed.dat"</span>));    </div>
+<div class="line">zip[2]-&gt;SetFileName(_T(<span class="stringliteral">"renamed2.dat"</span>));</div>
+<div class="line">zip.CommitChanges();</div>
+<div class="line"><span class="comment">// perform possibly some other operations</span></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h2 id="rename" name="rename" class="kb">
+            Renaming
+        </h2>
+        <ul>
+            <li>To rename files, use the <a class="linkapi" href="classCZipFileHeader.html#acb4610d5d027a306f51e36ae45e69df5">CZipFileHeader::SetFileName()</a>
+                method.</li>
+            <li>To rename a file in the central directory only (faster, but not compatible with XCeed), set the <code>bInCentralOnly</code>
+                parameter to <code>true</code>.</li>
+            <li>When calling this method, the current Unicode mode will be used (see <a class="linkkb" href="0610051525.html">Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords</a> for more information)
+                - this may result in changing a Unicode
+				mode for the file being renamed.</li>
+            <li>To rename multiple files at once, you may want to use the <a class="linkapi" href="classCZipArchive.html#aec499339bf3f20e7a198289b4288d7a4a1fc91e619248861ee0b182ed90bea791">CZipArchive::cmManual</a> commit changes
+                mode. </li>            
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">zip.SetCommitMode(CZipArchive::cmManual);</div>
+<div class="line"><span class="comment">// rename the first file in the archive</span></div>
+<div class="line">zip[0]-&gt;SetFileName(_T(<span class="stringliteral">"renamed.dat"</span>));    </div>
+<div class="line">zip[2]-&gt;SetFileName(_T(<span class="stringliteral">"renamed2.dat"</span>));</div>
+<div class="line"><span class="comment">// this will call CommitChanges</span></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h2 id="time" name="time" class="kb">
+            Changing the Modification Time of Files Inside an Archive
+        </h2>
+        The modification time of the file is written in both local and central headers.
+		To modify it, you need to update the time stamp in these both locations to keep
+		the archive consistent. Follow the steps below to do it:
+		<ul class="dec">
+            <li>Be sure that the existing local header information was already read from the archive.
+				It happens when a file is opened for extraction. Otherwise, you can also update
+				it by calling the <a class="linkapi" href="classCZipArchive.html#a42f8d46698929c299f02c7320ad654d1">CZipArchive::ReadLocalHeader()</a> method.</li>
+            <li>Request the <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> object for the file which
+				time stamp you want to change. Use the <a class="linkapi" href="classCZipArchive.html#a6353af2ac9da3af17eb9dd929d3a6b31">CZipArchive::GetFileInfo(ZIP_INDEX_TYPE)</a>
+                or <a class="linkapi" href="classCZipArchive.html#a51e1539faed798f0524cbfa7c47f5513">CZipArchive::operator[]()</a> methods.</li>
+            <li>Change the time by calling the <a class="linkapi" href="classCZipFileHeader.html#a4c9c75ad333002a6bfa70cd0e2cff8d6">CZipFileHeader::SetModificationTime()</a>
+                method.</li>
+            <li>Write the local information back to the archive by calling the <a class="linkapi" href="classCZipArchive.html#a15d800a2d7823bb7f51f7f130b6ddeab">CZipArchive::OverwriteLocalHeader()</a>
+                method.</li>
+            <li>To update the central directory, it first needs to be removed from the archive.
+				The central directory is removed from an archive, when a modification such as adding,
+				deleting, renaming, encrypting or other takes place. However, if you have not performed
+				such a modification on the archive, you can call the <a class="linkapi" href="classCZipArchive.html#ad82d99d92fdd342a203a298fbf2d8fd8">CZipArchive::RemoveCentralDirectoryFromArchive()</a>
+                method to force the central directory removal.
+				<ul>
+                    <li>You can check, if the central directory is currently in the archive by requesting
+						the central directory information with the <a class="linkapi" href="classCZipArchive.html#afbf6eb8ce378ec0812f0ccb7827e8e79">CZipArchive::GetCentralDirInfo()</a>
+                        method and then examining the <a class="linkapi" href="structCZipCentralDir_1_1CInfo.html#ae196890af593bcb36857f338a241f2e3">CZipCentralDir::CInfo::m_bInArchive</a>
+                        value.</li>
+                </ul>
+            </li>
+			<li>The central directory is written to the archive when the archive is closed, but
+				you can also force this by calling the <a class="linkapi" href="classCZipArchive.html#a3b6b89bcc1a725621a41b815b973efa6">CZipArchive::Finalize()</a>
+				method.</li>
+			<li>To use UTC times, call <a class="linkapi" href="classCZipArchive.html#a8c1f4603af771c4e3688a02d14e97c93">CZipArchive::SetFullFileTimes()</a> method.</li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line"><span class="keywordtype">int</span> iIndexOfFile = 1;</div>
+<div class="line"><span class="comment">// read the local header information</span></div>
+<div class="line">zip.ReadLocalHeader(iIndexOfFile);</div>
+<div class="line">CZipFileHeader* pHeader = zip.GetFileInfo(iIndexOfFile);</div>
+<div class="line"><span class="comment">// set the time</span></div>
+<div class="line">pHeader-&gt;SetModificationTime(time(0));</div>
+<div class="line"><span class="comment">// write the local header information</span></div>
+<div class="line">zip.OverwriteLocalHeader(iIndexOfFile);</div>
+<div class="line">zip.RemoveCentralDirectoryFromArchive();</div>
+<div class="line"><span class="comment">// the central directory will be written back to the archive</span></div>
+<div class="line"><span class="comment">// during closing</span></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h2 id="filetimes" name="filetimes" class="kb">
+            Storing Modification, Creation and Last Access File Time (High Resolution)
+        </h2>
+        The default file modification time has 2 seconds resolution. To store the modification time in full resolution and additionally
+        store creation and last access times, 
+        call the <a class="linkapi" href="classCZipArchive.html#a8c1f4603af771c4e3688a02d14e97c93">CZipArchive::SetFullFileTimes()</a> method after opening an archive. It will affect all
+        files added afterwards to the archive.
+        <ul>
+            <li>The file times storage format is compatible with other software (e.g. WinZip) and the software that doesn't support it,
+                will just
+                use the regular modification time stored inside of the archive the standard way.
+            </li>
+            <li>The information is stored inside of an extra header in the central directory only, so modification of the high resolution
+                file times doesn't need the local header to be removed. Only the central directory needs to be updated (see <a class="linkkb" href="0610231944.html#time">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a> for more information). However, when updating the modification time, it is recommended to update
+                the local header as well (as described previously) to keep the standard modification time in sync with the high resolution
+                time, so that the software that doesn't support the high resolution times can still set the modification time properly.
+            </li>
+			<li>To set modification time in full resolution for an existing file inside of an archive, use the <a class="linkapi" href="classCZipFileHeader.html#a4c9c75ad333002a6bfa70cd0e2cff8d6">CZipFileHeader::SetModificationTime()</a>
+				method and set the <code>bFullResolution</code> parameter to <code>true</code>. To set other file times, use <a class="linkapi" href="classCZipFileHeader.html#a80be6ff01af1820bd433daba85075b60">CZipFileHeader::SetLastAccessTime()</a> and <a class="linkapi" href="classCZipFileHeader.html#a3f664c4f7b17438f27b8c39d116d2a80">CZipFileHeader::SetCreationTime()</a> methods.
+			</li>
+			<li>To use UTC times, call <a class="linkapi" href="classCZipArchive.html#a8c1f4603af771c4e3688a02d14e97c93">CZipArchive::SetFullFileTimes()</a> method.</li>
+            <li><strong>Windows</strong> - Some file systems do not support full resolution file times, so the accuracy may be lost when
+                extracting such a file. 
+                <ul>
+                    <li>
+                        <strong>NT FAT</strong> - modification time has a resolution of 2 seconds, create time - 10 ms and last access time - 1
+                        day.
+                    </li>
+                    <li>
+                        <strong>NTFS</strong> - last access time has a resolution of 1 hour.
+                    </li>
+                    <li>See <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms724290(v=vs.85).aspx" class="linkapi">File Times</a>
+                        for more information.</li>
+
+                </ul>
+            </li>
+            <li><strong>Linux</strong> does not store the file creation time.</li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">CZipFileHeader* pHeader = zip.GetFileInfo(0);</div>
+<div class="line">pHeader-&gt;SetLastAccessTime(time(0));</div>
+<div class="line">zip.SetFullFileTimes();</div>
+<div class="line"><span class="comment">// add a new file, it will have full file times stored</span></div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file.dat"</span>));</div>
+<div class="line">zip.RemoveCentralDirectoryFromArchive();</div>
+<div class="line"><span class="comment">// the central directory will be written back to the archive</span></div>
+<div class="line"><span class="comment">// during closing</span></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h2 id="comment" name="comment" class="kb">
+            Writing and Reading File and Archive Comments
+        </h2>
+        The ZipArchive Library provides the following methods to write and read comments.
+		<ul>
+            <li>To write a comment for a single file in an archive, use the <a class="linkapi" href="classCZipFileHeader.html#a9ab795b4ec25d5da2c84e27e68e5533b">CZipFileHeader::SetComment()</a> method.
+            </li>
+            <li>To read a file comment from an existing archive, use the <a class="linkapi" href="classCZipFileHeader.html#a9e3018a08a1af3ff79409f1af89d0ef4">CZipFileHeader::GetComment()</a>
+                method.</li>
+            <li>To write a comment for the whole archive, use the<br />
+                <a class="linkapi" href="classCZipArchive.html#a2a017ad5c8dcde52e5515b8510271780">CZipArchive::SetGlobalComment()</a> method.</li>
+            <li>To read a global comment from an existing archive, use the<br />
+                <a class="linkapi" href="classCZipArchive.html#ae289d16b4e080395b9bca089334d0ad9">CZipArchive::GetGlobalComment()</a> method.</li>
+            <li>The Unicode mode used will be the same as the Unicode mode for the filename (see
+				<a class="linkkb" href="0610051525.html">Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords</a> for more information).</li>
+        </ul>
+        <h2 id="cache" name="cache" class="kb">
+            Controlling Windows System File Cache
+        </h2>
+        When performing extensive file operations (especially on large files under a 64-bit
+		system) you may notice that large amount of memory is being used. This is may be
+		related to the growing size of Windows System File Cache. Resolving of the issue
+		is beyond the scope of the ZipArchive Library, but here are possible solutions:
+		<ul>
+            <li>Use <a href="http://msdn.microsoft.com/en-us/library/aa965240.aspx" class="linkapi">SetSystemFileCacheSize</a> Windows API
+                function in your software (only Windows Server
+				2003 SP1 and newer).</li>
+            <li>Use <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=e24ade0a-5efe-43c8-b9c3-5d0ecb2f39af" class="linkkb">Microsoft Windows Dynamic Cache Service</a> under 64-bit systems.</li>
+            <li>Use <a href="http://www.uwe-sieber.de/ntcacheset_e.html" class="linkkb">NT Cache
+				Setter</a> by Uwe Sieber.</li>
+        </ul>
+        Some more information can be also found for example in these articles:
+		<ul>
+            <li><a href="http://blogs.msdn.com/ntdebugging/archive/2007/11/27/too-much-cache.aspx" class="linkkb">Too Much Cache?</a></li>
+            <li><a href="http://smallvoid.com/article/winnt-system-cache.html" class="linkkb">Configure
+				the file system cache in Windows NT</a></li>
+        </ul>
+    
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610231944</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

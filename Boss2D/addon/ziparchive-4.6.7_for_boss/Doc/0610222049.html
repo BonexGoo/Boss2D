@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Exceptions Handling
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Exceptions Handling
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#stl">STL Version</a></li>
+<li><a class="linkindex" href="#mfc">MFC Version</a></li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+        <h2 id="intro" name="intro" class="kb">
+            Introduction
+        </h2>
+        <ul>
+            <li>The ZipArchive Library uses exceptions to notify about errors occurred while processing an archive.</li>
+            <li>
+                If an exception is thrown while processing an archive, you should release the used resources by calling <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()                 </a> with the <a class="linkapi" href="classCZipArchive.html#aef1712a894641d675903b34c815de802a64383ab2ba2586c69af5add1a1c6d665">CZipArchive::afAfterException</a> or
+                <br />
+                <a class="linkapi" href="classCZipArchive.html#aef1712a894641d675903b34c815de802a037ed078fff70fca7148d375c2015677">CZipArchive::afWriteDir</a> value.
+            </li>
+            <li>
+                If an exception happened during extraction, instead of calling <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a>, you can
+                call <a class="linkapi" href="classCZipArchive.html#a90e6ef00e6b003871886f18e94e79360">CZipArchive::CloseFile()</a> with the <code>bAfterException</code> parameter set to <code>true</code>.
+                Then you can for example proceed to extracting of a next file.
+            </li>
+            <li>
+                The ZipArchive Library compiles by default with its own set of error messages. If you want to disable their compilation
+                (e.g. to make the compiled library smaller), undefine <span class="preproc">_ZIP_ENABLE_ERROR_DESCRIPTION</span> in the
+                <span class="file">ZipException.cpp</span> file.
+            </li>
+            <li>
+                When you need to throw a <a class="linkapi" href="classCZipException.html">CZipException</a> in a way that it works uniformly in STL and MFC version,
+                use the <a class="linkapi" href="classCZipException.html#a3e313794a0a6e9b4ccb9186fa543e507">CZipException::Throw()</a> method.
+            </li>
+            <li>
+                The reason for the exception is stored in the <a class="linkapi" href="classCZipException.html#a69e5674696ffcbfd4c54fdffbc6eaa0c">CZipException::m_iCause</a> member variable and the
+                error code reported by the system is stored in <a class="linkapi" href="classCZipException.html#ae8a831fea03fd12be01cc5f977c9d9e6">CZipException::m_iSystemError</a>.
+            </li>
+        </ul>
+        <h2 id="stl" name="stl" class="kb">
+            STL Version
+        </h2>
+        In the STL version, the ZipArchive Library throws exceptions inherited from <code>std::exception</code>. When catching exceptions,
+        you should catch a reference to an exception object, not a pointer to it.
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line"><span class="keywordflow">try</span></div>
+<div class="line">{</div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">    <span class="comment">// ... do some processing here</span></div>
+<div class="line">    zip.Close();</div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">catch</span>(CZipException&amp; ex)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// display the exception message</span></div>
+<div class="line">    _tprintf(_T(<span class="stringliteral">"Error while processing an archive: %s"</span>), </div>
+<div class="line">        (LPCTSTR)ex.GetErrorDescription());</div>
+<div class="line">    <span class="comment">// close the archive safely releasing resources;</span></div>
+<div class="line">    <span class="comment">// the archive will most probably be not usable after this call,</span></div>
+<div class="line">    <span class="comment">// if it was modified</span></div>
+<div class="line">    zip.Close(CZipArchive::afAfterException);</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>        
+        <h2 id="mfc" name="mfc" class="kb">
+            MFC Version
+        </h2>
+        In the MFC version, the ZipArchive Library throws exceptions inherited from <code>CException</code>. When catching exceptions,
+        you should catch a pointer to an exception object and delete the object after you have finished handling the exception.
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line"><span class="keywordflow">try</span></div>
+<div class="line">{</div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">    <span class="comment">// ... do some processing here</span></div>
+<div class="line">    zip.Close();</div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">catch</span>(CException* ex)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// display the exception message</span></div>
+<div class="line">    TCHAR lpszError[1024];</div>
+<div class="line">    ex-&gt;GetErrorMessage(lpszError, 1024);</div>
+<div class="line">    _tprintf(_T(<span class="stringliteral">"Error while processing an archive: %s"</span>), lpszError);</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span> (ex-&gt;IsKindOf( RUNTIME_CLASS( CZipException )))</div>
+<div class="line">    {</div>
+<div class="line">        CZipException* p = (CZipException*) ex;</div>
+<div class="line">        <span class="comment">// ... retrieve detailed information about the exception</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ex-&gt;IsKindOf( RUNTIME_CLASS( CFileException )))</div>
+<div class="line">    {</div>
+<div class="line">        CFileException* p = (CFileException*) ex;</div>
+<div class="line">        <span class="comment">// ... retrieve detailed information about the exception</span></div>
+<div class="line">    } </div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">//... and so on</span></div>
+<div class="line">    }        </div>
+<div class="line">    ex-&gt;Delete();</div>
+<div class="line">    <span class="comment">// close the archive writing a central directory</span></div>
+<div class="line">    <span class="comment">// (makes sense if the archive was modified);</span></div>
+<div class="line">    <span class="comment">// the archive should be usable after this call</span></div>
+<div class="line">    zip.Close(CZipArchive::afWriteDir);</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+        <h2 id="api" name="api" class="kb">
+            See Also API Links
+        </h2>
+        <ul class="non">
+            <li><a class="linkapi" href="classCZipException.html">CZipException</a></li>
+            <li><a class="linkapi" href="classCZipException.html#a3e313794a0a6e9b4ccb9186fa543e507">CZipException::Throw()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#aef1712a894641d675903b34c815de802">CZipArchive::CloseAfterException</a></li>
+        </ul>
+    
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610222049</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

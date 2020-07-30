@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Sample Applications that Demonstrate Usage of the ZipArchive Library
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Sample Applications that Demonstrate Usage of the ZipArchive Library
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#ziparc">ZipArc - MFC Application</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#mfcfeatures">Main Features</a></li>
+<li><a class="linkindex" href="#mfccompilation">Compilation</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#mfcvs">Microsoft Visual Studio</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#zippie">Zippie - STL Application</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#stlcompilation">Compilation</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#stlvs">Microsoft Visual Studio</a></li>
+<li><a class="linkindex" href="#stllin">Linux/OS X</a></li>
+<li><a class="linkindex" href="#codegear">C++Builder</a></li>
+<li><a class="linkindex" href="#stlmingw">MinGW</a></li>
+</ul>
+</li>
+</ul>
+</li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		The sample applications available with the ZipArchive Library demonstrate most of
+		its features.
+		<h2 id="ziparc" name="ziparc" class="kb">
+			ZipArc - MFC Application</h2>
+		ZipArc uses the ZipArchive Library in the MFC version.
+		<h3 id="mfcfeatures" name="mfcfeatures" class="kb">
+			Main Features</h3>
+		<ul>
+			<li>multithreaded - you can work with many zip files at one time</li>
+			<li>MDI application</li>
+			<li>shell integration (previous system settings will be restored on uninstallation)</li>
+			<li>drag &amp; drop support</li>
+			<li>detailed error reports</li>
+			<li>you can open and modify SFX archives</li>
+		</ul>
+		<h3 id="mfccompilation" name="mfccompilation" class="kb">
+			Compilation</h3>
+		<h4 id="mfcvs" name="mfcvs" class="kb">
+			Microsoft Visual Studio</h4>
+		Use the provided solution or project files and make sure the <span class="file">ZipArc</span>
+		and the <span class="file">ZipArchive</span> directories are in the same subdirectory.
+		<h2 id="zippie" name="zippie" class="kb">
+			Zippie - STL Application</h2>
+		Zippie is a command line application which can be compiled under Windows, Linux
+		and OS X.
+		<h3 id="stlcompilation" name="stlcompilation" class="kb">
+			Compilation</h3>
+		<h4 id="stlvs" name="stlvs" class="kb">
+			Microsoft Visual Studio</h4>
+		Use the provided solution or project files and make sure the <span class="file">Zippie</span>
+		and the <span class="file">ZipArchive</span> directories are in the same subdirectory.
+		Use one of the <strong>STL</strong> configurations (Visual Studio .NET) or project
+		files (Visual Studio 6.0) for compilation.		
+		<h4 id="stllin" name="stllin" class="kb">
+			Linux/OS X</h4>
+		<ul class="dec">
+			<li>Compile and install the ZipArchive Library (see <a class="linkkb" href="0610050933.html#linux">Compilation of the ZipArchive Library and Integration with Applications</a>
+				for more information).</li>
+			<li>Compile Zippie by typing:<br />
+				<span class="command">make zippie</span></li>
+		</ul>
+		<h4 id="codegear" name="codegear" class="kb">
+			C++Builder</h4>
+		<ul class="dec">
+			<li>Create a new Console Application project.</li>
+			<li>Add all the Zippie source files to the project.</li>
+			<li>Make sure only one <code>main()</code> method is defined.</li>
+			<li>To link to the ZipArchive Library, you can uncomment the <code>#pragma comment</code>
+				definitions near to the top of the <span class="file">zippie.cpp</span>.</li>
+			<li>Compile the project.</li>
+			<li>Instead of having two separate projects, you can also try adding all the ZipArchive
+				and Zippie sources to a single Console Application project.</li>
+		</ul>
+		<h4 id="stlmingw" name="stlmingw" class="kb">
+			MinGW</h4>
+		<ul class="dec">
+			<li>Compile the ZipArchive Library under the MSYS shell (see <a class="linkkb" href="0610050933.html#mingw">Compilation of the ZipArchive Library and Integration with Applications</a>
+				for more information).</li>
+			<li>Install the library by typing:<br />
+				<span class="command">make -f Makefile.mingw install</span></li>
+			<li>Compile Zippie by typing:<br />
+				<span class="command">make -f Makefile.mingw zippie</span></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610051434</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

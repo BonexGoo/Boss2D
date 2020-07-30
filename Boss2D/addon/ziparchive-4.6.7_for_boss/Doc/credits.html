@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Acknowledgements: Credits and Used Third-Party Code Licensing Information
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Acknowledgements: Credits and Used Third-Party Code Licensing Information
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#used">Used Third-Party Code</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#zlib">The Zlib Library by Jean-loup Gailly and Mark Adler</a></li>
+<li><a class="linkindex" href="#bzip2">The bzip2 data compressor by Julian Seward</a></li>
+<li><a class="linkindex" href="#aes">AES Implementation by Dr Brian Gladman</a></li>
+<li><a class="linkindex" href="#match">J. Kercheval&#39;s PD Regular Expression Comparator</a></li>
+<li><a class="linkindex" href="#unicode">UTF-8 CPP by Nemanja Trifunovic</a></li>
+</ul>
+</li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+        <h2 id="intro" name="intro" class="kb">
+            Introduction
+        </h2>
+        The ZipArchive Library incorporates third-party code for its functionality. All used code is known to be patent-free and
+        can be reused in commercial applications.
+		<h2 id="used" name="used" class="kb">
+            Used Third-Party Code
+        </h2>
+        <h3 id="zlib" name="zlib" class="kb">
+            The Zlib Library by Jean-loup Gailly and Mark Adler
+        </h3>
+        <ul>
+            <li>The Zlib library provides deflate compression and decompression functionality.</li>
+            <li>The home page of the library is at <a class="linkindex" href="http://www.zlib.net" target="_blank">http://www.zlib.net</a>.
+            </li>
+            <li>The licensing information can be found in the <span class="file">zlib.h</span> file and is provided below.</li>
+        </ul>
+        <h4 class="kb">
+            License
+        </h4>
+        <div class="license">
+            <p>
+                Copyright (C) 1995-2005 Jean-loup Gailly and Mark Adler
+            </p>
+            <p>
+                This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable
+                for any damages arising from the use of this software.
+            </p>
+            <p>
+                Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it
+                and redistribute it freely, subject to the following restrictions:
+            </p>
+            <ul class="dec">
+                <li>The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you
+                    use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+                </li>
+                <li>Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+                </li>
+                <li>This notice may not be removed or altered from any source distribution.</li>
+            </ul>
+        </div>
+        <h3 id="bzip2" name="bzip2" class="kb">
+            The bzip2 data compressor by Julian Seward
+        </h3>
+        <ul>
+            <li>The bzip2 data compressor provides lossless, block-sorting data compression and decompression functionality.</li>
+            <li>The home page of the compressor is at <a class="linkindex" href="http://www.bzip.org" target="_blank">http://www.bzip.org</a>.
+            </li>
+            <li>The licensing information can be found in the <span class="file">bzlib.h</span> file and is provided below.</li>
+        </ul>
+        <h4 class="kb">
+            License
+        </h4>
+        <div class="license">
+            <p>
+                Copyright (C) 1996-2006 Julian Seward
+            </p>
+            <p>
+                Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+                conditions are met:
+            </p>
+            <ul class="dec">
+                <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+                </li>
+                <li>The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you
+                    use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+                </li>
+                <li>Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+                </li>
+                <li>The name of the author may not be used to endorse or promote products derived from this software without specific prior
+                    written permission.</li>
+            </ul>
+            <p>
+                THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+                THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR
+                BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+                TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+                AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+                IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+            </p>
+            <p>
+                WARNING:
+            </p>
+            <p>
+                This program and library (attempts to) compress data by performing several non-trivial transformations on it. Unless you
+                are 100% familiar with *all* the algorithms contained herein, and with the consequences of modifying them, you should NOT
+                meddle with the compression or decompression machinery. Incorrect changes can and very likely *will* lead to disastrous
+                loss of data.
+            </p>
+            <p>
+                DISCLAIMER:
+            </p>
+            <p>
+                I TAKE NO RESPONSIBILITY FOR ANY LOSS OF DATA ARISING FROM THE USE OF THIS PROGRAM/LIBRARY, HOWSOEVER CAUSED.
+            </p>
+            <p>
+                Every compression of a file implies an assumption that the compressed file can be decompressed to reproduce the original.
+                Great efforts in design, coding and testing have been made to ensure that this program works correctly. However, the complexity
+                of the algorithms, and, in particular, the presence of various special cases in the code which occur with very low but non-zero
+                probability make it impossible to rule out the possibility of bugs remaining in the program. DO NOT COMPRESS ANY DATA WITH
+                THIS PROGRAM UNLESS YOU ARE PREPARED TO ACCEPT THE POSSIBILITY, HOWEVER SMALL, THAT THE DATA WILL NOT BE RECOVERABLE.
+            </p>
+            <p>
+                That is not to say this program is inherently unreliable. Indeed, I very much hope the opposite is true. bzip2/libbzip2
+                has been carefully constructed and extensively tested.
+            </p>
+            <p>
+                PATENTS:
+            </p>
+            <p>
+                To the best of my knowledge, bzip2/libbzip2 does not use any patented algorithms. However, I do not have the resources to
+                carry out a patent search. Therefore I cannot give any guarantee of the above statement.
+            </p>
+        </div>
+        <h3 id="aes" name="aes" class="kb">
+            AES Implementation by Dr Brian Gladman
+        </h3>
+        <ul>
+            <li>The used AES implementation provides strong encryption support.</li>
+            <li>The code is based on the source code written by Dr Brian Gladman and available at <a class="linkindex" href="http://www.gladman.me.uk/" target="_blank">http://www.gladman.me.uk/</a>.</li>
+            <li>The licensing information is provided in all files that reuse the AES code (e.g. in the <span class="file">Aes.h</span>
+                file) and is provided below.</li>
+        </ul>
+        <h4 class="kb">
+            License
+        </h4>
+        <div class="license">
+            <p>
+                Copyright (c) 2003, Dr Brian Gladman, Worcester, UK. All rights reserved.
+            </p>
+            <p>
+                LICENSE TERMS
+            </p>
+            <p>
+                The free distribution and use of this software in both source and binary form is allowed (with or without changes) provided
+                that:
+            </p>
+            <ul class="dec">
+                <li>distributions of this source code include the above copyright notice, this list of conditions and the following disclaimer;
+                </li>
+                <li>distributions in binary form include the above copyright notice, this list of conditions and the following disclaimer in
+                    the documentation and/or other associated materials;</li>
+                <li>the copyright holder's name is not used to endorse products built using this software without specific written permission.
+                </li>
+            </ul>
+            <p>
+                ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU
+                General Public License (GPL), in which case the provisions of the GPL apply INSTEAD OF those given above.
+            </p>
+            <p>
+                DISCLAIMER
+            </p>
+            <p>
+                This software is provided 'as is' with no explicit or implied warranties in respect of its properties, including, but not
+                limited to, correctness and/or fitness for purpose.
+            </p>
+        </div>
+        <h3 id="match" name="match" class="kb">
+            J. Kercheval's PD Regular Expression Comparator
+        </h3>
+        <ul>
+            <li>Wildcard matching is used in the <a class="linkapi" href="classCZipArchive.html#ab6d202ba9404fb24e27c23497638b6e0">CZipArchive::FindMatches()</a> method.</li>
+            <li>The code is based on the source code written by J. Kercheval and released at http://c.snippets.org (the original web site
+                is no longer functional).</li>
+            <li>The original code was released as a public domain.</li>
+        </ul>
+        <h4 class="kb">
+            License
+        </h4>
+        <div class="license">
+            <p>
+                REGEX Globber (Wild Card Matching)
+            </p>
+            <p>
+                A *IX SH style pattern matcher written in C<br />
+                V1.10 Dedicated to the Public Domain
+            </p>
+            <p>
+                March 12, 1991<br />
+                J. Kercheval<br />
+                [72450,3702] -- johnk@wrq.com<br />
+            </p>
+        </div>
+        <h3 id="unicode" name="unicode" class="kb">
+            UTF-8 CPP by Nemanja Trifunovic
+        </h3>
+        <ul>
+            <li>Used for UTF-8, UTF-16 and UTF-32 conversions under Linux (when the sources are compiled with the <span class="preproc">UNICODE</span> preprocessor definition).</li>
+            <li>The code is based on the source code written by Nemanja Trifunovic and available at <a class="linkindex" href="http://sourceforge.net/projects/utfcpp/" target="_blank">http://sourceforge.net/projects/utfcpp/</a>.</li>
+            <li>The licensing information can be found in the <span class="file">ZipPlatform_lnx.cpp</span> file and is provided below.</li>
+        </ul>
+        <h4 class="kb">
+            License
+        </h4>
+        <div class="license">
+            <p>
+                Permission is hereby granted, free of charge, to any person or organization
+	            obtaining a copy of the software and accompanying documentation covered by
+	            this license (the "Software") to use, reproduce, display, distribute,
+	            execute, and transmit the Software, and to prepare derivative works of the
+	            Software, and to permit third-parties to whom the Software is furnished to
+	            do so, all subject to the following:
+                
+            </p>
+            <p>
+                The copyright notices in the Software and this entire statement, including
+	            the above license grant, this restriction and the following disclaimer,
+	            must be included in all copies of the Software, in whole or in part, and
+	            all derivative works of the Software, unless such copies or derivative
+	            works are solely in the form of machine-executable object code generated by
+	            a source language processor.
+                
+            </p>
+            <p>
+                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	            FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+	            SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+	            FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+	            ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+                DEALINGS IN THE SOFTWARE.
+            </p>
+        </div>
+    
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;credits</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

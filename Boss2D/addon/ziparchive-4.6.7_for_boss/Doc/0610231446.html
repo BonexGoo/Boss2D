@@ -1,0 +1,606 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Compressing Data
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Compressing Data
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All. Bzip2 algorithm is available in the Full Version only.</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#methods">Compression Algorithms</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#deflate">Deflate</a></li>
+<li><a class="linkindex" href="#bzip2">Bzip2</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#bzip2Integration">Enabling Bzip2 Functionality</a></li>
+<li><a class="linkindex" href="#bzip2External">Using External Bzip2 Library</a></li>
+<li><a class="linkindex" href="#bzip2Linux">Compiling with Bzip2 under Linux/OS X</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#simple">Easy Single File Compression</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#callback">Callbacks Called</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#simpleMulti">Easy Multiple Files Compression</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#filters">Using Filters</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#filterDirs">Filtering Directories</a></li>
+<li><a class="linkindex" href="#filtersNotes">Additional Considerations</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#callbackMulti">Callbacks Called</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#advanced">Advanced Compression: More Control Over How Data is Written</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#dir">Adding Directories</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#other">Other Functionality</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#get">Adding Files From Other Archives</a></li>
+<li><a class="linkindex" href="#threaded">Multithreaded Compression</a></li>
+<li><a class="linkindex" href="#finalize">Finalizing Archives and Preventing Archive Corruption</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#finalizeSegm">Segmented Archives</a></li>
+<li><a class="linkindex" href="#commitChanges">Committing Modification Changes</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#compatibility">System Compatibility</a></li>
+<li><a class="linkindex" href="#options">Setting Compressor Options</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#notes">Additional Considerations (Windows Only)</a></li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+        <h2 id="intro" name="intro" class="kb">
+            Introduction
+        </h2>
+        <ul>
+            <li>To create a new non-segmented archive, call the <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a> method and specify
+                one of the following <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdb">CZipArchive::OpenMode</a> flags as a mode parameter:
+				<ul>
+                    <li><a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdbadcf20d3cf869207a53206f415bf5e1f5">CZipArchive::zipCreate</a> to create a regular archive.</li>
+                    <li><a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdba16ee2398b435a10f65b718e0ec1abd73">CZipArchive::zipCreateAppend</a> to create a new archive and append it to an existing data, such
+                        as self-extract.</li>
+                </ul>
+            </li>
+            <li>For the information about creating segmented archives, see <a class="linkkb" href="0610051553.html">Segmented Archives: Splitting and Spanning</a>.</li>
+            <li>For the information about processing archives in memory see <a class="linkkb" href="0610231924.html">In-Memory Archive Processing</a>.</li>
+            <li>To open an existing archive for modifications,<br />
+                call the <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a> method and specify <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdba7932d6a8eb7d436b5003d0e2d6c10b7e">CZipArchive::zipOpen</a>
+                as the open mode.</li>
+            <li>New files are added at the end of an archive. The index of the newly added file is <code>CZipArchive::GetCount() - 1</code>.
+                You can also retrieve it with the <a class="linkapi" href="classCZipArchive.html#a6a72dbdd7f9496ecbb9ad84979dbcb80">CZipArchive::GetLastIndexAdded()</a> method.</li>
+            <li>Always call <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a> after you have finished working with an archive. To read how
+                to safely close an archive, if an exception was thrown while processing an archive, see <a class="linkkb" href="0610222049.html#intro">Exceptions Handling</a>.
+            </li>
+            <li>Saving a modified archive, calls the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a93b49690cff50f46013d99a76357ef78">CZipActionCallback::cbSave</a> callback.</li>
+        </ul>
+        <h2 id="methods" name="methods" class="kb">
+            Compression Algorithms
+        </h2>
+        Files inside zip archives can be compressed using different algorithms. The ZipArchive Library supports <b>deflate</b> and
+        <b>bzip2</b> algorithms to be used during compression of zip archives. You should choose the compression algorithms depending
+        on your needs. To select it, use the <a class="linkapi" href="classCZipArchive.html#a297a68eee12eb680c945a420ae407db0">CZipArchive::SetCompressionMethod()</a> method before compressing
+        a file. There is no need to use this method when decompressing. The decompression process automatically detects the algorithms
+        used.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line"><span class="comment">// create a new archive</span></div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);    </div>
+<div class="line"><span class="comment">// set the compression method</span></div>
+<div class="line">zip.SetCompressionMethod(CZipCompressor::methodBzip2);</div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file1.dat"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="deflate" name="deflate" class="kb">
+            Deflate
+        </h3>
+        It is the most frequently used algorithm in zip archives and supported by all standard zip utilities. The implementation
+        of this algorithm is provided by the Zlib library (see <a class="linkkb" href="credits.html#zlib">Acknowledgements: Credits and Used Third-Party Code Licensing Information</a> for more information).
+		<h3 id="bzip2" name="bzip2" class="kb">
+            Bzip2
+        </h3>
+        It compresses files more efficiently than the deflate algorithm, but is slower. It is supported by PKZIP since version 4.6
+	and by WinZip since version 10.0. Earlier versions of these programs will not decompress archives that use the bzip2 algorithm.
+	Also, at the time of writing, Windows Compressed Folders are not capable of extracting such archives. 
+        The implementation of this algorithm is provided by the bzip2 data compressor (see <a class="linkkb" href="credits.html#bzip2">Acknowledgements: Credits and Used Third-Party Code Licensing Information</a>
+        for more information).
+		<h4 id="bzip2Integration" name="bzip2Integration">
+            Enabling Bzip2 Functionality
+        </h4>
+        The bzip2 algorithm is available in the Full Version of the Library only and is enabled by default. If you don't need it,
+        you can disable it by commenting out the <span class="preproc">_ZIP_BZIP2</span> definition in the file <span class="file">_features.h</span>.
+        <h4 id="bzip2External" name="bzip2External">
+            Using External Bzip2 Library
+        </h4>
+        The ZipArchive Library comes already with source files for bzip2 algorithm from the original bzip2 library distribution,
+        but you can also use the bzip2 library if it comes with your system - it is usually true for Linux/OS X systems.
+		<ul>
+            <li>Under Windows, the ZipArchive Library uses by default internal bzip2 sources.</li>
+            <li>Under Linux/OS X, the ZipArchive Library uses by default the <span class="file">libbzip2</span> library that comes with
+                the system.</li>
+        </ul>
+        To use the bzip2 sources that come with the ZipArchive Library, make sure, that <span class="preproc">_ZIP_BZIP2_INTERNAL</span>
+        is defined in the <span class="file">_features.h</span> file while compiling the library. Undefine it, to use the bzip2
+        library that comes with your system.
+		<h4 id="bzip2Linux" name="bzip2Linux">
+            Compiling with Bzip2 under Linux/OS X
+        </h4>
+        <ul>
+            <li>If you use the <span class="file">makefile</span> provided with the ZipArchive Library, you may control whether the ZipArchive
+                Library compiles with internal or external bzip2 library with the <span class="preproc">INTERNAL_BZIP2</span> variable defined
+                inside the <span class="file">makefile</span>. Don't adjust the <span class="preproc">_ZIP_BZIP2_INTERNAL</span> definition
+                in the <span class="file">_features.h</span> file, but:&nbsp;<ul>
+                    <li>To use the bzip2 sources provided with the ZipArchive Library, define the <span class="preproc">INTERNAL_BZIP2</span> variable
+                        (uncomment the appropriate line),</li>
+                    <li>To use the bzip2 library that comes with your system, make sure this variable is not defined.</li>
+                </ul>
+            </li>
+            <li>If you use your own makefiles
+				<ul>
+                    <li>make sure that <span class="preproc">_ZIP_BZIP2_INTERNAL</span> is not defined in the <span class="file">_features.h</span>
+                        file,</li>
+                    <li>link your program with the system's bzip2 library (use <span class="preproc">-lbz2</span> compiler option).</li>
+                </ul>
+            </li>
+        </ul>
+        <h2 id="simple" name="simple" class="kb">
+            Easy Single File Compression
+        </h2>
+        To quickly add a file to an archive, use the <a class="linkapi" href="classCZipArchive.html#a835a92a9a94ae71ab1742c50d282d0d2">CZipArchive::AddNewFile(CZipAddNewFileInfo&amp;)</a>
+        method or one of its overloads. You need to specify the file to compress. Additionally, you may specify:
+		<ul>
+            <li>the name of the file inside an archive - it can be different from the original filename,</li>
+            <li>the compression level (you may request no compression as well),</li>
+            <li>whether to store the path information with the file or not,</li>
+            <li>the smartness of the compression process with one of <a class="linkapi" href="classCZipArchive.html#a578cdd94533678eb97c099102eaf669f">CZipArchive::Smartness</a> values,</li>
+            <li>the index of a file to be replaced by the new file (see <a class="linkkb" href="0610231944.html#replace">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a> for more information).
+            </li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// create a new archive</span></div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);    </div>
+<div class="line">    <span class="comment">// simple add with the default compression level</span></div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file1.dat"</span>));</div>
+<div class="line">    <span class="comment">// add a file and specify its name inside the archive</span></div>
+<div class="line">    <span class="comment">// to be different from original</span></div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file2.dat"</span>), _T(<span class="stringliteral">"renamed.dat"</span>));</div>
+<div class="line">    <span class="comment">// add a file without compression</span></div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file3.dat"</span>), 0);</div>
+<div class="line">    <span class="comment">// add a file with default compression and </span></div>
+<div class="line">    <span class="comment">// without the path information</span></div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file4.dat"</span>), -1, <span class="keyword">false</span>);</div>
+<div class="line">    zip.Close();    </div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*    the resulting archive has the following structure:</span></div>
+<div class="line"><span class="comment">    \-</span></div>
+<div class="line"><span class="comment">     |--Temp</span></div>
+<div class="line"><span class="comment">     |  |-file1.dat</span></div>
+<div class="line"><span class="comment">     |  |-file3.dat</span></div>
+<div class="line"><span class="comment">     |-file4.dat</span></div>
+<div class="line"><span class="comment">     |-renamed.dat</span></div>
+<div class="line"><span class="comment">*/</span></div>
+</div><!-- fragment --> </div>
+        <h3 id="callback" name="callback" class="kb">
+            Callbacks Called
+        </h3>
+        The methods for easy compression can call the following callbacks to notify about the progress:
+		<ul class="non">
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a4e48c2f0d8f6bd1de700e56927c55de8">CZipActionCallback::cbAdd</a></li>
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a10ea05b0de77ed3df7719cd321c0d22f">CZipActionCallback::cbAddTmp</a></li>
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734aa4792345795d95ef78e25826b893b58c">CZipActionCallback::cbAddStore</a></li>
+        </ul>
+        To read more about using callback objects, see <a class="linkkb" href="0610231200.html">Progress Notifications: Using Callback Objects</a>.
+		<h2 id="simpleMulti" name="simpleMulti" class="kb">
+            Easy Multiple Files Compression
+        </h2>
+        To quickly add a file to an archive, use one of the <a class="linkapi" href="classCZipArchive.html#a41c83a931fe53ed2f4c374b4a7177969">CZipArchive::AddNewFiles()</a> methods.
+        You need to specify the directory that contains the files to compress. Additionally, you may filter the files
+		and specify:
+	    <ul>
+            <li>whether the subfolders are also searched for files,</li>
+            <li>the compression level (you may request no compression as well),</li>
+            <li>whether to trim the root directory from the path stored in the archive,</li>
+            <li>the smartness of the compression process with one of <a class="linkapi" href="classCZipArchive.html#a578cdd94533678eb97c099102eaf669f">CZipArchive::Smartness</a> values.</li>
+            <li>to replace existing files with the same filenames while adding, use the <a class="linkapi" href="classCZipArchive.html#af6e8689f3b25d4c8b8833862fbee5a69">CZipArchive::AddNewFiles(CZipAddFilesEnumerator&amp;)</a>
+                method and pass to it an object of <a class="linkapi" href="classCReplacingAddFilesEnumerator.html">CReplacingAddFilesEnumerator</a> type as the first argument.
+            </li>
+        </ul>
+        <h3 id="filters" name="filters" class="kb">
+            Using Filters
+        </h3>
+        To have more control over which files are added to an archive, you can use the filters with the <a class="linkapi" href="classCZipArchive.html#a41c83a931fe53ed2f4c374b4a7177969">CZipArchive::AddNewFiles()</a>
+        method.
+		<ul>
+            <li>To filter files using a filename pattern matching, you can use the<br />
+                <a class="linkapi" href="classZipArchiveLib_1_1CNameFileFilter.html">ZipArchiveLib::CNameFileFilter</a> that has additional options available. This filter by default
+                applies to regular files only, but you can change this behavior e.g. with the <a class="linkapi" href="classZipArchiveLib_1_1CNameFileFilter.html#ab232a857c1056f31ff7ea4c3c27364b1">ZipArchiveLib::CNameFileFilter::SetAppliesToTypes()</a>
+                method.</li>
+            <li>You can create your own filter by deriving your class from the<br />
+                <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html">ZipArchiveLib::CFileFilter</a> class and overriding the<br />
+                <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html#a5c2e0e9c0a4ae4863ac02637e8ae7a66">ZipArchiveLib::CFileFilter::Accept()</a> method.</li>
+            <li>You can invert the behavior of a filter, by calling the<br />
+                <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html#a9c01c4cc3c6de73217015ffc238615ea">ZipArchiveLib::CFileFilter::SetInverted()</a> method or by passing an appropriate value to the
+                constructor. A filter can handle the inversion process internally for a better performance (see <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html#a304f279320ca1c50834d44afcf01c38c">ZipArchiveLib::CFileFilter::HandlesInversion()</a>).
+                The example of such a filter is <a class="linkapi" href="classZipArchiveLib_1_1CGroupFileFilter.html">ZipArchiveLib::CGroupFileFilter</a>.</li>
+            <li>You can decide to which files a filter applies by overriding the<br />
+                <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html#a8e1b9262491212448127daec0c994647">ZipArchiveLib::CFileFilter::HandlesFile()</a> method. If a filter can be applied to a file, then
+                the file will be evaluated by the filter (the <a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html#a9e4dbbf84a5dad824f22be30be929d9d">ZipArchiveLib::CFileFilter::Evaluate()</a> method
+                will be called). By default filters are applied only to regular files, not directories.</li>
+            <li>To group multiple filters, you can use the <a class="linkapi" href="classZipArchiveLib_1_1CGroupFileFilter.html">ZipArchiveLib::CGroupFileFilter</a> filter.</li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// use the namespace where the default filters are located</span></div>
+<div class="line"><span class="keyword">using namespace </span>ZipArchiveLib;</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// create a custom filter that accepts files depending on their size.</span></div>
+<div class="line"><span class="keyword">class </span>CSizeFileFilter : <span class="keyword">public</span> CFileFilter</div>
+<div class="line">{</div>
+<div class="line">    ZIP_FILE_USIZE m_uMinSize;</div>
+<div class="line">    ZIP_FILE_USIZE m_uMaxSize;</div>
+<div class="line"><span class="keyword">public</span>:</div>
+<div class="line">    CSizeFileFilter(ZIP_FILE_USIZE uMinSize, ZIP_FILE_USIZE uMaxSize, <span class="keywordtype">bool</span> bInverted = <span class="keyword">false</span>)</div>
+<div class="line">        :m_uMinSize(uMinSize), m_uMaxSize(uMaxSize), CFileFilter(bInverted)</div>
+<div class="line">    {</div>
+<div class="line">    }</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordtype">bool</span> Accept(LPCTSTR, LPCTSTR, <span class="keyword">const</span> CFileInfo&amp; info)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">// There is no need to check for a directory,</span></div>
+<div class="line">        <span class="comment">// because the CFileFilter by default does not handle directories</span></div>
+<div class="line">        <span class="comment">// (see the HandlesFile() method).</span></div>
+<div class="line"></div>
+<div class="line">        <span class="comment">/*if (info.IsDirectory())</span></div>
+<div class="line"><span class="comment">            return true;*/</span></div>
+<div class="line"></div>
+<div class="line">        <span class="comment">// evaluate files based on their size</span></div>
+<div class="line">        <span class="keywordflow">return</span> info.m_uSize &gt;= m_uMinSize &amp;&amp; info.m_uSize &lt;= m_uMaxSize;    </div>
+<div class="line">    }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> EasyMultiCompress()</div>
+<div class="line">{</div>
+<div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// create a new archive</span></div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);</div>
+<div class="line">    CGroupFileFilter groupFilter;</div>
+<div class="line">    <span class="comment">// add files if their size is not larger than 20kB</span></div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CSizeFileFilter(0, 20 * 1024));</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// there is no need to release memory for filters </span></div>
+<div class="line">    <span class="comment">// - CGroupFileFilter will take care of that</span></div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// add files, if their extension is NOT .tmp, .dat or .zip</span></div>
+<div class="line">    <span class="comment">// (the filters are set to work in the inverted mode).</span></div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CNameFileFilter(_T(<span class="stringliteral">"*.tmp"</span>), <span class="keyword">true</span>));</div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CNameFileFilter(_T(<span class="stringliteral">"*.dat"</span>), <span class="keyword">true</span>));</div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CNameFileFilter(_T(<span class="stringliteral">"*.zip"</span>), <span class="keyword">true</span>));</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// skip traversing temporary directories</span></div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CNameFileFilter(_T(<span class="stringliteral">"*tmp*"</span>), <span class="keyword">true</span>, CNameFileFilter::toDirectory));</div>
+<div class="line">    groupFilter.Add(<span class="keyword">new</span> CNameFileFilter(_T(<span class="stringliteral">"*temp*"</span>), <span class="keyword">true</span>, CNameFileFilter::toDirectory));</div>
+<div class="line"></div>
+<div class="line">    zip.AddNewFiles(_T(<span class="stringliteral">"C:\\Temp"</span>), groupFilter);</div>
+<div class="line">    zip.Close();    </div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+        <h4 id="filterDirs" name="filterDirs" class="kb">
+            Filtering Directories
+        </h4>
+        To match directories, use the <code>_T("*")</code> pattern in the name filter (<a class="linkapi" href="classZipArchiveLib_1_1CNameFileFilter.html">ZipArchiveLib::CNameFileFilter</a>).
+        The <code>_T("*.*")</code> pattern would only match directories with the dot character in the name. Also, use the <a class="linkapi" href="classZipArchiveLib_1_1CNameFileFilter.html#ab980c38cb0c41d9d23023bf42849a30fa58bd82dcabb35777e115c85e63d62e1b">ZipArchiveLib::CNameFileFilter::toAll</a> type.
+		<p>
+            To ignore empty directories with this filter, include the <a class="linkapi" href="classCZipArchive.html#a578cdd94533678eb97c099102eaf669fa7e8d3011ce6b197006df0e7b4450359e">CZipArchive::zipsmIgnoreDirectories</a>
+            in the <code>iSmartLevel</code> parameter of the <a class="linkapi" href="classCZipArchive.html#a41c83a931fe53ed2f4c374b4a7177969">CZipArchive::AddNewFiles()</a> method.
+        </p>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// to include empty directories, use the following filter</span></div>
+<div class="line">CNameFileFilter filter(_T(<span class="stringliteral">"*"</span>), <span class="keyword">false</span>, CNameFileFilter::toAll);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// This will include empty directories</span></div>
+<div class="line">zip.AddNewFiles(_T(<span class="stringliteral">"C:\\Temp\\Input1\\"</span>), filter);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// This will exclude empty directories.</span></div>
+<div class="line"><span class="comment">// The CZipArchive::zipsmIgnoreDirectories flag would be unnecessary,</span></div>
+<div class="line"><span class="comment">// if the filter was using CNameFileFilter::toFile.</span></div>
+<div class="line">zip.AddNewFiles(_T(<span class="stringliteral">"C:\\Temp\\Input2\\"</span>), filter, <span class="keyword">true</span>, -1, <span class="keyword">true</span>,     </div>
+<div class="line">    CZipArchive::zipsmSafeSmart | CZipArchive::zipsmIgnoreDirectories);    </div>
+<div class="line"></div>
+<div class="line">zip.Close();    </div>
+</div><!-- fragment --> </div>
+        <h4 id="filtersNotes" name="filtersNotes" class="kb">
+            Additional Considerations
+        </h4>
+        <ul>
+            <li>The filters classes are located in the <code>ZipArchiveLib</code> namespace. Use this namespace when using filters.</li>
+            <li>To use directory traversing functionality in your application, you can reuse the <a class="linkapi" href="classZipArchiveLib_1_1CDirEnumerator.html">ZipArchiveLib::CDirEnumerator</a>
+                class.</li>
+        </ul>
+        <h3 id="callbackMulti" name="callbackMulti" class="kb">
+            Callbacks Called
+        </h3>
+        When adding multiple files, the following callbacks are called:
+		<ul>
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734aa5d3fd07218d767d451b4f1596bba296">CZipActionCallback::cbCalculateForMulti</a> - called while counting the total amount of data to
+                process, before the actual adding process takes place. The counting is performed only, if the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734ac138d3b507f8f349e26e2e85c326bcb4">CZipActionCallback::cbMultiAdd</a>
+                callback was set. </li>
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734ac138d3b507f8f349e26e2e85c326bcb4">CZipActionCallback::cbMultiAdd</a> - reports the global progress. Registering a callback object
+                for this type of callback, automatically registers it for the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a4e48c2f0d8f6bd1de700e56927c55de8">CZipActionCallback::cbAdd</a> callback
+                as well. </li>
+            <li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a4e48c2f0d8f6bd1de700e56927c55de8">CZipActionCallback::cbAdd</a> - called for every file processed.</li>
+        </ul>
+        To read more about using callback objects when performing multiple operations, see <a class="linkkb" href="0610231200.html#multi">Progress Notifications: Using Callback Objects</a>.
+        <h2 id="advanced" name="advanced" class="kb">
+            Advanced Compression: More Control Over How Data is Written
+        </h2>
+        The <a class="linkapi" href="classCZipArchive.html#a835a92a9a94ae71ab1742c50d282d0d2">CZipArchive::AddNewFile(CZipAddNewFileInfo&amp;)</a> method and its overrides do most of the
+        work for you, however you may want to have more control over this process. To manually compress a file follow these steps:
+        <ul class="dec">
+            <li>Prepare a <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> template and fill it with required data. To read what data is reused
+                from the template when adding a file, see the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method documentation.
+            </li>
+            <li>Open a new file record in the archive with the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method.</li>
+            <li>Compress the data by repeatedly calling the <a class="linkapi" href="classCZipArchive.html#a005fb70307870db788fad8179fdd953c">CZipArchive::WriteNewFile()</a> method.</li>
+            <li>When you have no more data to compress, call the <a class="linkapi" href="classCZipArchive.html#a773bab3d901e5fa03ed9118b53af5a24">CZipArchive::CloseNewFile()</a> method. If an
+                exception was thrown while compressing data, call this method with the <code>bAfterException</code> parameter set to <code>true</code>
+                to prevent further exceptions being thrown when closing.</li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line"><span class="comment">// open an existing archive</span></div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));    </div>
+<div class="line"><span class="comment">// specify a template for the file to be added</span></div>
+<div class="line">CZipFileHeader templ;</div>
+<div class="line">templ.SetFileName(_T(<span class="stringliteral">"data.txt"</span>));</div>
+<div class="line"><span class="comment">// set the desired attributes    </span></div>
+<div class="line">templ.SetSystemAttr(FILE_ATTRIBUTE_READONLY);</div>
+<div class="line"><span class="comment">// open the new record in the archive;</span></div>
+<div class="line"><span class="comment">// set the maximum compression level</span></div>
+<div class="line">zip.OpenNewFile(templ, 9);</div>
+<div class="line">LPCTSTR data1 = _T(<span class="stringliteral">"This is data\r\n"</span>);</div>
+<div class="line">LPCTSTR data2 = _T(<span class="stringliteral">"to be written"</span>);</div>
+<div class="line"><span class="comment">// write data</span></div>
+<div class="line">zip.WriteNewFile(data1, (DWORD)(_tcslen(data1) * <span class="keyword">sizeof</span>(TCHAR)));</div>
+<div class="line">zip.WriteNewFile(data2, (DWORD)(_tcslen(data2) * <span class="keyword">sizeof</span>(TCHAR)));</div>
+<div class="line"><span class="comment">// close the new record</span></div>
+<div class="line">zip.CloseNewFile();</div>
+<div class="line"><span class="comment">// close the archive</span></div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="dir" name="dir" class="kb">
+            Adding Directories
+        </h3>
+        You can add a directory in two ways:
+		<ul>
+            <li>To add an existing directory, you can use any of the <code>CZipArchive::AddNewFile()</code> methods.</li>
+            <li>To add a non-existing directory, use the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method.</li>
+        </ul>
+        The ZipArchive Library treats files ending with a path separator like directories.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line"><span class="comment">// create a zip archive</span></div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);    </div>
+<div class="line"><span class="comment">// add an existing directory (no files from that directory will be added)</span></div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"c:\\windows"</span>), CZipCompressor::levelStore);</div>
+<div class="line"><span class="comment">// add a non-existing directory</span></div>
+<div class="line">CZipFileHeader header;</div>
+<div class="line"><span class="comment">// you can skip the next line if you add a path separator to the end of the file name</span></div>
+<div class="line">header.SetSystemAttr(ZipPlatform::GetDefaultDirAttributes());</div>
+<div class="line">header.SetFileName(_T(<span class="stringliteral">"empty dir"</span>));</div>
+<div class="line">header.SetModificationTime(time(NULL));</div>
+<div class="line">zip.OpenNewFile(header, CZipCompressor::levelStore);</div>
+<div class="line">zip.CloseNewFile();    </div>
+<div class="line">zip.Close();    </div>
+</div><!-- fragment --> </div>
+        <h2 id="other" name="other" class="kb">
+            Other Functionality
+        </h2>
+        <h3 id="get" name="get" class="kb">
+            Adding Files From Other Archives
+        </h3>
+        If you wish to add to your archive files from other archives and you would like to avoid extracting and then compressing
+        them again, use one of the following methods:
+		<ul>
+            <li><a class="linkapi" href="classCZipArchive.html#a648b5aa0358a5b4e77affc3dbc1ede11">CZipArchive::GetFromArchive(CZipArchive&amp;, ZIP_INDEX_TYPE)</a> when you want to get a <span class="emphasize">single file</span>.</li>
+            <li><a class="linkapi" href="classCZipArchive.html#a4503afbc28cbc5d77fc6c3e92801c85f">CZipArchive::GetFromArchive(CZipArchive&amp;, CZipIndexesArray&amp;)</a> when you want to get multiple
+                files and specify them by <span class="emphasize">indexes</span>.</li>
+            <li><a class="linkapi" href="classCZipArchive.html#a089c9e3fa4d74ef21585b0b749b15ab5">CZipArchive::GetFromArchive(CZipArchive&amp;, CZipStringArray&amp;)</a> when you want to get multiple
+                files and specify them by <span class="emphasize">names</span>.</li>
+        </ul>
+        <ul>
+            <li>These methods copy data from the source archive to the destination archive without decompressing it.</li>
+            <li>If an encryption method and a password are set, the data will be encrypted while the getting process. Data will not be encrypted,
+                if it already is encrypted. See <a class="linkkb" href="0610201627.html#intro">Encryption Methods: How to Best Protect Your Data</a> for information about setting an encryption
+                method and a password.</li>
+        </ul>
+        <div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// create a new archive</span></div>
+<div class="line">CZipArchive zipDest;</div>
+<div class="line">zipDest.Open(_T(<span class="stringliteral">"C:\\Temp\\testDest.zip"</span>), CZipArchive::zipCreate);    </div>
+<div class="line"></div>
+<div class="line"><span class="comment">// open an existing source archive</span></div>
+<div class="line">CZipArchive zipSource;    </div>
+<div class="line">zipSource.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// add files from the source archive to the destination archive</span></div>
+<div class="line">CZipIndexesArray indexes;</div>
+<div class="line">indexes.Add(0);</div>
+<div class="line">indexes.Add(1);</div>
+<div class="line">zipDest.GetFromArchive(zipSource, indexes);</div>
+<div class="line">zipSource.Close();</div>
+<div class="line">zipDest.Close();</div>
+</div><!-- fragment --> </div>
+        <h3 id="threaded" name="threaded" class="kb">
+            Multithreaded Compression
+        </h3>
+        Although compression to a single archive from multiple threads is not possible, you can perform multithreaded compression
+        to some extent using the following steps:
+		<ul class="dec">
+            <li>Compress files to separate archives. Use one thread per archive. <span class="example">For example, if you have six files
+                to compress, you can put three files to one archive and the other three to another archive. In this case, you would use
+                two threads.</span></li>
+            <li>When all files are compressed, create a new (destination) archive and use one of the <a class="linkapi" href="classCZipArchive.html#a648b5aa0358a5b4e77affc3dbc1ede11">CZipArchive::GetFromArchive()</a>
+                methods to copy compressed data from existing archives to the new archive. Perform this step in a single thread. <span class="example">
+                    In the example above, you would copy the compressed data to a new archive and delete the two existing archives.</span>
+            </li>
+        </ul>
+        <h3 id="finalize" name="finalize" class="kb">
+            Finalizing Archives and Preventing Archive Corruption
+        </h3>
+        During an archive modification, the central directory is removed from the archive and kept in memory. It is written back
+        when you call <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a>. However, if a crash occurs before the central directory
+        is written, the archive will be unusable. You can request writing the central directory back to the archive after each modification
+        with the <a class="linkapi" href="classCZipArchive.html#a368ef976b50ad90491f56a1f9bd555d5">CZipArchive::SetAutoFinalize()</a> method or perform it manually with the <a class="linkapi" href="classCZipArchive.html#a3b6b89bcc1a725621a41b815b973efa6">CZipArchive::Finalize()</a> method. You should use the finalizing methods sparingly otherwise the performance can
+        be degraded.
+		<p />
+        The <a class="linkapi" href="classCZipArchive.html#a3b6b89bcc1a725621a41b815b973efa6">CZipArchive::Finalize()</a> (called manually or automatically) will not execute when there
+        are any pending changes. See <a class="linkkb" href="0610231944.html#commit">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a> for more information.
+		<p />
+        To flush file buffers alone without writing the central directory to the disk, call the <a class="linkapi" href="classCZipArchive.html#a72e5c3c86552c535d764c3da4e8ce163">CZipArchive::FlushBuffers()</a>
+        method.
+		<p />
+        When removing files, you can remove them only from the central directory for safety. See <a class="linkapi" href="classCZipArchive.html#a77fc0cecc99d05de69b07e96c839e2a4">CZipArchive::RemoveFile</a>
+        for more information (set the <code>bRemoveData</code> parameter to <code>false</code>).
+		<h4 id="finalizeSegm" name="finalizeSegm" class="kb">
+            Segmented Archives
+        </h4>
+        If you finalize a segmented archive in creation, it will not be closed, but its state will be changed from "an archive in
+        creation" to "an existing segmented archive". Finalize a segmented archive, when you have finished adding files to it and
+        you want to begin extracting or testing it. This means that you can finalize a segmented archive only once. However, if
+        after finalizing a segmented archive it turns out that the archive is one segment only, the archive is converted to a normal
+        archive and you can use it as such. If you want to know what is the state of the archive after finalizing it, call the <a class="linkapi" href="classCZipArchive.html#af2cb18a0c834f64284f6485b01df50a8">CZipArchive::GetStorage()</a> and then the <a class="linkapi" href="classCZipStorage.html#a32bb04360165669caa18e78c5cd4d216">CZipStorage::IsSegmented()</a>
+        method. The method will return <code>true</code> if the archive was converted to a normal archive.
+		<h4 id="commitChanges" name="commitChanges" class="kb">
+            Committing Modification Changes
+        </h4>
+        To prevent archive corruption you may also want to adjust the commit changes mode. See <a class="linkkb" href="0610231944.html#commit">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a>
+        for more information.
+		<ul>
+            <li>Auto-Finalize cannot be enabled, if there are any uncommitted changes pending.</li>
+        </ul>
+        <h3 id="compatibility" name="compatibility" class="kb">
+            System Compatibility
+        </h3>
+        <ul>
+            <li>Each file inside an archive has a flag set which tells for which platform the file is intended. This can be one of <a class="linkapi" href="namespaceZipCompatibility.html#ae66702f3e1756c3a13834602f8861209">ZipCompatibility::ZipPlatforms</a> values.</li>
+            <li>The compatibility settings affect the conversion of file attributes - file attributes are defined differently across the
+                platforms.</li>
+            <li>When opening an existing archive, the ZipArchive Library assumes the system compatibility of the whole archive to be the
+                same as the compatibility of the first file in the archive (if the one is present). This will affect only newly added files.
+                In other cases the current system value is assumed which is determined by the <a class="linkapi" href="namespaceZipPlatform.html#acdfcdd6eb3e4e93497a551b7c007d0bd">ZipPlatform::GetSystemID()</a>
+                method call during creating or opening an archive.</li>
+            <li>You can set the system compatibility with the <a class="linkapi" href="classCZipArchive.html#a3b22230148bd8a11a9f1f92bff446e1b">CZipArchive::SetSystemCompatibility()</a> method.
+            </li>
+        </ul>
+        <h3 id="options" name="options" class="kb">
+            Setting Compressor Options
+        </h3>
+        You can adjust the options of the <a href="#deflate" class="linkkb">Deflate</a> or the <a href="#bzip2" class="linkkb">Bzip2</a>
+        compressor by calling the <a class="linkapi" href="classCZipArchive.html#aaa14ea39420cb30f3ac5bfe0adfea8ad">CZipArchive::SetCompressionOptions()</a> method providing as an argument
+        an appropriate options object derived from the <a class="linkapi" href="structCZipCompressor_1_1COptions.html">CZipCompressor::COptions</a> class.<br />
+        Use <a class="linkapi" href="structZipArchiveLib_1_1CDeflateCompressor_1_1COptions.html">ZipArchiveLib::CDeflateCompressor::COptions</a> and
+		<br />
+        <code>ZipArchiveLib::CBzip2Compressor::COptions</code>, respectively. Please refer to the sample code below
+        and the documentation of these classes.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// These headers needs to be included.</span></div>
+<div class="line"></div>
+<div class="line"><span class="preprocessor">#include "DeflateCompressor.h"</span></div>
+<div class="line"><span class="preprocessor">#include "Bzip2Compressor.h"</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// use the following namespace or prefix the classes with its name</span></div>
+<div class="line"><span class="keyword">using namespace </span>ZipArchiveLib;</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> SetOptions()</div>
+<div class="line">{</div>
+<div class="line">    </div>
+<div class="line">    CZipArchive zip;</div>
+<div class="line">    CDeflateCompressor::COptions deflateOptions;</div>
+<div class="line">    <span class="comment">// set a larger buffer for deflate compression / decompression</span></div>
+<div class="line">    deflateOptions.m_iBufferSize = 4 * 65536;</div>
+<div class="line">    zip.SetCompressionOptions(&amp;deflateOptions);</div>
+<div class="line"></div>
+<div class="line">    CBzip2Compressor::COptions bzip2Options;</div>
+<div class="line">    <span class="comment">// set a smaller buffer for bzip2 compression / decompression</span></div>
+<div class="line">    bzip2Options.m_iBufferSize = 65536;</div>
+<div class="line">    zip.SetCompressionOptions(&amp;bzip2Options);</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// ... Process files</span></div>
+<div class="line">    </div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+        <h2 id="notes" name="notes" class="kb">
+            Additional Considerations (Windows Only)
+        </h2>
+        When your system utilizes large amount of memory while extensive file operations, see <a class="linkkb" href="0610231944.html#cache">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a>
+        for a possible solution.
+		<h2 id="api" name="api" class="kb">
+            See Also API Links
+        </h2>
+        <ul class="non">
+            <li><a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#ad21deb1bf4f6dfa4c0c642f24f8badc6">CZipArchive::Open(CZipAbstractFile&amp;)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a297a68eee12eb680c945a420ae407db0">CZipArchive::SetCompressionMethod()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a73496c42f9eee22914083fd3bfe3b596">CZipArchive::GetCompressionMethod()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a835a92a9a94ae71ab1742c50d282d0d2">CZipArchive::AddNewFile(CZipAddNewFileInfo&amp;)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#ad713525e204a243a5dedabe68a574db3">CZipArchive::AddNewFile(LPCTSTR, int)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a2a9345250f513915011381766e7ad1a3">CZipArchive::AddNewFile(LPCTSTR, LPCTSTR)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a02740b761e1198ddb57f4836200b53cc">CZipArchive::AddNewFile(CZipAbstractFile&amp;, LPCTSTR)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a41c83a931fe53ed2f4c374b4a7177969">CZipArchive::AddNewFiles()</a></li>
+            <li><a class="linkapi" href="classZipArchiveLib_1_1CFileFilter.html">ZipArchiveLib::CFileFilter</a></li>
+            <li><a class="linkapi" href="classCZipFileHeader.html#ace914ed6734c2c7f72e42bd5c73ddeba">CZipFileHeader::SetSystemAttr()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a005fb70307870db788fad8179fdd953c">CZipArchive::WriteNewFile()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a773bab3d901e5fa03ed9118b53af5a24">CZipArchive::CloseNewFile()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a648b5aa0358a5b4e77affc3dbc1ede11">CZipArchive::GetFromArchive(CZipArchive&amp;, ZIP_INDEX_TYPE)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a4503afbc28cbc5d77fc6c3e92801c85f">CZipArchive::GetFromArchive(CZipArchive&amp;, CZipIndexesArray&amp;)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a089c9e3fa4d74ef21585b0b749b15ab5">CZipArchive::GetFromArchive(CZipArchive&amp;, CZipStringArray&amp;)</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a368ef976b50ad90491f56a1f9bd555d5">CZipArchive::SetAutoFinalize()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#afb30ad3cbaf8726630b2fa0933f91482">CZipArchive::GetAutoFinalize()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a3b6b89bcc1a725621a41b815b973efa6">CZipArchive::Finalize()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a72e5c3c86552c535d764c3da4e8ce163">CZipArchive::FlushBuffers()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a3b22230148bd8a11a9f1f92bff446e1b">CZipArchive::SetSystemCompatibility()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#a5cd378df6bf6c5e119aed6f06bc921cc">CZipArchive::GetSystemCompatibility()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#aaa14ea39420cb30f3ac5bfe0adfea8ad">CZipArchive::SetCompressionOptions()</a></li>
+            <li><a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a></li>
+        </ul>
+    
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610231446</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

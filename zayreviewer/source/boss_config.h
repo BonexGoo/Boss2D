@@ -28,6 +28,7 @@
 #define BOSS_NEED_ADDON_WEBRTC     0
 #define BOSS_NEED_ADDON_WEBSOCKET  0
 #define BOSS_NEED_ADDON_ZIP        0
+#define BOSS_NEED_ADDON_ZIPA       0
 
 ////////////////////////////////////////
 // Detail

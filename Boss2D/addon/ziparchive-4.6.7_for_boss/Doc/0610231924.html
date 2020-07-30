@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        In-Memory Archive Processing
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            In-Memory Archive Processing
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#archive">In-Memory Archive Creating and Opening</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#create">Creating</a></li>
+<li><a class="linkindex" href="#open">Opening</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#process">In-Memory Data Compressing and Extracting</a></li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="intro" name="intro" class="kb">
+			Introduction</h2>
+		<ul>
+			<li>The ZipArchive Library allows the following operations in memory:
+				<ul>
+					<li>opening archives for creation and modification, </li>
+					<li>compressing memory files, </li>
+					<li>extracting files from archive to memory files. </li>
+				</ul>
+				This allows the whole archive processing to be performed entirely in memory. </li>
+			<li>The <code>CZipMemFile</code> object is not destroyed throughout the whole processing.</li>
+			<li>Note that it is not an error to set the file pointer in the <code>CZipMemFile</code> object to a position beyond the end
+				of the file.</li>
+			<li>To avoid frequent memory re-allocations, depending on the situation, consider taking one of the following actions:
+				<ul>
+					<li>initiate <code>CZipMemFile</code> with a large enough grow value in the <code>nGrowBy</code> parameter in the constructor</li>
+					<li>attach a buffer with the <code>CZipMemFile::Attach()</code> method.</li>
+					<li>set the length of the memory file with the <code>CZipMemFile::SetLength()</code> method (e.g. during extraction to memory,
+						you can set it to the<br />
+						<a class="linkapi" href="classCZipFileHeader.html#a64d6d7786abfcab0bbb2aa5f7ced12f1">CZipFileHeader::m_uUncomprSize</a> value).</li>
+				</ul>
+			</li>
+		</ul>
+		<h2 id="archive" name="archive" class="kb">
+			In-Memory Archive Creating and Opening</h2>
+		To create or open an archive in memory, use the <a class="linkapi" href="classCZipArchive.html#ad21deb1bf4f6dfa4c0c642f24f8badc6">CZipArchive::Open(CZipAbstractFile&amp;)</a> method
+		and pass <code>CZipMemFile</code> object as an argument.
+		<h3 id="create" name="create" class="kb">
+			Creating</h3>
+		If you are creating a new archive, the memory file will hold the resulting archive.
+		<ul>
+			<li>To clear the contents of the memory file before creating a new archive, open the archive using the <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdbadcf20d3cf869207a53206f415bf5e1f5">CZipArchive::zipCreate</a> mode.</li>
+			<li>To keep the contents of the memory file and append the archive at the end of it, open the archive using the <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdba16ee2398b435a10f65b718e0ec1abd73">CZipArchive::zipCreateAppend</a> mode.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipMemFile mf;</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line"><span class="comment">// create the archive in memory</span></div>
+<div class="line">zip.Open(mf, CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// add a file</span></div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file.dat"</span>));</div>
+<div class="line">zip.Close();</div>
+<div class="line"><span class="comment">// let's write the archive to the disk</span></div>
+<div class="line">CZipFile f;</div>
+<div class="line"><span class="keywordflow">if</span> (f.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), </div>
+<div class="line">    CZipFile::modeWrite | CZipFile::modeCreate, <span class="keyword">false</span>))</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">int</span> iLen = (int)mf.GetLength();</div>
+<div class="line">    BYTE* b = mf.Detach();</div>
+<div class="line">    f.Write(b, iLen);</div>
+<div class="line">    f.Close();</div>
+<div class="line">    <span class="comment">// we must free the detached memory</span></div>
+<div class="line">    free(b);</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+		<h3 id="open" name="open" class="kb">
+			Opening</h3>
+		If you are opening an existing archive, the memory file should already hold an archive.<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipFile f;</div>
+<div class="line"><span class="keywordflow">if</span> (f.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipFile::modeRead, <span class="keyword">false</span>))</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// read the contents of the file into the memory file</span></div>
+<div class="line">    <span class="keywordtype">int</span> iLen = (int)f.GetLength();    </div>
+<div class="line">    BYTE* b = (BYTE*)malloc((UINT)iLen);</div>
+<div class="line">    f.Read(b, iLen);</div>
+<div class="line">    f.Close();</div>
+<div class="line">    CZipMemFile mf;</div>
+<div class="line">    mf.Attach(b, iLen);</div>
+<div class="line">    <span class="comment">// open the archive in memory</span></div>
+<div class="line">    CZipArchive zip;</div>
+<div class="line">    zip.Open(mf);</div>
+<div class="line">    zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>));</div>
+<div class="line">    zip.Close();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div><h2 id="process" name="process" class="kb">
+			In-Memory Data Compressing and Extracting</h2>
+		<ul>
+			<li>To compress a memory file, use one of the following methods:
+				<ul class="non">
+					<li><a class="linkapi" href="classCZipArchive.html#a02740b761e1198ddb57f4836200b53cc">CZipArchive::AddNewFile(CZipAbstractFile&amp;, LPCTSTR)</a>,</li>
+					<li><a class="linkapi" href="classCZipArchive.html#a835a92a9a94ae71ab1742c50d282d0d2">CZipArchive::AddNewFile(CZipAddNewFileInfo&amp;)</a></li>
+				</ul>
+			</li>
+			<li>To extract a file in an archive to a memory file, use the<br />
+				<a class="linkapi" href="classCZipArchive.html#a5131edf4dcb5cb6da096fb688c72d9b0">CZipArchive::ExtractFile(ZIP_INDEX_TYPE, CZipAbstractFile&amp;)</a> method. When extracting to
+				a memory file, it is good to initialize the memory file size to the size of the extracted data to avoid frequent memory
+				re-allocations.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line">CZipMemFile mf;</div>
+<div class="line"><span class="comment">// prepare the memory file</span></div>
+<div class="line">LPCTSTR data1 = _T(<span class="stringliteral">"Test data"</span>);</div>
+<div class="line">mf.Write(data1, (DWORD)(_tcslen(data1) * <span class="keyword">sizeof</span>(TCHAR)));</div>
+<div class="line"><span class="comment">// compress the memory data</span></div>
+<div class="line">zip.AddNewFile(mf, _T(<span class="stringliteral">"file1.txt"</span>));</div>
+<div class="line">zip.Close();    </div>
+<div class="line">zip.Open(zipFileName);    </div>
+<div class="line">CZipMemFile mfOut;</div>
+<div class="line"><span class="comment">// set the memory file size to the size of the uncompressed data to avoid </span></div>
+<div class="line"><span class="comment">// frequent memory allocations</span></div>
+<div class="line">mfOut.SetLength(zip[0]-&gt;m_uUncomprSize);</div>
+<div class="line">((CZipAbstractFile*)&amp;mfOut)-&gt;SeekToBegin(); <span class="comment">// may be needed when mfOut was used previously</span></div>
+<div class="line"><span class="comment">// extract the contents of the file into memory</span></div>
+<div class="line">zip.ExtractFile(0, mfOut);</div>
+<div class="line">zip.Close();</div>
+<div class="line"><span class="comment">// print the contents of the extracted data</span></div>
+<div class="line">BYTE* b = mfOut.Detach();</div>
+<div class="line">_tprintf((LPCTSTR)b);</div>
+<div class="line"><span class="comment">// we must free the detached memory</span></div>
+<div class="line">free(b);</div>
+</div><!-- fragment --> </div>
+		<h2 id="api" name="api" class="kb">
+			See Also API Links</h2>
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#ad21deb1bf4f6dfa4c0c642f24f8badc6">CZipArchive::Open(CZipAbstractFile&amp;)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a02740b761e1198ddb57f4836200b53cc">CZipArchive::AddNewFile(CZipAbstractFile&amp;, LPCTSTR)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a5131edf4dcb5cb6da096fb688c72d9b0">CZipArchive::ExtractFile(ZIP_INDEX_TYPE, CZipAbstractFile&amp;)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610231924</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

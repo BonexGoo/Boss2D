@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Searching in Archive
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Searching in Archive
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#findfast">Searching by Names: the Find Fast Feature</a></li>
+<li><a class="linkindex" href="#match">Searching by Wildcards</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#wildcards">Pattern Matching</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#dir">Searching for Files in Specified Directory</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="intro" name="intro" class="kb">
+			Introduction</h2>
+		The ZipArchive Library provides several methods for searching for files in an archive.
+		<ul>
+			<li>You can set the global archive case-sensitivity with the<br />
+				<a class="linkapi" href="classCZipArchive.html#aec981beb4dfb55e4a2f054c410ee3031">CZipArchive::SetCaseSensitivity()</a> method.</li>
+		</ul>
+		<h2 id="findfast" name="findfast" class="kb">
+			Searching by Names: the Find Fast Feature</h2>
+		The Find Fast feature, if enabled, builds an additional array that holds sorted
+		names of files in an archive. The search methods perform a binary-search on this
+		array for the fastest results. This array is built automatically when you use one
+		of the below methods for the first time. If you want to build the array in a more
+		convenient time for you, use the <a class="linkapi" href="classCZipArchive.html#a674015911b66a42299b60e04c33dd35b">CZipArchive::EnableFindFast()</a>
+		method. These methods require using names the way they appear in archive (considering
+		the case-sensitivity settings) - no wildcards are allowed.
+		<ul>
+			<li>To find a single file in an archive, call the <a class="linkapi" href="classCZipArchive.html#ad5e73dc606a51b2708ad8c3ee87b3906">CZipArchive::FindFile()</a>
+				method.</li>
+			<li>To find multiple files by their names, call the <a class="linkapi" href="classCZipArchive.html#a95573d33042d4adc73f36f4b1a7a0b3a">CZipArchive::GetIndexes()</a>
+				method.</li>
+		</ul>
+		You can find real indexes (such than can be used as arguments of other archive processing
+		methods) of the sorted files using the <a class="linkapi" href="classCZipArchive.html#ad5f980abfefe3f4e075da12623d13274">CZipArchive::GetFindFastIndex()</a>
+		method.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// open an existing archive</span></div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">    ZIP_INDEX_TYPE index = zip.FindFile(_T(<span class="stringliteral">"file1.dat"</span>));</div>
+<div class="line"><span class="preprocessor">#ifdef _ZIP_ZIP64    </span></div>
+<div class="line"><span class="preprocessor"></span>    _tprintf(_T(<span class="stringliteral">"Index found: %I64u\r\n"</span>), index);</div>
+<div class="line"><span class="preprocessor">#else</span></div>
+<div class="line"><span class="preprocessor"></span>    _tprintf(_T(<span class="stringliteral">"Index found: %u\r\n"</span>), index);</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="preprocessor"></span>    <span class="comment">// prepare an array of names to find</span></div>
+<div class="line">    CZipStringArray names;</div>
+<div class="line">    names.Add(_T(<span class="stringliteral">"file2.dat"</span>));</div>
+<div class="line">    names.Add(_T(<span class="stringliteral">"file3.dat"</span>));</div>
+<div class="line">    names.Add(_T(<span class="stringliteral">"not existing.dat"</span>));</div>
+<div class="line">    CZipIndexesArray indexes;    </div>
+<div class="line">    zip.GetIndexes(names, indexes);</div>
+<div class="line">    zip.Close();</div>
+<div class="line">    <span class="comment">// the size of both arrays should be always equal</span></div>
+<div class="line">    ASSERT(names.GetCount() == indexes.GetCount());</div>
+<div class="line">    <span class="keywordflow">for</span> (ZIP_ARRAY_SIZE_TYPE i = 0; i &lt; indexes.GetCount(); i++)</div>
+<div class="line">    {</div>
+<div class="line">        index = indexes[i];</div>
+<div class="line">        LPCTSTR name = names[i];</div>
+<div class="line">        <span class="keywordflow">if</span> (index == ZIP_FILE_INDEX_NOT_FOUND)</div>
+<div class="line">            _tprintf(_T(<span class="stringliteral">"The file %s was not found\r\n"</span>), name);</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">        {</div>
+<div class="line"><span class="preprocessor">#ifdef _ZIP_ZIP64    </span></div>
+<div class="line"><span class="preprocessor"></span>            _tprintf(_T(<span class="stringliteral">"The file %s has index %I64u\r\n"</span>), name, index);</div>
+<div class="line"><span class="preprocessor">#else</span></div>
+<div class="line"><span class="preprocessor"></span>            _tprintf(_T(<span class="stringliteral">"The file %s has index %u\r\n"</span>), name, index);</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="preprocessor"></span>        }</div>
+<div class="line">    }</div>
+</div><!-- fragment --> </div>
+		<h2 id="match" name="match" class="kb">
+			Searching by Wildcards</h2>
+		To search for files in an archive using wildcards, use the <a class="linkapi" href="classCZipArchive.html#ab6d202ba9404fb24e27c23497638b6e0">CZipArchive::FindMatches()</a>
+		method. This method does not use the <a class="linkindex" href="#findfast">Find Fast</a>feature.
+		<h3 id="wildcards" name="wildcards" class="kb">
+			Pattern Matching</h3>
+		The pattern matching functionality is used in several places in the ZipArchive Library.
+		The construction of the pattern string is the same in all cases.
+		<p />
+		In the pattern string:
+		<ul>
+			<li><code>*</code> matches any sequence of characters (zero or more).</li>
+			<li><code>?</code> matches any character.</li>
+			<li><code>[SET]</code> matches any character in the specified <strong>set</strong>.</li>
+			<li><code>[!SET]</code> or <code>[^SET]</code> matches any character not in the specified
+				<strong>set</strong>.</li>
+			<li><code>\</code> suppress the special syntactic significance of any of <code>[]*?!^-\</code>
+				characters. Note, than in C++ this character is also a special character and also
+				needs to be escaped in a string. This means that to use backslash in the pattern
+				as a normal character, you need to actually write e.g. <code>"folder\\\\file.*"</code>.</li>
+		</ul>
+		<p />
+		A <strong>set</strong> is composed of characters or <strong>ranges</strong>. A <strong>
+			range</strong> has the following syntax: <code><em>character hyphen character</em></code>,
+		e.g.: <code>0 - 9</code> or <code>A - Z</code>. A whole <strong>set</strong> can
+		look for example like this: <code>[0 - 9a - zA - Z_]</code>. This <strong>set</strong>
+		is the minimal set of characters allowed in the <strong>set</strong> pattern construct.
+		Other characters are allowed (only 8-bit characters), if your system supports them.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// open an existing archive</span></div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">    CZipIndexesArray indexes;</div>
+<div class="line">    <span class="comment">// find files using wildcards</span></div>
+<div class="line">    <span class="comment">//zip.FindMatches(_T("file?.*"), indexes);    </span></div>
+<div class="line">    zip.FindMatches(_T(<span class="stringliteral">"*"</span>), indexes);    </div>
+<div class="line">    _tprintf(_T(<span class="stringliteral">"Matches found at positions:\r\n"</span>));</div>
+<div class="line">    <span class="keywordflow">for</span> (ZIP_ARRAY_SIZE_TYPE i = 0; i &lt; indexes.GetCount(); i++)</div>
+<div class="line">    {</div>
+<div class="line">        ZIP_INDEX_TYPE index = indexes[i];        </div>
+<div class="line">        LPCTSTR name = zip[index]-&gt;GetFileName();</div>
+<div class="line"><span class="preprocessor">#ifdef _ZIP_ZIP64    </span></div>
+<div class="line"><span class="preprocessor"></span>        _tprintf(_T(<span class="stringliteral">"%I64u: %s\r\n"</span>), index, name);</div>
+<div class="line"><span class="preprocessor">#else</span></div>
+<div class="line"><span class="preprocessor"></span>        _tprintf(_T(<span class="stringliteral">"%u: %s\r\n"</span>), index, name);</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="preprocessor"></span>    }</div>
+<div class="line">    zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h4 id="dir" name="dir" class="kb">
+			Searching for Files in Specified Directory</h4>
+		To find all files that are located in a particular directory inside of an archive,
+		use a mask similar to this one:<span class="command"><code>"directory\\\\*"</code></span>
+		<h2 id="api" name="api" class="kb">
+			See Also API Links</h2>
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#aec981beb4dfb55e4a2f054c410ee3031">CZipArchive::SetCaseSensitivity()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a674015911b66a42299b60e04c33dd35b">CZipArchive::EnableFindFast()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ad5e73dc606a51b2708ad8c3ee87b3906">CZipArchive::FindFile()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a95573d33042d4adc73f36f4b1a7a0b3a">CZipArchive::GetIndexes()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ad5f980abfefe3f4e075da12623d13274">CZipArchive::GetFindFastIndex()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ab6d202ba9404fb24e27c23497638b6e0">CZipArchive::FindMatches()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610242025</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

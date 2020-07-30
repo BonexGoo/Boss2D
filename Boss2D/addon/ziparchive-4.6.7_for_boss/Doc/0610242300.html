@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Providing Custom Data: Extra Fields
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Providing Custom Data: Extra Fields
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#local">Writing Local Extra Field</a></li>
+<li><a class="linkindex" href="#central">Writing Central Extra Field</a></li>
+<li><a class="linkindex" href="#read">Reading Extra Fields</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="intro" name="intro" class="kb">
+			Introduction</h2>
+		<ul>
+			<li>You can store custom data along with compressed files. The custom data is saved
+				in extra fields. Extra fields can be present in two locations: in the local file
+				header and in the central directory. You can store your custom data in one or both
+				of the locations.</li>
+			<li>You need to choose a unique identifier for your extra data that should not collide
+				with existing mappings. You can find more information about the format of extra
+				field and currently known mappings in the <span class="file">Appnote.txt</span>
+				file from PKWARE. This file is also distributed with the ZipArchive Library. The
+				ZipArchive Library uses the following identifiers:
+				<ul>
+				    <li><strong>0x0001</strong> - for Zip64 extensions</li>
+                    <li><strong>0x000A</strong> - for storing full file times information</li>
+					<li><strong>0x9901</strong> - for WinZip AES encryption</li>
+					<li><strong>0x7075</strong> - for Unicode filenames</li>
+					<li><strong>0x6375</strong> - for Unicode file comments</li>
+					<li><strong>0x5A4C</strong> - for storing strings code pages and Unicode filenames using
+						custom Unicode implementation (see <a class="linkkb" href="0610051525.html#custom">Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords</a>).</li>
+					<li><strong>0x5A4D</strong> - for saving offsets array from seekable compressed data</li>
+				</ul>
+			</li>
+			<li>Extra fields collections are accessible through:
+				<ul>
+					<li><a class="linkapi" href="classCZipFileHeader.html#ae4cbf85b55f10be47fa3782a0bb812b8">CZipFileHeader::m_aLocalExtraData</a> - the local extra
+						field.</li>
+					<li><a class="linkapi" href="classCZipFileHeader.html#aa9d85b6500481bb3067106d908a8766f">CZipFileHeader::m_aCentralExtraData</a> - the central extra
+						field.</li>
+				</ul>
+			</li>
+			<li>The <a class="linkapi" href="classCZipExtraData.html">CZipExtraData</a> class represents the custom data.</li>
+			<li>You can create and add a <a class="linkapi" href="classCZipExtraData.html">CZipExtraData</a> object to the
+				local or central field using the <a class="linkapi" href="classCZipExtraField.html#a52387bb57902a04660d3cf872caf2436">CZipExtraField::CreateNew(WORD)</a>
+				method or its overload.</li>
+			<li>You can read and write custom data using the <a class="linkapi" href="classCZipExtraData.html#ad1e08f25e8c53d4f7923610065f5a5e8">CZipExtraData::m_data</a>
+				member.</li>
+		</ul>
+		<h2 id="local" name="local" class="kb">
+			Writing Local Extra Field</h2>
+		You can specify local extra fields only when creating a new file in an archive,
+		because the local header is written at that time. You need to:
+		<ul class="dec">
+			<li>prepare a <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> template,</li>
+			<li>set local extra fields there,</li>
+			<li>use the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method to add new
+				file to an archive as described in <a class="linkkb" href="0610231446.html#advanced">Compressing Data</a>.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// define your id</span></div>
+<div class="line"><span class="keyword">const</span> WORD <span class="keywordtype">id</span> = 0xABCD;</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>), CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// prepare a template of the file to add</span></div>
+<div class="line">CZipFileHeader templ;</div>
+<div class="line">templ.SetFileName(_T(<span class="stringliteral">"file.dat"</span>));</div>
+<div class="line"><span class="comment">// create a local extra field</span></div>
+<div class="line">CZipExtraData* extra = templ.m_aLocalExtraData.CreateNew(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="comment">// copy some data to the extra field</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* data = <span class="stringliteral">"data to save"</span>;</div>
+<div class="line"><span class="keywordtype">size_t</span> dataSize = strlen(data);</div>
+<div class="line">extra-&gt;m_data.Allocate((DWORD)dataSize);</div>
+<div class="line">memcpy(extra-&gt;m_data, data, dataSize);</div>
+<div class="line"><span class="comment">// for simplicity, create an empty file</span></div>
+<div class="line">zip.OpenNewFile(templ);</div>
+<div class="line">zip.CloseNewFile();</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h2 id="central" name="central" class="kb">
+			Writing Central Extra Field</h2>
+		<ul>
+			<li>You can modify central extra fields at any time, but you need to remember that they
+				are saved when the central directory is saved to an archive.</li>
+			<li>The central directory is removed from an archive with any other modification and
+				saved back when you call <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a> or <a class="linkapi" href="classCZipArchive.html#a3b6b89bcc1a725621a41b815b973efa6">CZipArchive::Finalize()</a>. To read more about saving the
+				central directory, see <a class="linkkb" href="0610231446.html#finalize">Compressing Data</a>.</li>
+			<li>If you are not sure if the central directory is saved, request the information with
+				the <a class="linkapi" href="classCZipArchive.html#afbf6eb8ce378ec0812f0ccb7827e8e79">CZipArchive::GetCentralDirInfo()</a> method.</li>
+			<li>If the central directory is saved and you don't want to do any other modifications,
+				you can remove the central directory with the <a class="linkapi" href="classCZipArchive.html#ad82d99d92fdd342a203a298fbf2d8fd8">CZipArchive::RemoveCentralDirectoryFromArchive()</a>
+				method. This won't work for existing segmented archives, because the ZipArchive
+				Library does not support their modification.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// define your id</span></div>
+<div class="line"><span class="keyword">const</span> WORD <span class="keywordtype">id</span> = 0xABCD;</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line"><span class="comment">// open an existing file</span></div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line"><span class="comment">// create a new central extra field</span></div>
+<div class="line">CZipExtraData* extra = zip[0]-&gt;m_aCentralExtraData.CreateNew(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="comment">// copy some data to the extra field</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* data = <span class="stringliteral">"data to save"</span>;</div>
+<div class="line"><span class="keywordtype">size_t</span> dataSize = strlen(data);</div>
+<div class="line">extra-&gt;m_data.Allocate((DWORD)dataSize);</div>
+<div class="line">memcpy(extra-&gt;m_data, data, dataSize);</div>
+<div class="line"><span class="comment">// resave the central directory</span></div>
+<div class="line">zip.RemoveCentralDirectoryFromArchive();</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h2 id="read" name="read" class="kb">
+			Reading Extra Fields</h2>
+		<ul>
+			<li>To read extra fields, you need to obtain first the <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a>
+				object (see <a class="linkkb" href="0610242128.html#info">Requesting Information, Predicting Names and Sizes</a> for more information).</li>
+			<li>You can lookup an extra fields' collection for extra data with a specific identifier
+				using the <a class="linkapi" href="classCZipExtraField.html#a916cc9f9f7ae3674c68ce420ac291f5c">CZipExtraField::Lookup(WORD)</a> method or its
+				override.</li>
+			<li>To read local extra fields, you need to make sure that they were already updated
+				from the archive. See <a class="linkkb" href="0610242128.html#local">Requesting Information, Predicting Names and Sizes</a> for information
+				when the local data is updated or refer to the sample code below.</li>
+			<li>Extra fields used by some vendors has a format that does not conform to the zip
+				standard (they do not contain the <strong>Size</strong> element). To let the ZipArchive
+				Library correctly read these fields, add their identifiers to the static <a class="linkapi" href="classCZipExtraField.html#ab40422c56868c2cb497c98f9e61d6970">CZipExtraField::m_aNoSizeExtraHeadersID</a> array before starting the decompression.</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">// define your id</span></div>
+<div class="line"><span class="keyword">const</span> WORD <span class="keywordtype">id</span> = 0xABCD;</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line"><span class="comment">// open an existing file</span></div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">int</span> index = 0;</div>
+<div class="line"><span class="comment">// update the local header</span></div>
+<div class="line"><span class="comment">// it would already be valid, if the file was</span></div>
+<div class="line"><span class="comment">// extracted before</span></div>
+<div class="line">zip.OpenFile(index);</div>
+<div class="line">zip.CloseFile();</div>
+<div class="line"><span class="keyword">const</span> CZipFileHeader* info = zip[index];</div>
+<div class="line"><span class="comment">// read local header</span></div>
+<div class="line">CZipExtraData* extra = info-&gt;m_aLocalExtraData.Lookup(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (extra != NULL)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// ... process data</span></div>
+<div class="line">}</div>
+<div class="line">extra = info-&gt;m_aCentralExtraData.Lookup(<span class="keywordtype">id</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (extra != NULL)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// ... process data</span></div>
+<div class="line">}</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610242300</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

@@ -925,13 +925,15 @@ void zayreviewerData::RenderChecklistView(ZayPanel& panel)
             // 타이틀
             ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), CheckBoxTitleSize)
             {
+                // 썸네일
                 ZAY_LTRB(panel, 0, 0, CheckBoxPicSize, panel.h())
                 {
-                    ZAY_RGB(panel, 0, 0, 0)
+                    ZAY_RGBA(panel, 0, 0, 0, (CurCheck.mChecked)? 64 : 255)
                         panel.fill();
                     ZAY_XYWH(panel, 0, 0, panel.w() - 1, panel.h() - 1)
                         panel.stretch(GetUserPic(CurCheck.mAuthor), Image::Build::Force, UISF_Inner);
                 }
+                // 이름과 작성일자
                 ZAY_LTRB(panel, CheckBoxPicSize + 5, 0, panel.w(), panel.h())
                 {
                     const String Title = String::Format("%s - %s", (chars) GetUserName(CurCheck.mAuthor), (chars) CurCheck.mDate);
@@ -981,7 +983,7 @@ void zayreviewerData::RenderChecklistView(ZayPanel& panel)
                     }
                 }
             }
-            ZAY_RGBA(panel, 0, 0, 0, (CurCheck.mChecked)? 32 : 255)
+            ZAY_RGBA(panel, 0, 0, 0, (CurCheck.mChecked)? 64 : 255)
                 panel.rect(1);
 
             // 체크된 상황

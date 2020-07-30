@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Encryption Methods: How to Best Protect Your Data
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Encryption Methods: How to Best Protect Your Data
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All. AES is available in the Full Version only.</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#intro">Introduction</a></li>
+<li><a class="linkindex" href="#existing">Encrypting Existing Files in an Archive</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#callbackEncrypt">Callbacks Called</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#callbackEncryptNotes">Additional Considerations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#std">Standard Zip Encryption</a></li>
+<li><a class="linkindex" href="#aes">Strong AES Encryption Conforming to the WinZip Format</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#enabling">Enabling AES Encryption in the ZipArchive Library</a></li>
+<li><a class="linkindex" href="#using">Encrypting Archives with AES</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#issues">Special Considerations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#checking">Checking Password Validity</a></li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="intro" name="intro" class="kb">
+			Introduction</h2>
+		<ul>
+			<li>To compress a file with encryption, set the password with the <a class="linkapi" href="classCZipArchive.html#af68297f88e912ec811ba1c27496a6683">CZipArchive::SetPassword()</a> method before compression. You will need to set
+				the same password with this method before decompressing this file later. You can
+				set different passwords for different files.</li>
+			<li>To clear the password, call the <a class="linkapi" href="classCZipArchive.html#af68297f88e912ec811ba1c27496a6683">CZipArchive::SetPassword()</a>
+				method without arguments or with an empty string as an argument.</li>
+			<li>You should avoid using characters other than ASCII in the password string. There
+				may be problems with extracting such an archive on a system with a different code
+				page. If you need to, you can control the code page when settings a password with
+				the <a class="linkapi" href="classCZipArchive.html#af68297f88e912ec811ba1c27496a6683">CZipArchive::SetPassword()</a> method.</li>
+			<li>Choose the encryption method with the <a class="linkapi" href="classCZipArchive.html#a00d53cf407629000c551cb134c8c7993">CZipArchive::SetEncryptionMethod()</a>
+				method when compressing. The compression method is set by default to <a class="linkapi" href="classCZipCryptograph.html#ab3e0a46c0680f616ccf7a163f4f40332a3acf6a872aa7b3c932d9e8179ecbeb6a">CZipCryptograph::encStandard</a>. The encryption method used to compress
+				a file will be automatically detected while decompressing. You can set different
+				encryption methods for different files.</li>
+			<li>You will need both the password and the encryption method set for the file to be
+				encrypted. Check the return value of the <a class="linkapi" href="classCZipArchive.html#a4df613845e1f96033e1caa0bd512a988">CZipArchive::WillEncryptNextFile()</a>
+				method to find out, if the next file you add to the archive will be encrypted.</li>
+			<li>To find out, if a file inside an archive is encrypted, call the <a class="linkapi" href="classCZipFileHeader.html#a0b3983cef7d3d4e2a7dff403e88b8883">CZipFileHeader::IsEncrypted()</a> method.</li>
+			<li>You can also encrypt data when getting files from other archives. See <a class="linkkb" href="0610231446.html#get">Compressing Data</a> for information how to get files from other archives.</li>
+		</ul>
+		<h2 id="existing" name="existing" class="kb">
+			Encrypting Existing Files in an Archive</h2>
+		To encrypt existing files in an archive, use one of the following methods:
+		<ul>
+			<li><a class="linkapi" href="classCZipArchive.html#aa83d0131026c8d9a9fb83707a3356ce4">CZipArchive::EncryptFile()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a491293bc698235d185543301103bd3d2">CZipArchive::EncryptFiles()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a6e42b43751eafe1fd87c73043096ae25">CZipArchive::EncryptAllFiles()</a></li>
+		</ul>
+		<ul>
+			<li>These methods will not affect files that are already encrypted.</li>
+			<li>The files will not be encrypted, if the archive is segmented or if there is a file
+				opened for compression or extraction.</li>
+		</ul>
+		<h3 id="callbackEncrypt" name="callbackEncrypt" class="kb">
+			Callbacks Called</h3>
+		When encrypting existing files, the following callbacks are called:
+		<ul>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a345c1ebabd368ffbe9bfba8fed7717ff">CZipActionCallback::cbEncryptPrepare</a> - called when
+				preparing files for encryption.</li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734ac14bff5648bdfc7cd1da48e5cd844fe6">CZipActionCallback::cbMultiEncrypt</a> - reports the global
+				progress of encryption (both moving and encrypting data). Registering a callback
+				object for this type of callback, automatically registers it for the <a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a997851a3e7adf40cee0a2c1341dfeb52">CZipActionCallback::cbEncryptMoveData</a> and<br />
+				<a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734adc20dea4b8acaf365463cbae439caa82">CZipActionCallback::cbEncrypt</a> callbacks as well.</li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a997851a3e7adf40cee0a2c1341dfeb52">CZipActionCallback::cbEncryptMoveData</a> - called before
+				the actual encryption takes place to report the progress of making space inside
+				an archive for encrypted data (which is larger than normal data). It counts towards
+				the total progress.</li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734adc20dea4b8acaf365463cbae439caa82">CZipActionCallback::cbEncrypt</a> - called for every file
+				being encrypted. It counts towards the total progress.</li>
+		</ul>
+		<h4 id="callbackEncryptNotes" name="callbackEncryptNotes" class="kb">
+			Additional Considerations</h4>
+		<ul>
+			<li>Aborting the encryption process while any of the above callbacks is called will
+				result most probably in a corrupted archive.</li>
+			<li>To read more about using callback objects when performing multiple operations, see
+				<a class="linkkb" href="0610231200.html#multi">Progress Notifications: Using Callback Objects</a>.</li>
+		</ul>
+		<h2 id="std" name="std" class="kb">
+			Standard Zip Encryption</h2>
+		The standard zip encryption method (<a class="linkapi" href="classCZipCryptograph.html#ab3e0a46c0680f616ccf7a163f4f40332a3acf6a872aa7b3c932d9e8179ecbeb6a">CZipCryptograph::encStandard</a>)
+		is considered weak and should be only used with low security requirements or for
+		preserving compatibility with applications that do not support <a class="linkindex" href="#aes">the strong encryption</a>.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">LPCTSTR password = _T(<span class="stringliteral">"secret"</span>);</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line"><span class="comment">// there is no need to set the encryption method with the </span></div>
+<div class="line"><span class="comment">// standard zip encryption, it is used by default</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// set the password to encrypt the next file</span></div>
+<div class="line">zip.SetPassword(password);</div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file1.dat"</span>));</div>
+<div class="line"><span class="comment">// clear the password</span></div>
+<div class="line">zip.SetPassword();</div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file2.dat"</span>));</div>
+<div class="line">zip.Close();</div>
+<div class="line"><span class="comment">// decompress the files</span></div>
+<div class="line">zip.Open(zipFileName);</div>
+<div class="line"><span class="comment">// the first file is encrypted</span></div>
+<div class="line">ASSERT(zip[0]-&gt;IsEncrypted());</div>
+<div class="line"><span class="comment">// the second file is not</span></div>
+<div class="line">ASSERT(!zip[1]-&gt;IsEncrypted());</div>
+<div class="line">zip.SetPassword(password);</div>
+<div class="line"><span class="comment">// there is no need to set the encryption method</span></div>
+<div class="line"><span class="comment">// when decrypting</span></div>
+<div class="line">zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"file1.ext"</span>));</div>
+<div class="line"><span class="comment">// there is no need to clear the password</span></div>
+<div class="line"><span class="comment">// when decrypting a not encrypted file</span></div>
+<div class="line">zip.ExtractFile(1, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"file2.ext"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h2 id="aes" name="aes" class="kb">
+			Strong AES Encryption Conforming to the WinZip Format</h2>
+		The ZipArchive Library supports AES encryption with key sizes <span class="nowrap">128-bit</span>,
+		<span class="nowrap">192-bit</span> and <span class="nowrap">256-bit</span>. The
+		format of AES encrypted data conforms to <a class="linkindex" href="http://www.winzip.com/aes_info.htm" target="_blank">the WinZip AES Encryption Specification</a>. It is the preferred
+		way to ensure that your data is secure. The ZipArchive Library encrypts files the
+		way the WinZip does:
+		<ul>
+			<li>If the file size is smaller than 20 bytes, AE-2 encryption format is used. In this
+				case, CRC value is not written in the archive to avoid discovery of the encrypted
+				file contents in some cases.</li>
+			<li>For larger files, AE-1 format is used to provide an extra integrity check.</li>
+		</ul>
+		<h3 id="enabling" name="enabling" class="kb">
+			Enabling AES Encryption in the ZipArchive Library</h3>
+		To use the AES encryption, you need to make sure that <span class="preproc">_ZIP_AES</span>
+		is defined in the <span class="file">_features.h</span> file. Rebuild the ZipArchive
+		Library and your application, if you modify this definition. You may choose to keep
+		the encryption disabled, if you don't use it, to keep the size of the compiled library
+		smaller.
+		<h3 id="using" name="using" class="kb">
+			Encrypting Archives with AES</h3>
+		You need to choose the encryption method with the <a class="linkapi" href="classCZipArchive.html#a00d53cf407629000c551cb134c8c7993">CZipArchive::SetEncryptionMethod()</a>
+		using one of the <a class="linkapi" href="classCZipCryptograph.html#ab3e0a46c0680f616ccf7a163f4f40332">CZipCryptograph::EncryptionMethod</a>
+		values.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">LPCTSTR password = _T(<span class="stringliteral">"secret"</span>);</div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreate);</div>
+<div class="line">zip.SetPassword(password);</div>
+<div class="line"><span class="comment">// set the strongest encryption</span></div>
+<div class="line">zip.SetEncryptionMethod(CZipCryptograph::encWinZipAes256);</div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file1.dat"</span>));</div>
+<div class="line"><span class="comment">// use the standard encryption for the second file</span></div>
+<div class="line">zip.SetEncryptionMethod(CZipCryptograph::encStandard);</div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\file2.dat"</span>));</div>
+<div class="line">zip.Close();</div>
+<div class="line"><span class="comment">// decompress the files</span></div>
+<div class="line">zip.Open(zipFileName);</div>
+<div class="line">ASSERT(zip[0]-&gt;IsEncrypted());</div>
+<div class="line">ASSERT(zip[1]-&gt;IsEncrypted());</div>
+<div class="line">zip.SetPassword(password);</div>
+<div class="line"><span class="comment">// there is no need to set the encryption method</span></div>
+<div class="line"><span class="comment">// when decrypting, even if files are encrypted</span></div>
+<div class="line"><span class="comment">// using different methods</span></div>
+<div class="line">zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"file1.ext"</span>));</div>
+<div class="line">zip.ExtractFile(1, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"file2.ext"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h4 id="issues" name="issues" class="kb">
+			Special Considerations</h4>
+		<ul>
+			<li>If you use AES encryption in the ZipArchive Library in multiple threads, you should
+				define <span class="preproc">_ZIP_USE_LOCKING</span> in the <span class="file">_features.h</span>
+				file (it is not defined by default). This will ensure the proper locking mechanism
+				when generating AES keys.</li>
+			<li>If all the conditions below take place:
+				<ul>
+					<li>you are encrypting a file using AES,</li>
+					<li>you are using the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method
+						to compress a file,</li>
+					<li>the archive is a segmented archive (see <a class="linkkb" href="0610051553.html">Segmented Archives: Splitting and Spanning</a>),</li>
+					<li>you want the file to be successfully decompressed by WinZip 9.0,</li>
+				</ul>
+				then you need to set <a class="linkapi" href="classCZipFileHeader.html#ae02071d5948170132a8f47eef27e2066">CZipFileHeader::m_uLocalUncomprSize</a>
+				to the size of the data you want to compress (uncompressed data size) before passing
+				the <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> object to the <a class="linkapi" href="classCZipArchive.html#a6065bf986f315928dd4945d3bec495cd">CZipArchive::OpenNewFile()</a> method. This will cause the uncompressed size
+				to be written in the local header. Otherwise WinZip 9.0 will complain about the
+				invalid decompressed size when extracting the file. It is not considered to be a
+				valid behavior, because in this case the data descriptor is written and uncompressed
+				data size written in the local header should be discarded. The WinZip 11.0 and newer
+				does not expose this issue. </li>
+		</ul>
+		<h2 id="checking" name="checking" class="kb">
+			Checking Password Validity</h2>
+		The password itself is not stored inside of an archive. A preliminary check is performed
+		when opening a file in an archive for extraction (e.g. with the <a class="linkapi" href="classCZipArchive.html#af841175d668ec8e81aff25f6766d7a79">CZipArchive::OpenFile()</a> method). The ZipArchive Library throws <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afa334b595e9aba2d89c1e84e98947164eb">CZipException::badPassword</a>, if this preliminary check fails. However,
+		this is not reliable enough to detect all cases of an invalid password.
+		<p />
+		The final check is performed when a file is completely extracted. A file's data checksum
+		is then verified (but only if the consistency check <a class="linkapi" href="classCZipArchive.html#a23977e24b0930a40a83c0e4075860e4dafee0cd5bb67d85fe0256fabfc3b8d8d6">CZipArchive::checkCRC</a>
+		was not disabled with the <a class="linkapi" href="classCZipArchive.html#a6c97370520628da3908d7dca9b58fdeb">CZipArchive::SetIgnoredConsistencyChecks()</a>
+		method). If it fails, an exception with the code <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afa0d58d1e450f5997a51752c5be67d477a">CZipException::badCrc</a>
+		is thrown. At this point it is not possible to distinguish whether the bad checksum
+		was caused by an invalid password or a corrupted archive.
+		<h2 id="api" name="api" class="kb">
+			See Also API Links</h2>
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#a4df613845e1f96033e1caa0bd512a988">CZipArchive::WillEncryptNextFile()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#af68297f88e912ec811ba1c27496a6683">CZipArchive::SetPassword()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a29e6f0e19adfbece589af8b4f43bee77">CZipArchive::GetPassword()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a00d53cf407629000c551cb134c8c7993">CZipArchive::SetEncryptionMethod()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a80a0bdaabef1438ae5ac3140385d3c4a">CZipArchive::GetEncryptionMethod()</a></li>
+			<li><a class="linkapi" href="classCZipFileHeader.html#a0b3983cef7d3d4e2a7dff403e88b8883">CZipFileHeader::IsEncrypted()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#aa83d0131026c8d9a9fb83707a3356ce4">CZipArchive::EncryptFile()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a491293bc698235d185543301103bd3d2">CZipArchive::EncryptFiles()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a6e42b43751eafe1fd87c73043096ae25">CZipArchive::EncryptAllFiles()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610201627</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Segmented Archives: Splitting and Spanning
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Segmented Archives: Splitting and Spanning
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#general">Introduction</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#conv">Conversion Between Split and Spanned Archives</a></li>
+<li><a class="linkindex" href="#limits">Limits in Number of Volumes</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#split">Splitting: All Volumes in One Folder</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#splitCallback">Using Callback with Split Archives</a></li>
+<li><a class="linkindex" href="#splitNames">Custom Naming Scheme of Volumes</a></li>
+<li><a class="linkindex" href="#splitBinary">Binary Split</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#span">Spanning: Use on Removable Media</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#spanLast">Detecting Last Disk in Drive</a></li>
+<li><a class="linkindex" href="#spanRecover">Recovering from Invalid Disk Inserted</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#spanRecoverLast">Invalid Last Disk</a></li>
+<li><a class="linkindex" href="#spanRecoverExtract">Invalid Last Disk</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="linkindex" href="#callbacks">Callbacks Called</a></li>
+<li><a class="linkindex" href="#api">See Also API Links</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="general" name="general" class="kb">
+			Introduction</h2>
+		The ZipArchive Library can create segmented archives using the following methods:
+		splitting, binary splitting and spanning.
+		<ul>
+			<li><strong>splitting</strong> - an archive is split into multiple files that are usually
+				located in the same directory. This method creates the same internal structure as
+				spanning. </li>
+			<li><strong>binary splitting</strong> - an archive file is logically a regular single-segment
+				archive, but is binary split into multiple files. A regular archive can be created
+				from such split archive by simply concatenating all its parts.</li>
+			<li><strong>spanning</strong> - an archive spans multiple removable disks (e.g. floppy
+				disks).</li>
+		</ul>
+		The differences between splitting and spanning are summarized below:
+		<br />
+		<br />
+		<div class="centered">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td>
+					</td>
+					<td>
+						Splitting
+					</td>
+					<td>
+						Spanning
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Destination media
+					</td>
+					<td>
+						not limited to any
+					</td>
+					<td>
+						removable
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Archive Structure
+					</td>
+					<td>
+						splits into volumes<br />
+						(usually in the same folder)
+					</td>
+					<td>
+						spans multiple disks
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Naming
+					</td>
+					<td>
+						extension is based on the volume number,<br />
+						(it is possible to implement a custom naming scheme)
+					</td>
+					<td>
+						each volume has the same name
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Single Volume Size
+					</td>
+					<td>
+						declared by the user when creating an archive
+					</td>
+					<td>
+						auto-detected from the free space on the current disk
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Callback
+					</td>
+					<td>
+						not needed, but possible
+					</td>
+					<td>
+						needed for changing volume
+					</td>
+				</tr>
+			</table>
+		</div>
+		<ul>
+			<li>Splitting and spanning are compatible with PKZIP and WinZip.</li>
+			<li>Binary splitting is compatible e.g. with 7-Zip, but is not compatible with WinZip.</li>
+			<li>To set a callback object for splitting or spanning use the <a class="linkapi" href="classCZipArchive.html#a7f0aeb9a7368afd0689149485bd7ca5b">CZipArchive::SetSegmCallback()</a> method.The class of the callback object must
+				be derived from the <a class="linkapi" href="structCZipSegmCallback.html">CZipSegmCallback</a> class. </li>
+			<li>The ZipArchive Library does not allow direct modifications of existing segmented
+				archives. However you can apply changes to an existing segmented archive by creating
+				a new archive and copying data from the old archive using one of the <code>CZipArchive::GetFromArchive()</code>
+				methods. These methods will copy compressed data from the old archive without decompression.
+				You can find more information about this method here: <a class="linkkb" href="0610231446.html#get">Compressing Data</a>.</li>
+			<li>The <code>CZipArchive</code> class uses a write buffer to optimize the speed of
+				write operations. You can change its size with the <a class="linkapi" href="classCZipArchive.html#abe06c912f3dbacfe3d327d7c7a2d0e88">CZipArchive::SetAdvanced()</a>
+				method (set the first argument). While creating a segmented archive, set the size
+				of the buffer to the maximum size of the volume for the best performance.</li>
+			<li>To determine the total number of volumes in an archive, first request the central
+				directory information using the <a class="linkapi" href="classCZipArchive.html#afbf6eb8ce378ec0812f0ccb7827e8e79">CZipArchive::GetCentralDirInfo()</a>
+				method. The total number of volumes can be then obtained by adding one to the<br />
+				<a class="linkapi" href="structCZipCentralDir_1_1CInfo.html#a358ccf93954d97ad44ed35f4bbf1c704">CZipCentralDir::CInfo::m_uLastVolume</a> value, as illustrated
+				in the sample code below.
+				<br />
+				<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;    </div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">CZipCentralDir::CInfo info;</div>
+<div class="line">zip.GetCentralDirInfo(info);</div>
+<div class="line">ZIP_VOLUME_TYPE uTotalSegments = info.m_uLastVolume + 1;</div>
+<div class="line"><span class="comment">// ...</span></div>
+<div class="line">zip.Close();    </div>
+</div><!-- fragment --> </div>
+			</li>
+		</ul>
+		<h3 id="conv" name="conv" class="kb">
+			Conversion Between Split and Spanned Archives</h3>
+		To convert between split and spanned archives, it is enough to change the names
+		of volumes and copy the volumes to appropriate locations.
+		<ul>
+			<li>To convert a spanned archive to a split archive, copy all the volumes into one location
+				and rename their extensions according to the <code>printf</code> function format
+				using the pattern: <code>z%.2u</code>. For the volumes numbers greater than 99 this
+				pattern becomes <code>z%d</code>. Use the one-based volumes number as an argument.
+				Use the "zip" extension for the last volume. This way the volumes are
+				named this way:
+				<ul class="non">
+					<li>name.z01</li>
+					<li>name.z02</li>
+					<li>...</li>
+					<li>name.z100</li>
+					<li>...</li>
+					<li>name.zip</li>
+				</ul>
+				<br />
+			</li>
+			<li>To convert a split archive to a spanned archive, copy each volume to a separate
+				removable media, giving it the "zip" extension. You also should name each disk with
+				the appropriate label starting from <span class="nowrap">"PKBACK# 001"</span>
+				(note the space between '#' and '0'). </li>
+			<li>The conversion is not possible in case of binary splitting.</li>
+		</ul>
+		<h3 id="limits" name="limits" class="kb">
+			Limits in Number of Volumes</h3>
+		Zip format has the following limits on the number of volumes:
+		<br />
+		<br />
+		<div class="centered">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td>
+					</td>
+					<td>
+						Splitting
+					</td>
+					<td>
+						Spanning
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Standard Zip Format
+					</td>
+					<td>
+						65,535
+					</td>
+					<td>
+						999
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Zip64 Format
+					</td>
+					<td>
+						<span class="nowrap">4,294,967,295 - 1</span>
+					</td>
+					<td>
+						<span class="nowrap">4,294,967,295 - 1</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<ul>
+			<li>The number of volumes in binary splitting depends on the type defined by <span class="preproc">ZIP_VOLUME_TYPE</span>.</li>
+			<li>For more information on the Zip64 format, see <a class="linkkb" href="0610051629.html">Zip64 Format: Crossing the Limits of File Sizes and Number of Files and Segments</a>.
+			</li>
+		</ul>
+		<h2 id="split" name="split" class="kb">
+			Splitting: All Volumes in One Folder</h2>
+		The volumes of a split archive are usually located in the same folder. You need
+		to specify a size of a single volume when creating a split archive. Internal zip
+		structures such as file headers, are not split across volumes in regular split.
+		This may result in a volume size being slightly smaller from the declared size,
+		when the structure could not fit entirely into the current volume and it was stored
+		in the next volume instead. If the declared volume size is too small to hold an
+		entire internal structure, this particular volume will be enlarged. It is recommended
+		to use volumes sizes not smaller than 64KB.
+		<p />
+		Under Linux/OS X, when you are opening an existing split archive, use <code>CZipArchive::zipOpenSplit</code>
+		mode when calling the <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a> method.
+		This is caused by the lack of the implementation of the <a class="linkapi" href="namespaceZipPlatform.html#afd9f8021d83764be0fb27ea940222796">ZipPlatform::IsDriveRemovable()</a>
+		function and the device containing the archive is always assumed to be removable.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line"><span class="comment">// specify the segment size to be 1MB</span></div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreateSplit, 1024 * 1024);    </div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\big.dat"</span>));</div>
+<div class="line">zip.Close();    </div>
+<div class="line"><span class="comment">// the segmentation type will be auto-detected as splitting</span></div>
+<div class="line"><span class="comment">// (the archive is on a non-removable device)</span></div>
+<div class="line">zip.Open(zipFileName);</div>
+<div class="line"><span class="comment">// under Linux/OS X, call instead: zip.Open(zipFileName, CZipArchive::zipOpenSplit);</span></div>
+<div class="line">zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"big.ext"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h3 id="splitCallback" name="splitCallback" class="kb">
+			Using Callback with Split Archives</h3>
+		Using callback with split archives is not necessary, but possible. This is useful
+		when you e.g. need to have the possibility to prompt a user for a location of a
+		volume or perform some other actions.
+		<p />
+		When the callback is set, the <a class="linkapi" href="structCZipCallback.html#a27652d72804471adabcdcc18274bbbf5">CZipCallback::Callback</a>
+		method will be called every time a volume changes.
+		<ul>
+			<li>The reason for calling the callback is stored in <a class="linkapi" href="structCZipSegmCallback.html#a58447cfa3f1e7b3d3343271cf2509812">CZipSegmCallback::m_iCode</a>
+				and takes one of the <a class="linkapi" href="structCZipSegmCallback.html#a6621231bf0bfde4a9646f810a01a3901">CZipSegmCallback::SegmCodes</a> values.</li>
+			<li>You can change the filename and path of the current volume by modifying the <a class="linkapi" href="structCZipCallback.html#a132345e5a62fd08a249cabc01383af6f">CZipCallback::m_szExternalFile</a> variable. When the callback
+				is called, this variable holds the full path to the volume file as expected by the
+				library. You can change this variable and the library will create the volume file
+				under a new name or location. For implementing a custom naming scheme it is recommended
+				to use the split names handler (see <a href="#splitNames" class="linkkb">below</a>)
+				instead.</li>
+			<li>The number of the disk needed for reading or writing is stored in
+				<br />
+				<a class="linkapi" href="structCZipSegmCallback.html#abbf4160b8992b7694cc7a686693ed452">CZipSegmCallback::m_uVolumeNeeded</a>.</li>
+			<li>To abort the archive processing, return <code>false</code> from this method. A <a class="linkapi" href="classCZipException.html">CZipException</a> will be thrown with the <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afaa9beec1f47e84433e4e60b98e922f6d0">CZipException::aborted</a>
+				code.</li>
+			<li>The value of the <code>uProgress</code> parameter is set to <code>0</code> apart
+				from the time when the callback is called for the last volume. It is then set to
+				<span class="preproc">ZIP_SPLIT_LAST_VOLUME</span>.</li>
+			<li>When creating a split archive, the callback is called twice for the last volume.
+				<ul class="dec">
+					<li>The first time it is called when the library doesn't know yet that the current volume
+						is the last volume and the value of the <code>uProgress</code> parameter is set
+						to <code>0</code>.</li>
+					<li>The second time it is called when the library already knows that the current volume
+						is the last volume and the value of the <code>uProgress</code> parameter is set
+						to <span class="preproc">ZIP_SPLIT_LAST_VOLUME</span>.</li>
+				</ul>
+			</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="keyword">class </span>CSplitCallback : <span class="keyword">public</span> CZipSegmCallback</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">bool</span> Callback(ZIP_SIZE_TYPE)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">switch</span> (m_iCode)</div>
+<div class="line">        {</div>
+<div class="line">            <span class="keywordflow">case</span> scVolumeNeededForRead:</div>
+<div class="line">            <span class="keywordflow">case</span> scVolumeNeededForWrite:</div>
+<div class="line">            <span class="keywordflow">case</span> scFileNameDuplicated:</div>
+<div class="line">            {</div>
+<div class="line">                <span class="keywordflow">if</span> (m_iCode == scFileNameDuplicated)</div>
+<div class="line">                {</div>
+<div class="line">                    <span class="comment">// it can happen only when writing an archive;</span></div>
+<div class="line">                    <span class="comment">// delete the file, if it already exists</span></div>
+<div class="line"></div>
+<div class="line">                    <span class="comment">// it would be more optimal to check for the file existence</span></div>
+<div class="line">                    <span class="comment">// when scVolumeNeededForWrite was called to save one turn, but </span></div>
+<div class="line">                    <span class="comment">// this code is provided to illustrate the possible events</span></div>
+<div class="line">                    <span class="keywordflow">if</span> (!ZipPlatform::RemoveFile(m_szExternalFile))</div>
+<div class="line">                    {</div>
+<div class="line">                        _tprintf(_T(<span class="stringliteral">"Removing of the existing file failed."</span>));</div>
+<div class="line">                        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">                    }</div>
+<div class="line">                }</div>
+<div class="line"></div>
+<div class="line">                <span class="comment">// it would be possible here to change the filename of the archive volume</span></div>
+<div class="line">                <span class="comment">// and assign to m_szExternalFile                </span></div>
+<div class="line">                <span class="keywordflow">break</span>;</div>
+<div class="line">            }</div>
+<div class="line">            <span class="keywordflow">case</span> scFileCreationFailure:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"Could not create the file. \</span></div>
+<div class="line"><span class="stringliteral">Check, if you have write permissions to the given location.\r\n"</span>));             </div>
+<div class="line">                <span class="comment">// abort processing</span></div>
+<div class="line">                <span class="keywordflow">return</span> <span class="keyword">false</span>;    </div>
+<div class="line">            <span class="keywordflow">case</span> scFileNotFound:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"The given volume could not be found.\r\n"</span>));             </div>
+<div class="line">                <span class="comment">// abort processing, although we could ask a user here</span></div>
+<div class="line">                <span class="comment">// to provide the location of our volume</span></div>
+<div class="line">                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">            <span class="keywordflow">default</span>:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"An unexpected code detected.\r\n"</span>));</div>
+<div class="line">                <span class="comment">// abort processing</span></div>
+<div class="line">                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">            <span class="keywordflow">break</span>;</div>
+<div class="line">        }         </div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> SplittingWithCallback()</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// this code is identical to the previous sample with the </span></div>
+<div class="line">    <span class="comment">// exception of setting the callback</span></div>
+<div class="line">    LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">    CZipArchive zip;    </div>
+<div class="line">    CSplitCallback callback;</div>
+<div class="line">    <span class="comment">// set the callback before creating the archive;</span></div>
+<div class="line">    <span class="comment">// note the second parameter value</span></div>
+<div class="line">    zip.SetSegmCallback(&amp;callback, CZipArchive::scSplit);</div>
+<div class="line">    zip.Open(zipFileName, CZipArchive::zipCreateSplit, 1024 * 1024);</div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\big.dat"</span>));</div>
+<div class="line">    zip.Close();    </div>
+<div class="line">    <span class="keywordflow">return</span>;</div>
+<div class="line">    <span class="comment">// under Linux/OS X, call instead: zip.Open(zipFileName, CZipArchive::zipOpenSplit);</span></div>
+<div class="line">    zip.Open(zipFileName);    </div>
+<div class="line">    zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"big.ext"</span>));</div>
+<div class="line">    zip.Close();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+		<h3 id="splitNames" name="splitNames" class="kb">
+			Custom Naming Scheme of Volumes</h3>
+		You can implement a custom naming scheme of volumes for split archives. In order
+		to do that:
+		<ul>
+			<li>Create a class derived from the <a class="linkapi" href="classCZipSplitNamesHandler.html">CZipSplitNamesHandler</a>
+				class. </li>
+			<li>Implement the <a class="linkapi" href="classCZipSplitNamesHandler.html#a8b2890d86dd61be5fbd24ea9875b0add">CZipSplitNamesHandler::GetVolumeName()</a>
+				method.</li>
+			<li>For binary split, implement also the <a class="linkapi" href="classCZipSplitNamesHandler.html#a4d4c44f9b8b0ea54c723cc3d1b842cdd">CZipSplitNamesHandler::GetVolumeNumber()</a>
+				method. It should return <code>0</code> when the volume number could not be recognized.</li>
+			<li>Set the instance of the created class to be used for custom naming scheme with the
+				<a class="linkapi" href="classCZipArchive.html#a0cab93e835c4d5b3309f5672416f673b">CZipArchive::SetSplitNamesHandler(CZipSplitNamesHandler&amp;)</a>
+				or<br />
+				<a class="linkapi" href="classCZipArchive.html#a35f9982583097cbbf23892e46196060e">CZipArchive::SetSplitNamesHandler(CZipSplitNamesHandler*, bool)</a>
+				method<br />
+				before opening an archive. It needs to be done before every opening of an archive.</li>
+		</ul>
+		If the last volume name is different from the archive name, you can retrieve it
+		when closing the archive (it is the return value of the <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a>
+		method).
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="keyword">class </span>CCustomNamesHandler : <span class="keyword">public</span> CZipSplitNamesHandler</div>
+<div class="line">{</div>
+<div class="line"><span class="keyword">public</span>:</div>
+<div class="line">    CZipString GetVolumeName(<span class="keyword">const</span> CZipString&amp; archiveName, </div>
+<div class="line">        ZIP_VOLUME_TYPE uCurrentVolume, </div>
+<div class="line">        ZipArchiveLib::CBitFlag flags)<span class="keyword"> const</span></div>
+<div class="line"><span class="keyword">    </span>{</div>
+<div class="line">        CZipString szExt;</div>
+<div class="line">        <span class="keywordflow">if</span> (uCurrentVolume &lt; 1000)</div>
+<div class="line">            szExt.Format(_T(<span class="stringliteral">"vol%.3u"</span>), uCurrentVolume);</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">            szExt.Format(_T(<span class="stringliteral">"vol%u"</span>), uCurrentVolume);</div>
+<div class="line">        <span class="keywordflow">if</span> (flags.IsSetAny(CZipSplitNamesHandler::flExisting))</div>
+<div class="line">        {</div>
+<div class="line">            <span class="comment">// change the extension, if archive name is the name of an existing archive</span></div>
+<div class="line">            CZipPathComponent zpc(archiveName);</div>
+<div class="line">            zpc.SetExtension(szExt);</div>
+<div class="line">            <span class="keywordflow">return</span> zpc.GetFullPath();</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">else</span></div>
+<div class="line">        {</div>
+<div class="line">            <span class="comment">// otherwise, just append the extension</span></div>
+<div class="line">            <span class="keywordflow">return</span> archiveName + _T(<span class="stringliteral">"."</span>) + szExt;</div>
+<div class="line">        }</div>
+<div class="line">    }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> CustomNaming()</div>
+<div class="line">{</div>
+<div class="line">    LPCTSTR zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">    CZipArchive zip;    </div>
+<div class="line">    CCustomNamesHandler namesHandler;</div>
+<div class="line">    <span class="comment">// set a custom names handler before creating of the archive</span></div>
+<div class="line">    zip.SetSplitNamesHandler(namesHandler);</div>
+<div class="line">    <span class="comment">// specify the segment size to be 1MB</span></div>
+<div class="line">    zip.Open(zipFileName, CZipArchive::zipCreateSplit, 1024 * 1024);    </div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\big.dat"</span>));</div>
+<div class="line">    <span class="comment">// get the last volume name - needed for opening of the archive</span></div>
+<div class="line">    CZipString szLastVolumeName = zip.Close();</div>
+<div class="line">    <span class="keywordflow">if</span> (szLastVolumeName.IsEmpty())</div>
+<div class="line">    {</div>
+<div class="line">        _tprintf(_T(<span class="stringliteral">"An unexpected error ocurred.\r\n"</span>));</div>
+<div class="line">        <span class="keywordflow">return</span>;</div>
+<div class="line">    }</div>
+<div class="line">    <span class="comment">// set a custom names handler before opening of the archive</span></div>
+<div class="line">    zip.SetSplitNamesHandler(namesHandler);</div>
+<div class="line">    <span class="comment">// under Linux/OS X, call instead: zip.Open(zipFileName, CZipArchive::zipOpenSplit);</span></div>
+<div class="line">    zip.Open(szLastVolumeName);    </div>
+<div class="line">    zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"big.ext"</span>));</div>
+<div class="line">    zip.Close();</div>
+<div class="line">    </div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+		<h3 id="splitBinary" name="splitBinary" class="kb">
+			Binary Split</h3>
+		The binary splitting produces archives with the internal structure of a single-segment
+		archive, but splits the archive into multiple files. Here is the comparison between
+		the regular splitting and the binary splitting:
+		<br />
+		<br />
+		<div class="centered">
+			<table border="0" cellpadding="3" cellspacing="0" class="kb">
+				<tr class="kbheader">
+					<td>
+					</td>
+					<td>
+						Regular Splitting
+					</td>
+					<td>
+						Binary Spanning
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Internal&nbsp;Archive&nbsp;Structure
+					</td>
+					<td>
+						Multi-segment. Each volume is logically represented inside of the archive.
+					</td>
+					<td>
+						Single-segment archive.
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Volumes&nbsp;Extension
+					</td>
+					<td>
+						Replaced with <code>z%.2u</code> pattern to create volume filenames (e.g. <span class="file">
+							archive.z01</span>).
+					</td>
+					<td>
+						Consecutive numbers (<code>%.3u</code> pattern) are appended as an extension to
+						an archive filename (e.g. <span class="file">archive.zip.001</span>).
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Last&nbsp;Volume's&nbsp;Filename
+					</td>
+					<td>
+						The same as the filename of the archive provided to the <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a>
+						method (does not contain a volume number).
+					</td>
+					<td>
+						The filename is formed as any other volume name (contains a volume number).
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Default&nbsp;Name&nbsp;Handler
+					</td>
+					<td>
+						<a class="linkapi" href="classCZipRegularSplitNamesHandler.html">CZipRegularSplitNamesHandler</a>
+					</td>
+					<td>
+						<a class="linkapi" href="classCZipBinSplitNamesHandler.html">CZipBinSplitNamesHandler</a>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Opening&nbsp;of&nbsp;Existing&nbsp;Archive
+					</td>
+					<td>
+						The mode is automatically detected. You need to open the last volume.
+					</td>
+					<td>
+						You need to specify <a class="linkapi" href="classCZipArchive.html#a5d80f4df2aa34edda55d5fb98cffafdbaf374a2121958af7bbc33da4620b0d414">CZipArchive::zipOpenBinSplit</a> when
+						calling the <a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a> method. You
+						need to open the last volume.
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipString zipFileName = _T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>);</div>
+<div class="line">CZipArchive zip;    </div>
+<div class="line"><span class="comment">// specify the segment size to be 1MB</span></div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipCreateBinSplit, 1024 * 1024);    </div>
+<div class="line">zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\big.dat"</span>));</div>
+<div class="line"><span class="comment">// get the last volume name - needed for opening of the archive</span></div>
+<div class="line">zipFileName = zip.Close();</div>
+<div class="line"><span class="keywordflow">if</span> (zipFileName.IsEmpty())</div>
+<div class="line">{</div>
+<div class="line">    _tprintf(_T(<span class="stringliteral">"An unexpected error ocurred.\r\n"</span>));</div>
+<div class="line">    <span class="keywordflow">return</span>;</div>
+<div class="line">}</div>
+<div class="line"><span class="comment">// the segmentation mode needs to be specified</span></div>
+<div class="line">zip.Open(zipFileName, CZipArchive::zipOpenBinSplit);    </div>
+<div class="line">zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"big.ext"</span>));</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<h2 id="span" name="span" class="kb">
+			Spanning: Use on Removable Media</h2>
+		<ul>
+			<li>A spanned archive is located on removable media and you need to specify a callback
+				object (with the <a class="linkapi" href="classCZipArchive.html#a7f0aeb9a7368afd0689149485bd7ca5b">CZipArchive::SetSegmCallback()</a> method).
+				Setting the callback object is needed for creation as well as for extraction of
+				spanned archives.</li>
+			<li>The <a class="linkapi" href="structCZipCallback.html#a27652d72804471adabcdcc18274bbbf5">CZipCallback::Callback</a> method will be called every
+				time a disk change is needed.
+				<ul>
+					<li>The reason for calling the callback is stored in <a class="linkapi" href="structCZipSegmCallback.html#a58447cfa3f1e7b3d3343271cf2509812">CZipSegmCallback::m_iCode</a>
+						and takes one of the <a class="linkapi" href="structCZipSegmCallback.html#a6621231bf0bfde4a9646f810a01a3901">CZipSegmCallback::SegmCodes</a> values.</li>
+					<li>The value of the <code>uProgress</code> parameter of the callback method is the
+						minimum number of free bytes required on the disk. </li>
+					<li>The number of the disk needed for reading or writing is stored in
+						<br />
+						<a class="linkapi" href="structCZipSegmCallback.html#abbf4160b8992b7694cc7a686693ed452">CZipSegmCallback::m_uVolumeNeeded</a>.</li>
+					<li>To abort the archive processing, return <code>false</code> from this method. A <a class="linkapi" href="classCZipException.html">CZipException</a> will be thrown with the <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afaa9beec1f47e84433e4e60b98e922f6d0">CZipException::aborted</a>
+						code.</li>
+				</ul>
+			</li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;conio.h&gt;</span> <span class="comment">// for _getch()</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">class </span>CSpanCallback : <span class="keyword">public</span> CZipSegmCallback</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">bool</span> Callback(ZIP_SIZE_TYPE)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">switch</span> (m_iCode)</div>
+<div class="line">        {</div>
+<div class="line">            <span class="keywordflow">case</span> scVolumeNeededForRead:</div>
+<div class="line">            <span class="keywordflow">case</span> scVolumeNeededForWrite:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"Insert the disk number %d\r\n"</span>), m_uVolumeNeeded);</div>
+<div class="line">                <span class="keywordflow">break</span>;</div>
+<div class="line">            <span class="keywordflow">case</span> scFileNameDuplicated:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"The file with the given name already \</span></div>
+<div class="line"><span class="stringliteral">exists on the disk.\r\n"</span>));</div>
+<div class="line">                <span class="keywordflow">break</span>;</div>
+<div class="line">            <span class="keywordflow">case</span> scCannotSetVolLabel:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"Cannot set the disk volume label. \</span></div>
+<div class="line"><span class="stringliteral">Check if the disk is not write-protected.\r\n"</span>));</div>
+<div class="line">                <span class="keywordflow">break</span>;</div>
+<div class="line">            <span class="keywordflow">case</span> scFileCreationFailure:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"Could not create file. \</span></div>
+<div class="line"><span class="stringliteral">Check if the disk is not write-protected.\r\n"</span>));             </div>
+<div class="line">                <span class="keywordflow">break</span>;                </div>
+<div class="line">            <span class="keywordflow">default</span>:</div>
+<div class="line">                _tprintf(_T(<span class="stringliteral">"An unexpected code detected.\r\n"</span>));</div>
+<div class="line">                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">            <span class="keywordflow">break</span>;</div>
+<div class="line">        }         </div>
+<div class="line">        _getch();</div>
+<div class="line">        _tprintf(_T(<span class="stringliteral">"...\r\n"</span>));</div>
+<div class="line">        <span class="comment">// return false here to abort processing</span></div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">    }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> Spanning()</div>
+<div class="line">{    </div>
+<div class="line">    LPCTSTR zipFileName = _T(<span class="stringliteral">"a:\\test.zip"</span>);</div>
+<div class="line">    CZipArchive zip;    </div>
+<div class="line">    CSpanCallback callback;</div>
+<div class="line">    <span class="comment">// set the callback before creating the archive</span></div>
+<div class="line">    zip.SetSegmCallback(&amp;callback);</div>
+<div class="line">    zip.Open(zipFileName, CZipArchive::zipCreateSpan);    </div>
+<div class="line">    zip.AddNewFile(_T(<span class="stringliteral">"C:\\Temp\\big.dat"</span>));</div>
+<div class="line">    zip.Close();    </div>
+<div class="line">    <span class="comment">// the callback is already set</span></div>
+<div class="line">    <span class="comment">// and the segmentation type will be auto-detected as spanning</span></div>
+<div class="line">    <span class="comment">// (the archive is on a removable device)</span></div>
+<div class="line">    zip.Open(zipFileName);</div>
+<div class="line">    zip.ExtractFile(0, _T(<span class="stringliteral">"C:\\Temp"</span>), <span class="keyword">false</span>, _T(<span class="stringliteral">"big.ext"</span>));</div>
+<div class="line">    zip.Close();</div>
+<div class="line">}</div>
+</div><!-- fragment --> </div>
+		<h3 id="spanLast" name="spanLast" class="kb">
+			Detecting Last Disk in Drive</h3>
+		When extracting a spanned archive, you need to insert the last disk into the drive
+		before opening the archive. The central directory written on it and the extraction
+		starts from reading the central directory. There is no simple way to detect, if
+		the right disk is in the drive, but the ZipArchive Library throws the <a class="linkapi" href="classCZipException.html">CZipException</a> with the <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afa62c9a10984629c00e661ef7e218dc1b0">CZipException::cdirNotFound</a>
+		code, when the archive you are trying to open does not have the central directory.
+		In case of a spanned archive, it may mean that a user has not inserted the last
+		disk into the drive.
+		<h3 id="spanRecover" name="spanRecover" class="kb">
+			Recovering from Invalid Disk Inserted</h3>
+		<h4 id="spanRecoverLast" name="spanRecoverLast" class="kb">
+			Invalid Last Disk</h4>
+		To recover from the situation when a user does not insert the last disk:
+		<ul class="dec">
+			<li>Catch the exception and verify its code. The code should be <a class="linkapi" href="classCZipException.html#aa4f3fc7c792e57a0a6881b6ea48725afa62c9a10984629c00e661ef7e218dc1b0">CZipException::cdirNotFound</a>. Other codes may indicate a corrupted archive
+				or file access problem.</li>
+			<li>Close the archive with the <a class="linkapi" href="classCZipArchive.html#af5a360f32249b89ff32b69ad436416b7">CZipArchive::Close()</a> method,
+				passing <a class="linkapi" href="classCZipArchive.html#aef1712a894641d675903b34c815de802a64383ab2ba2586c69af5add1a1c6d665">CZipArchive::afAfterException</a> as the <code>iAfterException</code>
+				parameter.</li>
+			<li>Prompt the user for the last disk again.</li>
+			<li>Open the archive.</li>
+			<li>Repeat the process until the archive was successfully opened or the user cancelled
+				the operation.</li>
+		</ul>
+		<h4 id="spanRecoverExtract" name="spanRecoverExtract" class="kb">
+			Invalid Last Disk</h4>
+		To recover from the situation when a user does not insert a correct disk during
+		extraction:
+		<ul class="dec">
+			<li>Catch the exception.</li>
+			<li>Call the <a class="linkapi" href="classCZipArchive.html#a496a2104e2557858c05e722158c865e0">CZipArchive::ResetCurrentVolume()</a>. This will
+				also close any file opened for extraction.</li>
+			<li>Prompt the user for the correct disk.</li>
+			<li>Retry the extraction of the file from the beginning.</li>
+		</ul>
+		<h2 id="callbacks" name="callbacks" class="kb">
+			Callbacks Called</h2>
+		While processing a segmented archive the following callbacks that are called are
+		the most important:
+		<ul class="non">
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a4e48c2f0d8f6bd1de700e56927c55de8">CZipActionCallback::cbAdd</a></li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a10ea05b0de77ed3df7719cd321c0d22f">CZipActionCallback::cbAddTmp</a></li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734aa4792345795d95ef78e25826b893b58c">CZipActionCallback::cbAddStore</a></li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a6b92922ec8ce88d0ad043878fb096d97">CZipActionCallback::cbExtract</a></li>
+			<li><a class="linkapi" href="structCZipActionCallback.html#a987550875690c39c4278cc65e4f11734a93b49690cff50f46013d99a76357ef78">CZipActionCallback::cbSave</a></li>
+		</ul>
+		To read more about using callback objects, see <a class="linkkb" href="0610231200.html">Progress Notifications: Using Callback Objects</a>.
+		<h2 id="api" name="api" class="kb">
+			See Also API Links</h2>
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#a3d3ae4cf7f48f19120924ebe1e4b7386">CZipArchive::Open(LPCTSTR)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a7f0aeb9a7368afd0689149485bd7ca5b">CZipArchive::SetSegmCallback()</a></li>
+			<li><a class="linkapi" href="structCZipSegmCallback.html">CZipSegmCallback</a></li>
+			<li><a class="linkapi" href="classCZipSplitNamesHandler.html">CZipSplitNamesHandler</a> </li>
+			<li><a class="linkapi" href="classCZipArchive.html#a0cab93e835c4d5b3309f5672416f673b">CZipArchive::SetSplitNamesHandler(CZipSplitNamesHandler&amp;)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a35f9982583097cbbf23892e46196060e">CZipArchive::SetSplitNamesHandler(CZipSplitNamesHandler*, 				bool)</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#abe06c912f3dbacfe3d327d7c7a2d0e88">CZipArchive::SetAdvanced()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610051553</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>

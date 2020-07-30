@@ -1,0 +1,2 @@
+The complete functionality of the ZipArchive Library (with Unicode, Zip64, AES, BZIP2 and Seeking) is available in the full version.
+To evaluate the full version, please visit http://www.artpol-software.com/DownloadTrial.aspx

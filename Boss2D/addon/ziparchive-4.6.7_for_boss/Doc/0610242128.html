@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>ZipArchive:
+        Requesting Information, Predicting Names and Sizes
+    </title>
+    <link href="articles.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    body
+    {
+    	font-family: verdana, arial, helvetica, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <div class="kbabody">
+        <div class="kbatitle">
+            Requesting Information, Predicting Names and Sizes
+        </div>
+        <div class="kbaappliesto">
+            Applies To: <strong>All</strong>
+        </div>
+        <div class="kbaindex">
+            <ul class="kbaindex">
+
+<li><a class="linkindex" href="#info">Requesting Information</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#file">File Information</a>
+<ul class="kbaindex">
+<li><a class="linkindex" href="#filename">Filename Conversion</a></li>
+<li><a class="linkindex" href="#local">Local Header Information</a></li>
+<li><a class="linkindex" href="#iter">Iterating Over Items</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#archive">Archive Information</a></li>
+</ul>
+</li>
+<li><a class="linkindex" href="#predicting">Predicting Names and Sizes</a></li></ul>
+
+        </div>
+        <div class="kbacontents">
+            
+		<h2 id="info" name="info" class="kb">
+			Requesting Information</h2>
+		<h3 id="file" name="file" class="kb">
+			File Information</h3>
+		You can request different types of information about files inside an archive. To
+		find out about types of information you may retrieve, examine members of the <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> class. To request the <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a>
+		object for a particular file, call one of the following methods:
+		<ul>
+			<li><a class="linkapi" href="classCZipArchive.html#a4f45735ce166479df3abed994990cd88">CZipArchive::GetFileInfo(CZipFileHeader&amp;, ZIP_INDEX_TYPE)</a>
+				- this method copies an information about the file to the provided <a class="linkapi" href="classCZipFileHeader.html">CZipFileHeader</a> object. Modifications to this object will not affect the
+				original header.</li>
+			<li><a class="linkapi" href="classCZipArchive.html#a6353af2ac9da3af17eb9dd929d3a6b31">CZipArchive::GetFileInfo(ZIP_INDEX_TYPE)</a> - this method
+				returns a pointer to the entry in the central directory. This method is provided
+				for fast access to avoid information copying. You should limit the modifications
+				of this object to the following operations:
+				<ul>
+					<li>renaming files (see <a class="linkkb" href="0610231944.html#rename">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a>),</li>
+					<li>comment change (see <a class="linkkb" href="0610231944.html#comment">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a>),</li>
+					<li>extra fields modifications in the central directory (see <a class="linkkb" href="0610242300.html">Providing Custom Data: Extra Fields</a>),</li>
+					<li>file header time stamp change (see <a class="linkkb" href="0610231944.html#time">Modification of Archives: Replacing, Renaming, Deleting and Changing Data</a>).</li>
+				</ul>
+			</li>
+			<li><a class="linkapi" href="classCZipArchive.html#a51e1539faed798f0524cbfa7c47f5513">CZipArchive::operator[]()</a> - works the same as the above
+				methods.</li>
+		</ul>
+		<h4 id="filename" name="filename" class="kb">
+			Filename Conversion</h4>
+		When calling the <a class="linkapi" href="classCZipFileHeader.html#a410c79afb4cfac9e6e318bff9c64b04e">CZipFileHeader::GetFileName()</a> method
+		for the first time, the conversion takes place which converts the filename from
+		an internal representation to the <code>CZipString</code> object. This conversion
+		takes into account filename code pages (see <a class="linkkb" href="0610051525.html">Unicode Support: Using Non-English Characters in Filenames, Comments and Passwords</a>)
+		and directory separators (to match the current platform's default directory separator).
+		<h4 id="local" name="local" class="kb">
+			Local Header Information</h4>
+		If you wish to obtain the data that is stored in a local header, you need to make
+		sure that the local information has already been read before. The local information
+		is read when you start extracting a file. If you don't want to extract a file, but
+		you still want to read the local information, call the <a class="linkapi" href="classCZipArchive.html#a42f8d46698929c299f02c7320ad654d1">CZipArchive::ReadLocalHeader()</a>
+		method. The following fields hold the local information:
+		<ul>
+			<li><a class="linkapi" href="classCZipFileHeader.html#aef50a33f370b40c87dad9c906d903905">CZipFileHeader::m_uLocalComprSize</a></li>
+			<li><a class="linkapi" href="classCZipFileHeader.html#ae02071d5948170132a8f47eef27e2066">CZipFileHeader::m_uLocalUncomprSize</a></li>
+			<li><a class="linkapi" href="classCZipFileHeader.html#ae4cbf85b55f10be47fa3782a0bb812b8">CZipFileHeader::m_aLocalExtraData</a></li>
+		</ul>
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">    CZipArchive zip;</div>
+<div class="line">    <span class="comment">// open an existing archive</span></div>
+<div class="line">    zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">    <span class="keywordflow">for</span> (ZIP_INDEX_TYPE i = 0; i &lt; zip.GetCount(); i++)</div>
+<div class="line">    {</div>
+<div class="line">        CZipFileHeader* info = zip[i];</div>
+<div class="line">        LPCTSTR name = info-&gt;GetFileName();</div>
+<div class="line">        ZIP_SIZE_TYPE uncomprSize = info-&gt;m_uUncomprSize;</div>
+<div class="line">        ZIP_SIZE_TYPE comprSize = info-&gt;m_uComprSize;        </div>
+<div class="line"></div>
+<div class="line">        <span class="comment">// read some sample local information</span></div>
+<div class="line">        zip.ReadLocalHeader(i);</div>
+<div class="line">        <span class="keywordtype">int</span> extraSize = info-&gt;m_aLocalExtraData.GetTotalSize();</div>
+<div class="line"><span class="preprocessor">#ifdef _ZIP_ZIP64</span></div>
+<div class="line"><span class="preprocessor"></span>        _tprintf(_T(<span class="stringliteral">"%I64u: Name: %s Size: %I64u Compressed Size: %I64u\r\n\</span></div>
+<div class="line"><span class="stringliteral">    Size of Local Extra Data: %d\r\n"</span>),</div>
+<div class="line">            i, name, uncomprSize, comprSize, extraSize);</div>
+<div class="line"><span class="preprocessor">#else</span></div>
+<div class="line"><span class="preprocessor"></span>        _tprintf(_T(<span class="stringliteral">"%u: Name: %s Size: %u Compressed Size: %u\r\n\</span></div>
+<div class="line"><span class="stringliteral">    Size of Local Extra Data: %d\r\n"</span>),</div>
+<div class="line">            i, name, uncomprSize, comprSize, extraSize);</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="preprocessor">    }</span></div>
+</div><!-- fragment --> </div>
+		<h4 id="iter" name="iter" class="kb">
+			Iterating Over Items</h4>
+		To find out about the number of files in an archive, use the <a class="linkapi" href="classCZipArchive.html#ab3bdd0322dd12c40434cd8f0d9ad2523">CZipArchive::GetCount()</a>
+		method. This method and the <code>GetSize()</code> and <code>GetCount()</code> methods
+		(collections' members) in some implementations, return an unsigned type. To check
+		the data type used by collections, examine the <span class="preproc">ZIP_ARRAY_SIZE_TYPE</span>
+		definition. You should pay special attention when reverse-iterating over such collections.
+		If <span class="preproc">ZIP_ARRAY_SIZE_TYPE</span> is represented by an unsigned
+		type, the iteration variable will never be negative and the archive will report
+		an invalid index when an overflow happens. If the number of items is the maximum
+		value for the unsigned type, the loop may run forever. The code below represents
+		an <strong style="color: Red">invalid code</strong>.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line"><span class="comment">/* THIS IS A BAD CODE. */</span></div>
+<div class="line"><span class="comment">/* IT WILL THROW AN EXCEPTION OR RUN FOREVER */</span></div>
+<div class="line"></div>
+<div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">ZIP_INDEX_TYPE uMax = zip.GetCount();</div>
+<div class="line"><span class="comment">// incorrect reverse iteration</span></div>
+<div class="line"><span class="keywordflow">for</span> (ZIP_INDEX_TYPE i = uMax - 1; i &gt;= 0; i--)</div>
+<div class="line">{</div>
+<div class="line">    CZipFileHeader info;</div>
+<div class="line">    zip.GetFileInfo(info, i);</div>
+<div class="line">     <span class="comment">//... do something</span></div>
+<div class="line">}</div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<p />
+		The <strong style="color: Green">correct way</strong> for reverse iteration illustrates
+		the code below.
+		<div class="codetitle">Sample Code</div>
+<div class="textblock"><div class="fragment"><div class="line">CZipArchive zip;</div>
+<div class="line">zip.Open(_T(<span class="stringliteral">"C:\\Temp\\test.zip"</span>));</div>
+<div class="line">ZIP_INDEX_TYPE i = zip.GetCount();</div>
+<div class="line"><span class="comment">// correct reverse iteration</span></div>
+<div class="line"><span class="keywordflow">while</span> (i &gt; 0)</div>
+<div class="line">{</div>
+<div class="line">    i--;</div>
+<div class="line">    CZipFileHeader info;</div>
+<div class="line">    zip.GetFileInfo(info, i);</div>
+<div class="line">    <span class="comment">// ... do something</span></div>
+<div class="line">}    </div>
+<div class="line">zip.Close();</div>
+</div><!-- fragment --> </div>
+		<p />
+		Please pay attention when you use your code in both MFC and STL versions, because
+		you will use both signed and unsigned types as <span class="preproc">ZIP_ARRAY_SIZE_TYPE</span>.
+		This is caused by types used by MFC and STL libraries. Operations that work on these
+		types and produce negative results will be interpreted differently in both versions.
+		<p />
+		When you don't use Zip64 extensions (see <a class="linkkb" href="0610051629.html">Zip64 Format: Crossing the Limits of File Sizes and Number of Files and Segments</a>),
+		you can use a signed type (<code>int</code>) for the file index and volume number
+		types. Just make sure that <span class="preproc">_ZIP_STRICT_U16</span> is not defined
+		in <span class="file">_features.h</span> file.
+		<h3 id="archive" name="archive" class="kb">
+			Archive Information</h3>
+		The ZipArchive Library provides among others the following methods for requesting
+		archive-related information:
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#ac50bc9678b14ae075d2c252f0b38bd0d">CZipArchive::IsReadOnly()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a871adedb7077a464d52a2ab6ef36b4b7">CZipArchive::IsModified()</a></li>
+			<li><a class="linkapi" href="classCZipStorage.html">CZipStorage</a> methods accessible through <a class="linkapi" href="classCZipArchive.html#af2cb18a0c834f64284f6485b01df50a8">CZipArchive::GetStorage()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#abc708f54f7523070c2043aed3e92e263">CZipArchive::GetOccupiedSpace()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#afbf6eb8ce378ec0812f0ccb7827e8e79">CZipArchive::GetCentralDirInfo()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ae67accf5d79f14ffc57ec17833dc7623">CZipArchive::GetCentralDirSize()</a></li>
+		</ul>
+		<h2 id="predicting" name="predicting" class="kb">
+			Predicting Names and Sizes</h2>
+		The ZipArchive Library provides the following methods for predicting names and sizes:
+		<ul class="non">
+			<li><a class="linkapi" href="classCZipArchive.html#a9d875516849ce5632a024b3acb4613cf">CZipArchive::PredictFileNameInZip()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a65a7724e8724a6a0c1f0465ec382e1ff">CZipArchive::PredictMaximumFileSizeInArchive()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#ae34cef405c28c66cbf7fc6f1e45b09d6">CZipArchive::PredictExtractedFileName()</a></li>
+			<li><a class="linkapi" href="classCZipArchive.html#a136b89cc32a24b3f358f592c9d060a78">CZipArchive::WillBeDuplicated()</a></li>
+		</ul>
+	
+        </div>
+        <div class="kbafooter">
+            <strong>Article ID:&nbsp;0610242128</strong>
+        </div>
+    </div>
+   <div style="font-size:11px; text-align:center;border-top:solid 1px gray;width:400px;margin:10px auto 5px auto;color:gray">
+Copyright &copy;&nbsp;2000 - 2019 Artpol Software - Tadeusz Dracz
+</div>
+</body>
+</html>
