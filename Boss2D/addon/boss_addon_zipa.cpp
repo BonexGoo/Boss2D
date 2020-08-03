@@ -48,9 +48,16 @@ namespace BOSS
 
             try
             {
-                mZip.Open(zippath, CZipArchive::zipOpenReadOnly);
+                if(!String::FromWChars(zippath).Right(4).CompareNoCase(".zip"))
+                    mZip.Open(zippath, CZipArchive::zipOpenReadOnly);
+                else mZip.Open(zippath, CZipArchive::zipOpenBinSplit);
             }
-            catch(CZipException e) {}
+            catch(CZipException e)
+            {
+                auto ErrorW = e.GetErrorDescription();
+                String Error = String::FromWChars((LPCTSTR) ErrorW);
+                BOSS_ASSERT(Error, false);
+            }
             if(filecount) *filecount = mZip.GetCount();
         }
         ~ZipaClass()

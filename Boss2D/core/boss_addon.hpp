@@ -252,6 +252,8 @@ namespace BOSS
         class Zipa
         {
         public:
+            // 단일 ZIP파일인 경우엔 L"*.zip"을 zippath로 전달
+            // 분할 ZIP파일인 경우엔 L"*.zip.001"에서 L"*.zip.010"까지 존재하는 경우 L"*.zip.010"을 zippath로 전달
             static id_zipa Create(wchars zippath, sint32* filecount = nullptr);
             static void Release(id_zipa zipa);
             static bool Extract(id_zipa zipa, sint32 fileindex, wchars newzippath = nullptr);
