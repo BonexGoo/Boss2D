@@ -940,21 +940,16 @@ namespace BOSS
 
     void Solver::Execute(bool updateobservers)
     {
-        if(mLinkedChain && 0 < mLinkedVariable.Length())
+        const float OldReliable = mReliable;
+        const SolverValue OldResult = ToReference(mResult);
+        mReliable = mOperandTop->reliable();
+        mResult = mOperandTop->result(SolverValue::MakeByInteger(0));
+
+        if(OldReliable != mReliable || OldResult.Different(mResult).ToInteger() != 0)
         {
-            const float OldReliable = mReliable;
-            const SolverValue OldResult = ToReference(mResult);
-            mReliable = mOperandTop->reliable();
-            mResult = mOperandTop->result(SolverValue::MakeByInteger(0));
             mResultMsec = Platform::Utility::CurrentTimeMsec();
-            if(OldReliable != mReliable || OldResult.Different(mResult).ToInteger() != 0)
+            if(mLinkedChain && 0 < mLinkedVariable.Length())
                 (*mLinkedChain)(mLinkedVariable).ResetTarget(this, updateobservers);
-        }
-        else
-        {
-            mReliable = mOperandTop->reliable();
-            mResult = mOperandTop->result(SolverValue::MakeByInteger(0));
-            mResultMsec = Platform::Utility::CurrentTimeMsec();
         }
     }
 

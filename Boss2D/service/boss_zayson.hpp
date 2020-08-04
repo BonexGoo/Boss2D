@@ -22,6 +22,7 @@ namespace BOSS
         void AddJson(const Context& json, const String nameheader = "");
         void AddFlush();
         void Update(chars variable, chars formula);
+        void UpdateJson(const Context& json, const String nameheader = "");
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
 
     protected:

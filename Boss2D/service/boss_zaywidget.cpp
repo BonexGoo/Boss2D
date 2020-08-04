@@ -803,6 +803,13 @@ namespace BOSS
         Self.SendFlush();
     }
 
+    void ZayWidgetDOM::UpdateJson(const Context& json)
+    {
+        auto& Self = ST();
+        Self.mDocument->UpdateJson(json);
+        Self.SendFlush();
+    }
+
     void ZayWidgetDOM::BindPipe(id_pipe pipe)
     {
         auto& Self = ST();

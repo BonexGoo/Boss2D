@@ -50,8 +50,9 @@ namespace BOSS
             for(sint32 i = 0; i < Length; ++i)
                 AddJson(json[i], nameheader + String::Format("%d.", i));
             // 수량정보
+            const String Key = nameheader + "count";
             auto& NewSolver = mSolvers.AtAdding();
-            NewSolver.Link(mChain, nameheader + "count");
+            NewSolver.Link(mChain, Key);
             NewSolver.Parse(String::FromInteger(Length));
         }
         else if(chars CurValue = json.GetString(nullptr))
@@ -79,6 +80,43 @@ namespace BOSS
             CurSolver->Execute(true);
         }
         else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", variable), false);
+    }
+
+    void ZaySonDocument::UpdateJson(const Context& json, const String nameheader)
+    {
+        if(auto Length = json.LengthOfNamable())
+        {
+            for(sint32 i = 0; i < Length; ++i)
+            {
+                chararray GetKey;
+                auto& ChildJson = json(i, &GetKey);
+                UpdateJson(ChildJson, nameheader + String::Format("%s.", &GetKey[0]));
+            }
+        }
+        else if(auto Length = json.LengthOfIndexable())
+        {
+            for(sint32 i = 0; i < Length; ++i)
+                UpdateJson(json[i], nameheader + String::Format("%d.", i));
+            // 수량정보
+            const String Key = nameheader + "count";
+            if(auto CurSolver = Solver::Find(mChain, Key))
+            {
+                CurSolver->Parse(String::FromInteger(Length));
+                CurSolver->Execute(true);
+            }
+            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", Key), false);
+        }
+        else if(chars CurValue = json.GetString(nullptr))
+        {
+            const String Key = nameheader.Left(nameheader.Length() - 1);
+            if(auto CurSolver = Solver::Find(mChain, Key))
+            {
+                CurSolver->Parse(String::Format("\"%s\"", CurValue));
+                CurSolver->Execute(true);
+            }
+            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", Key), false);
+            PostProcess(Key, CurValue);
+        }
     }
 
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
