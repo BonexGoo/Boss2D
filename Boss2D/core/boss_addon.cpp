@@ -327,6 +327,7 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Ssl, ToSHA256, chars, return "", bytes, sint32, bool)
     BOSS_DEFINE_ADDON_FUNCTION(Ssl, ToBASE64, chars, return "", bytes, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Ssl, FromBASE64, buffer, return nullptr, chars)
+    BOSS_DEFINE_ADDON_FUNCTION(Ssl, ToAES128, chars, return "", bytes, sint32, bool, chars, chars)
 
     id_md5 AddOn::Ssl::CreateMD5(void)
     {return Core_AddOn_Ssl_CreateMD5()();}
@@ -348,6 +349,9 @@ namespace BOSS
 
     buffer AddOn::Ssl::FromBASE64(chars base64)
     {return Core_AddOn_Ssl_FromBASE64()(base64);}
+
+    chars AddOn::Ssl::ToAES128(bytes binary, sint32 length, bool base64, chars key, chars iv)
+    {return Core_AddOn_Ssl_ToAES128()(binary, length, base64, key, iv);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Tesseract_Error() {BOSS_ASSERT("Tesseract애드온이 준비되지 않았습니다", false);}

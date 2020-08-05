@@ -12,9 +12,12 @@ bool __LINK_ADDON_SSL__() {return true;} // 링크옵션 /OPT:NOREF가 안되서
 extern "C"
 {
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/bio.h>
-    #include <addon/openssl-1.1.1a_for_boss/include/openssl/evp.h>
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/buffer.h>
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/crypto.h>
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/aes.h>
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/evp.h>
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/err.h>
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/ssl.h>
 }
 
 #include <boss.hpp>
@@ -30,6 +33,7 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, ToSHA256, chars, bytes, sint32, bool)
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, ToBASE64, chars, bytes, sint32)
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, FromBASE64, buffer, chars)
+    BOSS_DECLARE_ADDON_FUNCTION(Ssl, ToAES128, chars, bytes, sint32, bool, chars, chars)
 
     static autorun Bind_AddOn_Ssl()
     {
@@ -40,6 +44,7 @@ namespace BOSS
         Core_AddOn_Ssl_ToSHA256() = Customized_AddOn_Ssl_ToSHA256;
         Core_AddOn_Ssl_ToBASE64() = Customized_AddOn_Ssl_ToBASE64;
         Core_AddOn_Ssl_FromBASE64() = Customized_AddOn_Ssl_FromBASE64;
+        Core_AddOn_Ssl_ToAES128() = Customized_AddOn_Ssl_ToAES128;
         return true;
     }
     static autorun _ = Bind_AddOn_Ssl();
@@ -169,6 +174,43 @@ namespace BOSS
     buffer Customized_AddOn_Ssl_FromBASE64(chars base64)
     {
         return BASE64Class::Base64Decode(base64);
+    }
+
+    chars Customized_AddOn_Ssl_ToAES128(bytes binary, sint32 length, bool base64, chars key, chars iv)
+    {
+        EVP_CIPHER_CTX ctx;
+        memset(&ctx, 0, sizeof(EVP_CIPHER_CTX));
+
+        EVP_CIPHER_CTX_init(&ctx);
+	    EVP_EncryptInit(&ctx, EVP_aes_128_cbc(), (bytes) key, (bytes) iv);
+
+        sint32 BufferSize = length + EVP_MAX_BLOCK_LENGTH;
+        uint08* Cipher = new uint08[BufferSize];
+        memset(Cipher, 0, length);
+
+        sint32 UpdateLength = 0, FinalUpdate = 0;
+        EVP_EncryptUpdate(&ctx, Cipher, &UpdateLength, binary, length);
+	    EVP_EncryptFinal(&ctx, Cipher + UpdateLength, &FinalUpdate);
+        const sint32 CipherSize = UpdateLength + FinalUpdate;
+	    EVP_CIPHER_CTX_cleanup(&ctx);
+
+        if(base64)
+        {
+            static String Result;
+            Result = BASE64Class::Base64Encode(Cipher, CipherSize);
+            delete[] Cipher;
+            return Result;
+        }
+
+        static String Result;
+        for(sint32 i = 0; i < CipherSize; ++i)
+        {
+            char OneHex[3];
+            boss_snprintf(OneHex, 3, "%02x", (uint32) Cipher[i]);
+            Result += OneHex;
+        }
+        delete[] Cipher;
+        return Result;
     }
 }
 
