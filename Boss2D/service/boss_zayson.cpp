@@ -104,7 +104,7 @@ namespace BOSS
                 CurSolver->Parse(String::FromInteger(Length));
                 CurSolver->Execute(true);
             }
-            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", Key), false);
+            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
         }
         else if(chars CurValue = json.GetString(nullptr))
         {
@@ -114,7 +114,7 @@ namespace BOSS
                 CurSolver->Parse(String::Format("\"%s\"", CurValue));
                 CurSolver->Execute(true);
             }
-            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", Key), false);
+            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars)Key), false);
             PostProcess(Key, CurValue);
         }
     }
