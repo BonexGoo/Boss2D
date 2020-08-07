@@ -614,6 +614,11 @@
             return nullptr;
         }
 
+        void Platform::Utility::SendToClipboard(chars text)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         void Platform::Utility::SetCursor(CursorRole role)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

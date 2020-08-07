@@ -465,6 +465,7 @@ ZEWidgetPipe::ZEWidgetPipe()
     mPipe = nullptr;
     mJsonPathUpdated = false;
     mConnected = false;
+    mDOMCount = 0;
     mExpandedDOM = true;
     mExpandedLog = true;
     mLogTitleTurn = false;
@@ -545,8 +546,8 @@ bool ZEWidgetPipe::TickOnce()
     }
 
     // 에러 애니메이션
-    NeedUpdate |= (mLogTitleTop.TickOnce() & mExpandedLog);
-    NeedUpdate |= (mLogDetailTop.TickOnce() & mExpandedLog);
+    NeedUpdate |= (mLogTitleTop.TickOnce() && mExpandedLog);
+    NeedUpdate |= (mLogDetailTop.TickOnce() && mExpandedLog);
 
     mConnected = NewConnected;
     return NeedUpdate;
@@ -716,6 +717,16 @@ ZEWidgetPipe::LogElement* ZEWidgetPipe::NextLogElement(LogElement* element)
     while(Result && !Result->valid())
         Result = Result->next();
     return Result;
+}
+
+void ZEWidgetPipe::SetDOMSearch(chars text)
+{
+    mDOMSearch = text;
+}
+
+void ZEWidgetPipe::SetDOMCount(sint32 count)
+{
+    mDOMCount = count;
 }
 
 zayeditorData::zayeditorData() : mEasySaveEffect(updater())
@@ -895,18 +906,67 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
     auto& DOM = mPipe.dom();
     if(0 < DOM.Count())
     {
-        const sint32 ElementHeight = 22;
-        const sint32 ViewWidth = 500;
-        const sint32 ViewHeight = (mPipe.expanddom())? DOM.Count() * ElementHeight : 0;
-        ZAY_LTRB(panel, 10, 10, 10 + ViewWidth, Math::Min(10 + 15 + ViewHeight, panel.h() - 10))
+        static const sint32 TitleHeight = 22;
+        static const sint32 ElementHeight = 22;
+        static const sint32 ViewWidth = 500;
+        const sint32 ViewHeight = (mPipe.expanddom())? mPipe.domcount() * ElementHeight : 0;
+        ZAY_LTRB(panel, 10, 10, 10 + ViewWidth, Math::Min(10 + TitleHeight + ViewHeight, panel.h() - 10))
         {
             // 타이틀
-            ZAY_LTRB_UI_SCISSOR(panel, 0, 0, panel.w(), 15, "dom-title")
+            ZAY_LTRB_UI_SCISSOR(panel, 0, 0, panel.w(), TitleHeight, "dom-title")
             {
                 ZAY_RGB(panel, 0, 0, 0)
                     panel.fill();
                 ZAY_RGB(panel, 255, 255, 255)
-                    panel.text(2, panel.h() / 2 - 2, "dom", UIFA_LeftMiddle);
+                    panel.text(5, panel.h() / 2 - 2, "dom", UIFA_LeftMiddle);
+
+                // 검색기능
+                ZAY_XYWH_UI(panel, panel.w() - 50 - 200, 2, 200, panel.h() - 5, "dom-search",
+                    ZAY_GESTURE_VNT(v, n, t, this)
+                    {
+                        if(t == GT_Pressed)
+                        {
+                            auto CurRect = v->rect(n);
+                            String CurText = mPipe.domsearch();
+                            if(Platform::Popup::OpenEditTracker(CurText, UIET_String, CurRect.l, CurRect.t, CurRect.r, CurRect.b))
+                            {
+                                mPipe.SetDOMSearch(CurText);
+                                v->invalidate();
+                            }
+                        }
+                    })
+                {
+                    const bool IsFocused = !!(panel.state("dom-search") & PS_Focused);
+                    ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                        panel.fill();
+                    ZAY_LTRB(panel, 3, 0, panel.w(), panel.h())
+                    ZAY_RGB(panel, 0, 0, 0)
+                        panel.text(mPipe.domsearch(), UIFA_LeftMiddle, UIFE_Right);
+                }
+
+                // 검색어제거
+                ZAY_XYWH_UI(panel, panel.w() - 50 + 1, 0, 25, panel.h(), "dom-search-x",
+                    ZAY_GESTURE_T(t, this)
+                    {
+                        if(t == GT_InReleased)
+                            mPipe.SetDOMSearch("");
+                    })
+                ZAY_LTRB(panel, 3, 3, panel.w() - 3, panel.h() - 4)
+                {
+                    const bool IsFocused = !!(panel.state("dom-search-x") & PS_Focused);
+                    const bool IsDragging = !!(panel.state("dom-search-x") & PS_Dragging);
+                    ZAY_MOVE_IF(panel, 0, 1, IsDragging)
+                    {
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 96 : 64)
+                            panel.fill();
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                        {
+                            panel.text(panel.w() / 2 + 1, panel.h() / 2 - 1, "×");
+                            panel.rect(1);
+                        }
+                    }
+                }
+
                 // 열기/닫기
                 ZAY_LTRB_UI(panel, panel.w() - 25, 0, panel.w(), panel.h(), "dom-expand",
                     ZAY_GESTURE_T(t, this)
@@ -917,20 +977,24 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                 ZAY_LTRB(panel, 3, 3, panel.w() - 3, panel.h() - 4)
                 {
                     const bool IsFocused = !!(panel.state("dom-expand") & PS_Focused);
-                    ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 96 : 64)
-                        panel.fill();
-                    ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                    const bool IsDragging = !!(panel.state("dom-expand") & PS_Dragging);
+                    ZAY_MOVE_IF(panel, 0, 1, IsDragging)
                     {
-                        ZAY_FONT(panel, 0.75)
-                            panel.text((mPipe.expanddom())? "▲" : "▼");
-                        panel.rect(1);
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 96 : 64)
+                            panel.fill();
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                        {
+                            ZAY_FONT(panel, 0.75)
+                                panel.text((mPipe.expanddom())? "▲" : "▼");
+                            panel.rect(1);
+                        }
                     }
                 }
             }
 
             // 바디
             if(mPipe.expanddom())
-            ZAY_LTRB_SCISSOR(panel, 0, 15, panel.w(), panel.h())
+            ZAY_XYWH_SCISSOR(panel, 0, TitleHeight, panel.w(), Math::Max(ElementHeight, panel.h() - TitleHeight))
             {
                 ZAY_RGBA(panel, 0, 0, 0, 128)
                     panel.fill();
@@ -947,51 +1011,118 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                             const sint32 VectorY = (y - v->oldxy(n).y) * 20;
                             v->moveScroll(n, 0, FirstY + y, 0, FirstY + y + VectorY, 2.0, true);
                         }
+                        else if(t == GT_WheelUp)
+                        {
+                            auto PosY = v->scrollpos("dom-body-scroll").y;
+                            v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY + 1000, 2.0, true);
+                        }
+                        else if(t == GT_WheelDown)
+                        {
+                            auto PosY = v->scrollpos("dom-body-scroll").y;
+                            v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY - 1000, 2.0, true);
+                        }
                     }, 5, 20)
                 {
-                    // 출력
-                    bool NeedUpdate = false;
-                    const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-                    for(sint32 i = 0, iend = DOM.Count(); i < iend; ++i)
+                    // 페이로드를 구성
+                    struct Payload
                     {
-                        chararray Variable;
-                        auto& CurDOM = *DOM.AccessByOrder(i, &Variable);
-                        String Text;
-                        if(!CurDOM.mResult.Compare(CurDOM.mFormula) || !CurDOM.mResult.Compare('\'' + CurDOM.mFormula + '\''))
-                            Text = String::Format("%s = %s", &Variable[0], (chars) CurDOM.mResult);
-                        else Text = String::Format("%s = %s ← %s", &Variable[0], (chars) CurDOM.mResult, (chars) CurDOM.mFormula);
+                        zayeditorData* self {nullptr};
+                        ZayPanel* panel {nullptr};
+                        sint32 i {0};
+                        sint32 count {0};
+                        const uint64 msec {Platform::Utility::CurrentTimeMsec()};
+                        const String* search {nullptr};
+                        bool needupdate {false};
+                    } NewPayload;
+                    NewPayload.self = this;
+                    NewPayload.panel = &panel;
+                    if(0 < mPipe.domsearch().Length())
+                        NewPayload.search = &mPipe.domsearch();
 
-                        const String UIName = String::Format("dom-body-scroll.%d", i);
-                        ZAY_XYWH_UI(panel, 0, ElementHeight * i, panel.w(), ElementHeight, UIName,
-                            ZAY_GESTURE_VNT(v, n, t, Text)
-                            {
-                                if(t == GT_ToolTip)
-                                    Platform::Popup::ShowToolTip(Text);
-                                else if(t == GT_Pressed)
-                                    v->stopScroll("dom-body-scroll", true);
-                                else if(t == GT_WheelUp)
-                                {
-                                    auto PosY = v->scrollpos("dom-body-scroll").y;
-                                    v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY + 500, 2.0, true);
-                                }
-                                else if(t == GT_WheelDown)
-                                {
-                                    auto PosY = v->scrollpos("dom-body-scroll").y;
-                                    v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY - 500, 2.0, true);
-                                }
-                            })
+                    // DOM순회
+                    DOM.AccessByCallback(
+                        [](const MapPath* path, ZEWidgetPipe::Document* doc, payload data)->void
                         {
-                            const sint32 CurAni = 255 * Math::Min(1000, CurMsec - CurDOM.mUpdateMsec) / 1000;
-                            NeedUpdate |= (CurAni < 255);
+                            // 검색어처리
+                            auto& Data = *((Payload*) data);
+                            chararray Variable;
+                            if(Data.search)
+                            {
+                                Variable = path->GetPath();
+                                if(String(&Variable[0]).Find(0, *Data.search) == -1)
+                                {
+                                    Data.i++;
+                                    return;
+                                }
+                            }
 
-                            if(i & 1)
-                            ZAY_RGBA(panel, 0, 0, 0, 32)
-                                panel.fill();
-                            ZAY_RGB(panel, 255, CurAni, CurAni)
-                                panel.text(" ● " + Text, UIFA_LeftMiddle, UIFE_Right);
-                        }
+                            // 한줄처리
+                            ZAY_XYWH_SCISSOR(*Data.panel, 0, Data.count * ElementHeight, Data.panel->w(), ElementHeight)
+                            {
+                                if(!Data.search)
+                                    Variable = path->GetPath();
+
+                                const String VariableText = &Variable[0];
+                                String FormulaText;
+                                if(!doc->mResult.Compare(doc->mFormula) || !doc->mResult.Compare('\'' + doc->mFormula + '\''))
+                                    FormulaText = String::Format("%s = %s", (chars) VariableText, (chars) doc->mResult);
+                                else FormulaText = String::Format("%s = %s ← %s", (chars) VariableText, (chars) doc->mResult, (chars) doc->mFormula);
+                                const String FullText = " ● " + FormulaText;
+                                const bool NeedToolTop = (Data.panel->w() < Platform::Graphics::GetStringWidth(FullText));
+
+                                const String UIName = String::Format("dom-body-scroll.%d", Data.i);
+                                ZAY_INNER_UI(*Data.panel, 0, UIName,
+                                    ZAY_GESTURE_VNT(v, n, t, VariableText, FormulaText, NeedToolTop)
+                                    {
+                                        if(t == GT_ToolTip)
+                                        {
+                                            if(NeedToolTop)
+                                                Platform::Popup::ShowToolTip(FormulaText);
+                                        }
+                                        else if(t == GT_Pressed)
+                                        {
+                                            v->stopScroll("dom-body-scroll", true);
+                                            Platform::Utility::SendToClipboard("d." + VariableText);
+                                        }
+                                        else if(t == GT_WheelUp)
+                                        {
+                                            auto PosY = v->scrollpos("dom-body-scroll").y;
+                                            v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY + 1000, 2.0, true);
+                                        }
+                                        else if(t == GT_WheelDown)
+                                        {
+                                            auto PosY = v->scrollpos("dom-body-scroll").y;
+                                            v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY - 1000, 2.0, true);
+                                        }
+                                    })
+                                {
+                                    const sint32 CurAni = 255 * Math::Min(1000, Data.msec - doc->mUpdateMsec) / 1000;
+                                    Data.needupdate |= (CurAni < 255);
+                                    // 배경색
+                                    if(Data.i & 1)
+                                    ZAY_RGBA(*Data.panel, 0, 0, 0, 8)
+                                        Data.panel->fill();
+                                    // 포커싱효과
+                                    if(Data.panel->state(UIName) & PS_Focused)
+                                        ZAY_RGBA(*Data.panel, 0, 0, 0, 32)
+                                            Data.panel->fill();
+                                    // 스트링
+                                    ZAY_MOVE_IF(*Data.panel, 1, 1, Data.panel->state(UIName) & PS_Pressed)
+                                    ZAY_RGB(*Data.panel, 255, CurAni, CurAni)
+                                        Data.panel->text(FullText, UIFA_LeftMiddle, UIFE_Right);
+                                }
+                            }
+                            Data.i++;
+                            Data.count++;
+                        }, &NewPayload);
+
+                    // DOM갱신
+                    if(mPipe.domcount() != NewPayload.count)
+                    {
+                        mPipe.SetDOMCount(NewPayload.count);
+                        invalidate(2);
                     }
-                    if(NeedUpdate)
+                    if(NewPayload.needupdate)
                         invalidate(2);
                 }
             }
@@ -1018,21 +1149,22 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
     }
 
     const bool IsWidthTaller = (SumRect.Width() > SumRect.Height());
+    const sint32 TitleHeight = 22;
     const sint32 ViewWidth = (IsWidthTaller)? 200 : 200 * SumRect.Width() / SumRect.Height();
     const sint32 ViewHeight = (IsWidthTaller)? 200 * SumRect.Height() / SumRect.Width() : 200;
-    ZAY_XYWH(panel, panel.w() - 10 - ViewWidth, 10, ViewWidth, 15 + ViewHeight)
+    ZAY_XYWH(panel, panel.w() - 10 - ViewWidth, 10, ViewWidth, TitleHeight + ViewHeight)
     {
         // 타이틀
-        ZAY_LTRB_UI_SCISSOR(panel, 0, 0, panel.w(), 15, "map-title")
+        ZAY_LTRB_UI_SCISSOR(panel, 0, 0, panel.w(), TitleHeight, "map-title")
         {
             ZAY_RGB(panel, 0, 0, 0)
                 panel.fill();
             ZAY_RGB(panel, 255, 255, 255)
-                panel.text(2, panel.h() / 2 - 2, "map", UIFA_LeftMiddle);
+                panel.text(5, panel.h() / 2 - 2, "map", UIFA_LeftMiddle);
         }
 
         // 바디
-        ZAY_LTRB_UI_SCISSOR(panel, 0, 15, panel.w(), panel.h(), "map-body",
+        ZAY_LTRB_UI_SCISSOR(panel, 0, TitleHeight, panel.w(), panel.h(), "map-body",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, SumRect)
             {
                 if(t == GT_Moving || t == GT_MovingIdle)
@@ -1105,6 +1237,7 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
                 auto& CurXSum = XSums.AtWherever(iY);
                 const sint32 TextPosY = (TextHeight + Gap) * iY;
                 chars Text = ZEZayBox::CommentTagService::GetFocusText();
+                const Color BGColor = ZEZayBox::CommentTagService::GetFocusColor();
                 const sint32 TextWidth = Platform::Graphics::GetStringWidth(Text);
                 const Point TargetPos = ZEZayBox::CommentTagService::GetFocusPos();
 
@@ -1121,10 +1254,10 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
                 ZAY_INNER(panel, Gap / 2 - InnerGap)
                 {
                     const bool IsFocused = !!(panel.state(UIName) & PS_Focused);
-                    ZAY_RGBA(panel, 0, 0, 0, (IsFocused)? 224 : 160)
+                    ZAY_RGBA(panel, BGColor.r, BGColor.g, BGColor.b, (IsFocused)? 255 : 192)
                     ZAY_RGBA(panel, 128, 128, 128, Alpha)
                         panel.fill();
-                    ZAY_RGBA(panel, 0, 255, 0, (IsFocused)? 255 : 192)
+                    ZAY_RGBA(panel, 0, 0, 0, (IsFocused)? 255 : 192)
                     ZAY_RGBA(panel, 128, 128, 128, Alpha)
                         panel.text(Text);
                     ZAY_RGB(panel, 0, 0, 0)
@@ -1147,9 +1280,9 @@ void zayeditorData::RenderLogList(ZayPanel& panel)
     auto CurElement = mPipe.GetLogElement();
     if(CurElement)
     {
+        const sint32 TitleHeight = 23;
         const sint32 ViewWidth = 300;
-        const sint32 ViewHeight = 15;
-        ZAY_XYWH(panel, panel.w() - 10 - ViewWidth, panel.h() - 10 - ViewHeight, ViewWidth, ViewHeight)
+        ZAY_XYWH(panel, panel.w() - 10 - ViewWidth, panel.h() - 10 - TitleHeight, ViewWidth, TitleHeight)
         {
             // 타이틀
             ZAY_INNER_UI_SCISSOR(panel, 0, "log-title")
@@ -1157,9 +1290,9 @@ void zayeditorData::RenderLogList(ZayPanel& panel)
                 ZAY_RGB(panel, 0, 0, 0)
                     panel.fill();
                 ZAY_RGB(panel, 255, 255, 255)
-                    panel.text(2, panel.h() / 2 - 2, "log", UIFA_LeftMiddle);
+                    panel.text(5, panel.h() / 2 - 2, "log", UIFA_LeftMiddle);
                 // 열기/닫기
-                ZAY_LTRB_UI(panel, panel.w() - 25, 0, panel.w(), panel.h(), "log-expand",
+                ZAY_LTRB_UI(panel, panel.w() - 25 - 1, 1, panel.w() - 1, panel.h(), "log-expand",
                     ZAY_GESTURE_T(t, this)
                     {
                         if(t == GT_InReleased)
@@ -1168,13 +1301,17 @@ void zayeditorData::RenderLogList(ZayPanel& panel)
                 ZAY_LTRB(panel, 3, 3, panel.w() - 3, panel.h() - 4)
                 {
                     const bool IsFocused = !!(panel.state("log-expand") & PS_Focused);
-                    ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 96 : 64)
-                        panel.fill();
-                    ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                    const bool IsDragging = !!(panel.state("log-expand") & PS_Dragging);
+                    ZAY_MOVE_IF(panel, 0, 1, IsDragging)
                     {
-                        ZAY_FONT(panel, 0.75)
-                            panel.text((mPipe.expandlog())? "▼" : "▲");
-                        panel.rect(1);
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 96 : 64)
+                            panel.fill();
+                        ZAY_RGBA(panel, 255, 255, 255, (IsFocused)? 192 : 128)
+                        {
+                            ZAY_FONT(panel, 0.75)
+                                panel.text((mPipe.expandlog())? "▼" : "▲");
+                            panel.rect(1);
+                        }
                     }
                 }
             }

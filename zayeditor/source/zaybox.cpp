@@ -719,6 +719,7 @@ public:
 
 public:
     inline chars text() const {return mRefBox->GetComment();}
+    inline Color color() const {return mRefBox->color();}
     inline Point pos() const {return mRefBox->GetRect().Center();}
     inline CommentTag* next() {return mNext;}
 
@@ -820,6 +821,11 @@ chars ZEZayBox::CommentTagService::GetFocusText()
 {
     chars Result = gFocusedCommentTag->text();
     return Result + (Result[0] == '#');
+}
+
+Color ZEZayBox::CommentTagService::GetFocusColor()
+{
+    return gFocusedCommentTag->color();
 }
 
 Point ZEZayBox::CommentTagService::GetFocusPos()

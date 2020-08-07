@@ -1100,6 +1100,14 @@
             return Result;
         }
 
+        void Platform::Utility::SendToClipboard(chars text)
+        {
+            QClipboard* Clipboard = QApplication::clipboard();
+            Clipboard->setText(text, QClipboard::Clipboard);
+            if(Clipboard->supportsSelection())
+                Clipboard->setText(text, QClipboard::Selection);
+        }
+
         void Platform::Utility::SetCursor(CursorRole role)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);

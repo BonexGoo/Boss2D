@@ -418,6 +418,10 @@ public:
         /// @return 비트맵(nullptr은 실패)
         static id_bitmap ImageToBitmap(id_image_read image, orientationtype ori = orientationtype_fliped0);
 
+        /// @brief 클립보드에 스트링 보내기
+        /// @param text : 보낼 스트링
+        static void SendToClipboard(chars text);
+
         /// @brief 커서모양 바꾸기
         /// @param role : 커서모양
         static void SetCursor(CursorRole role);

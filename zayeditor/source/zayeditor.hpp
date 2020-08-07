@@ -167,11 +167,13 @@ public:
             LogElement* CurElement = this;
             while(CurElement = CurElement->mNext)
             {
+                const sint32 OldPos = CurElement->mRenderPos - CurElement->mRenderTarget + 0.5;
                 CurElement->mRenderPos = CurElement->mRenderPos * 0.9 + CurElement->mRenderTarget * 0.1;
-                NeedUpdate |= ((sint32) (mRenderPos - mRenderTarget + 0.5) != 0);
-                const bool NewValid = valid();
-                NeedUpdate |= (mValidValue != NewValid);
-                mValidValue = NewValid;
+                const sint32 NewPos = CurElement->mRenderPos - CurElement->mRenderTarget + 0.5;
+                NeedUpdate |= (OldPos != NewPos);
+                const bool NewValid = CurElement->valid();
+                NeedUpdate |= (CurElement->mValidValue != NewValid);
+                CurElement->mValidValue = NewValid;
             }
             return NeedUpdate;
         }
@@ -195,10 +197,14 @@ public:
     void RemoveLog(sint32 groupid);
     LogElement* GetLogElement();
     LogElement* NextLogElement(LogElement* element);
+    void SetDOMSearch(chars text);
+    void SetDOMCount(sint32 count);
 
 public:
     inline const String& jsonpath() const {return mLastJsonPath;}
     inline const Map<Document>& dom() const {return mDOM;}
+    inline const String& domsearch() const {return mDOMSearch;}
+    inline sint32 domcount() const {return mDOMCount;}
     inline bool expanddom() const {return mExpandedDOM;}
     inline bool expandlog() const {return mExpandedLog;}
 
@@ -208,6 +214,8 @@ private:
     bool mJsonPathUpdated;
     bool mConnected;
     Map<Document> mDOM;
+    String mDOMSearch;
+    sint32 mDOMCount;
     bool mExpandedDOM;
     bool mExpandedLog;
     LogElement mLogTitleTop;

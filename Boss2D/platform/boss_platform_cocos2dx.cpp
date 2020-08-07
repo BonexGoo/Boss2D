@@ -686,6 +686,11 @@
             return nullptr;
         }
 
+        void Platform::Utility::SendToClipboard(chars text)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::Utility::SetCursor(CursorRole role)
         {
             BOSS_ASSERT("Further development is needed.", false);

@@ -111,6 +111,7 @@ public:
         static bool SetFirstFocus();
         static bool SetNextFocus();
         static chars GetFocusText();
+        static Color GetFocusColor();
         static Point GetFocusPos();
     };
 
