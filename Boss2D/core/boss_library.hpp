@@ -32,7 +32,7 @@
     #define BOSS_API_FUNC(PACK, TYPE, FUNC) \
         extern "C" TYPE Java_com_##PACK##_##FUNC
     #define BOSS_API_ENV env
-#elif BOSS_MAC_OSX || BOSS_IPHONE
+#elif BOSS_MAC_OSX || BOSS_IPHONE || BOSS_WASM
     #define BOSS_API(PACK, TYPE, FUNC, ...) \
         static autorun API_##PACK##_##FUNC = CollectForPlatform(#TYPE, #FUNC, #PACK "_" #FUNC, #__VA_ARGS__); \
         BOSS_API_FUNC(PACK, TYPE, FUNC)(__VA_ARGS__)

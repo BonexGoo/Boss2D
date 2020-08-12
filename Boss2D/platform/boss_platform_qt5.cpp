@@ -2663,7 +2663,7 @@
                 SurfaceFormat.setMipmap(false);
                 SurfaceFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
                 SurfaceFormat.setTextureTarget(GL_TEXTURE_2D);
-                #if BOSS_IPHONE | BOSS_ANDROID
+                #if BOSS_IPHONE | BOSS_ANDROID | BOSS_WASM
                     SurfaceFormat.setInternalTextureFormat(GL_RGBA8);
                 #else
                     SurfaceFormat.setInternalTextureFormat(GL_RGBA32F_ARB);
@@ -3798,7 +3798,7 @@
         ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
             ip4address Result = {};
-            foreach(const QHostAddress& CurAddress, QNetworkInterface::allAddresses())
+            for(const QHostAddress& CurAddress : NetworkInterfacePrivate::allAddresses())
             {
                 if(CurAddress != QHostAddress(QHostAddress::LocalHost))
                 {
@@ -3910,7 +3910,7 @@
         id_pipe Platform::Pipe::Open(chars name)
         {
             // 서버
-            QSharedMemory* Semaphore = new QSharedMemory(name);
+            SharedMemoryPrivate* Semaphore = new SharedMemoryPrivate(name);
             if(!Semaphore->attach() && Semaphore->create(1))
             {
                 QLocalServer* NewServer = new QLocalServer();
@@ -3921,7 +3921,7 @@
             delete Semaphore;
 
             // 클라이언트
-            Semaphore = new QSharedMemory((chars) (String(name) + ".client"));
+            Semaphore = new SharedMemoryPrivate((chars) (String(name) + ".client"));
             if(!Semaphore->attach() && Semaphore->create(1))
                 return (id_pipe) new PipeClientPrivate(name, Semaphore);
             delete Semaphore;

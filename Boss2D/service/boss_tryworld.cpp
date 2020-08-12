@@ -4,6 +4,7 @@
 #include <math.h>
 #include <float.h>
 #include <malloc.h>
+#include <stdio.h>
 #define fscanf_s(...) BOSS_ASSERT("지원되지 않습니다!", false)
 #define exit(...) BOSS_ASSERT("지원되지 않습니다!", false)
 

@@ -25,6 +25,13 @@
 #elif BOSS_ANDROID
     #include <dirent.h>
     #include <android/asset_manager_jni.h>
+#elif BOSS_WASM
+    #include <sys/stat.h>
+    #include <stropts.h>
+    #include <dirent.h>
+    #include <unistd.h>
+    #include <strings.h>
+    #include <errno.h>
 #endif
 
 #if !BOSS_WINDOWS
@@ -44,7 +51,7 @@ extern "C"
         #define THROW
     #endif
 
-    #if BOSS_WINDOWS || BOSS_LINUX || BOSS_ANDROID
+    #if BOSS_WINDOWS || BOSS_LINUX || BOSS_ANDROID || BOSS_WASM
         extern int isalpha(int);
         extern int isdigit(int);
         extern int isalnum(int);
@@ -64,13 +71,13 @@ extern "C"
     extern size_t strlen(const char*);
     extern size_t wcslen(const wchar_t*);
 
-    #if BOSS_MAC_OSX || BOSS_IPHONE
+    #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_WASM
         extern int vasprintf(char**, const char*, va_list);
     #else
         extern int vsnprintf(char*, size_t, const char*, va_list);
     #endif
 
-    #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
+    #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         extern int vswprintf(wchar_t*, size_t, const wchar_t*, va_list);
     #else
         extern int _vsnwprintf(wchar_t*, size_t, const wchar_t*, va_list);
@@ -78,7 +85,7 @@ extern "C"
 
     extern int strcmp(const char*, const char*);
     extern int strncmp(const char*, const char*, size_t);
-    #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
+    #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         extern int strcasecmp(const char *, const char *);
         extern int strncasecmp(const char *, const char *, size_t);
     #else
@@ -250,7 +257,7 @@ extern "C" int boss_snprintf(char* str, boss_size_t n, const char* format, ...)
 
 extern "C" int boss_vsnprintf(char* str, boss_size_t n, const char* format, boss_va_list args)
 {
-    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE
+    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_WASM
         char* NewString = nullptr;
         const sint32 Size = vasprintf(&NewString, format, args);
 
@@ -280,7 +287,7 @@ extern "C" int boss_snwprintf(wchar_t* str, boss_size_t n, const wchar_t* format
 
 extern "C" int boss_vsnwprintf(wchar_t* str, boss_size_t n, const wchar_t* format, boss_va_list args)
 {
-    #if BOSS_LINUX || BOSS_IPHONE || BOSS_ANDROID
+    #if BOSS_LINUX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         return vswprintf(str, n, format, args);
     #elif BOSS_MAC_OSX
         if(str == nullptr) // vswprintf의 사용방식 변화에 임시대처
@@ -306,7 +313,7 @@ extern "C" int boss_strncmp(const char* str1, const char* str2, boss_size_t maxc
 
 extern "C" int boss_stricmp(const char* str1, const char* str2)
 {
-    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
+    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         return strcasecmp(str1, str2);
     #else
         return stricmp(str1, str2);
@@ -315,7 +322,7 @@ extern "C" int boss_stricmp(const char* str1, const char* str2)
 
 extern "C" int boss_strnicmp(const char* str1, const char* str2, boss_size_t maxcount)
 {
-    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID
+    #if BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         return strncasecmp(str1, str2, maxcount);
     #else
         return strnicmp(str1, str2, maxcount);
@@ -385,7 +392,7 @@ public:
         {
             #if BOSS_WINDOWS
                 fclose((FILE*) mFilePointer);
-            #elif BOSS_LINUX
+            #elif BOSS_LINUX || BOSS_WASM
                 fclose((FILE*) mFilePointer);
             #elif BOSS_ANDROID
                 AAsset_close((AAsset*) mFilePointer);
@@ -415,7 +422,7 @@ public:
                     fseek((FILE*) mFilePointer, 0, SEEK_END);
                     mFileSize = ftell((FILE*) mFilePointer);
                     fseek((FILE*) mFilePointer, 0, SEEK_SET);
-                #elif BOSS_LINUX
+                #elif BOSS_LINUX || BOSS_WASM
                     fseek((FILE*) mFilePointer, 0, SEEK_END);
                     mFileSize = ftell((FILE*) mFilePointer);
                     fseek((FILE*) mFilePointer, 0, SEEK_SET);
@@ -449,7 +456,7 @@ public:
                 #if BOSS_WINDOWS
                     fread(mContent->AtDumping(0, mFileSize), 1, mFileSize, (FILE*) mFilePointer);
                     fseek((FILE*) mFilePointer, 0, SEEK_SET);
-                #elif BOSS_LINUX
+                #elif BOSS_LINUX || BOSS_WASM
                     fread(mContent->AtDumping(0, mFileSize), 1, mFileSize, (FILE*) mFilePointer);
                     fseek((FILE*) mFilePointer, 0, SEEK_SET);
                 #elif BOSS_ANDROID
@@ -664,7 +671,7 @@ extern "C" boss_file boss_fopen(const char* filename, const char* mode)
                 const String NewFileName = String("../assets/") + filename;
                 FILE* NewAssetsPointer = fopen(NewFileName, "rb");
                 if(!NewAssetsPointer) return nullptr;
-            #elif BOSS_LINUX
+            #elif BOSS_LINUX || BOSS_WASM
                 const String NewFileName = String("../assets/") + filename;
                 FILE* NewAssetsPointer = fopen(NewFileName, "rb");
                 if(!NewAssetsPointer) return nullptr;
@@ -909,7 +916,7 @@ public:
         #if BOSS_WINDOWS
             FindClose((HANDLE) mDirHandle);
             delete (WIN32_FIND_DATAW*) mDirPointer;
-        #elif BOSS_LINUX
+        #elif BOSS_LINUX || BOSS_WASM
             closedir((DIR*) mDirHandle);
         #elif BOSS_MAC_OSX || BOSS_IPHONE
             closedir((DIR*) mDirHandle);
@@ -959,7 +966,7 @@ extern "C" boss_dir boss_opendir(const char* dirname)
                 DirnameAtAssets.SubTail(2);
             dirname = DirnameAtAssets;
 
-            #if BOSS_LINUX
+            #if BOSS_LINUX || BOSS_WASM
                 const String ParentPath = ".";
                 DIR* NewDirHandle = opendir((chars) (ParentPath + '/' + dirname));
                 if(!NewDirHandle) return nullptr;
@@ -1010,7 +1017,7 @@ extern "C" boss_dir boss_opendir(const char* dirname)
                 delete NewFindFileData;
                 return nullptr;
             }
-        #elif BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE | BOSS_ANDROID
+        #elif BOSS_LINUX || BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
             String DirnameAtAssets = dirname;
             if(2 < DirnameAtAssets.Length() && DirnameAtAssets[-3] == '/' && DirnameAtAssets[-2] == '*')
                 DirnameAtAssets.SubTail(2);
@@ -1045,7 +1052,7 @@ extern "C" boss_dirent boss_readdir(boss_dir dir)
                 CurDir->mNextFlag = FindNextFileW((HANDLE) CurDir->mDirHandle, (WIN32_FIND_DATAW*) CurDir->mDirPointer);
                 return (boss_dirent) (chars) CurDir->mLastFilePath;
             }
-        #elif BOSS_LINUX
+        #elif BOSS_LINUX || BOSS_WASM
             struct dirent* CurDirEnt = readdir((DIR*) CurDir->mDirHandle);
             if(CurDirEnt)
             {
@@ -1113,7 +1120,7 @@ extern "C" int boss_socket(int domain, int type, int protocol)
 
 extern "C" int boss_connect(int sockfd, const void* addr, int addrlen)
 {
-    #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID
+    #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID | BOSS_WASM
         return connect(sockfd, (const struct sockaddr*) addr, addrlen);
     #else
         struct sockaddr_in AddrIn;
@@ -1125,7 +1132,7 @@ extern "C" int boss_connect(int sockfd, const void* addr, int addrlen)
 
 extern "C" int boss_bind(int sockfd, const void* addr, int addrlen)
 {
-    #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID
+    #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID | BOSS_WASM
         return bind(sockfd, (const struct sockaddr*) addr, addrlen);
     #else
         struct sockaddr_in AddrIn;
@@ -1221,6 +1228,8 @@ extern "C" boss_ssize_t boss_sendto(int sockfd, const void* buf, boss_size_t len
 {
     #if BOSS_WINDOWS | BOSS_LINUX | BOSS_ANDROID
         return sendto(sockfd, (const char*) buf, len, flags, (const struct sockaddr*) dest_addr, addrlen);
+    #elif BOSS_WASM
+        return sendto(sockfd, buf, len, flags, (const struct sockaddr*) dest_addr, addrlen);
     #else
         struct sockaddr_in DestAddrIn;
         Memory::Copy(&DestAddrIn, dest_addr, addrlen);
@@ -1233,7 +1242,7 @@ extern "C" int boss_ioctlsocket(int sockfd, long cmd, unsigned long* argp)
 {
     #if BOSS_WINDOWS
         return ioctlsocket(sockfd, cmd, argp);
-    #elif BOSS_LINUX | BOSS_ANDROID
+    #elif BOSS_LINUX | BOSS_ANDROID | BOSS_WASM
         return ioctl(sockfd, cmd, argp);
     #else
         #define IOC_IN       0x80000000

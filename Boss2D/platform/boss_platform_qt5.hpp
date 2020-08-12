@@ -1323,6 +1323,42 @@
         void setAutoBufferSwap(bool on) {}
     };
 
+    #if !BOSS_WASM
+        typedef QSharedMemory SharedMemoryPrivate;
+        typedef QNetworkInterface NetworkInterfacePrivate;
+    #else
+        class SharedMemoryForEmpty;
+        typedef SharedMemoryForEmpty SharedMemoryPrivate;
+        class NetworkInterfaceForEmpty;
+        typedef NetworkInterfaceForEmpty NetworkInterfacePrivate;
+    #endif
+
+    class SharedMemoryForEmpty : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        SharedMemoryForEmpty(QObject *parent = nullptr) {}
+        SharedMemoryForEmpty(const QString &key, QObject *parent = nullptr) {}
+        ~SharedMemoryForEmpty() {}
+    public:
+        enum AccessMode {ReadOnly, ReadWrite};
+    public:
+        bool attach(AccessMode mode = ReadWrite) {return false;}
+        bool create(int size, AccessMode mode = ReadWrite) {return false;}
+    };
+
+    class NetworkInterfaceForEmpty : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        NetworkInterfaceForEmpty() {}
+        ~NetworkInterfaceForEmpty() {}
+    public:
+        static QList<QHostAddress> allAddresses() {return QList<QHostAddress>();}
+    };
+
     #define USER_FRAMECOUNT (60)
 
     class MainData;
@@ -4555,7 +4591,7 @@
         Q_OBJECT
 
     public:
-        PipePrivate(QSharedMemory* semaphore)
+        PipePrivate(SharedMemoryPrivate* semaphore)
         {
             mStatus = CS_Connecting;
             mTempContext = nullptr;
@@ -4629,7 +4665,7 @@
         ConnectStatus mStatus;
         chararray mData;
         Context* mTempContext;
-        QSharedMemory* mSemaphore;
+        SharedMemoryPrivate* mSemaphore;
     };
 
     class PipeServerPrivate : public PipePrivate
@@ -4637,7 +4673,7 @@
         Q_OBJECT
 
     public:
-        PipeServerPrivate(QLocalServer* server, QSharedMemory* semaphore) : PipePrivate(semaphore)
+        PipeServerPrivate(QLocalServer* server, SharedMemoryPrivate* semaphore) : PipePrivate(semaphore)
         {
             mServer = server;
             mLastClient = nullptr;
@@ -4700,7 +4736,7 @@
         Q_OBJECT
 
     public:
-        PipeClientPrivate(chars name, QSharedMemory* semaphore) : PipePrivate(semaphore)
+        PipeClientPrivate(chars name, SharedMemoryPrivate* semaphore) : PipePrivate(semaphore)
         {
             mClient = new QLocalSocket();
             connect(mClient, &QLocalSocket::readyRead, this, &PipeClientPrivate::OnReadyRead);

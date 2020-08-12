@@ -189,7 +189,7 @@
     typedef unsigned int u_int;
     typedef unsigned long u_long;
     typedef int errno_t;
-    #if !BOSS_LINUX
+    #if !BOSS_LINUX & !BOSS_WASM
         typedef unsigned short mode_t;
     #endif
     typedef unsigned int _dev_t;

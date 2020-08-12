@@ -47,7 +47,7 @@
 #endif
 
 // About platform macro
-#if defined(_WIN32) || defined(_WIN64)
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(__EMSCRIPTEN__)
     #define BOSS_WINDOWS 1
     #if defined(__MINGW32__)
         #define BOSS_WINDOWS_MINGW 1
@@ -59,13 +59,13 @@
     #define BOSS_WINDOWS_MINGW 0
 #endif
 
-#if defined(__linux__) && !defined(ANDROID)
+#if defined(__linux__) && !defined(ANDROID) && !defined(__EMSCRIPTEN__)
     #define BOSS_LINUX 1
 #else
     #define BOSS_LINUX 0
 #endif
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(__EMSCRIPTEN__)
     #include <TargetConditionals.h>
     #if TARGET_OS_MAC && !TARGET_OS_IPHONE
         #define BOSS_MAC_OSX 1
@@ -82,13 +82,19 @@
     #define BOSS_IPHONE 0
 #endif
 
-#if defined(ANDROID)
+#if defined(ANDROID) && !defined(__EMSCRIPTEN__)
     #define BOSS_ANDROID 1
 #else
     #define BOSS_ANDROID 0
 #endif
 
-#if (BOSS_WINDOWS + BOSS_LINUX + BOSS_MAC_OSX + BOSS_IPHONE + BOSS_ANDROID != 1)
+#if defined(__EMSCRIPTEN__)
+    #define BOSS_WASM 1
+#else
+    #define BOSS_WASM 0
+#endif
+
+#if (BOSS_WINDOWS + BOSS_LINUX + BOSS_MAC_OSX + BOSS_IPHONE + BOSS_ANDROID + BOSS_WASM != 1)
     #error Unknown platform
 #endif
 
@@ -140,6 +146,18 @@
     #ifndef __cplusplus
         typedef unsigned int wchar_t;
     #endif
+#elif BOSS_WASM
+    typedef unsigned long boss_size_t;
+    typedef long boss_ssize_t;
+    #ifndef __cplusplus
+        typedef unsigned int wchar_t;
+    #endif
+    typedef signed char __int8_t;
+    typedef signed short __int16_t;
+    typedef signed int __int32_t;
+    typedef unsigned char __uint8_t;
+    typedef unsigned short __uint16_t;
+    typedef unsigned int __uint32_t;
 #endif
 
 // About user config
