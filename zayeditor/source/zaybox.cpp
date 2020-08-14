@@ -195,6 +195,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
     const String UIGroupCopy = String::Format("%d-groupcopy", mID);
     const String UIExpand = String::Format("%d-expand", mID);
     const String UIRemove = String::Format("%d-remove", mID);
+    const String UIHookRemove = String::Format("%d-hookremove", mID);
     const String UIHook = String::Format("%d-hook", mID);
     const String UIBall = String::Format("%d-ball", mID);
     const sint32 ButtonWidth = TitleBarHeight;
@@ -222,9 +223,11 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
         // L로프(후크)
         if(hook)
             RenderHook(panel, UIHook);
+
         // R로프(볼)
         if(ball)
             RenderBall(panel, UIBall);
+
         ZAY_INNER_SCISSOR(panel, 0)
         {
             // 로프가림막
@@ -251,18 +254,27 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             ZAY_RGB_IF(panel, 160, 160, 160, HasFocusing)
                 panel.fill();
 
-            sint32 ButtonPosX = panel.w();
+            sint32 TitleBeginX = 3;
+            // 후크제거버튼
+            if(mHooked)
+            {
+                ZAY_XYWH(panel, 0, 0, ButtonWidth, panel.h())
+                    RenderHookRemoveButton(panel, UIHookRemove);
+                TitleBeginX = ButtonWidth;
+            }
+
+            sint32 TitleEndX = panel.w();
             // 제거버튼
             if(remove)
             {
-                ButtonPosX -= ButtonWidth;
-                ZAY_XYWH(panel, ButtonPosX, 0, ButtonWidth, panel.h())
+                TitleEndX -= ButtonWidth;
+                ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
                     RenderRemoveButton(panel, UIRemove, mParent == -1 && 0 < mChildren.Count());
             }
             else
             {
-                ButtonPosX -= ButtonWidth;
-                ZAY_XYWH(panel, ButtonPosX, 0, ButtonWidth, panel.h())
+                TitleEndX -= ButtonWidth;
+                ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
                 ZAY_INNER_UI(panel, 0, UIRemove)
                 ZAY_INNER(panel, 3)
                 {
@@ -278,27 +290,27 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             // 그룹복사버튼
             if(copy)
             {
-                ButtonPosX -= ButtonWidth;
-                ZAY_XYWH(panel, ButtonPosX, 0, ButtonWidth, panel.h())
+                TitleEndX -= ButtonWidth - 1;
+                ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
                     RenderGroupCopyButton(panel, UIGroupCopy);
             }
             // 확장/최소화버튼
             if(expand)
             {
-                ButtonPosX -= ButtonWidth;
-                ZAY_XYWH(panel, ButtonPosX, 0, ButtonWidth, panel.h())
+                TitleEndX -= ButtonWidth - 1;
+                ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
                     RenderExpandButton(panel, UIExpand);
             }
             // 그룹이동버튼
             if(ball)
             {
-                ButtonPosX -= ButtonWidth;
-                ZAY_XYWH(panel, ButtonPosX, 0, ButtonWidth, panel.h())
+                TitleEndX -= ButtonWidth - 1;
+                ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
                     RenderGroupMoveButton(panel, UIGroupMove);
             }
 
             // 타이틀
-            ZAY_LTRB(panel, 3, 0, ButtonPosX, panel.h())
+            ZAY_LTRB(panel, TitleBeginX, 0, TitleEndX + 3, panel.h())
             {
                 const String TitleText((HasFocusing && mOrder != -1)?
                     (chars) String::Format("[%d] %s", mOrder, title) : title);
@@ -451,14 +463,28 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
+            static bool Created = false;
+            static Point OldPos;
             if(t == GT_Pressed)
-                Platform::SendNotify(v->view(), "ZayBoxCopy", sint32o(mID));
+            {
+                Created = false;
+                OldPos = Point(x, y);
+            }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
-                auto& OldPos = v->oldxy(n);
-                mTitleDrag = Point(x - OldPos.x, y - OldPos.y);
-                Platform::SendNotify(v->view(), "ZayBoxMoveWith", sint32o(mID));
-                v->invalidate();
+                if(t == GT_OutDragging && !Created)
+                {
+                    Created = true;
+                    Platform::SendNotify(v->view(), "ZayBoxCopy", sint32o(mID));
+                    v->invalidate();
+                }
+                if(Created)
+                {
+                    mTitleDrag = Point(x - OldPos.x, y - OldPos.y);
+                    OldPos = Point(x, y);
+                    Platform::SendNotify(v->view(), "ZayBoxMoveWith", sint32o(mID));
+                    v->invalidate();
+                }
             }
         })
     ZAY_INNER(panel, 3)
@@ -479,9 +505,7 @@ void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
         ZAY_GESTURE_T(t, this)
         {
             if(t == GT_InReleased)
-            {
                 mExpanded ^= true;
-            }
         })
     ZAY_INNER(panel, 3)
     {
@@ -565,6 +589,26 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                 panel.text("×", UIFA_CenterMiddle);
             panel.rect(1);
         }
+    }
+}
+
+void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
+{
+    ZAY_INNER_UI(panel, 0, uiname,
+        ZAY_GESTURE_T(t, this)
+        {
+            if(t == GT_InReleased)
+                ClearMyHook();
+        })
+    ZAY_INNER(panel, 3)
+    {
+        ZAY_RGBA(panel, 0, 0, 0, 32)
+        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
+            panel.fill();
+        ZAY_RGB(panel, 0, 0, 0)
+            panel.text("×", UIFA_CenterMiddle);
+        ZAY_RGBA(panel, 0, 0, 0, 64)
+            panel.rect(1);
     }
 }
 

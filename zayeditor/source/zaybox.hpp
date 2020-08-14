@@ -56,6 +56,7 @@ public:
     void RenderGroupCopyButton(ZayPanel& panel, chars uiname);
     void RenderExpandButton(ZayPanel& panel, chars uiname);
     void RenderRemoveButton(ZayPanel& panel, chars uiname, bool group);
+    void RenderHookRemoveButton(ZayPanel& panel, chars uiname);
 
 public:
     void Move(Point drag);

@@ -246,6 +246,12 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     // 도구뷰
     ZAY_XYWH_UI(panel, panel.w() - 200, 0, 200, panel.h(), "apispace")
     {
+        // 버튼 배경
+        ZAY_LTRB(panel, 0, 0, panel.w(), 55)
+        ZAY_RGB(panel, 255, 255, 255)
+            panel.fill();
+        // 컴포넌트 배경
+        ZAY_LTRB(panel, 0, 55, panel.w(), panel.h())
         ZAY_RGBA(panel, 255, 255, 255, 192)
             panel.fill();
 
@@ -298,15 +304,45 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     }
                 });
 
+        // 컴포넌트 구역
+        ZAY_LTRB_SCISSOR(panel, 0, 55, panel.w(), panel.h())
+        {
+            // 컴포넌트들
+            const sint32 ComponentCount = m->mZaySonAPI.GetComponentCount();
+            const sint32 ScrollHeight = 5 + (ZEZayBox::TitleBarHeight + 10) * ComponentCount;
+            ZAY_SCROLL_UI(panel, 0, ScrollHeight, "apispace-scroll",
+                ZAY_GESTURE_VNT(v, n, t)
+                {
+                    if(t == GT_WheelUp || t == GT_WheelDown)
+                    {
+                        Platform::Popup::CloseAllTracker();
+                        const sint32 OldPos = v->scrollpos("apispace-scroll").y;
+                        const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
+                        v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
+                        v->invalidate(2);
+                    }
+                }, 5, 20)
+            for(sint32 i = 0; i < ComponentCount; ++i)
+                ZAY_XYWH(panel, 10, 5 + (ZEZayBox::TitleBarHeight + 10) * i, panel.w() - 20, ZEZayBox::TitleBarHeight)
+                    m->RenderComponent(panel, i, true, m->mZaySonAPI.mDraggingComponentID == i);
+
+            // 부드러운 상하경계선
+            for(sint32 i = 0; i < 10; ++i)
+            {
+                ZAY_RGBA(panel, 255, 255, 255, 255 * (10 - i) / 10)
+                {
+                    ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                        panel.fill();
+                    ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                        panel.fill();
+                }
+            }
+        }
+
         // 분할선
         ZAY_RGBA(panel, 0, 0, 0, 48)
         ZAY_LTRB(panel, 10, 50 - 1, panel.w() - 10, 50 + 1)
             panel.fill();
-
-        // 컴포넌트
-        for(sint32 i = 0, iend = m->mZaySonAPI.GetComponentCount(); i < iend; ++i)
-            ZAY_XYWH(panel, 10, 60 + (ZEZayBox::TitleBarHeight + 10) * i, panel.w() - 20, ZEZayBox::TitleBarHeight)
-                m->RenderComponent(panel, i, true, m->mZaySonAPI.mDraggingComponentID == i);
 
         // 좌측마감선
         ZAY_RGB(panel, 0, 0, 0)
@@ -849,13 +885,15 @@ void zayeditorData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool
 {
     auto& CurComponent = mZaySonAPI.GetComponent(i);
     const String UIName = String::Format("%d-component", i);
+    const Rect UIRect = Rect(panel.toview(0, 0), Size(panel.w(), panel.h()));
+
     ZAY_INNER_UI(panel, 0, (enable)? UIName : "",
-        ZAY_GESTURE_VNTXY(v, n, t, x, y, this, i)
+        ZAY_GESTURE_VNTXY(v, n, t, x, y, this, i, UIRect)
         {
             if(t == GT_Pressed)
             {
                 mZaySonAPI.mDraggingComponentID = i;
-                mZaySonAPI.mDraggingComponentRect = v->rect(n);
+                mZaySonAPI.mDraggingComponentRect = UIRect;
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
@@ -867,6 +905,14 @@ void zayeditorData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool
             {
                 mZaySonAPI.mDraggingComponentID = -1;
                 mZaySonAPI.mDraggingComponentRect = Rect();
+            }
+            else if(t == GT_WheelUp || t == GT_WheelDown)
+            {
+                Platform::Popup::CloseAllTracker();
+                const sint32 OldPos = v->scrollpos("apispace-scroll").y;
+                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
+                v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
+                v->invalidate(2);
             }
         })
     {
