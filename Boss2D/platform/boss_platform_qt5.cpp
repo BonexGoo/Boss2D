@@ -737,7 +737,65 @@
 
         bool Platform::Popup::FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult)
         {
-            return PlatformImpl::Wrap::Popup_FileDialog(type, path, shortpath, title, filters, filterresult);
+            #if BOSS_WASM
+                if(!g_window) return false;
+                QFileDialog Dialog(g_window);
+
+                if(type == DST_Dir)
+                    Dialog.setFileMode(QFileDialog::DirectoryOnly);
+                else
+                {
+                    Dialog.setFileMode(QFileDialog::AnyFile);
+                    if(type == DST_FileOpen)
+                        Dialog.setAcceptMode(QFileDialog::AcceptOpen);
+                    else Dialog.setAcceptMode(QFileDialog::AcceptSave);
+                    Dialog.setNameFilter(QString::fromUtf16((const char16_t*) filters));
+                }
+
+                if(Dialog.exec())
+                {
+                    auto Results = Dialog.selectedFiles();
+                    if(0 < Results.size())
+                    {
+                        path = Results.at(0).toUtf8().constData();
+                        return true;
+                    }
+                }
+                return false;
+            #else
+                return PlatformImpl::Wrap::Popup_FileDialog(type, path, shortpath, title, filters, filterresult);
+            #endif
+        }
+
+        void Platform::Popup::FileContentDialog(wchars filters)
+        {
+            #if BOSS_WASM // getOpenFileContent의 호출은 일단 Windows에서 크래시발생하여 WASM에서만 사용키로 함
+                const QString NameFilters = QString::fromUtf16((const char16_t*) filters);
+                QFileDialog::getOpenFileContent(NameFilters,
+                    [](const QString& filename, const QByteArray& filebuffer)->void
+                    {
+                        uint08s NewContent;
+                        Memory::Copy(NewContent.AtDumpingAdded(filebuffer.size()),
+                            filebuffer.constData(), filebuffer.size());
+                        // 결과전달
+                        Platform::BroadcastNotify(filename.toUtf8().constData(), NewContent, NT_FileContent);
+                    });
+            #else
+                String Path;
+                String ShortPath;
+                if(Platform::Popup::FileDialog(DST_FileOpen, Path, &ShortPath, "Open", filters))
+                {
+                    if(auto CurFile = Platform::File::OpenForRead(Path))
+                    {
+                        auto FileSize = Platform::File::Size(CurFile);
+                        uint08s NewContent;
+                        Platform::File::Read(CurFile, NewContent.AtDumpingAdded(FileSize), FileSize);
+                        Platform::File::Close(CurFile);
+                        // 결과전달
+                        Platform::BroadcastNotify(ShortPath, NewContent, NT_FileContent);
+                    }
+                }
+            #endif
         }
 
         sint32 Platform::Popup::MessageDialog(chars title, chars text, DialogButtonType type)

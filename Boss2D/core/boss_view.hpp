@@ -5,7 +5,7 @@
 namespace BOSS
 {
     BOSS_DECLARE_HANDLE(h_view);
-    enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease, NT_SocketReceive, NT_CameraCapture, NT_AddOn};
+    enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease, NT_FileContent, NT_SocketReceive, NT_CameraCapture, NT_AddOn};
     enum TouchType {TT_Null,
         // 일반
         TT_Moving, TT_MovingIdle, TT_Press, TT_Dragging, TT_DraggingIdle, TT_Release,

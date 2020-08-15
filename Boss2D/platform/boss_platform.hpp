@@ -273,6 +273,10 @@ public:
         static bool FileDialog(DialogShellType type, String& path, String* shortpath, chars title,
             wchars filters = L"All File(*.*)\0*.*\0Text File\0*.txt;*.doc\0", sint32* filterresult = nullptr);
 
+        /// @brief 파일컨텐츠 다이얄로그
+        /// @param filters : 파일필터들
+        static void FileContentDialog(wchars filters = L"All File(*.*)\0*.*\0C++ File\0*.c;*.cpp;*.cxx;*.h;*.hpp;*.hxx\0");
+
         /// @brief 메시지 다이얄로그
         /// @param title : 창제목
         /// @param text : 내용

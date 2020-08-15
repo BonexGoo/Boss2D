@@ -427,6 +427,11 @@
             return PlatformImpl::Wrap::Popup_FileDialog(type, path, shortpath, title, filters, filterresult);
         }
 
+        void Platform::Popup::FileContentDialog(wchars filters)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         sint32 Platform::Popup::MessageDialog(chars title, chars text, DialogButtonType type)
         {
             return PlatformImpl::Wrap::Popup_MessageDialog(title, text, type);
