@@ -204,10 +204,12 @@ namespace BOSS
         GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
         // 마우스확장피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
         GT_ExtendPressPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
+        // 키보드
+        GT_KeyPressed, GT_KeyReleased,
         // 특수
         GT_ToolTip, GT_LongPressed};
     enum PanelState {PS_Null = 0x00, PS_Hovered = 0x01, PS_Focused = 0x02,
-        PS_Pressed = 0x04, PS_Dragging = 0x08, PS_Dropping = 0x10};
+        PS_Pressed = 0x04, PS_Dragging = 0x08, PS_Dropping = 0x10, PS_Captured = 0x20};
     static PanelState operator|(PanelState a, PanelState b) {return (PanelState) (int(a) | int(b));}
     enum VisibleState {VS_Visible = 0x00,
         VS_Left = 0x01, VS_Top = 0x10, VS_Right = 0x02, VS_Bottom = 0x20,
@@ -260,6 +262,7 @@ namespace BOSS
         const rect128& rect(chars uiname = nullptr) const;
         const float zoom(chars uiname = nullptr) const;
         const point64& oldxy(chars uiname = nullptr) const;
+        // 스크롤
         Point scrollpos(chars uiname) const;
         void setscroller(chars uiname, ScrollerCB cb);
         bool isScrollSensing(chars uiname) const; // 스크롤이 벽에 의해 튕겨지고 있음
@@ -268,8 +271,12 @@ namespace BOSS
         void moveScroll(chars uiname, float ox, float oy, float x, float y, float sec, bool touch);
         void resetScroll(chars uiname, float x, float y, bool touch);
         void stopScroll(chars uiname, bool touch);
+        // 리사이징
         void resizeForced(sint32 w = -1, sint32 h = -1);
         bool getResizingValue(sint32& w, sint32& h);
+        // 캡쳐
+        void setCapture(chars uiname);
+        void clearCapture();
 
     public:
         inline h_view view() const
@@ -709,6 +716,12 @@ namespace BOSS
             const Element& get(sint32 x, sint32 y, const Element* press, const Element*& backscroll) const;
             bool hovertest(sint32 x, sint32 y);
 
+        public:
+            void setcapture(chars uiname);
+            void clearcapture();
+            const Element* getcapture() const;
+            PanelState capturetest(chars uiname) const;
+
         private:
             Cell* getcell(sint32 x, sint32 y);
             const Cell* getcell_const(sint32 x, sint32 y) const;
@@ -761,6 +774,7 @@ namespace BOSS
         private:
             sint32 m_updateid;
             sint32 m_hoverid;
+            String m_captured_uiname;
             sint32 m_block_width;
             sint32 m_block_height;
             Element m_element;

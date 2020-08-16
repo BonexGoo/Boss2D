@@ -55,13 +55,14 @@ namespace BOSS
             NewSolver.Link(mChain, Key);
             NewSolver.Parse(String::FromInteger(Length));
         }
-        else if(chars CurValue = json.GetString(nullptr))
+        else
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
+            const String Value = json.GetString("");
             auto& NewSolver = mSolvers.AtAdding();
             NewSolver.Link(mChain, Key);
-            NewSolver.Parse(String::Format("\"%s\"", CurValue));
-            PostProcess(Key, CurValue);
+            NewSolver.Parse(String::Format("\"%s\"", (chars) Value));
+            PostProcess(Key, Value);
         }
     }
 
@@ -106,16 +107,17 @@ namespace BOSS
             }
             else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
         }
-        else if(chars CurValue = json.GetString(nullptr))
+        else
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
+            const String Value = json.GetString("");
             if(auto CurSolver = Solver::Find(mChain, Key))
             {
-                CurSolver->Parse(String::Format("\"%s\"", CurValue));
+                CurSolver->Parse(String::Format("\"%s\"", (chars) Value));
                 CurSolver->Execute(true);
             }
-            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars)Key), false);
-            PostProcess(Key, CurValue);
+            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
+            PostProcess(Key, Value);
         }
     }
 

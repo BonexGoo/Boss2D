@@ -290,6 +290,18 @@ namespace BOSS
         return Result;
     }
 
+    void ZayObject::setCapture(chars uiname)
+    {
+        if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
+            CurTouch->setcapture(uiname);
+    }
+
+    void ZayObject::clearCapture()
+    {
+        if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
+            CurTouch->clearcapture();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // ZayPanel
     ////////////////////////////////////////////////////////////////////////////////
@@ -888,7 +900,7 @@ namespace BOSS
             if(uiname == nullptr)
                 return CurTouch->background()->GetState(m_ref_touch);
             else if(auto CurElement = CurTouch->find(uiname, 1))
-                return CurElement->GetState(m_ref_touch);
+                return CurElement->GetState(m_ref_touch) | CurTouch->capturetest(uiname);
         }
         return PS_Null;
     }
@@ -1851,11 +1863,23 @@ namespace BOSS
 
     void ZayView::OnKey(sint32 code, chars text, bool pressed)
     {
-        auto LockID = m_ref_func->m_lock(m_class);
-        if(pressed)
-            m_ref_func->m_notify(NT_KeyPress, text, sint32o(code), nullptr);
-        else m_ref_func->m_notify(NT_KeyRelease, text, sint32o(code), nullptr);
-        m_ref_func->m_unlock(LockID);
+        Touch* CurTouch = (Touch*) m_touch;
+        if(const Element* CurElement = CurTouch->getcapture())
+        {
+            auto LockID = m_ref_func->m_lock(m_class);
+            if(pressed)
+                CurElement->m_cb(this, CurElement, GT_KeyPressed, code, text[0]);
+            else CurElement->m_cb(this, CurElement, GT_KeyReleased, code, text[0]);
+            m_ref_func->m_unlock(LockID);
+        }
+        else
+        {
+            auto LockID = m_ref_func->m_lock(m_class);
+            if(pressed)
+                m_ref_func->m_notify(NT_KeyPress, text, sint32o(code), nullptr);
+            else m_ref_func->m_notify(NT_KeyRelease, text, sint32o(code), nullptr);
+            m_ref_func->m_unlock(LockID);
+        }
     }
 
     void ZayView::_checklose(GestureType type, const Element* element, sint32 x, sint32 y)
@@ -2089,6 +2113,7 @@ namespace BOSS
     {
         m_updateid = 0;
         m_hoverid = 0;
+        m_captured_uiname.Empty();
         m_block_width = 0;
         m_block_height = 0;
         m_focus = nullptr;
@@ -2110,6 +2135,7 @@ namespace BOSS
     {
         m_updateid = rhs.m_updateid;
         m_hoverid = rhs.m_hoverid;
+        m_captured_uiname = rhs.m_captured_uiname;
         m_block_width = rhs.m_block_width;
         m_block_height = rhs.m_block_height;
         m_element = rhs.m_element;
@@ -2269,6 +2295,32 @@ namespace BOSS
         m_hover_x = x;
         m_hover_y = y;
         return NeedUpdate;
+    }
+
+    void ZayView::Touch::setcapture(chars uiname)
+    {
+        BOSS_ASSERT("uiname이 nullptr입니다", uiname);
+        m_captured_uiname = uiname;
+    }
+
+    void ZayView::Touch::clearcapture()
+    {
+        m_captured_uiname.Empty();
+    }
+
+    const ZayView::Element* ZayView::Touch::getcapture() const
+    {
+        if(0 < m_captured_uiname.Length())
+            return m_map.Access(m_captured_uiname);
+        return nullptr;
+    }
+
+    PanelState ZayView::Touch::capturetest(chars uiname) const
+    {
+        BOSS_ASSERT("uiname이 nullptr입니다", uiname);
+        if(!m_captured_uiname.Compare(uiname))
+            return PS_Captured;
+        return PS_Null;
     }
 
     ZayView::Touch::Cell* ZayView::Touch::getcell(sint32 x, sint32 y)
