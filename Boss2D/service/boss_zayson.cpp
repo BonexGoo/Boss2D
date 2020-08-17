@@ -61,7 +61,20 @@ namespace BOSS
             const String Value = json.GetString("");
             auto& NewSolver = mSolvers.AtAdding();
             NewSolver.Link(mChain, Key);
-            NewSolver.Parse(String::Format("\"%s\"", (chars) Value));
+            {
+                sint32 IntOffset = 0;
+                Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
+                if(IntOffset == Value.Length())
+                    NewSolver.Parse(Value);
+                else
+                {
+                    sint32 FloatOffset = 0;
+                    Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
+                    if(FloatOffset == Value.Length())
+                        NewSolver.Parse(Value);
+                    else NewSolver.Parse(String::Format("\'%s\'", (chars) Value));
+                }
+            }
             PostProcess(Key, Value);
         }
     }
@@ -113,7 +126,18 @@ namespace BOSS
             const String Value = json.GetString("");
             if(auto CurSolver = Solver::Find(mChain, Key))
             {
-                CurSolver->Parse(String::Format("\"%s\"", (chars) Value));
+                sint32 IntOffset = 0;
+                Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
+                if(IntOffset == Value.Length())
+                    CurSolver->Parse(Value);
+                else
+                {
+                    sint32 FloatOffset = 0;
+                    Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
+                    if(FloatOffset == Value.Length())
+                        CurSolver->Parse(Value);
+                    else CurSolver->Parse(String::Format("\'%s\'", (chars) Value));
+                }
                 CurSolver->Execute(true);
             }
             else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
