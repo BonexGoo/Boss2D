@@ -1151,6 +1151,10 @@ namespace BOSS
 
     ZayPanel::StackBinder ZayPanel::_push_freefont(sint32 height, chars nickname)
     {
+        #if !BOSS_NEED_ADDON_FREETYPE
+            return _push_sysfont(height * 0.075, nullptr);
+        #endif
+
         Font& NewFont = m_stack_font.AtAdding();
         const Font& LastFont = m_stack_font[-2];
         NewFont.is_freefont = true;
