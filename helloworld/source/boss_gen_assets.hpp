@@ -14,6 +14,6 @@ struct EmbeddedFile {
 };
 
 static const sint32 gEmbeddedFileCount = 0;
-static EmbeddedFile gEmbeddedFiles[] = {
+static const EmbeddedFile gSortedEmbeddedFiles[] = {
     {"", nullptr, 0, 0, 0, 0}
 };

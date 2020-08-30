@@ -54,7 +54,7 @@ namespace BOSS
         /// @brief 어셋사이즈 얻기
         /// @param asset : 어셋ID
         /// @return 어셋의 사이즈(byte)
-        static const sint32 Size(id_asset_read asset);
+        static sint32 Size(id_asset_read asset);
 
         /// @brief 어셋읽기
         /// @param asset : 어셋ID
