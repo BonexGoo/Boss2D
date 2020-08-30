@@ -3399,8 +3399,7 @@
                     {
                         // 비주얼스튜디오에서 바로 실행
                         const String AssetsPath2 = String::Format("%s/../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                        if(Platform::File::ExistForDir(AssetsPath2 + "/assets"))
-                            NewPath = AssetsPath2 + "/assets/";
+                        NewPath = AssetsPath2 + "/assets/";
                     }
                 }
                 else NewPath += "/assets/";
@@ -3420,7 +3419,6 @@
             #endif
             
             PlatformImpl::Core::SetRoot(0, PlatformImpl::Core::NormalPath(NewPath, false));
-            _CreateMiddleDir(PlatformImpl::Core::NormalPath(PlatformImpl::Core::GetCopiedRoot(0)));
             BOSS_TRACE("Platform::File::RootForAssets() ==> [%s]", (chars) PlatformImpl::Core::GetCopiedRoot(0));
             return PlatformImpl::Core::GetCopiedRoot(0);
         }

@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\boss_config.h" />
+    <ClInclude Include="..\source\boss_gen_assets.hpp" />
     <ClInclude Include="..\source\helloworld.hpp" />
     <ClInclude Include="..\source\resource.hpp" />
   </ItemGroup>

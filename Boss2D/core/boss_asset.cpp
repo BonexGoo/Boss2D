@@ -3,7 +3,7 @@
 
 #include <platform/boss_platform.hpp>
 #if BOSS_NEED_EMBEDDED_ASSET
-    #include <boss_gen_assets.cpp>
+    #include <boss_gen_assets.hpp>
 #endif
 
 class AssetPathClass
@@ -95,7 +95,7 @@ namespace BOSS
 
     static void _Rebuild(const Context& info)
     {
-        if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source/boss_gen_assets.cpp"))
+        if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source/boss_gen_assets.hpp"))
         {
             String GenText;
             GenText += "#include <boss.hpp>\n";
@@ -146,18 +146,23 @@ namespace BOSS
             GenText += "\n";
 
             GenText += String::Format("static const sint32 gEmbeddedFileCount = %d;\n", info("files").LengthOfIndexable());
-            GenText += "static EmbeddedFile gEmbeddedFiles[gEmbeddedFileCount] = {\n";
-            const sint32 AssetsPathLength = Platform::File::RootForAssets().Length();
-            for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
+            GenText += "static EmbeddedFile gEmbeddedFiles[] = {\n";
+            if(info("files").LengthOfIndexable() == 0)
+                GenText += "    {\"\", nullptr, 0, 0, 0, 0}\n";
+            else
             {
-                auto& CurFile = info("files")[i];
-                uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
-                Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()),
-                    &CurSize, &CurCTime, &CurATime, &CurMTime);
+                const sint32 AssetsPathLength = Platform::File::RootForAssets().Length();
+                for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
+                {
+                    auto& CurFile = info("files")[i];
+                    uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
+                    Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()),
+                        &CurSize, &CurCTime, &CurATime, &CurMTime);
 
-                GenText += String::Format("    {\"%s\", ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
-                    CurFile("path").GetString() + AssetsPathLength, CurFile("id").GetString(), CurSize, CurCTime, CurATime, CurMTime,
-                    (i < iend - 1)? "," : "");
+                    GenText += String::Format("    {\"%s\", ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
+                        CurFile("path").GetString() + AssetsPathLength, CurFile("id").GetString(), CurSize, CurCTime, CurATime, CurMTime,
+                        (i < iend - 1)? "," : "");
+                }
             }
             GenText += "};\n";
 

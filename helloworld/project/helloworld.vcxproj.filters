@@ -33,6 +33,9 @@
     <ClInclude Include="..\source\resource.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\boss_gen_assets.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\helloworld.cpp">
