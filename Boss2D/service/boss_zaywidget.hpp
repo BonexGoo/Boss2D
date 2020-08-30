@@ -32,7 +32,6 @@ namespace BOSS
         ZaySon mZaySon;
         String mZaySonViewName;
         String mZaySonAssetName;
-        String mZaySonFileName;
         uint64 mZaySonFileSize;
         uint64 mZaySonModifyTime;
         ResourceCB mResourceCB;

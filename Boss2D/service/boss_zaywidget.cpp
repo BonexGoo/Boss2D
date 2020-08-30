@@ -252,7 +252,6 @@ namespace BOSS
     {
         mZaySon = ToReference(rhs.mZaySon);
         mZaySonAssetName = ToReference(rhs.mZaySonAssetName);
-        mZaySonFileName = ToReference(rhs.mZaySonFileName);
         mZaySonFileSize = ToReference(rhs.mZaySonFileSize);
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
         mResourceCB = ToReference(rhs.mResourceCB);
@@ -281,11 +280,7 @@ namespace BOSS
         if(assetname != nullptr) mZaySonAssetName = assetname;
         BOSS_ASSERT("assetname이 존재해야 합니다", 0 < mZaySonAssetName.Length());
 
-        mZaySonFileName = Platform::File::RootForAssetsRem() + mZaySonAssetName;
-        if(!Platform::File::Exist(mZaySonFileName))
-            mZaySonFileName = Platform::File::RootForAssets() + mZaySonAssetName;
-
-        if(Platform::File::GetAttributes(WString::FromChars(mZaySonFileName), &mZaySonFileSize, nullptr, nullptr, &mZaySonModifyTime) != -1)
+        if(Asset::Exist(mZaySonAssetName, nullptr, &mZaySonFileSize, nullptr, nullptr, &mZaySonModifyTime))
         {
             Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName));
             mZaySon.Load(mZaySonViewName, Json);
@@ -302,7 +297,7 @@ namespace BOSS
 
                         // Json체크
                         uint64 FileSize = 0, ModifyTime = 0;
-                        if(Platform::File::GetAttributes(WString::FromChars(Self->mZaySonFileName), &FileSize, nullptr, nullptr, &ModifyTime) != -1)
+                        if(Asset::Exist(Self->mZaySonAssetName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
                         if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
                         {
                             Self->mZaySonFileSize = FileSize;
@@ -313,8 +308,7 @@ namespace BOSS
                         }
 
                         // Pipe체크
-                        sint32 FileInfo = Platform::File::GetAttributes(WString::FromChars(Self->mZaySonFileName + ".pipe"), nullptr, nullptr, nullptr, &ModifyTime);
-                        if(FileInfo == -1)
+                        if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", nullptr, nullptr, nullptr, nullptr, &ModifyTime))
                         {
                             if(Self->mPipeModifyTime != 0)
                             {
