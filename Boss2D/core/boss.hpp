@@ -104,11 +104,6 @@ namespace BOSS
         datatype_class_canmemcpy,
         datatype_pod_canmemcpy,
         datatype_pod_canmemcpy_zeroset};
-    enum roottype:uint08 {roottype_null = 0,
-        roottype_assets, roottype_assetsrem,
-        roottype_assets_syspath0, roottype_assetsrem_syspath0,
-        roottype_assets_syspath1, roottype_assetsrem_syspath1,
-        roottype_assets_syspath2, roottype_assetsrem_syspath2};
     enum packettype:uint08 {packettype_null = 0,
         packettype_entrance, packettype_message, packettype_leaved, packettype_kicked};
     enum orientationtype:uint08 {

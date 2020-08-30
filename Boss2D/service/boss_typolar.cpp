@@ -22,8 +22,7 @@ namespace BOSS
                     // 시간조사
                     const String AssetName = AssetPath + name;
                     uint64 AssetTime = 0;
-                    Platform::File::GetAttributes(WString::FromChars(String(Asset::GetPathForExist(Asset::Exist(AssetName))) + AssetName),
-                        nullptr, nullptr, nullptr, &AssetTime);
+                    Asset::Exist(AssetName, nullptr, nullptr, nullptr, nullptr, &AssetTime);
 
                     // 빌드될 파일명
                     String OutFileName = name + MatchName.Length();

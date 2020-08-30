@@ -2,18 +2,8 @@
 #include "boss_asset.hpp"
 
 #include <platform/boss_platform.hpp>
-
-#if BOSS_NEED_PLATFORM_FILE
-    #if BOSS_WINDOWS
-        #include <windows.h>
-    #endif
-#else
-    #if BOSS_WINDOWS
-        #include <windows.h>
-    #else
-        #include <sys/stat.h>
-    #endif
-    #include <stdio.h>
+#if BOSS_NEED_EMBEDDED_ASSET
+    #include <boss_gen_assets.cpp>
 #endif
 
 class AssetPathClass
@@ -23,6 +13,27 @@ public:
     ~AssetPathClass() {}
 
 public:
+    bool Exist(chars filename, uint64* size, uint64* ctime, uint64* atime, uint64* mtime) const
+    {
+        for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
+            if(Asset::Exist(m_pathes[i] + filename, nullptr, size, ctime, atime, mtime))
+                return true;
+        return false;
+    }
+
+    id_asset_read OpenForRead(chars filename) const
+    {
+        for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
+            if(auto NewFile = Asset::OpenForRead(m_pathes[i] + filename))
+                return NewFile;
+        return nullptr;
+    }
+
+    void AddRoot()
+    {
+        m_pathes.AtAdding();
+    }
+
     void AddPath(chars pathname)
     {
         String& NewString = m_pathes.AtAdding();
@@ -35,75 +46,169 @@ public:
         return m_pathes[index];
     }
 
-    roottype Exist(chars filename) const
-    {
-        // 순수한 어셋명 추출
-        chars FileNameOnly = GetBySearchingRule(filename);
-        // 시스템패스 순회
-        for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
-            if(roottype RootType = Asset::Exist(m_pathes[i] + FileNameOnly))
-                return (roottype) (RootType + 2 * (i + 1));
-        return roottype_null;
-    }
-public:
-    static chars GetBySearchingRule(chars filename)
-    {
-        #ifndef BOSS_RULE_ADMIT_MIDDLE_PATH
-            return filename;
-        #else
-            chars FileNameOnly = filename;
-            for(chars NameFocus = filename; *NameFocus; ++NameFocus)
-                if(*NameFocus == '/' || *NameFocus == '\\')
-                    FileNameOnly = NameFocus + 1;
-            return FileNameOnly;
-        #endif
-    }
-
 private:
     Strings m_pathes;
 };
 
 namespace BOSS
 {
-    roottype Asset::Exist(chars filename, id_assetpath_read assetpath)
+    static void _AssetsSearcher(chars itemname, payload data)
     {
-        if(assetpath)
-        if(roottype RootType = ((const AssetPathClass*) assetpath)->Exist(filename))
-            return RootType;
+        Context& Collector = *((Context*) data);
+        if(Platform::File::ExistForDir(itemname)) // 폴더는 재귀처리
+            Platform::File::Search(itemname, _AssetsSearcher, data, true);
+        else
+        {
+            // 무시해야하는 파일은 제외
+            chars Ignores[] = BOSS_NEED_EMBEDDED_IGNORES;
+            const String LowerName = String(itemname).Lower();
+            for(sint32 i = 0, iend = sizeof(Ignores) / sizeof(chars); i < iend; ++i)
+                if(LowerName.Find(0, Ignores[i]) != -1)
+                    return;
 
-        #if BOSS_NEED_PLATFORM_FILE
-            if(Platform::File::Exist(Platform::File::RootForAssetsRem() + filename))
-                return roottype_assetsrem;
-            if(Platform::File::Exist(Platform::File::RootForAssets() + filename))
-                return roottype_assets;
-        #else
-            if(FILE* CheckFile = fopen(Platform::File::RootForAssetsRem() + filename, "rb"))
+            const WString FullName = WString::FromChars(itemname);
+            uint64 FileSize = 0, ModifiedTime = 0;
+            if(Platform::File::GetAttributes(FullName, &FileSize, nullptr, nullptr, &ModifiedTime) != -1)
             {
-                fclose(CheckFile);
-                return roottype_assetsrem;
-            }
-            if(FILE* CheckFile = fopen(Platform::File::RootForAssets() + filename, "rb"))
-            {
-                fclose(CheckFile);
-                return roottype_assets;
-            }
-        #endif
+                String ID = String(itemname + Platform::File::RootForAssets().Length()).Lower();
+                ID.Replace("/", "_DIR_");
+                ID.Replace(" ", "_BLANK_");
+                ID.Replace(".", "_DOT_");
 
-        return roottype_null;
+                auto& NewFile = Collector.At("files").AtAdding();
+                NewFile.At("id").Set(ID);
+                NewFile.At("path").Set(String::FromWChars(FullName));
+                NewFile.At("size").Set(String::FromInteger((sint64) FileSize));
+                NewFile.At("time").Set(String::FromInteger((sint64) ModifiedTime));
+
+                // 집계
+                const sint64 Count = Collector("data")("count").GetInt();
+                const sint64 Size = Collector("data")("size").GetInt();
+                const sint64 Time = Collector("data")("time").GetInt();
+                Collector.At("data").At("count").Set(String::FromInteger(Count + 1));
+                Collector.At("data").At("size").Set(String::FromInteger(sint64(Size + FileSize)));
+                if(Time < sint64(ModifiedTime))
+                    Collector.At("data").At("time").Set(String::FromInteger(sint64(ModifiedTime)));
+            }
+        }
     }
 
-    chars Asset::GetPathForExist(roottype type, id_assetpath_read assetpath)
+    static void _Rebuild(const Context& info)
     {
-        if(type == roottype_null) return "/";
-        String DirPath = ((type % 2) != roottype_assets)?
-            Platform::File::RootForAssetsRem() : Platform::File::RootForAssets();
-        if(assetpath)
-        if(const sint32 PathIndex = (type - roottype_assets) / 2)
-            DirPath += ((const AssetPathClass*) assetpath)->GetPath(PathIndex - 1);
+        if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source/boss_gen_assets.cpp"))
+        {
+            String GenText;
+            GenText += "#include <boss.hpp>\n";
+            GenText += "\n";
+            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_COUNT Signed64(%lld)\n", info("data")("count").GetInt());
+            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_SIZE  Signed64(%lld)\n", info("data")("size").GetInt());
+            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_TIME  Signed64(%lld)\n", info("data")("time").GetInt());
+            GenText += "\n";
 
-        static String StaticResult;
-        StaticResult = DirPath;
-        return StaticResult;
+            // 파일내역
+            for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
+            {
+                auto& CurFile = info("files")[i];
+                GenText += String::Format("static bytes ASSETS_%s = (bytes) // %s (%lldbytes, modified at %lld)",
+                    CurFile("id").GetString(), CurFile("path").GetString(), CurFile("size").GetInt(), CurFile("time").GetInt());
+
+                if(auto BinFile = Platform::File::OpenForRead(CurFile("path").GetString()))
+                {
+                    if(Platform::File::Size(BinFile) == 0)
+                        GenText += "\n    \"\"";
+                    else
+                    {
+                        uint08 Data[50];
+                        while(sint32 DataSize = Platform::File::Read(BinFile, Data, 50))
+                        {
+                            GenText += "\n    \"";
+                            for(sint32 j = 0; j < DataSize; ++j)
+                                GenText += String::Format("\\x%02X", Data[j]);
+                            GenText += "\"";
+                        }
+                    }
+                    Platform::File::Close(BinFile);
+                }
+                else GenText += String::Format("\n\"-File Not Found- (%s)\"", CurFile("path").GetString());
+                GenText += ";\n";
+                GenText += "\n";
+            }
+
+            // 파일인스턴스
+            GenText += "struct EmbeddedFile {\n";
+            GenText += "    chars  mPath;\n";
+            GenText += "    bytes  mData;\n";
+            GenText += "    uint64 mSize;\n";
+            GenText += "    uint64 mCTime;\n";
+            GenText += "    uint64 mATime;\n";
+            GenText += "    uint64 mMTime;\n";
+            GenText += "};\n";
+            GenText += "\n";
+
+            GenText += String::Format("static const sint32 gEmbeddedFileCount = %d;\n", info("files").LengthOfIndexable());
+            GenText += "static EmbeddedFile gEmbeddedFiles[gEmbeddedFileCount] = {\n";
+            const sint32 AssetsPathLength = Platform::File::RootForAssets().Length();
+            for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
+            {
+                auto& CurFile = info("files")[i];
+                uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
+                Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()),
+                    &CurSize, &CurCTime, &CurATime, &CurMTime);
+
+                GenText += String::Format("    {\"%s\", ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
+                    CurFile("path").GetString() + AssetsPathLength, CurFile("id").GetString(), CurSize, CurCTime, CurATime, CurMTime,
+                    (i < iend - 1)? "," : "");
+            }
+            GenText += "};\n";
+
+            Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
+            Platform::File::Close(GenFile);
+        }
+    }
+
+    bool Asset::RebuildForEmbedded()
+    {
+        #if BOSS_NEED_EMBEDDED_ASSET
+        const String& AssetsPath = Platform::File::RootForAssets();
+        const String AssetsDir = AssetsPath.Left(AssetsPath.Length() - 1);
+
+        // Assets폴더가 있는 경우에만 리빌드조건 검사를 진행
+        if(Platform::File::ExistForDir(AssetsDir))
+        {
+            // 내장되어야 하는 파일을 리스팅
+            Context NewCollector;
+            Platform::File::Search(AssetsDir, _AssetsSearcher, &NewCollector, true);
+
+            // 기존 소스와의 비교
+            if(NewCollector("data")("count").GetInt() != BOSS_EMBEDDED_ASSET_COUNT ||
+                NewCollector("data")("size").GetInt() != BOSS_EMBEDDED_ASSET_SIZE ||
+                NewCollector("data")("time").GetInt() != BOSS_EMBEDDED_ASSET_TIME)
+            {
+                // 리빌드 묻기
+                if(Platform::Popup::MessageDialog("리빌드가 필요합니다",
+                    "임베디드어셋에 변경이 있습니다.\n\n리빌드후 종료할까요?", DBT_YesNo) == 0)
+                {
+                    _Rebuild(NewCollector);
+                    return true;
+                }
+            }
+        }
+        #endif
+        return false;
+    }
+
+    bool Asset::Exist(chars filename, id_assetpath_read assetpath,
+        uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+    {
+        if(assetpath)
+            return ((const AssetPathClass*) assetpath)->Exist(filename, size, ctime, atime, mtime);
+        if(Platform::File::GetAttributes(WString::FromChars(Platform::File::RootForAssetsRem() + filename),
+            size, ctime, atime, mtime) != -1)
+            return true;
+        if(Platform::File::GetAttributes(WString::FromChars(Platform::File::RootForAssets() + filename),
+            size, ctime, atime, mtime) != -1)
+            return true;
+        return false;
     }
 
     buffer Asset::ToBuffer(chars filename, id_assetpath_read assetpath)
@@ -121,126 +226,83 @@ namespace BOSS
 
     id_asset_read Asset::OpenForRead(chars filename, id_assetpath_read assetpath)
     {
-        const roottype RootType = Exist(filename, assetpath);
-        if(RootType != roottype_null)
-        {
-            String FilePath = GetPathForExist(RootType, assetpath);
-            FilePath += AssetPathClass::GetBySearchingRule(filename);
-            #if BOSS_NEED_PLATFORM_FILE
-                return (id_asset_read) Platform::File::OpenForRead(FilePath);
-            #else
-                return (id_asset_read) fopen(FilePath, "rb");
-            #endif
-        }
+        if(assetpath)
+            return ((const AssetPathClass*) assetpath)->OpenForRead(filename);
+        if(auto Asset = Platform::File::OpenForRead(Platform::File::RootForAssetsRem() + filename))
+            return (id_asset_read) Asset;
+        if(auto Asset = Platform::File::OpenForRead(Platform::File::RootForAssets() + filename))
+            return (id_asset_read) Asset;
         return nullptr;
     }
 
     id_asset Asset::OpenForWrite(chars filename, bool autocreatedir)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            return (id_asset) Platform::File::OpenForWrite(Platform::File::RootForAssetsRem() + filename, autocreatedir);
-        #else
-            FILE* WriteFile = fopen(Platform::File::RootForAssetsRem() + filename, "wb");
-            if(autocreatedir && !WriteFile)
-            {
-                String DirPath = Platform::File::RootForAssetsRem();
-                for(chars iChar = filename; *iChar; ++iChar)
-                {
-                    const char OneChar = *iChar;
-                    if(OneChar == '/' || OneChar == '\\')
-                        #if BOSS_WINDOWS
-                            CreateDirectoryA(DirPath, nullptr);
-                        #else
-                            mkdir(DirPath, 0777);
-                        #endif
-                    DirPath += OneChar;
-                }
-                WriteFile = fopen(Platform::File::RootForAssetsRem() + filename, "wb");
-            }
-            return (id_asset) WriteFile;
-        #endif
+        return (id_asset) Platform::File::OpenForWrite(
+            Platform::File::RootForAssetsRem() + filename, autocreatedir);
     }
 
     void Asset::Close(id_asset_read asset)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            Platform::File::Close((id_file_read) asset);
-        #else
-            fclose((FILE*) asset);
-        #endif
+        Platform::File::Close((id_file_read) asset);
     }
 
     const sint32 Asset::Size(id_asset_read asset)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            return Platform::File::Size((id_file_read) asset);
-        #else
-            long CurrentPos = ftell((FILE*) asset);
-            fseek((FILE*) asset, 0, SEEK_END);
-            long Result = ftell((FILE*) asset);
-            fseek((FILE*) asset, CurrentPos, SEEK_SET);
-            return Result;
-        #endif
+        return Platform::File::Size((id_file_read) asset);
     }
 
-    void Asset::Read(id_asset_read asset, uint08* data, const sint32 size)
+    sint32 Asset::Read(id_asset_read asset, uint08* data, const sint32 size)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            Platform::File::Read((id_file_read) asset, data, size);
-        #else
-            fread(data, 1, size, (FILE*) asset);
-        #endif
+        return Platform::File::Read((id_file_read) asset, data, size);
     }
 
-    void Asset::Write(id_asset asset, bytes data, const sint32 size)
+    sint32 Asset::Write(id_asset asset, bytes data, const sint32 size)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            Platform::File::Write((id_file) asset, data, size);
-        #else
-            fwrite(data, 1, size, (FILE*) asset);
-        #endif
+        return Platform::File::Write((id_file) asset, data, size);
     }
 
-    void Asset::Skip(id_asset_read asset, const sint32 size)
+    sint32 Asset::Skip(id_asset_read asset, const sint32 size)
     {
-        #if BOSS_NEED_PLATFORM_FILE
-            Platform::File::Seek((id_file_read) asset, Platform::File::Focus((id_file_read) asset) + size);
-        #else
-            fseek((FILE*) asset, size, SEEK_CUR);
-        #endif
+        const sint32 OldPos = Platform::File::Focus((id_file_read) asset);
+        Platform::File::Seek((id_file_read) asset, OldPos + size);
+        return Platform::File::Focus((id_file_read) asset);
     }
 
-    bool Asset::ValidCache(chars filename, chars cachename, id_assetpath_read assetpath)
-    {
-        if(roottype FileRoot = Asset::Exist(filename, assetpath))
-        if(roottype CacheRoot = Asset::Exist(cachename, assetpath))
-        {
-            uint64 FileTime = 0, CacheTime = 0;
-            const WString FileName = WString::FromChars(String(GetPathForExist(FileRoot, assetpath)) + filename);
-            const WString CacheName = WString::FromChars(String(GetPathForExist(CacheRoot, assetpath)) + cachename);
-            Platform::File::GetAttributes(FileName, nullptr, nullptr, nullptr, &FileTime);
-            Platform::File::GetAttributes(CacheName, nullptr, nullptr, nullptr, &CacheTime);
-            return (FileTime < CacheTime);
-        }
-        return false;
-    }
-
-    id_assetpath Asset::CreatePath(chars pathname)
+    id_assetpath AssetPath::Create()
     {
         AssetPathClass* NewAssetPath = (AssetPathClass*) Buffer::Alloc<AssetPathClass>(BOSS_DBG 1);
-        if(pathname) NewAssetPath->AddPath(pathname);
         return (id_assetpath) NewAssetPath;
     }
 
-    void Asset::AddByPath(id_assetpath assetpath, chars pathname)
+    void AssetPath::AddRoot(id_assetpath assetpath)
+    {
+        BOSS_ASSERT("assetpath인수가 nullptr입니다", assetpath);
+        ((AssetPathClass*) assetpath)->AddRoot();
+    }
+
+    void AssetPath::AddPath(id_assetpath assetpath, chars pathname)
     {
         BOSS_ASSERT("assetpath인수가 nullptr입니다", assetpath);
         BOSS_ASSERT("pathname인수가 nullptr입니다", pathname);
         ((AssetPathClass*) assetpath)->AddPath(pathname);
     }
 
-    void Asset::ReleasePath(id_assetpath_read assetpath)
+    void AssetPath::Release(id_assetpath assetpath)
     {
         Buffer::Free((buffer) assetpath);
+    }
+
+    void AssetPath::Find(id_assetpath_read assetpath, FindFileCB filecb, FindPathCB pathcb)
+    {
+        //////////////////////////////////
+        //////////////////////////////////
+        //////////////////////////////////
+    }
+
+    void AssetPath::Reset(id_assetpath_read assetpath)
+    {
+        //////////////////////////////////
+        //////////////////////////////////
+        //////////////////////////////////
     }
 }

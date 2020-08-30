@@ -1439,9 +1439,6 @@ extern "C" void boss_seterrno(int err)
 #if !defined(BOSS_NEED_MAIN) || (BOSS_NEED_MAIN != 0 && BOSS_NEED_MAIN != 1)
     #error BOSS_NEED_MAIN macro is invalid use
 #endif
-#if !defined(BOSS_NEED_PLATFORM_FILE) || (BOSS_NEED_PLATFORM_FILE != 0 && BOSS_NEED_PLATFORM_FILE != 1)
-    #error BOSS_NEED_PLATFORM_FILE macro is invalid use
-#endif
 #if !defined(BOSS_NEED_PROFILE) || (BOSS_NEED_PROFILE != 0 && BOSS_NEED_PROFILE != 1)
     #error BOSS_NEED_PROFILE macro is invalid use
 #endif
@@ -1453,4 +1450,7 @@ extern "C" void boss_seterrno(int err)
 #endif
 #if !defined(BOSS_NEED_SILENT_NIGHT) || (BOSS_NEED_SILENT_NIGHT != 0 && BOSS_NEED_SILENT_NIGHT != 1)
     #error BOSS_NEED_SILENT_NIGHT macro is invalid use
+#endif
+#if !defined(BOSS_NEED_EMBEDDED_ASSET) || (BOSS_NEED_EMBEDDED_ASSET != 0 && BOSS_NEED_EMBEDDED_ASSET != 1)
+    #error BOSS_NEED_EMBEDDED_ASSET macro is invalid use
 #endif

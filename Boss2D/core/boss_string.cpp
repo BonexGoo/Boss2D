@@ -333,6 +333,36 @@ namespace BOSS
         return String(&m_words[BeginPos], EndPos - BeginPos);
     }
 
+    String String::Lower() const
+    {
+        chararray NewWords;
+        NewWords.AtDumpingAdded(m_words.Count());
+        for(sint32 i = 0, iend = m_words.Count() - 1; i < iend; ++i)
+        {
+            const char OneWord = m_words[i];
+            if('A' <= OneWord && OneWord <= 'Z')
+                NewWords.At(i) = OneWord + ('a' - 'A');
+            else NewWords.At(i) = OneWord;
+        }
+        NewWords.At(m_words.Count() - 1) = '\0';
+        return String(NewWords);
+    }
+
+    String String::Upper() const
+    {
+        chararray NewWords;
+        NewWords.AtDumpingAdded(m_words.Count());
+        for(sint32 i = 0, iend = m_words.Count() - 1; i < iend; ++i)
+        {
+            const char OneWord = m_words[i];
+            if('a' <= OneWord && OneWord <= 'z')
+                NewWords.At(i) = OneWord - ('a' - 'A');
+            else NewWords.At(i) = OneWord;
+        }
+        NewWords.At(m_words.Count() - 1) = '\0';
+        return String(NewWords);
+    }
+
     bool String::ToFile(chars filename, bool bom) const
     {
         if(id_file TextAsset = Platform::File::OpenForWrite(filename, true))

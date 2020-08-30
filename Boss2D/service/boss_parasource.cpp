@@ -560,7 +560,7 @@ namespace BOSS
         {
             const String AssetName = "paraasset/" + Name;
             // 태스킹을 통한 캐시화
-            if(Asset::Exist(AssetName) == roottype_null)
+            if(!Asset::Exist(AssetName))
             {
                 Strings* NewStrings = (Strings*) Buffer::Alloc<Strings>(BOSS_DBG 1);
                 NewStrings->AtAdding() = AssetName;
@@ -616,7 +616,7 @@ namespace BOSS
             if(buffer Buffer = Tasking::GetAnswer(mTasking))
             {
                 const String AssetName((id_cloned_share) Share::Create(Buffer));
-                if(Asset::Exist(AssetName) != roottype_null)
+                if(Asset::Exist(AssetName))
                 {
                     const String JsonText = String::FromAsset(AssetName);
                     mContext = new Context();
@@ -668,7 +668,7 @@ namespace BOSS
                 if(buffer Buffer = Tasking::GetAnswer(mTasking))
                 {
                     const String AssetName((id_cloned_share) Share::Create(Buffer));
-                    if(Asset::Exist(AssetName) != roottype_null)
+                    if(Asset::Exist(AssetName))
                     {
                         if(mImage.SetName(AssetName).Load())
                             mLoadingMsec = Platform::Utility::CurrentTimeMsec();

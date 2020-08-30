@@ -177,7 +177,7 @@ namespace BOSS
         if(buffer CurQuery = query.Dequeue(nullptr))
         {
             auto& CurReserver = *((DownloadReserver*) CurQuery);
-            if(Asset::Exist(CurReserver.mPath + CurReserver.mFileName) == roottype_null)
+            if(!Asset::Exist(CurReserver.mPath + CurReserver.mFileName))
             {
                 // HTML파일
                 if(CurReserver.mHtml)

@@ -209,6 +209,14 @@ namespace BOSS
         /// @return 새로운 객체
         String Trim() const;
 
+        /// @brief 소문자화
+        /// @return 새로운 객체
+        String Lower() const;
+
+        /// @brief 대문자화
+        /// @return 새로운 객체
+        String Upper() const;
+
         /// @brief 파일로 저장
         /// @param filename : 파일명
         /// @param bom : BOM코드 삽입
