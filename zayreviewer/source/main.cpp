@@ -6,7 +6,14 @@
 
 bool PlatformInit()
 {
-    Platform::InitForGL();
+    #if !BOSS_WASM
+        Platform::InitForGL();
+    #else
+        Platform::InitForMDI();
+    #endif
+    if(Asset::RebuildForEmbedded())
+        return false;
+
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Boss2D ZayReviewer");
     Platform::SetWindowView("zayreviewerView");

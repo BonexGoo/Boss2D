@@ -22,20 +22,40 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// AssetReadFileClass
-class AssetReadFileClass : public AssetClass
+// AssetFileClass
+class AssetFileClass : public AssetClass
 {
 public:
-    AssetReadFileClass() {m_read_file = nullptr;}
-    ~AssetReadFileClass() override {Platform::File::Close(m_read_file);}
+    AssetFileClass() {m_file = nullptr;}
+    ~AssetFileClass() override {Platform::File::Close(m_file);}
 
+public:
+    sint32 Size() override
+    {
+        return Platform::File::Size(m_file);
+    }
+    sint32 Skip(const sint32 size) override
+    {
+        const sint32 OldPos = Platform::File::Focus(m_file);
+        Platform::File::Seek(m_file, OldPos + size);
+        return Platform::File::Focus(m_file);
+    }
+
+protected:
+    id_file m_file;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// AssetReadFileClass
+class AssetReadFileClass : public AssetFileClass
+{
 public:
     static AssetClass* Create(chars pathname)
     {
         if(auto Asset = Platform::File::OpenForRead(pathname))
         {
             auto Result = new AssetReadFileClass();
-            Result->m_read_file = Asset;
+            Result->m_file = (id_file) Asset;
             return Result;
         }
         return nullptr;
@@ -47,71 +67,41 @@ public:
     }
 
 public:
-    sint32 Size() override
-    {
-        return Platform::File::Size(m_read_file);
-    }
     sint32 Read(uint08* data, const sint32 size) override
     {
-        return Platform::File::Read(m_read_file, data, size);
+        return Platform::File::Read(m_file, data, size);
     }
     sint32 Write(bytes data, const sint32 size) override
     {
         return 0;
     }
-    sint32 Skip(const sint32 size) override
-    {
-        const sint32 OldPos = Platform::File::Focus(m_read_file);
-        Platform::File::Seek(m_read_file, OldPos + size);
-        return Platform::File::Focus(m_read_file);
-    }
-
-private:
-    id_file_read m_read_file;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetWriteFileClass
-class AssetWriteFileClass : public AssetClass
+class AssetWriteFileClass : public AssetFileClass
 {
-public:
-    AssetWriteFileClass() {m_write_file = nullptr;}
-    ~AssetWriteFileClass() override {Platform::File::Close(m_write_file);}
-
 public:
     static AssetClass* Create(chars pathname, bool autocreatedir)
     {
         if(auto Asset = Platform::File::OpenForWrite(pathname, autocreatedir))
         {
             auto Result = new AssetWriteFileClass();
-            Result->m_write_file = Asset;
+            Result->m_file = Asset;
             return Result;
         }
         return nullptr;
     }
 
 public:
-    sint32 Size() override
-    {
-        return Platform::File::Size(m_write_file);
-    }
     sint32 Read(uint08* data, const sint32 size) override
     {
         return 0;
     }
     sint32 Write(bytes data, const sint32 size) override
     {
-        return Platform::File::Write(m_write_file, data, size);
+        return Platform::File::Write(m_file, data, size);
     }
-    sint32 Skip(const sint32 size) override
-    {
-        const sint32 OldPos = Platform::File::Focus(m_write_file);
-        Platform::File::Seek(m_write_file, OldPos + size);
-        return Platform::File::Focus(m_write_file);
-    }
-
-private:
-    id_file m_write_file;
 };
 
 #if BOSS_NEED_EMBEDDED_ASSET
@@ -124,44 +114,9 @@ private:
         ~AssetEmbeddedFileClass() override {}
 
     public:
-        static AssetClass* Create(chars pathname)
-        {
-            if(auto OneFile = FindFile(pathname))
-            {
-                auto Result = new AssetEmbeddedFileClass();
-                Result->m_embedded_file = OneFile;
-                return Result;
-            }
-            return nullptr;
-        }
-        static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
-        {
-            if(auto OneFile = FindFile(pathname))
-            {
-                if(size) *size = OneFile->mSize;
-                if(ctime) *ctime = OneFile->mCTime;
-                if(atime) *atime = OneFile->mATime;
-                if(mtime) *mtime = OneFile->mMTime;
-                return true;
-            }
-            return false;
-        }
-
-    public:
         sint32 Size() override
         {
             return m_embedded_file->mSize;
-        }
-        sint32 Read(uint08* data, const sint32 size) override
-        {
-            const sint32 Size = Math::Min(size, m_embedded_file->mSize - m_pos);
-            Memory::Copy(data, m_embedded_file->mData + m_pos, Size);
-            m_pos += Size;
-            return Size;
-        }
-        sint32 Write(bytes data, const sint32 size) override
-        {
-            return 0;
         }
         sint32 Skip(const sint32 size) override
         {
@@ -169,12 +124,33 @@ private:
             return m_pos;
         }
 
-    private:
-        static const EmbeddedFile* FindFile(chars pathname)
+    protected:
+        static EmbeddedFile* FindCache(chars pathname, bool forced)
+        {
+            const String PathName = String(pathname).Lower();
+            if(auto FindedCache = gEmbeddedCaches.Access(PathName))
+                return FindedCache;
+
+            // 캐시생성
+            if(forced)
+            {
+                auto& NewCache = gEmbeddedCaches(PathName);
+                NewCache.mPath = (chars) PathName;
+                NewCache.mBuffer = Buffer::Alloc(BOSS_DBG 1024);
+                NewCache.mData = (bytes) NewCache.mBuffer;
+                NewCache.mSize = 0;
+                NewCache.mCTime = 0;
+                NewCache.mATime = 0;
+                NewCache.mMTime = 0;
+                return &NewCache;
+            }
+            return nullptr;
+        }
+        static EmbeddedFile* FindFile(chars pathname)
         {
             // 이진탐색
             const String PathName = String(pathname).Lower();
-            sint32 iLow = 0, iHigh = gEmbeddedFileCount - 1;
+            sint32 iLow = 0, iHigh = BOSS_EMBEDDED_ASSET_COUNT - 1;
             while(iLow <= iHigh)
             {
                 const sint32 i = (iLow + iHigh) / 2;
@@ -188,9 +164,96 @@ private:
             return nullptr;
         }
 
-    private:
-        const EmbeddedFile* m_embedded_file;
+    protected:
+        EmbeddedFile* m_embedded_file;
         sint32 m_pos;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetEmbeddedReadFileClass
+    class AssetEmbeddedReadFileClass : public AssetEmbeddedFileClass
+    {
+    public:
+        static AssetClass* Create(bool cache, chars pathname)
+        {
+            EmbeddedFile* FindedFile = FindCache(pathname, false);
+            if(!FindedFile) FindedFile = FindFile(pathname);
+            if(FindedFile)
+            {
+                auto Result = new AssetEmbeddedReadFileClass();
+                Result->m_embedded_file = FindedFile;
+                return Result;
+            }
+            return nullptr;
+        }
+        static bool Exist(bool cache, chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+        {
+            EmbeddedFile* FindedFile = FindCache(pathname, false);
+            if(!FindedFile) FindedFile = FindFile(pathname);
+            if(FindedFile)
+            {
+                if(size) *size = FindedFile->mSize;
+                if(ctime) *ctime = FindedFile->mCTime;
+                if(atime) *atime = FindedFile->mATime;
+                if(mtime) *mtime = FindedFile->mMTime;
+                return true;
+            }
+            return false;
+        }
+
+    public:
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            const sint32 Size = Math::Min(size, m_embedded_file->mSize - m_pos);
+            Memory::Copy(data, m_embedded_file->mData + m_pos, Size);
+            m_pos += Size;
+            return Size;
+        }
+        sint32 Write(bytes data, const sint32 size) override
+        {
+            return 0;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetEmbeddedWriteFileClass
+    class AssetEmbeddedWriteFileClass : public AssetEmbeddedFileClass
+    {
+    public:
+        static AssetClass* Create(chars pathname)
+        {
+            if(auto OneFile = FindCache(pathname, true))
+            {
+                auto Result = new AssetEmbeddedWriteFileClass();
+                Result->m_embedded_file = OneFile;
+                return Result;
+            }
+            return nullptr;
+        }
+
+    public:
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            return 0;
+        }
+        sint32 Write(bytes data, const sint32 size) override
+        {
+            const sint32 NewSize = m_embedded_file->mSize + size;
+            sint32 OldSize = Buffer::CountOf(m_embedded_file->mBuffer);
+            if(OldSize < NewSize)
+            {
+                do {OldSize *= 2;}
+                while(OldSize < NewSize);
+                m_embedded_file->mBuffer =
+                    Buffer::Realloc(BOSS_DBG m_embedded_file->mBuffer, OldSize);
+                m_embedded_file->mData = (bytes) m_embedded_file->mBuffer;
+            }
+
+            Memory::Copy(((uint08*) m_embedded_file->mBuffer)
+                + m_embedded_file->mSize, data, size);
+            m_embedded_file->mSize += size;
+            return size;
+        }
     };
 #endif
 
@@ -340,19 +403,21 @@ namespace BOSS
 
                 // 파일인스턴스
                 GenText += "struct EmbeddedFile {\n";
-                GenText += "    chars  mPath;\n";
+                GenText += "    String mPath;\n";
+                GenText += "    buffer mBuffer;\n";
                 GenText += "    bytes  mData;\n";
                 GenText += "    uint64 mSize;\n";
                 GenText += "    uint64 mCTime;\n";
                 GenText += "    uint64 mATime;\n";
                 GenText += "    uint64 mMTime;\n";
+                GenText += "    ~EmbeddedFile() {Buffer::Free(mBuffer);}\n";
                 GenText += "};\n";
                 GenText += "\n";
 
-                GenText += String::Format("static const sint32 gEmbeddedFileCount = %d;\n", info("files").LengthOfIndexable());
-                GenText += "static const EmbeddedFile gSortedEmbeddedFiles[] = {\n";
+                GenText += "static Map<EmbeddedFile> gEmbeddedCaches;\n";
+                GenText += "static EmbeddedFile gSortedEmbeddedFiles[] = {\n";
                 if(info("files").LengthOfIndexable() == 0)
-                    GenText += "    {\"\", nullptr, 0, 0, 0, 0}\n";
+                    GenText += "    {\"\", nullptr, nullptr, 0, 0, 0, 0}\n";
                 else
                 {
                     // 파일정렬
@@ -383,7 +448,7 @@ namespace BOSS
                             auto& CurFile = (*CurPayload.mFiles)[*data];
                             uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
                             Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()), &CurSize, &CurCTime, &CurATime, &CurMTime);
-                            *CurPayload.mGenText += String::Format("    {\"%s\", ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
+                            *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
                                 &path->GetPath()[0], CurFile("id").GetString(), CurSize, CurCTime, CurATime, CurMTime,
                                 (CurPayload.mIndex < CurPayload.mCount - 1)? "," : "");
                             CurPayload.mIndex++;
@@ -428,23 +493,6 @@ namespace BOSS
         return false;
     }
 
-    bool Asset::Exist(chars filename, id_assetpath_read assetpath,
-        uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
-    {
-        if(assetpath)
-            return ((const AssetPathClass*) assetpath)->Exist(filename, size, ctime, atime, mtime);
-        if(AssetReadFileClass::Exist(Platform::File::RootForAssetsRem() + filename, size, ctime, atime, mtime))
-            return true;
-        #if BOSS_NEED_EMBEDDED_ASSET
-            if(AssetEmbeddedFileClass::Exist(filename, size, ctime, atime, mtime))
-                return true;
-        #else
-            if(AssetReadFileClass::Exist(Platform::File::RootForAssets() + filename, size, ctime, atime, mtime))
-                return true;
-        #endif
-        return false;
-    }
-
     buffer Asset::ToBuffer(chars filename, id_assetpath_read assetpath)
     {
         if(auto Asset = OpenForRead(filename, assetpath))
@@ -458,16 +506,37 @@ namespace BOSS
         return nullptr;
     }
 
+    bool Asset::Exist(chars filename, id_assetpath_read assetpath,
+        uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+    {
+        if(assetpath)
+            return ((const AssetPathClass*) assetpath)->Exist(filename, size, ctime, atime, mtime);
+        #if BOSS_NEED_EMBEDDED_ASSET
+            if(AssetEmbeddedReadFileClass::Exist(true, filename, size, ctime, atime, mtime))
+                return true;
+            if(AssetEmbeddedReadFileClass::Exist(false, filename, size, ctime, atime, mtime))
+                return true;
+        #else
+            if(AssetReadFileClass::Exist(Platform::File::RootForAssetsRem() + filename, size, ctime, atime, mtime))
+                return true;
+            if(AssetReadFileClass::Exist(Platform::File::RootForAssets() + filename, size, ctime, atime, mtime))
+                return true;
+        #endif
+        return false;
+    }
+
     id_asset_read Asset::OpenForRead(chars filename, id_assetpath_read assetpath)
     {
         if(assetpath)
             return ((const AssetPathClass*) assetpath)->OpenForRead(filename);
-        if(auto Asset = AssetReadFileClass::Create(Platform::File::RootForAssetsRem() + filename))
-            return (id_asset_read) Asset;
         #if BOSS_NEED_EMBEDDED_ASSET
-            if(auto Asset = AssetEmbeddedFileClass::Create(filename))
+            if(auto Asset = AssetEmbeddedReadFileClass::Create(true, filename))
+                return (id_asset_read) Asset;
+            if(auto Asset = AssetEmbeddedReadFileClass::Create(false, filename))
                 return (id_asset_read) Asset;
         #else
+            if(auto Asset = AssetReadFileClass::Create(Platform::File::RootForAssetsRem() + filename))
+                return (id_asset_read) Asset;
             if(auto Asset = AssetReadFileClass::Create(Platform::File::RootForAssets() + filename))
                 return (id_asset_read) Asset;
         #endif
@@ -476,8 +545,12 @@ namespace BOSS
 
     id_asset Asset::OpenForWrite(chars filename, bool autocreatedir)
     {
-        return (id_asset) AssetWriteFileClass::Create(
-            Platform::File::RootForAssetsRem() + filename, autocreatedir);
+        #if BOSS_NEED_EMBEDDED_ASSET
+            return (id_asset) AssetEmbeddedWriteFileClass::Create(filename);
+        #else
+            return (id_asset) AssetWriteFileClass::Create(
+                Platform::File::RootForAssetsRem() + filename, autocreatedir);
+        #endif
     }
 
     void Asset::Close(id_asset_read asset)

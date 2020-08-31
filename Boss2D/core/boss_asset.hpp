@@ -15,6 +15,12 @@ namespace BOSS
         /// @return 리빌드 실시여부
         static bool RebuildForEmbedded();
 
+        /// @brief 어셋을 버퍼로 반환(읽기전용)
+        /// @param filename : 파일명
+        /// @param assetpath : 어셋패스로 여러 폴더를 탐색
+        /// @return 버퍼
+        static buffer ToBuffer(chars filename, id_assetpath_read assetpath = nullptr);
+
         /// @brief 어셋존재여부 얻기
         /// @param filename : 파일명
         /// @param assetpath : 어셋패스로 여러 폴더를 탐색
@@ -25,12 +31,6 @@ namespace BOSS
         /// @return 존재여부
         static bool Exist(chars filename, id_assetpath_read assetpath = nullptr,
             uint64* size = nullptr, uint64* ctime = nullptr, uint64* atime = nullptr, uint64* mtime = nullptr);
-
-        /// @brief 어셋을 버퍼로 반환(읽기전용)
-        /// @param filename : 파일명
-        /// @param assetpath : 어셋패스로 여러 폴더를 탐색
-        /// @return 버퍼
-        static buffer ToBuffer(chars filename, id_assetpath_read assetpath = nullptr);
 
         /// @brief 어셋열기(읽기전용)
         /// @param filename : 파일명

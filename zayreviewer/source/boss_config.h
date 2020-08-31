@@ -14,7 +14,7 @@
 #define BOSS_NEED_ADDON_ALPR       0
 #define BOSS_NEED_ADDON_CURL       0
 #define BOSS_NEED_ADDON_DLIB       0
-#define BOSS_NEED_ADDON_FREETYPE   1
+#define BOSS_NEED_ADDON_FREETYPE   (!BOSS_WASM)
 #define BOSS_NEED_ADDON_GIT        0
 #define BOSS_NEED_ADDON_H264       0
 #define BOSS_NEED_ADDON_JPG        0
@@ -33,11 +33,12 @@
 ////////////////////////////////////////
 // Detail
 ////////////////////////////////////////
-#define BOSS_NEED_FORCED_FAKEWIN  0
-#define BOSS_NEED_FULLSCREEN      (BOSS_IPHONE | BOSS_ANDROID)
-#define BOSS_NEED_MAIN            1
-#define BOSS_NEED_PLATFORM_FILE   1
-#define BOSS_NEED_PROFILE         0
-#define BOSS_NEED_RELEASE_TRACE   1
-#define BOSS_NEED_NATIVE_OPENGL   0
-#define BOSS_NEED_SILENT_NIGHT    0
+#define BOSS_NEED_FORCED_FAKEWIN   0
+#define BOSS_NEED_FULLSCREEN       (BOSS_IPHONE | BOSS_ANDROID)
+#define BOSS_NEED_MAIN             1
+#define BOSS_NEED_PROFILE          0
+#define BOSS_NEED_RELEASE_TRACE    1
+#define BOSS_NEED_NATIVE_OPENGL    0
+#define BOSS_NEED_SILENT_NIGHT     0
+#define BOSS_NEED_EMBEDDED_ASSET   0
+#define BOSS_NEED_EMBEDDED_IGNORES {".json.pipe", ".json.old", ".json.f5"}

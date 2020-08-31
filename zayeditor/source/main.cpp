@@ -7,6 +7,9 @@
 bool PlatformInit()
 {
     Platform::InitForMDI();
+    if(Asset::RebuildForEmbedded())
+        return false;
+
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Boss2D ZayEditor");
     Platform::SetWindowView("zayeditorView");
