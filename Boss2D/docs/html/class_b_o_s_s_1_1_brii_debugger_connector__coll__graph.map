@@ -1,7 +1,0 @@
-<map id="BOSS::BriiDebuggerConnector" name="BOSS::BriiDebuggerConnector">
-<area shape="rect" id="node1" title=" " alt="" coords="7,451,207,477"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_brii_connector.html" title="브리통신" alt="" coords="34,375,179,401"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html" title="스트링지원" alt="" coords="5,13,107,39"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_remote_1_1_method.html" title=" " alt="" coords="143,124,305,151"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_array.html" title="공유배열지원" alt="" coords="133,5,315,47"/>
-</map>

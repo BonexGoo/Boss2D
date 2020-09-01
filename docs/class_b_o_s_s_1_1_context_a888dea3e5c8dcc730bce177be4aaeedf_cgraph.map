@@ -1,5 +1,0 @@
-<map id="BOSS::Context::LoadBin" name="BOSS::Context::LoadBin">
-<area shape="rect" id="node1" title="Bin바이너리를 로드" alt="" coords="5,5,172,32"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a8a77cc6b5fcfe2c1f5cfca0785036289" title="텍스트길이 구하기" alt="" coords="220,5,368,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="416,5,556,32"/>
-</map>

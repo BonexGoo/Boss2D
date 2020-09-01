@@ -1,4 +1,0 @@
-<map id="BOSS::Tasking::KeepAnswer" name="BOSS::Tasking::KeepAnswer">
-<area shape="rect" id="node1" title="수신한 응답을 처리하지 않고 다시 보관" alt="" coords="5,5,199,32"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_buffer.html#aa83e74d940d588d09aaa8090ce0bec65" title="해제" alt="" coords="247,5,381,32"/>
-</map>

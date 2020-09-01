@@ -1,4 +1,0 @@
-<map id="BOSS::Platform::File::Seek" name="BOSS::Platform::File::Seek">
-<area shape="rect" id="node1" title="파일위치지정(SEEK_SET)" alt="" coords="188,5,332,47"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_asset.html#a6457dcee2fdee91dcf3e2ec1baaae69c" title="어셋구간통과" alt="" coords="5,13,140,39"/>
-</map>

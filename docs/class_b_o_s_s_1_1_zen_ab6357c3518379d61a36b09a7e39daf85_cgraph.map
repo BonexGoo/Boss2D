@@ -1,5 +1,0 @@
-<map id="BOSS::Zen::operator()" name="BOSS::Zen::operator()">
-<area shape="rect" id="node1" title="자식으로 순번접근(키워드식)" alt="" coords="5,31,156,57"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#a5ed963000aa073ecd9a6d55277857727" title="쓰기접근" alt="" coords="231,5,350,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a1e3aeeae2981a4be124db246bab29518" title="자율추가하여 쓰기접근" alt="" coords="204,56,377,83"/>
-</map>

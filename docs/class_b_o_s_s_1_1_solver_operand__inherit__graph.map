@@ -1,7 +1,0 @@
-<map id="BOSS::SolverOperand" name="BOSS::SolverOperand">
-<area shape="rect" id="node1" title=" " alt="" coords="5,81,156,108"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_solver_formula.html" title=" " alt="" coords="221,5,371,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_solver_literal.html" title=" " alt="" coords="227,56,365,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_solver_operand_blank.html" title=" " alt="" coords="204,107,388,133"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_solver_variable.html" title=" " alt="" coords="221,157,371,184"/>
-</map>

@@ -1,8 +1,0 @@
-<map id="BOSS::Asset::Exist" name="BOSS::Asset::Exist">
-<area shape="rect" id="node1" title="어셋존재여부 얻기" alt="" coords="5,78,144,105"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#abd05c7ef57c2cf3b3a07cdd53528afc3" title="파일존재여부 얻기" alt="" coords="192,5,336,47"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a3a150098d1967ca2df4c1aa38fa0d30c" title="원본(읽기전용) 어셋폴더 경로얻기" alt="" coords="192,71,336,112"/>
-<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a636cc6d79ffb688a1786921f6aaa5aa1" title="사본(읽기/쓰기) 어셋폴더 경로얻기" alt="" coords="192,136,336,177"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a8a77cc6b5fcfe2c1f5cfca0785036289" title="텍스트길이 구하기" alt="" coords="384,111,532,138"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="580,111,720,138"/>
-</map>

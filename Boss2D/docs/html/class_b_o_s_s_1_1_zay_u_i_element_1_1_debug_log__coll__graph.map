@@ -1,6 +1,0 @@
-<map id="BOSS::ZayUIElement::DebugLog" name="BOSS::ZayUIElement::DebugLog">
-<area shape="rect" id="node1" title=" " alt="" coords="35,171,183,212"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html" title="스트링지원" alt="" coords="5,81,107,108"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_rect.html" title="2D영역" alt="" coords="131,81,226,108"/>
-<area shape="rect" id="node4" href="$struct_b_o_s_s_1_1rect128f.html" title=" " alt="" coords="122,5,235,32"/>
-</map>

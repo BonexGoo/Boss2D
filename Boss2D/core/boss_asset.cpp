@@ -136,8 +136,8 @@ public:
             {
                 auto& NewCache = gEmbeddedCaches(PathName);
                 NewCache.mPath = (chars) PathName;
-                NewCache.mBuffer = Buffer::Alloc(BOSS_DBG 1024);
-                NewCache.mData = (bytes) NewCache.mBuffer;
+                NewCache.mBuffer = Buffer::Alloc(BOSS_DBG 256);
+                NewCache.mPages = new bytes[1] {(bytes) NewCache.mBuffer};
                 NewCache.mSize = 0;
                 NewCache.mCTime = 0;
                 NewCache.mATime = 0;
@@ -176,26 +176,22 @@ public:
     public:
         static AssetClass* Create(bool cache, chars pathname)
         {
-            EmbeddedFile* FindedFile = FindCache(pathname, false);
-            if(!FindedFile) FindedFile = FindFile(pathname);
-            if(FindedFile)
+            if(auto OneFile = (cache)? FindCache(pathname, false) : FindFile(pathname))
             {
                 auto Result = new AssetEmbeddedReadFileClass();
-                Result->m_embedded_file = FindedFile;
+                Result->m_embedded_file = OneFile;
                 return Result;
             }
             return nullptr;
         }
         static bool Exist(bool cache, chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
         {
-            EmbeddedFile* FindedFile = FindCache(pathname, false);
-            if(!FindedFile) FindedFile = FindFile(pathname);
-            if(FindedFile)
+            if(auto OneFile = (cache)? FindCache(pathname, false) : FindFile(pathname))
             {
-                if(size) *size = FindedFile->mSize;
-                if(ctime) *ctime = FindedFile->mCTime;
-                if(atime) *atime = FindedFile->mATime;
-                if(mtime) *mtime = FindedFile->mMTime;
+                if(size) *size = OneFile->mSize;
+                if(ctime) *ctime = OneFile->mCTime;
+                if(atime) *atime = OneFile->mATime;
+                if(mtime) *mtime = OneFile->mMTime;
                 return true;
             }
             return false;
@@ -204,10 +200,24 @@ public:
     public:
         sint32 Read(uint08* data, const sint32 size) override
         {
-            const sint32 Size = Math::Min(size, m_embedded_file->mSize - m_pos);
-            Memory::Copy(data, m_embedded_file->mData + m_pos, Size);
-            m_pos += Size;
-            return Size;
+            // 포커스정보 갱신
+            sint32 ReadSize = Math::Min(size, m_embedded_file->mSize - m_pos);
+            sint32 PageIndex = m_pos / BOSS_EMBEDDED_ASSET_PAGE;
+            sint32 PageOffset = m_pos % BOSS_EMBEDDED_ASSET_PAGE;
+            const sint32 Result = ReadSize;
+
+            // 페이지를 돌며 버퍼읽기
+            while(0 < ReadSize)
+            {
+                const sint32 CopySize = Math::Min(ReadSize, BOSS_EMBEDDED_ASSET_PAGE - PageOffset);
+                Memory::Copy(data, m_embedded_file->mPages[PageIndex] + PageOffset, CopySize);
+                data += CopySize;
+                ReadSize -= CopySize;
+                PageIndex++;
+                PageOffset = 0;
+            }
+            m_pos += Result;
+            return Result;
         }
         sint32 Write(bytes data, const sint32 size) override
         {
@@ -238,17 +248,24 @@ public:
         }
         sint32 Write(bytes data, const sint32 size) override
         {
-            const sint32 NewSize = m_embedded_file->mSize + size;
-            sint32 OldSize = Buffer::CountOf(m_embedded_file->mBuffer);
-            if(OldSize < NewSize)
+            // 버퍼확장
+            const sint32 NewBufferSize = m_embedded_file->mSize + size;
+            sint32 CurBufferSize = Buffer::CountOf(m_embedded_file->mBuffer);
+            if(CurBufferSize < NewBufferSize)
             {
-                do {OldSize *= 2;}
-                while(OldSize < NewSize);
+                // 버퍼 재구성
+                do {CurBufferSize *= 2;}
+                while(CurBufferSize < NewBufferSize);
                 m_embedded_file->mBuffer =
-                    Buffer::Realloc(BOSS_DBG m_embedded_file->mBuffer, OldSize);
-                m_embedded_file->mData = (bytes) m_embedded_file->mBuffer;
+                    Buffer::Realloc(BOSS_DBG m_embedded_file->mBuffer, CurBufferSize);
+                // 페이지 재구성
+                delete[] m_embedded_file->mPages;
+                const sint32 NumPages = (CurBufferSize + BOSS_EMBEDDED_ASSET_PAGE - 1) / BOSS_EMBEDDED_ASSET_PAGE;
+                m_embedded_file->mPages = new bytes[NumPages];
+                for(sint32 i = 0; i < NumPages; ++i)
+                    m_embedded_file->mPages[i] = ((bytes) m_embedded_file->mBuffer) + BOSS_EMBEDDED_ASSET_PAGE * i;
             }
-
+            // 버퍼쓰기
             Memory::Copy(((uint08*) m_embedded_file->mBuffer)
                 + m_embedded_file->mSize, data, size);
             m_embedded_file->mSize += size;
@@ -341,6 +358,8 @@ namespace BOSS
                     ID.Replace("/", "_DIR_");
                     ID.Replace(" ", "_BLANK_");
                     ID.Replace(".", "_DOT_");
+                    ID.Replace("-", "_MINUS_");
+                    ID.Replace("+", "_PLUS_");
 
                     auto& NewFile = Collector.At("files").AtAdding();
                     NewFile.At("id").Set(ID);
@@ -370,28 +389,71 @@ namespace BOSS
                 GenText += String::Format("#define BOSS_EMBEDDED_ASSET_COUNT Signed64(%lld)\n", info("data")("count").GetInt());
                 GenText += String::Format("#define BOSS_EMBEDDED_ASSET_SIZE  Signed64(%lld)\n", info("data")("size").GetInt());
                 GenText += String::Format("#define BOSS_EMBEDDED_ASSET_TIME  Signed64(%lld)\n", info("data")("time").GetInt());
+                GenText += "#define BOSS_EMBEDDED_ASSET_PAGE  40000\n";
                 GenText += "\n";
+                // 스트링비우기
+                Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
+                GenText.Empty(true);
 
                 // 파일내역
+                sint32s PartCounts; // 파트정보
                 for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
                 {
                     auto& CurFile = info("files")[i];
                     GenText += String::Format("static bytes ASSETS_%s = (bytes) // %s (%lldbytes, modified at %lld)",
                         CurFile("id").GetString(), CurFile("path").GetString(), CurFile("size").GetInt(), CurFile("time").GetInt());
 
+                    auto& CurPartCount = PartCounts.AtAdding();
+                    CurPartCount = 0;
                     if(auto BinFile = Platform::File::OpenForRead(CurFile("path").GetString()))
                     {
                         if(Platform::File::Size(BinFile) == 0)
                             GenText += "\n    \"\"";
                         else
                         {
-                            uint08 Data[50];
-                            while(sint32 DataSize = Platform::File::Read(BinFile, Data, 50))
+                            // 데이터 쓰기도구
+                            sint32 WrittenSize = 0;
+                            const sint32 LineSize = 40;
+                            uint08 Data[LineSize];
+                            char HexData[4 * LineSize];
+                            for(sint32 j = 0; j < LineSize; ++j)
                             {
+                                char* CurHexData = &HexData[4 * j];
+                                CurHexData[0] = '\\';
+                                CurHexData[1] = 'x';
+                            }
+
+                            // 데이터 쓰기
+                            while(sint32 DataSize = Platform::File::Read(BinFile, Data, LineSize))
+                            {
+                                // 빠른 16진수 쓰기
                                 GenText += "\n    \"";
                                 for(sint32 j = 0; j < DataSize; ++j)
-                                    GenText += String::Format("\\x%02X", Data[j]);
+                                {
+                                    const uint08& CurData = Data[j];
+                                    const sint32 HiWord = (CurData & 0xF0) >> 4;
+                                    const sint32 LoWord = (CurData & 0x0F);
+                                    char* CurHexData = &HexData[4 * j];
+                                    CurHexData[2] = (HiWord < 10)? '0' + HiWord : 'A' + (HiWord - 10);
+                                    CurHexData[3] = (LoWord < 10)? '0' + LoWord : 'A' + (LoWord - 10);
+                                }
+                                GenText.AddTail(HexData, 4 * DataSize);
                                 GenText += "\"";
+
+                                // 컴파일러의 스트링길이 한계에 따른 스트링상수의 파트분리
+                                if(BOSS_EMBEDDED_ASSET_PAGE < (WrittenSize += DataSize) + LineSize)
+                                {
+                                    CurPartCount++;
+                                    WrittenSize = 0;
+                                    GenText += ";\n";
+                                    GenText += "\n";
+                                    // 스트링비우기
+                                    Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
+                                    GenText.Empty(true);
+                                    // 다음 파트의 시작
+                                    GenText += String::Format("static bytes ASSETS_%s_PART%d = (bytes)",
+                                        CurFile("id").GetString(), CurPartCount);
+                                }
                             }
                         }
                         Platform::File::Close(BinFile);
@@ -399,18 +461,24 @@ namespace BOSS
                     else GenText += String::Format("\n\"-File Not Found- (%s)\"", CurFile("path").GetString());
                     GenText += ";\n";
                     GenText += "\n";
+                    // 스트링비우기
+                    Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
+                    GenText.Empty(true);
                 }
 
                 // 파일인스턴스
                 GenText += "struct EmbeddedFile {\n";
                 GenText += "    String mPath;\n";
                 GenText += "    buffer mBuffer;\n";
-                GenText += "    bytes  mData;\n";
+                GenText += "    bytes* mPages;\n";
                 GenText += "    uint64 mSize;\n";
                 GenText += "    uint64 mCTime;\n";
                 GenText += "    uint64 mATime;\n";
                 GenText += "    uint64 mMTime;\n";
-                GenText += "    ~EmbeddedFile() {Buffer::Free(mBuffer);}\n";
+                GenText += "    ~EmbeddedFile() {\n";
+                GenText += "        Buffer::Free(mBuffer);\n";
+                GenText += "        delete[] mPages;\n";
+                GenText += "    }\n";
                 GenText += "};\n";
                 GenText += "\n";
 
@@ -427,7 +495,7 @@ namespace BOSS
                     for(sint32 i = 0; i < FileCount; ++i)
                     {
                         auto& CurFile = info("files")[i];
-                        chars CurPath = CurFile("path").GetString() + AssetsPathLength;
+                        const String CurPath = String(CurFile("path").GetString() + AssetsPathLength).Lower();
                         Sortor(CurPath) = i;
                     }
 
@@ -435,27 +503,40 @@ namespace BOSS
                     struct Payload
                     {
                         const Context* mFiles;
+                        const sint32s* mPartCounts;
                         String* mGenText;
                         sint32 mIndex;
                         sint32 mCount;
                     };
-                    Payload OnePayload = {&info("files"), &GenText, 0, FileCount};
+                    Payload OnePayload = {&info("files"), &PartCounts, &GenText, 0, FileCount};
 
                     // 정렬된 순서대로 기록
                     Sortor.AccessByCallback([](const MapPath* path, sint32* data, payload param)->void
                         {
+                            // 파일정보
                             auto& CurPayload = *((Payload*) param);
                             auto& CurFile = (*CurPayload.mFiles)[*data];
                             uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
-                            Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()), &CurSize, &CurCTime, &CurATime, &CurMTime);
-                            *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, ASSETS_%s, Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
-                                &path->GetPath()[0], CurFile("id").GetString(), CurSize, CurCTime, CurATime, CurMTime,
-                                (CurPayload.mIndex < CurPayload.mCount - 1)? "," : "");
+                            Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetString()),
+                                &CurSize, &CurCTime, &CurATime, &CurMTime);
+
+                            // 파트정보
+                            auto CurPartCount = (*CurPayload.mPartCounts)[CurPayload.mIndex];
+                            String PageList = String::Format("ASSETS_%s", CurFile("id").GetString());
+                            for(sint32 i = 0; i < CurPartCount; ++i)
+                                PageList += String::Format(", ASSETS_%s_PART%d", CurFile("id").GetString(), i + 1);
+
+                            // 구조체구성
+                            *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, new bytes[%d] {%s},\n",
+                                &path->GetPath()[0], CurPartCount + 1, (chars) PageList);
+                            *CurPayload.mGenText += String::Format("        Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
+                                CurSize, CurCTime, CurATime, CurMTime, (CurPayload.mIndex < CurPayload.mCount - 1)? "," : "");
                             CurPayload.mIndex++;
                         }, (payload) &OnePayload);
                 }
                 GenText += "};\n";
 
+                // 남은 스트링쓰기
                 Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
                 Platform::File::Close(GenFile);
             }

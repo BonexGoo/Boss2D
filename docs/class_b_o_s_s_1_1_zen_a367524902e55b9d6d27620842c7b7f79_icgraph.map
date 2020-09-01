@@ -1,6 +1,0 @@
-<map id="BOSS::Zen::IsValid" name="BOSS::Zen::IsValid">
-<area shape="rect" id="node1" title="자신의 유효여부" alt="" coords="204,56,339,83"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_zen.html#ad4defc3abd9e6578a3a247a29cf08707" title="자신의 소수값 얻기" alt="" coords="7,5,154,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_zen.html#a5a3c995dc89587b6ec1194450cff1f59" title="자신의 정수값 얻기" alt="" coords="15,56,146,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_zen.html#aaecd9ee29e79f86d97033c8f3787db75" title="자신의 문자열값 얻기" alt="" coords="5,107,156,133"/>
-</map>

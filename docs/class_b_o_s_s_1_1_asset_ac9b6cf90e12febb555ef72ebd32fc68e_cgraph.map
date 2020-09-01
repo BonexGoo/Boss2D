@@ -1,4 +1,0 @@
-<map id="BOSS::Asset::Read" name="BOSS::Asset::Read">
-<area shape="rect" id="node1" title="어셋읽기" alt="" coords="5,13,144,39"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a0b28c2d505e5cda059b80c407ee08d87" title="파일읽기" alt="" coords="192,5,336,47"/>
-</map>

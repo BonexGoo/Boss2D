@@ -1,6 +1,0 @@
-<map id="BOSS::Platform::File::OpenForWrite" name="BOSS::Platform::File::OpenForWrite">
-<area shape="rect" id="node1" title="파일열기(쓰기전용)" alt="" coords="449,23,593,65"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_asset.html#addb70c2ace155e46460e00f68d58cc7f" title="어셋열기(쓰기전용)" alt="" coords="211,5,401,32"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#aa9113b3edef42b01f6b4ec1bb287f436" title="파일로 저장" alt="" coords="234,56,378,83"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#a712c2c9fd1001ee15ee3a2be3ab72929" title="어셋으로 저장" alt="" coords="5,5,163,32"/>
-</map>

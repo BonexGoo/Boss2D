@@ -1,5 +1,0 @@
-<map id="BOSS::Math::Max" name="BOSS::Math::Max">
-<area shape="rect" id="node1" title="최대값 구하기" alt="" coords="200,31,329,57"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_math.html#a85e0ab83372a6599e45d1b682b8f0d11" title="보정값 구하기" alt="" coords="8,5,149,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#a51612427a47854617cf2df4cf3fc8bc2" title="부분생성(Middle)" alt="" coords="5,56,152,83"/>
-</map>

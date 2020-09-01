@@ -1,7 +1,0 @@
-<map id="BOSS::Asset::OpenForWrite" name="BOSS::Asset::OpenForWrite">
-<area shape="rect" id="node1" title="어셋열기(쓰기전용)" alt="" coords="5,46,196,73"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a10747d4ee4617b2b0c29dd5ee9a1a44a" title="파일열기(쓰기전용)" alt="" coords="244,5,388,47"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a636cc6d79ffb688a1786921f6aaa5aa1" title="사본(읽기/쓰기) 어셋폴더 경로얻기" alt="" coords="244,71,388,112"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a8a77cc6b5fcfe2c1f5cfca0785036289" title="텍스트길이 구하기" alt="" coords="436,78,584,105"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="632,78,772,105"/>
-</map>

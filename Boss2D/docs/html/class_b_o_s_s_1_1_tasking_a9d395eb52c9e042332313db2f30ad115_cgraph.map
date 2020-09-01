@@ -1,6 +1,0 @@
-<map id="BOSS::Tasking::Release" name="BOSS::Tasking::Release">
-<area shape="rect" id="node1" title="태스킹 해제" alt="" coords="5,56,172,83"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_buffer.html#aa83e74d940d588d09aaa8090ce0bec65" title="해제" alt="" coords="231,5,366,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_tasking.html#a08070de68257ca831deab0ceeb2dcc34" title="해당 태스킹의 생존여부" alt="" coords="220,56,377,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_platform_1_1_utility.html#a37a67db7138618f42177bbe5b0ad8118" title="슬립처리" alt="" coords="221,107,377,149"/>
-</map>

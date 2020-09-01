@@ -1,8 +1,0 @@
-<map id="BOSS::ZayConditionElement" name="BOSS::ZayConditionElement">
-<area shape="rect" id="node1" title=" " alt="" coords="222,261,413,288"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_zay_u_i_element.html" title=" " alt="" coords="139,185,287,212"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html" title="스트링지원" alt="" coords="5,81,107,108"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_solver.html" title=" " alt="" coords="289,81,391,108"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_zay_son.html" title="뷰스크립트" alt="" coords="131,81,242,108"/>
-<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_zay_son_interface.html" title="뷰스크립트 원형" alt="" coords="107,5,267,32"/>
-</map>

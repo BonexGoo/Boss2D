@@ -126,7 +126,8 @@ namespace BOSS
         operator id_cloned_share() const;
 
         /// @brief 비우기
-        void Empty();
+        /// @param keepbuffer : 버퍼공간의 유지여부
+        void Empty(bool keepbuffer = false);
 
         /// @brief 접근
         /// @param index : 인덱스(음수는 역인덱스)

@@ -1,4 +1,0 @@
-<map id="BOSS::Map::Remove" name="BOSS::Map::Remove">
-<area shape="rect" id="node1" title="정수식 데이터제거" alt="" coords="217,13,364,39"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_socket.html#aed44ea5655726c85c9c4c1976e0ac31a" title="gethostbyname 기능제공" alt="" coords="5,5,169,47"/>
-</map>

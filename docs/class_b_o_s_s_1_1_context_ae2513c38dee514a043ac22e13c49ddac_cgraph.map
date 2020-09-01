@@ -1,7 +1,0 @@
-<map id="BOSS::Context::LoadJson" name="BOSS::Context::LoadJson">
-<area shape="rect" id="node1" title="Json소스를 파싱하여 로드(chars)" alt="" coords="5,56,180,83"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#ac8bfa29a51c66de8be16110eaf3beaaa" title="초기화" alt="" coords="228,31,379,57"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_object.html#ac288d2824b2186b5a0b3d3ab03b3e2f4" title="데이터값(공유방식)" alt="" coords="615,56,801,83"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_object.html#a3aae72c0060d7273ee451b474b11cc38" title="비우기" alt="" coords="637,5,779,32"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_context.html#a33ce4fdcb9a7cdf200617a903fc4ca98" title="자신의 값 설정" alt="" coords="427,31,567,57"/>
-</map>

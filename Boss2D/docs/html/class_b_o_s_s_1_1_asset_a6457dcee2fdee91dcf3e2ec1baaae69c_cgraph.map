@@ -1,5 +1,0 @@
-<map id="BOSS::Asset::Skip" name="BOSS::Asset::Skip">
-<area shape="rect" id="node1" title="어셋구간통과" alt="" coords="5,46,140,73"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a82610256ea6b4b882ca5f1eba5f0817a" title="파일포커스" alt="" coords="188,5,332,47"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_platform_1_1_file.html#a85d58af909d4343245ad7fe944f0ae4b" title="파일위치지정(SEEK_SET)" alt="" coords="188,71,332,112"/>
-</map>

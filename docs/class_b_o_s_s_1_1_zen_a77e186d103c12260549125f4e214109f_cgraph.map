@@ -1,8 +1,0 @@
-<map id="BOSS::Zen::Load" name="BOSS::Zen::Load">
-<area shape="rect" id="node1" title="Zen소스 읽기" alt="" coords="5,56,129,83"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a913b0250f38fd420772be51181d04dee" title="strncmp식 비교" alt="" coords="177,56,339,83"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_string.html#a8a77cc6b5fcfe2c1f5cfca0785036289" title="텍스트길이 구하기" alt="" coords="184,5,332,32"/>
-<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_zen.html#a937bbae18a9ffcfbb72e7d5575ef6169" title="생성자" alt="" coords="199,107,317,133"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="387,5,527,32"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_math.html#ae4a003def91cd5baf407231b267d9d75" title="최소값 구하기" alt="" coords="394,56,519,83"/>
-</map>

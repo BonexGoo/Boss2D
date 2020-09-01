@@ -1,4 +1,0 @@
-<map id="BOSS::Tasking::UnlockCommonForTask" name="BOSS::Tasking::UnlockCommonForTask">
-<area shape="rect" id="node1" title="해당 커먼에 공통버퍼 반환(태스크전용)" alt="" coords="5,5,217,47"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_buffer.html#aa83e74d940d588d09aaa8090ce0bec65" title="해제" alt="" coords="265,13,400,39"/>
-</map>

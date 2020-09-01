@@ -1,4 +1,0 @@
-<map id="BOSS::Platform::Utility::Random" name="BOSS::Platform::Utility::Random">
-<area shape="rect" id="node1" title="난수 구하기" alt="" coords="205,5,361,47"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_math.html#a9a40e07ccf05f7c4fb8822d3c2fec6b5" title="랜덤값 구하기" alt="" coords="5,13,157,39"/>
-</map>

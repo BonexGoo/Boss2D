@@ -1,9 +1,0 @@
-<map id="BOSS::WString::AddTail" name="BOSS::WString::AddTail">
-<area shape="rect" id="node1" title="후방추가(네이티브 와이드스트링으로부터)" alt="" coords="5,132,171,159"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#a4047695e876e5c1b48c97d0447dc5622" title="저수준식 쓰기접근" alt="" coords="231,5,402,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_array.html#a1e3aeeae2981a4be124db246bab29518" title="자율추가하여 쓰기접근" alt="" coords="230,56,403,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_memory.html#aad68970f5d322a7d1d1989f4ca7862c7" title="복사" alt="" coords="241,107,393,133"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="247,157,387,184"/>
-<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_w_string.html#acfc0f7cf47549951e9b8ff2a9b86e4a7" title="추가" alt="" coords="224,208,409,235"/>
-<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_array.html#a00fe24f0dd88376b74e683d0d2861c5e" title="후미삭제(메모리공간은 보존)" alt="" coords="219,259,415,285"/>
-</map>

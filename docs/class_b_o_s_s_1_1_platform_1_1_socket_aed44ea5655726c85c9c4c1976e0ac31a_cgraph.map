@@ -1,5 +1,0 @@
-<map id="BOSS::Platform::Socket::GetHostByName" name="BOSS::Platform::Socket::GetHostByName">
-<area shape="rect" id="node1" title="gethostbyname 기능제공" alt="" coords="5,23,169,65"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_map.html#a3f0a8e8b1a43b60ce343d557f1e10dff" title="정수식 접근(생성불가)" alt="" coords="219,5,363,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_map.html#ac1a48eeb452701e0e3426c64ea963012" title="정수식 데이터제거" alt="" coords="217,56,364,83"/>
-</map>

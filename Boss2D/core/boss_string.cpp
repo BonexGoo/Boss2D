@@ -190,9 +190,14 @@ namespace BOSS
         return m_words;
     }
 
-    void String::Empty()
+    void String::Empty(bool keepbuffer)
     {
-        m_words = NullString();
+        if(keepbuffer)
+        {
+            m_words.SubtractionAll();
+            m_words.AtAdding() = '\0';
+        }
+        else m_words = NullString();
         m_findmap = sint32s::Null();
     }
 

@@ -1,5 +1,0 @@
-<map id="BOSS::Math::Clamp" name="BOSS::Math::Clamp">
-<area shape="rect" id="node1" title="보정값 구하기" alt="" coords="5,31,147,57"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_math.html#a43fc751ea0334c785dd238af7b68572d" title="최대값 구하기" alt="" coords="195,5,324,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_math.html#ae4a003def91cd5baf407231b267d9d75" title="최소값 구하기" alt="" coords="197,56,322,83"/>
-</map>

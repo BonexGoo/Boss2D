@@ -1,6 +1,0 @@
-<map id="BOSS::WString::MakeCp949" name="BOSS::WString::MakeCp949">
-<area shape="rect" id="node1" title="CP949형 스트링으로 컨버팅하여 반환" alt="" coords="5,31,196,57"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_array.html#a32bb766090e0ad7d2755bda02256c31d" title="추가(후미+1)하여 쓰기접근" alt="" coords="245,5,404,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_w_string.html#a38f9da3317271d58fe270d370a313d28" title="텍스트길이 구하기" alt="" coords="244,56,405,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="453,56,593,83"/>
-</map>

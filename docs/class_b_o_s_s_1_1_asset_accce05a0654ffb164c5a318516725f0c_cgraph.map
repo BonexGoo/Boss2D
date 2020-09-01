@@ -1,4 +1,0 @@
-<map id="BOSS::Asset::Size" name="BOSS::Asset::Size">
-<area shape="rect" id="node1" title="어셋사이즈 얻기" alt="" coords="5,13,140,39"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#af901536e18e926549e68dbf9511c3912" title="파일사이즈 얻기" alt="" coords="188,5,332,47"/>
-</map>

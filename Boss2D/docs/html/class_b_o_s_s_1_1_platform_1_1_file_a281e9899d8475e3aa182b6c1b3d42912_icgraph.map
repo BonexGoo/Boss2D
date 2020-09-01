@@ -1,7 +1,0 @@
-<map id="BOSS::Platform::File::OpenForRead" name="BOSS::Platform::File::OpenForRead">
-<area shape="rect" id="node1" title="파일열기(읽기전용)" alt="" coords="464,23,608,65"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_string.html#a66a3a4873fd48ec1c8dbd85474af6d96" title="파일로드식 객체생성" alt="" coords="241,5,401,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_asset.html#a08b3dbd897ae94567b49ee1a152779dc" title="어셋열기(읽기전용)" alt="" coords="227,56,416,83"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a0fb8b385b3865776914a9c36869001e7" title="어셋로드식 객체생성" alt="" coords="5,31,179,57"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_asset.html#a0bcbfdd0d08d3d585031669c4e8cabe4" title="어셋을 버퍼로 반환(읽기전용)" alt="" coords="14,81,170,108"/>
-</map>

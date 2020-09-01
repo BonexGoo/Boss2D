@@ -1,4 +1,0 @@
-<map id="BOSS::Queue::Dequeue" name="BOSS::Queue::Dequeue">
-<area shape="rect" id="node1" title="큐에서 1개 데이터배출" alt="" coords="223,13,387,39"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_queue.html#a288eb83dea54678ec47b96a6f9ea78d1" title="소멸자" alt="" coords="5,5,175,47"/>
-</map>

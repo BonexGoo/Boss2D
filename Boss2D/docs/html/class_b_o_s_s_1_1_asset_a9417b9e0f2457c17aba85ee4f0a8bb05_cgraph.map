@@ -1,4 +1,0 @@
-<map id="BOSS::Asset::Close" name="BOSS::Asset::Close">
-<area shape="rect" id="node1" title="어셋닫기" alt="" coords="5,13,148,39"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_platform_1_1_file.html#ac1ebd5ea222c0d30fa8eadad7563b8fa" title="파일닫기" alt="" coords="196,5,340,47"/>
-</map>

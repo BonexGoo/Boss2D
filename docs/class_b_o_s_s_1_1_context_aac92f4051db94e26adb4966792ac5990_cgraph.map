@@ -1,6 +1,0 @@
-<map id="BOSS::Context::Context" name="BOSS::Context::Context">
-<area shape="rect" id="node1" title="생성자(Bin바이너리를 로드)" alt="" coords="5,5,171,32"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#a888dea3e5c8dcc730bce177be4aaeedf" title="Bin바이너리를 로드" alt="" coords="219,5,385,32"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_string.html#a8a77cc6b5fcfe2c1f5cfca0785036289" title="텍스트길이 구하기" alt="" coords="433,5,581,32"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_array.html#a58bb715c39af8feffa7be4f5a8cbb688" title="배열수량 구하기" alt="" coords="629,5,769,32"/>
-</map>

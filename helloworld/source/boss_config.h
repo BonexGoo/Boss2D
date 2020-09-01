@@ -40,5 +40,5 @@
 #define BOSS_NEED_RELEASE_TRACE    1
 #define BOSS_NEED_NATIVE_OPENGL    0
 #define BOSS_NEED_SILENT_NIGHT     0
-#define BOSS_NEED_EMBEDDED_ASSET   1
+#define BOSS_NEED_EMBEDDED_ASSET   0
 #define BOSS_NEED_EMBEDDED_IGNORES {".json.pipe", ".json.old", ".json.f5"}

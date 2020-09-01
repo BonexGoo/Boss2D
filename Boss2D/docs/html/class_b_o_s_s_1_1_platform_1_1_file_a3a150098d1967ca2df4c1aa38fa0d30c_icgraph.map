@@ -1,9 +1,0 @@
-<map id="BOSS::Platform::File::RootForAssets" name="BOSS::Platform::File::RootForAssets">
-<area shape="rect" id="node1" title="원본(읽기전용) 어셋폴더 경로얻기" alt="" coords="719,49,863,90"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_asset.html#ad5c51e0317192986c2e8d73ca5111d05" title="어셋존재여부 얻기" alt="" coords="498,31,637,57"/>
-<area shape="rect" id="node7" href="$class_b_o_s_s_1_1_asset.html#a5ed4e5ecfc1b7e369bfe25d60e10abe1" title="Exist결과 얻기" alt="" coords="464,81,671,108"/>
-<area shape="rect" id="node3" href="$class_b_o_s_s_1_1_asset.html#a08b3dbd897ae94567b49ee1a152779dc" title="어셋열기(읽기전용)" alt="" coords="227,31,416,57"/>
-<area shape="rect" id="node6" href="$class_b_o_s_s_1_1_asset.html#aed55e7ed106f4885cc493d0f5dae4127" title="캐시의 유효성검사(수정시간 비교방식)" alt="" coords="234,81,409,108"/>
-<area shape="rect" id="node4" href="$class_b_o_s_s_1_1_string.html#a0fb8b385b3865776914a9c36869001e7" title="어셋로드식 객체생성" alt="" coords="5,5,179,32"/>
-<area shape="rect" id="node5" href="$class_b_o_s_s_1_1_asset.html#a0bcbfdd0d08d3d585031669c4e8cabe4" title="어셋을 버퍼로 반환(읽기전용)" alt="" coords="14,56,170,83"/>
-</map>

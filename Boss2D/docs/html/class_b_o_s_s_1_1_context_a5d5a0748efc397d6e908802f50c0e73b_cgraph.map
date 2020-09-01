@@ -1,4 +1,0 @@
-<map id="BOSS::Context::GetInt" name="BOSS::Context::GetInt">
-<area shape="rect" id="node1" title="자신의 정수값 얻기(디폴트처리)" alt="" coords="5,5,160,32"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_context.html#adab4933285a18b273d85cf7ef041bf61" title="자신의 정수값 얻기" alt="" coords="208,5,363,32"/>
-</map>

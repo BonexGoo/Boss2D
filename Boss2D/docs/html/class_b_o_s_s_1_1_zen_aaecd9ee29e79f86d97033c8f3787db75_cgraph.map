@@ -1,4 +1,0 @@
-<map id="BOSS::Zen::GetString" name="BOSS::Zen::GetString">
-<area shape="rect" id="node1" title="자신의 문자열값 얻기" alt="" coords="5,5,156,32"/>
-<area shape="rect" id="node2" href="$class_b_o_s_s_1_1_zen.html#a367524902e55b9d6d27620842c7b7f79" title="자신의 유효여부" alt="" coords="204,5,339,32"/>
-</map>
