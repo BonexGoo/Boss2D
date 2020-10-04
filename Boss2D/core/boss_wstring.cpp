@@ -242,13 +242,18 @@ namespace BOSS
 
     WString& WString::operator=(wchars rhs)
     {
-        m_words.Clear();
-        if(rhs)
+        if(&m_words[0] != rhs)
         {
-            do {m_words.AtAdding() = *rhs;}
-            while(*(rhs++));
+            wchararray* RhsTemp = GetSafedRhs(rhs);
+            m_words.Clear();
+            if(rhs)
+            {
+                do {m_words.AtAdding() = *rhs;}
+                while(*(rhs++));
+            }
+            else m_words.AtAdding() = L'\0';
+            delete RhsTemp;
         }
-        else m_words.AtAdding() = L'\0';
         return *this;
     }
 
@@ -267,12 +272,14 @@ namespace BOSS
 
     WString& WString::operator+=(wchars rhs)
     {
+        wchararray* RhsTemp = GetSafedRhs(rhs);
         if(rhs)
         {
             m_words.SubtractionOne();
             do {m_words.AtAdding() = *rhs;}
             while(*(rhs++));
         }
+        delete RhsTemp;
         return *this;
     }
 
@@ -798,6 +805,19 @@ namespace BOSS
     const wchararray& WString::NullString()
     {
         return *BOSS_STORAGE_SYS(wchararray, L'\0');
+    }
+
+    wchararray* WString::GetSafedRhs(wchars& rhs)
+    {
+        wchararray* Result = nullptr;
+        if(&m_words[0] <= rhs && rhs <= &m_words[-1])
+        {
+            Result = new wchararray();
+            const sint32 Length = boss_wcslen(rhs);
+            Memory::Copy(Result->AtDumpingAdded(Length + 1), rhs, sizeof(wchar_t) * (Length + 1));
+            rhs = &(*Result)[0];
+        }
+        return Result;
     }
 }
 

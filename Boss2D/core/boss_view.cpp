@@ -8,21 +8,28 @@ namespace BOSS
     class ViewMutex
     {
     public:
-        static ViewMutex& ST()
-        {static ViewMutex _; return _;}
+        static void Lock()
+        {
+            Mutex::LocalLock(ST().mMutex);
+        }
+        static void Unlock()
+        {
+            Mutex::LocalUnlock(ST().mMutex);
+        }
     private:
         ViewMutex()
         {
             mMutex = Mutex::Open();
-            mLockCount = 0;
         }
         ~ViewMutex()
         {
             Mutex::Close(mMutex);
         }
+    private:
+        static ViewMutex& ST()
+        {static ViewMutex _; return _;}
     public:
         id_mutex mMutex;
-        sint32 mLockCount;
     };
     typedef Map<h_view> ViewMap;
     static ViewMap& gAllViews() {static ViewMap _; return _;}
@@ -48,11 +55,13 @@ namespace BOSS
         BOSS_ASSERT("사용할 수 없는 Key입니다", CurKey);
         chars ViewName = (viewclass && *viewclass)? viewclass : "_defaultview_";
 
-        Mutex::Lock(ViewMutex::ST().mMutex);
-        BOSS_ASSERT("이미 생성된 뷰가 존재합니다", !gAllViews().Access(CurKey));
-        gAllViews()[CurKey] = view;
-        gViewsByName(ViewName)[CurKey] = view;
-        Mutex::Unlock(ViewMutex::ST().mMutex);
+        ViewMutex::Lock();
+        {
+            BOSS_ASSERT("이미 생성된 뷰가 존재합니다", !gAllViews().Access(CurKey));
+            gAllViews()[CurKey] = view;
+            gViewsByName(ViewName)[CurKey] = view;
+        }
+        ViewMutex::Unlock();
     }
 
     void View::Unregist(chars viewclass, h_view view)
@@ -62,17 +71,18 @@ namespace BOSS
         BOSS_ASSERT("사용할 수 없는 Key입니다", CurKey);
         chars ViewName = (viewclass && *viewclass)? viewclass : "_defaultview_";
 
-        Mutex::Lock(ViewMutex::ST().mMutex);
-        BOSS_ASSERT("해제할 뷰가 존재하지 않습니다", gAllViews().Access(CurKey));
-        gAllViews().Remove(CurKey);
-        gViewsByName(ViewName).Remove(CurKey);
-        Mutex::Unlock(ViewMutex::ST().mMutex);
+        ViewMutex::Lock();
+        {
+            BOSS_ASSERT("해제할 뷰가 존재하지 않습니다", gAllViews().Access(CurKey));
+            gAllViews().Remove(CurKey);
+            gViewsByName(ViewName).Remove(CurKey);
+        }
+        ViewMutex::Unlock();
     }
 
     const Map<h_view>* View::SearchBegin(chars viewclass)
     {
-        if(ViewMutex::ST().mLockCount++ == 0)
-            Mutex::Lock(ViewMutex::ST().mMutex);
+        ViewMutex::Lock();
         if(viewclass)
             return &gViewsByName(viewclass);
         return &gAllViews();
@@ -80,8 +90,7 @@ namespace BOSS
 
     void View::SearchEnd()
     {
-        if(--ViewMutex::ST().mLockCount == 0)
-            Mutex::Unlock(ViewMutex::ST().mMutex);
+        ViewMutex::Unlock();
     }
 
     h_view View::SetView(h_view view)
@@ -99,7 +108,7 @@ namespace BOSS
         return nullptr;
     }
 
-    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode)
+    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
     {
     }
 

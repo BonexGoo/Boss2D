@@ -40,7 +40,7 @@ namespace BOSS
         virtual h_view SetView(h_view view);
         virtual bool IsNative();
         virtual void* GetClass();
-        virtual void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode);
+        virtual void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);
         virtual void SetCallback(UpdaterCB cb, payload data);
         virtual void DirtyAllSurfaces();
 

@@ -75,14 +75,19 @@ namespace BOSS
 
     String& String::operator=(chars rhs)
     {
-        m_words.Clear();
-        if(rhs)
+        if(&m_words[0] != rhs)
         {
-            do {m_words.AtAdding() = *rhs;}
-            while(*(rhs++));
+            chararray* RhsTemp = GetSafedRhs(rhs);
+            m_words.Clear();
+            if(rhs)
+            {
+                do {m_words.AtAdding() = *rhs;}
+                while(*(rhs++));
+            }
+            else m_words.AtAdding() = '\0';
+            m_findmap.Clear();
+            delete RhsTemp;
         }
-        else m_words.AtAdding() = '\0';
-        m_findmap.Clear();
         return *this;
     }
 
@@ -102,6 +107,7 @@ namespace BOSS
 
     String& String::operator+=(chars rhs)
     {
+        chararray* RhsTemp = GetSafedRhs(rhs);
         if(rhs)
         {
             m_words.SubtractionOne();
@@ -109,6 +115,7 @@ namespace BOSS
             while(*(rhs++));
             m_findmap.Clear();
         }
+        delete RhsTemp;
         return *this;
     }
 
@@ -764,6 +771,19 @@ namespace BOSS
     const chararray& String::NullString()
     {
         return *BOSS_STORAGE_SYS(chararray, '\0');
+    }
+
+    chararray* String::GetSafedRhs(chars& rhs)
+    {
+        chararray* Result = nullptr;
+        if(&m_words[0] <= rhs && rhs <= &m_words[-1])
+        {
+            Result = new chararray();
+            const sint32 Length = boss_strlen(rhs);
+            Memory::Copy(Result->AtDumpingAdded(Length + 1), rhs, sizeof(char) * (Length + 1));
+            rhs = &(*Result)[0];
+        }
+        return Result;
     }
 
     const sint32* String::GetFindMap() const

@@ -200,6 +200,7 @@ namespace BOSS
 
     private:
         static const wchararray& NullString();
+        wchararray* GetSafedRhs(wchars& rhs);
 
     private:
         wchararray m_words;

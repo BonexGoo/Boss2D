@@ -35,5 +35,15 @@ namespace BOSS
         /// @param mutex : 뮤텍스ID
         /// @see Lock
         static void Unlock(id_mutex mutex);
+
+        /// @brief 로컬식 뮤텍스 잠금
+        /// @param mutex : 뮤텍스ID
+        /// @see LocalUnlock
+        static void LocalLock(id_mutex mutex);
+
+        /// @brief 로컬식 뮤텍스 해제
+        /// @param mutex : 뮤텍스ID
+        /// @see LocalLock
+        static void LocalUnlock(id_mutex mutex);
     };
 }

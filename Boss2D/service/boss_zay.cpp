@@ -1644,15 +1644,11 @@ namespace BOSS
         return m_class;
     }
 
-    void ZayView::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode)
+    void ZayView::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
     {
-        if(safemode)
-        {
-            auto LockID = m_ref_func->m_lock(m_class);
-            m_ref_func->m_notify(type, topic, in, out);
-            m_ref_func->m_unlock(LockID);
-        }
-        else m_ref_func->m_notify(type, topic, in, out);
+        m_ref_func->m_lock(m_class);
+        m_ref_func->m_notify(type, topic, in, out);
+        m_ref_func->m_unlock();
     }
 
     void ZayView::SetCallback(UpdaterCB cb, payload data)
@@ -1674,19 +1670,19 @@ namespace BOSS
         BOSS_ASSERT("브로드캐스트 등록에 실패하였습니다", m_class);
         View::Regist(m_viewclass, m_class->m_view);
 
-        auto LockID = m_ref_func->m_lock(m_class);
+        m_ref_func->m_lock(m_class);
         m_ref_func->m_command(CT_Create, "", nullptr, nullptr);
-        m_ref_func->m_unlock(LockID);
+        m_ref_func->m_unlock();
     }
 
     bool ZayView::OnCanQuit()
     {
         if(!m_agreed_quit)
         {
-            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_lock(m_class);
             id_cloned_share out = nullptr;
             m_ref_func->m_command(CT_CanQuit, "(Can you quit?)", nullptr, &out);
-            m_ref_func->m_unlock(LockID);
+            m_ref_func->m_unlock();
 
             bool Result = true;
             if(out)
@@ -1701,9 +1697,9 @@ namespace BOSS
 
     void ZayView::OnDestroy()
     {
-        auto LockID = m_ref_func->m_lock(m_class);
+        m_ref_func->m_lock(m_class);
         m_ref_func->m_command(CT_Destroy, "", nullptr, nullptr);
-        m_ref_func->m_unlock(LockID);
+        m_ref_func->m_unlock();
 
         BOSS_ASSERT("브로드캐스트 해제에 실패하였습니다", m_class);
         View::Unregist(m_viewclass, m_class->m_view);
@@ -1715,16 +1711,16 @@ namespace BOSS
         WH.AtAdding() = w;
         WH.AtAdding() = h;
 
-        auto LockID = m_ref_func->m_lock(m_class);
+        m_ref_func->m_lock(m_class);
         m_ref_func->m_command(CT_Size, "", WH, nullptr);
-        m_ref_func->m_unlock(LockID);
+        m_ref_func->m_unlock();
     }
 
     void ZayView::OnTick()
     {
-        auto LockID = m_ref_func->m_lock(m_class);
+        m_ref_func->m_lock(m_class);
         m_ref_func->m_command(CT_Tick, "", nullptr, nullptr);
-        m_ref_func->m_unlock(LockID);
+        m_ref_func->m_unlock();
 
         ((ZayController*) m_class)->wakeUpCheck();
     }
@@ -1735,10 +1731,10 @@ namespace BOSS
         ZAY_LTRB_SCISSOR(NewPanel, l, t, r, b)
         ZAY_XYWH(NewPanel, -l, -t, r, b)
         {
-            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_lock(m_class);
             Platform::Graphics::UpdateImageRoutineTimeout(10);
             m_ref_func->m_render(NewPanel);
-            m_ref_func->m_unlock(LockID);
+            m_ref_func->m_unlock();
         }
         ((ZayController*) m_class)->nextFrame();
 
@@ -1798,7 +1794,7 @@ namespace BOSS
 
         if(CurElement.m_cb)
         {
-            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_lock(m_class);
             const bool IsSameElement = (&CurElement == PressElement);
             switch(type)
             {
@@ -1858,7 +1854,7 @@ namespace BOSS
                 CurElement.m_cb(this, &CurElement, GT_LongPressed, x, y);
                 break;
             }
-            m_ref_func->m_unlock(LockID);
+            m_ref_func->m_unlock();
         }
 
         // MovingLosed와 DroppingLosed의 처리
@@ -1874,19 +1870,19 @@ namespace BOSS
         Touch* CurTouch = (Touch*) m_touch;
         if(const Element* CurElement = CurTouch->getcapture())
         {
-            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_lock(m_class);
             if(pressed)
                 CurElement->m_cb(this, CurElement, GT_KeyPressed, code, text[0]);
             else CurElement->m_cb(this, CurElement, GT_KeyReleased, code, text[0]);
-            m_ref_func->m_unlock(LockID);
+            m_ref_func->m_unlock();
         }
         else
         {
-            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_lock(m_class);
             if(pressed)
                 m_ref_func->m_notify(NT_KeyPress, text, sint32o(code), nullptr);
             else m_ref_func->m_notify(NT_KeyRelease, text, sint32o(code), nullptr);
-            m_ref_func->m_unlock(LockID);
+            m_ref_func->m_unlock();
         }
     }
 
@@ -1897,18 +1893,18 @@ namespace BOSS
         {
             if(OldMover->m_cb)
             {
-                auto LockID = m_ref_func->m_lock(m_class);
+                m_ref_func->m_lock(m_class);
                 OldMover->m_cb(this, OldMover, GT_MovingLosed, x, y);
-                m_ref_func->m_unlock(LockID);
+                m_ref_func->m_unlock();
             }
         }
         if(const Element* OldDropper = CurTouch->changedropping(element, type))
         {
             if(OldDropper->m_cb)
             {
-                auto LockID = m_ref_func->m_lock(m_class);
+                m_ref_func->m_lock(m_class);
                 OldDropper->m_cb(this, OldDropper, GT_DroppingLosed, x, y);
-                m_ref_func->m_unlock(LockID);
+                m_ref_func->m_unlock();
             }
         }
     }

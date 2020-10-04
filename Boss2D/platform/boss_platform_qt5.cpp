@@ -633,7 +633,7 @@
             window.set_buf(nullptr);
         }
 
-        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout, bool safemode)
+        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
             BOSS_TRACE("SendNotify(%s)", topic);
             if(!g_data || !g_window)
@@ -642,36 +642,35 @@
             if(needout)
             {
                 id_cloned_share Result;
-                ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, &Result, safemode);
+                ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, &Result);
                 return Result;
             }
-            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, nullptr, safemode);
+            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, nullptr);
             return nullptr;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool safemode)
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
         {
             BOSS_TRACE("BroadcastNotify(%s)", topic);
             if(!g_data || !g_window)
                 return;
 
-            auto Views = View::SearchBegin(viewclass);
+            if(auto Views = View::SearchBegin(viewclass))
             {
                 struct Payload
                 {
                     chars topic;
                     id_share in;
                     NotifyType type;
-                    bool safemode;
-                } Param = {topic, in, type, safemode};
+                } Param = {topic, in, type};
 
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
                     const Payload* Param = (const Payload*) param;
-                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr, Param->safemode);
+                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr);
                 }, &Param);
+                View::SearchEnd();
             }
-            View::SearchEnd();
         }
 
         void Platform::PassAllViews(PassCB cb, payload data)

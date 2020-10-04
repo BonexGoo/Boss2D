@@ -311,6 +311,7 @@ namespace BOSS
 
     private:
         static const chararray& NullString();
+        chararray* GetSafedRhs(chars& rhs);
         const sint32* GetFindMap() const;
 
     private:

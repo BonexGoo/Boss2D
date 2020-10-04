@@ -160,8 +160,8 @@
     ZAY_VIEW_API OnGesture(GestureType, sint32, sint32); \
     ZAY_VIEW_API OnRender(ZayPanel&); \
     static ZayInstance<CLASS> m; \
-    static uint64 _Lock(ZayObject* ptr) {return m._lock((CLASS*) ptr);} \
-    static void _Unlock(uint64 lockid) {m._unlock(lockid);} \
+    static void _Lock(ZayObject* ptr) {m._lock((CLASS*) ptr);} \
+    static void _Unlock() {m._unlock();} \
     static ZayObject* _Alloc() {return (ZayObject*) Buffer::Alloc<CLASS>(BOSS_DBG 1);} \
     static void _Free(ZayObject* ptr) {Buffer::Free((buffer) ptr);} \
     static autorun _ = ZayView::_makefunc(false, "" NAME, OnCommand, OnNotify, \
@@ -172,8 +172,8 @@
     ZAY_VIEW_API OnGesture(GestureType, sint32, sint32) {BOSS_ASSERT("This function should not be called directly.", false);} \
     ZAY_VIEW_API OnRender(ZayPanel&) {BOSS_ASSERT("This function should not be called directly.", false);} \
     static ZayInstance<CLASS> m; \
-    static uint64 _Lock(ZayObject* ptr) {return m._lock((CLASS*) ptr);} \
-    static void _Unlock(uint64 lockid) {m._unlock(lockid);} \
+    static void _Lock(ZayObject* ptr) {m._lock((CLASS*) ptr);} \
+    static void _Unlock() {m._unlock();} \
     static ZayObject* _Alloc() {return (ZayObject*) new CLASS;} \
     static void _Free(ZayObject* ptr) {delete (CLASS*) ptr;} \
     static autorun _ = ZayView::_makefunc(true, "" NAME, OnCommand, OnNotify, \
@@ -228,8 +228,8 @@ namespace BOSS
     public:
         typedef void (*CommandCB)(CommandType, chars, id_share, id_cloned_share*);
         typedef void (*NotifyCB)(NotifyType, chars, id_share, id_cloned_share*);
-        typedef uint64 (*LockCB)(ZayObject*);
-        typedef void (*UnlockCB)(uint64);
+        typedef void (*LockCB)(ZayObject*);
+        typedef void (*UnlockCB)();
         typedef ZayObject* (*AllocCB)();
         typedef void (*FreeCB)(ZayObject*);
 
@@ -571,45 +571,26 @@ namespace BOSS
             BOSS_ASSERT("현재 위치에서는 m이 사용될 수 없습니다", m_ref_data_last);
             return *m_ref_data_last;
         }
-        inline uint64 _lock(TYPE* ptr)
+        inline void _lock(TYPE* ptr)
         {
             BOSS_ASSERT("ptr값은 nullptr가 될 수 없습니다", ptr);
-
-            uint64 LockID = oxFFFFFFFFFFFFFFFF;
-            const uint64 CurThreadID = Platform::Utility::CurrentThreadID();
-            auto& CurLocker = m_lockmap[CurThreadID];
-            if(!CurLocker)
-            {
-                LockID = CurThreadID;
-                BOSS_ASSERT("이벤트락이 중복호출되었습니다", !Mutex::HasLock(m_mutex));
-                Mutex::Lock(m_mutex);
-                CurLocker = ptr;
-            }
-
+            Mutex::LocalLock(m_mutex);
             m_ref_datas.AtAdding() = ptr;
             m_ref_data_last = ptr;
-            return LockID;
         }
-        inline void _unlock(uint64 lockid)
+        inline void _unlock()
         {
             m_ref_datas.SubtractionOne();
             if(0 < m_ref_datas.Count())
                 m_ref_data_last = m_ref_datas[-1];
             else m_ref_data_last = nullptr;
-
-            if(lockid != oxFFFFFFFFFFFFFFFF)
-            {
-                m_lockmap[lockid] = nullptr;
-                BOSS_ASSERT("이벤트언락이 중복호출되었습니다", Mutex::HasLock(m_mutex));
-                Mutex::Unlock(m_mutex);
-            }
+            Mutex::LocalUnlock(m_mutex);
         }
 
     private:
         Array<TYPE*, datatype_pod_canmemcpy> m_ref_datas;
         TYPE* m_ref_data_last;
         id_mutex m_mutex;
-        Map<void*> m_lockmap;
     };
 
     /// @brief 제이뷰
@@ -827,7 +808,7 @@ namespace BOSS
         h_view SetView(h_view view) override;
         bool IsNative() override;
         void* GetClass() override;
-        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode) override;
+        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;
         void SetCallback(UpdaterCB cb, payload data) override;
         void DirtyAllSurfaces() override;
 

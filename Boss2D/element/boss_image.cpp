@@ -533,7 +533,7 @@ namespace BOSS
         return OldBitmap;
     }
 
-    void Image::Crear()
+    void Image::Clear()
     {
         ResetBitmap();
         ResetData();

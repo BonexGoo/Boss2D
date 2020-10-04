@@ -209,7 +209,7 @@ namespace BOSS
                         data().mPicture.ReplaceAlphaChannelBy(data().mPictureClipper);
                     Bmp::Remove(NewBitmap);
                 }
-                else data().mPicture.Crear();
+                else data().mPicture.Clear();
             }
         }
         void ReloadBackground(chars url)
@@ -223,7 +223,7 @@ namespace BOSS
                     data().mBackground.LoadBitmap(NewBitmap);
                     Bmp::Remove(NewBitmap);
                 }
-                else data().mBackground.Crear();
+                else data().mBackground.Clear();
             }
         }
 

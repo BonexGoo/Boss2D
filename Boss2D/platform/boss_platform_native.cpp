@@ -406,7 +406,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout, bool safemode)
+        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
@@ -414,7 +414,7 @@
             return nullptr;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool safemode)
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 

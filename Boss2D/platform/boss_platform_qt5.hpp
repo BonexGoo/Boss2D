@@ -1680,11 +1680,11 @@
             }
         }
 
-        inline void sendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode) const
+        inline void sendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) const
         {
             BOSS_ASSERT("잘못된 시나리오입니다", m_view_manager);
             g_view = getWidget();
-            m_view_manager->SendNotify(type, topic, in, out, safemode);
+            m_view_manager->SendNotify(type, topic, in, out);
         }
 
         inline bool setEventBlocked(bool block)
@@ -3508,9 +3508,9 @@
                 BOSS_TRACE("Renderer: %s", RendererString);
                 BOSS_TRACE("Version: %s", VersionString);
                 BOSS_TRACE("========================================");
-                Platform::BroadcastNotify("GL_VENDOR", String(VendorString), NT_GLState, nullptr, false);
-                Platform::BroadcastNotify("GL_RENDERER", String(RendererString), NT_GLState, nullptr, false);
-                Platform::BroadcastNotify("GL_VERSION", String(VersionString), NT_GLState, nullptr, false);
+                Platform::BroadcastNotify("GL_VENDOR", String(VendorString), NT_GLState);
+                Platform::BroadcastNotify("GL_RENDERER", String(RendererString), NT_GLState);
+                Platform::BroadcastNotify("GL_VERSION", String(VersionString), NT_GLState);
 
                 if(!boss_strncmp(VersionString, "OpenGL ES ", 10))
                 {
@@ -3528,7 +3528,10 @@
                 QOpenGLContext* ctx = QOpenGLContext::currentContext();
                 QOpenGLFunctions* f = ctx->functions();
                 if(auto errorCode = f->glGetError())
+                {
                     BOSS_ASSERT_PRM(String::Format("TestGL(error:%d) is failed", errorCode), false);
+                    Platform::BroadcastNotify("TestGL", String::FromInteger((sint32) errorCode), NT_GLState);
+                }
             }
             static void TestShader(BOSS_DBG_PRM GLuint shader)
             {
@@ -3543,9 +3546,13 @@
                     GLsizei s;
                     f->glGetShaderInfoLog(shader, 4096, &s, log);
                     BOSS_ASSERT_PRM(String::Format("TestShader(%s) is failed", log), false);
+                    Platform::BroadcastNotify("TestShader", String(log), NT_GLState);
                 }
                 else if(auto errorCode = f->glGetError())
+                {
                     BOSS_ASSERT_PRM(String::Format("TestShader(error:%d) is failed", errorCode), false);
+                    Platform::BroadcastNotify("TestShader", String::FromInteger((sint32) errorCode), NT_GLState);
+                }
             }
             static void TestProgram(BOSS_DBG_PRM GLuint program)
             {
@@ -3561,10 +3568,14 @@
                     char* pszInfoLog = new char[i32InfoLogLength];
                     f->glGetProgramInfoLog(program, i32InfoLogLength, &i32CharsWritten, pszInfoLog);
                     BOSS_ASSERT_PRM(String::Format("TestProgram(%s) is failed", pszInfoLog), false);
+                    Platform::BroadcastNotify("TestProgram", String(pszInfoLog), NT_GLState);
                     delete [] pszInfoLog;
                 }
                 else if(auto errorCode = f->glGetError())
+                {
                     BOSS_ASSERT_PRM(String::Format("TestProgram(error:%d) is failed", errorCode), false);
+                    Platform::BroadcastNotify("TestProgram", String::FromInteger((sint32) errorCode), NT_GLState);
+                }
             }
         private:
             void LoadIdentity()
@@ -4265,7 +4276,7 @@
             else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
             connect(Peer, SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(errorPeer(QAbstractSocket::SocketError)));
-            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
         }
 
         void readyPeer()
@@ -4280,7 +4291,7 @@
                 Peer->read((char*) NewPacket->Buffer, PacketSize);
                 PacketQueue.Enqueue(NewPacket);
             }
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
         void readyPeerWithSizeField()
@@ -4315,7 +4326,7 @@
                     else break;
                 }
             }
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
         void errorPeer(QAbstractSocket::SocketError error)
@@ -4327,12 +4338,12 @@
             if(error == QAbstractSocket::RemoteHostClosedError)
             {
                 PacketQueue.Enqueue(new TCPPacket(packettype_leaved, Data->ID, 0));
-                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive, nullptr, false);
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
             }
             else
             {
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, Data->ID, 0));
-                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive, nullptr, false);
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
             }
         }
 
@@ -4387,7 +4398,7 @@
                 (*Peer)->disconnectFromHost();
                 Peers.Remove(peerid);
                 PacketQueue.Enqueue(new TCPPacket(packettype_kicked, peerid, 0));
-                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive, nullptr, false);
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
                 return true;
             }
             return false;
@@ -4458,15 +4469,15 @@
     private slots:
         void OnConnected()
         {
-            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive);
         }
         void OnDisconnected()
         {
-            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive);
         }
         void OnReadyRead()
         {
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, false);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
     public:

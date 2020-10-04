@@ -425,20 +425,20 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout, bool safemode)
+        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(needout)
             {
                 id_cloned_share Result;
-                ((ViewAPI*) view.get())->sendNotify(topic, in, &Result, safemode);
+                ((ViewAPI*) view.get())->sendNotify(topic, in, &Result);
                 return Result;
             }
-            ((ViewAPI*) view.get())->sendNotify(topic, in, nullptr, safemode);
+            ((ViewAPI*) view.get())->sendNotify(topic, in, nullptr);
             return nullptr;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool safemode)
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(auto Views = View::Search(viewclass, SC_Search))
@@ -448,13 +448,12 @@
                     chars topic;
                     id_share in;
                     NotifyType type;
-                    bool safemode;
-                } Param = {topic, in, type, safemode};
+                } Param = {topic, in, type};
 
                 Views->AccessByCallback([](const MapPath*, const h_view* view, payload param)->void
                 {
                     const Payload* Param = (const Payload*) param;
-                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr, Param->safemode);
+                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in);
                 }, &Param);
             }
         }

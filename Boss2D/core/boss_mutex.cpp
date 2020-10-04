@@ -76,4 +76,48 @@ namespace BOSS
     {
         MUTEX_UNLOCK((MutexData*) mutex);
     }
+
+    static sint32 LocalCounter(id_mutex mutex, bool push)
+    {
+        class StackMutex
+        {
+        public:
+            StackMutex() {mMutex = Mutex::Open();}
+            ~StackMutex() {Mutex::Close(mMutex);}
+        public:
+            id_mutex mMutex;
+        };
+        static StackMutex Stack;
+
+        sint32 Result = 0;
+        Mutex::Lock(Stack.mMutex);
+        {
+            Map<sint32>& CounterPool = *BOSS_STORAGE_SYS(Map<sint32>);
+            if(auto CurCounter = CounterPool.Access((uint64)(void*) mutex))
+            {
+                Result = (*CurCounter += (push)? 1 : -1);
+                if(Result == 0)
+                    CounterPool.Remove((uint64)(void*) mutex);
+            }
+            else
+            {
+                Result = (push)? 1 : -1;
+                CounterPool[(uint64)(void*) mutex] = Result;
+            }
+        }
+        Mutex::Unlock(Stack.mMutex);
+        return Result;
+    }
+
+    void Mutex::LocalLock(id_mutex mutex)
+    {
+        if(LocalCounter(mutex, true) == 1)
+            MUTEX_LOCK((MutexData*) mutex);
+    }
+
+    void Mutex::LocalUnlock(id_mutex mutex)
+    {
+        if(LocalCounter(mutex, false) == 0)
+            MUTEX_UNLOCK((MutexData*) mutex);
+    }
 }
