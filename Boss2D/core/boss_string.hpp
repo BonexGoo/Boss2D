@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <boss_array.hpp>
+#include <boss_asset.hpp>
 
 namespace BOSS
 {

@@ -5,7 +5,8 @@
 namespace BOSS
 {
     BOSS_DECLARE_HANDLE(h_view);
-    enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease, NT_FileContent, NT_SocketReceive, NT_CameraCapture, NT_AddOn};
+    enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease,
+        NT_FileContent, NT_SocketReceive, NT_GLState, NT_CameraCapture, NT_AddOn};
     enum TouchType {TT_Null,
         // 일반
         TT_Moving, TT_MovingIdle, TT_Press, TT_Dragging, TT_DraggingIdle, TT_Release,
@@ -39,7 +40,7 @@ namespace BOSS
         virtual h_view SetView(h_view view);
         virtual bool IsNative();
         virtual void* GetClass();
-        virtual void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);
+        virtual void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode);
         virtual void SetCallback(UpdaterCB cb, payload data);
         virtual void DirtyAllSurfaces();
 

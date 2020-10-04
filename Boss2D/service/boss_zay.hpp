@@ -581,6 +581,7 @@ namespace BOSS
             if(!CurLocker)
             {
                 LockID = CurThreadID;
+                BOSS_ASSERT("이벤트락이 중복호출되었습니다", !Mutex::HasLock(m_mutex));
                 Mutex::Lock(m_mutex);
                 CurLocker = ptr;
             }
@@ -599,6 +600,7 @@ namespace BOSS
             if(lockid != oxFFFFFFFFFFFFFFFF)
             {
                 m_lockmap[lockid] = nullptr;
+                BOSS_ASSERT("이벤트언락이 중복호출되었습니다", Mutex::HasLock(m_mutex));
                 Mutex::Unlock(m_mutex);
             }
         }
@@ -825,7 +827,7 @@ namespace BOSS
         h_view SetView(h_view view) override;
         bool IsNative() override;
         void* GetClass() override;
-        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;
+        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode) override;
         void SetCallback(UpdaterCB cb, payload data) override;
         void DirtyAllSurfaces() override;
 

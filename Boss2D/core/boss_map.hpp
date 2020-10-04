@@ -30,6 +30,14 @@ namespace BOSS
             result.AtAdding() = '\0';
             return result;
         }
+    public:
+        static sint64 ToInt(const chararray& path)
+        {
+            sint64 Result = 0;
+            for(sint32 i = 0; path[i] != '\0'; ++i)
+                Result = (Result << 8) | (path[i] & 0xFF);
+            return Result;
+        }
     };
 
     /// @brief 맵지원
@@ -580,6 +588,7 @@ namespace BOSS
                 if(name) *name = path.GetPath();
                 return Data;
             }
+
             if(Table)
             for(sint32 i = 0; i < 16; ++i)
             {
@@ -592,7 +601,9 @@ namespace BOSS
 
         void AccessByCallbackCore(const MapPath& path, AccessCB cb, payload param) const
         {
-            if(Data) cb(&path, Data, param);
+            if(Data)
+                cb(&path, Data, param);
+
             if(Table)
             for(sint32 i = 0; i < 16; ++i)
             {

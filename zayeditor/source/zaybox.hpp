@@ -67,6 +67,7 @@ public:
     Rect GetRect() const;
     Point GetBallPos() const;
     void RemoveChildren(ZEZayBoxMap& boxmap);
+    void ClearParentHook(ZEZayBoxMap& boxmap);
     void ClearChildrenHook(ZEZayBoxMap& boxmap);
     void ClearMyHook();
 

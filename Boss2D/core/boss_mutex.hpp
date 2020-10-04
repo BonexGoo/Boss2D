@@ -20,6 +20,12 @@ namespace BOSS
         /// @see Open
         static void Close(id_mutex mutex);
 
+        /// @brief 뮤텍스 잠금여부
+        /// @param mutex : 뮤텍스ID
+        /// @return 잠금여부(true-잠금상태, false-해제상태)
+        /// @see Lock
+        static bool HasLock(id_mutex mutex);
+
         /// @brief 뮤텍스 잠금
         /// @param mutex : 뮤텍스ID
         /// @see Unlock

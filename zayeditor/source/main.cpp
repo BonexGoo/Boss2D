@@ -10,6 +10,9 @@ bool PlatformInit()
     if(Asset::RebuildForEmbedded())
         return false;
 
+    String DataPath = Platform::File::RootForData();
+    Platform::File::ResetAssetsRemRoot(DataPath);
+
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Boss2D ZayEditor");
     Platform::SetWindowView("zayeditorView");

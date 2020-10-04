@@ -235,7 +235,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ProjectCreator.rc2" />
-    <None Include="res\template_0.zip" />
     <None Include="res\template_basic.zip" />
     <None Include="res\template_daddy.zip" />
   </ItemGroup>

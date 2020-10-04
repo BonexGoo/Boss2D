@@ -153,12 +153,14 @@ static void _TaskCore(void* arg)
     sint32 NextSleep = 0;
     while(0 <= NextSleep && This->GetState() == TaskingClass::BS_Both)
     {
+        // true로 설정해야 같은 스레드의 소켓이 작동함
+        const bool ProcessSocket = true;
         if(This->IsPause())
         {
-            Platform::Utility::Sleep(100, false, false);
+            Platform::Utility::Sleep(100, false, ProcessSocket);
             continue;
         }
-        else Platform::Utility::Sleep(NextSleep, false, false);
+        else Platform::Utility::Sleep(NextSleep, false, ProcessSocket);
         NextSleep = This->m_cb(This->m_self, This->m_query, This->m_answer, (id_common) &This->m_common);
     }
 

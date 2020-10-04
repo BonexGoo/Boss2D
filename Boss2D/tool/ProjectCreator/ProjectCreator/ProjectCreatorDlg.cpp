@@ -108,6 +108,7 @@ BOOL CProjectCreatorDlg::OnInitDialog()
 
 	mTemplateCombo.AddString(_T("Basic"));
     mTemplateCombo.AddString(_T("Daddy"));
+    mTemplateCombo.AddString(_T("Hugine"));
     mTemplateCombo.SetCurSel(0);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
@@ -217,6 +218,7 @@ void CProjectCreatorDlg::OnCreateClick()
     {
     case 0: ResourceID = IDR_ZIP_BASIC; break;
     case 1: ResourceID = IDR_ZIP_DADDY; break;
+    case 2: ResourceID = IDR_ZIP_HUGINE; break;
     }
 
     String GetPath;

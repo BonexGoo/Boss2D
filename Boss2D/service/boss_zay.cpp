@@ -1644,11 +1644,15 @@ namespace BOSS
         return m_class;
     }
 
-    void ZayView::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
+    void ZayView::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode)
     {
-        auto LockID = m_ref_func->m_lock(m_class);
-        m_ref_func->m_notify(type, topic, in, out);
-        m_ref_func->m_unlock(LockID);
+        if(safemode)
+        {
+            auto LockID = m_ref_func->m_lock(m_class);
+            m_ref_func->m_notify(type, topic, in, out);
+            m_ref_func->m_unlock(LockID);
+        }
+        else m_ref_func->m_notify(type, topic, in, out);
     }
 
     void ZayView::SetCallback(UpdaterCB cb, payload data)

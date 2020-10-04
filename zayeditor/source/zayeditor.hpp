@@ -3,7 +3,7 @@
 #include <service/boss_zayson.hpp>
 #include <service/boss_zaywidget.hpp>
 #include <element/boss_tween.hpp>
-#include "zaybox.hpp"
+#include <zaybox.hpp>
 
 class ZEFakeZaySon : public ZaySonInterface
 {
@@ -228,10 +228,6 @@ class zayeditorData : public ZayObject
 public:
     zayeditorData();
     ~zayeditorData();
-
-public:
-    static String StringFromFile(chars filename);
-    static void StringToFile(chars filename, const String& text);
 
 public:
     void ResetBoxes();

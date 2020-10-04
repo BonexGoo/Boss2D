@@ -633,7 +633,7 @@
             window.set_buf(nullptr);
         }
 
-        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
+        id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout, bool safemode)
         {
             BOSS_TRACE("SendNotify(%s)", topic);
             if(!g_data || !g_window)
@@ -642,14 +642,14 @@
             if(needout)
             {
                 id_cloned_share Result;
-                ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, &Result);
+                ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, &Result, safemode);
                 return Result;
             }
-            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, nullptr);
+            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, nullptr, safemode);
             return nullptr;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool safemode)
         {
             BOSS_TRACE("BroadcastNotify(%s)", topic);
             if(!g_data || !g_window)
@@ -657,11 +657,18 @@
 
             auto Views = View::SearchBegin(viewclass);
             {
-                struct Payload {chars topic; id_share in; NotifyType type;} Param = {topic, in, type};
+                struct Payload
+                {
+                    chars topic;
+                    id_share in;
+                    NotifyType type;
+                    bool safemode;
+                } Param = {topic, in, type, safemode};
+
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
                     const Payload* Param = (const Payload*) param;
-                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr);
+                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr, Param->safemode);
                 }, &Param);
             }
             View::SearchEnd();
@@ -673,7 +680,7 @@
             if(!g_data || !g_window)
                 return;
 
-            auto Views = View::SearchBegin(nullptr);
+            if(auto Views = View::SearchBegin(nullptr))
             {
                 struct Payload {PassCB cb; payload data; bool canceled;} Param = {cb, data, false};
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
@@ -682,8 +689,8 @@
                     if(Param->canceled) return;
                     Param->canceled = Param->cb(view->get(), Param->data);
                 }, &Param);
+                View::SearchEnd();
             }
-            View::SearchEnd();
         }
 
         void Platform::UpdateAllViews()
@@ -691,14 +698,14 @@
             if(!g_data || !g_window)
                 return;
 
-            auto Views = View::SearchBegin(nullptr);
+            if(auto Views = View::SearchBegin(nullptr))
             {
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
                     ((ViewAPI*) view->get())->dirtyAndUpdate();
                 }, nullptr);
+                View::SearchEnd();
             }
-            View::SearchEnd();
         }
 
         ////////////////////////////////////////////////////////////////////////////////

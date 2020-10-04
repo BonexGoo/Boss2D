@@ -312,8 +312,14 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             // 타이틀
             ZAY_LTRB(panel, TitleBeginX, 0, TitleEndX + 3, panel.h())
             {
-                const String TitleText((HasFocusing && mOrder != -1)?
+                String TitleText((HasFocusing && mOrder != -1)?
                     (chars) String::Format("[%d] %s", mOrder, title) : title);
+
+                // 디버그용 자기ID 표시
+                #if !BOSS_NDEBUG
+                    TitleText += String::Format(" <%d>", mID);
+                #endif
+
                 ZAY_MOVE(panel, 1, 1)
                 ZAY_RGBA(panel, 255, 255, 255, 96)
                     panel.text(TitleText, UIFA_LeftMiddle, UIFE_Right);
@@ -431,6 +437,13 @@ void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
         ZAY_INNER(panel, 5)
             panel.fill();
     }
+
+    // 디버그용 자식ID 표시
+    #if !BOSS_NDEBUG
+        ZAY_RGB(panel, 0, 0, 0)
+        for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+            panel.text(panel.w(), 20 + 15 * i, String::Format(" <%d>", mChildren[i]), UIFA_LeftTop);
+    #endif
 }
 
 void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
@@ -445,6 +458,8 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
                 Platform::SendNotify(v->view(), "ZayBoxMoveWith", sint32o(mID));
                 v->invalidate();
             }
+            else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
+                Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(mParent));
         })
     ZAY_INNER(panel, 3)
     {
@@ -493,7 +508,7 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
         ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
             panel.fill();
         ZAY_RGB(panel, 0, 0, 0)
-            panel.text("＋", UIFA_CenterMiddle);
+            panel.text("+", UIFA_CenterMiddle);
         ZAY_RGBA(panel, 0, 0, 0, 96)
             panel.rect(1);
     }
@@ -595,10 +610,15 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
 void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
 {
     ZAY_INNER_UI(panel, 0, uiname,
-        ZAY_GESTURE_T(t, this)
+        ZAY_GESTURE_VNT(v, n, t, this)
         {
             if(t == GT_InReleased)
-                ClearMyHook();
+            {
+                const sint32 OldParent = mParent;
+                Platform::SendNotify(v->view(), "ZayBoxHookRemove", sint32o(mID));
+                if(OldParent != -1)
+                    Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(OldParent));
+            }
         })
     ZAY_INNER(panel, 3)
     {
@@ -690,14 +710,14 @@ void ZEZayBox::Sort(ZEZayBoxMap& boxmap)
         auto NextBox = boxmap.Access(mChildren[i + 1]);
         if(NextBox->ConstValue().mPosY < CurBox->ConstValue().mPosY)
         {
-            CurBox->Value().mOrder = i + 1;
-            NextBox->Value().mOrder = i;
             const sint32 Temp = mChildren[i];
             mChildren.At(i) = mChildren[i + 1];
             mChildren.At(i + 1) = Temp;
             i = Math::Max(-1, i - 2);
         }
     }
+    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+        boxmap.Access(mChildren[i])->Value().mOrder = i;
 }
 
 Rect ZEZayBox::GetRect() const
@@ -721,6 +741,18 @@ void ZEZayBox::RemoveChildren(ZEZayBoxMap& boxmap)
         }
     }
     mChildren.Clear();
+}
+
+void ZEZayBox::ClearParentHook(ZEZayBoxMap& boxmap)
+{
+    if(mParent != -1)
+    {
+        if(auto ParentBox = boxmap.Access(mParent))
+        for(sint32 i = (*ParentBox)->mChildren.Count() - 1; 0 <= i; --i)
+            if((*ParentBox)->mChildren[i] == mID)
+                (*ParentBox)->mChildren.SubtractionSection(i);
+        ClearMyHook();
+    }
 }
 
 void ZEZayBox::ClearChildrenHook(ZEZayBoxMap& boxmap)
@@ -1145,7 +1177,7 @@ void ZEZayBox::BodyParamGroup::RenderParamGroup(ZayPanel& panel)
                                     panel.fill();
                                 ZAY_RGB(panel, 0, 0, 0)
                                 {
-                                    panel.text(panel.w() / 2, panel.h() / 2 - 2, "＋", UIFA_CenterMiddle);
+                                    panel.text(panel.w() / 2, panel.h() / 2 - 2, "+", UIFA_CenterMiddle);
                                     panel.rect(1);
                                 }
                             }
@@ -1417,7 +1449,7 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
                                     panel.fill();
                                 ZAY_RGB(panel, 0, 0, 0)
                                 {
-                                    panel.text(panel.w() / 2, panel.h() / 2 - 2, "＋", UIFA_CenterMiddle);
+                                    panel.text(panel.w() / 2, panel.h() / 2 - 2, "+", UIFA_CenterMiddle);
                                     panel.rect(1);
                                 }
                             }
@@ -1547,17 +1579,18 @@ sint32 ZEZayBox::BodyLoopOperation::GetCalcedSize()
 
 void ZEZayBox::BodyLoopOperation::RenderOperationEditor(ZayPanel& panel, chars uiname, chars itname)
 {
-    const String RuleText(String::Format("0 ≤ %s <", (*itname != '\0')? itname : "(noname)"));
+    const String LoopName = String::Format("%sV", (*itname != '\0')? itname : "");
+    const String RuleText(String::Format("0 ≤ %s <", (*itname != '\0')? (chars) LoopName : "(Noname)"));
     const sint32 RuleTextWidth = Platform::Graphics::GetStringWidth(RuleText);
 
     // 규칙
-    ZAY_LTRB(panel, 0, 0, RuleTextWidth, panel.h())
+    ZAY_LTRB(panel, 0, 0, RuleTextWidth + 2, panel.h())
     {
         ZAY_MOVE(panel, 1, 1)
         ZAY_RGBA(panel, 255, 255, 255, 96)
-            panel.text(RuleText, UIFA_CenterMiddle);
+            panel.text(RuleText, UIFA_LeftMiddle);
         ZAY_RGB(panel, 0, 0, 0)
-            panel.text(RuleText, UIFA_CenterMiddle);
+            panel.text(RuleText, UIFA_LeftMiddle);
     }
 
     // 연산식
@@ -1587,8 +1620,16 @@ void ZEZayBox::BodyLoopOperation::RenderOperationEditor(ZayPanel& panel, chars u
                 ZAY_RGBA(panel, 0, 0, 0, 64)
                     panel.text("(연산식)", UIFA_LeftMiddle, UIFE_Right);
             }
-            else ZAY_RGB(panel, 0, 0, 0)
-                panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
+            else
+            {
+                ZAY_RGB(panel, 0, 0, 0)
+                    panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
+                const sint32 OperationSize = Platform::Graphics::GetStringWidth(mOperation);
+                if(OperationSize < panel.w())
+                ZAY_RGB(panel, 0, 128, 0)
+                ZAY_LTRB(panel, OperationSize, 0, panel.w(), panel.h())
+                    panel.text(String::Format(" (%sN)", (*itname != '\0')? itname : ""), UIFA_LeftMiddle, UIFE_Right);
+            }
         }
         ZAY_RGB(panel, 0, 0, 0)
             panel.rect(1);
@@ -1695,13 +1736,13 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
     }
 
     // 규칙
-    ZAY_LTRB(panel, panel.w() - RuleTextWidth, 0, panel.w(), panel.h())
+    ZAY_LTRB(panel, panel.w() - RuleTextWidth - 2, 0, panel.w(), panel.h())
     {
         ZAY_MOVE(panel, 1, 1)
         ZAY_RGBA(panel, 255, 255, 255, 96)
-            panel.text(RuleText, UIFA_CenterMiddle);
+            panel.text(RuleText, UIFA_RightMiddle);
         ZAY_RGB(panel, 0, 0, 0)
-            panel.text(RuleText, UIFA_CenterMiddle);
+            panel.text(RuleText, UIFA_RightMiddle);
     }
 }
 

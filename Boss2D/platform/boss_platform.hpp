@@ -222,15 +222,17 @@ public:
     /// @param topic : 주제
     /// @param in : 전달할 공유객체
     /// @param needout : 전달받을 공유객체 필요여부
+    /// @param safemode : 재귀호출을 막는 안전기능
     /// @return 전달받을 공유객체
-    static id_cloned_share SendNotify(h_view view, chars topic, id_share in, bool needout = false);
+    static id_cloned_share SendNotify(h_view view, chars topic, id_share in, bool needout = false, bool safemode = true);
 
     /// @brief 다수의 뷰에 알림사항 방송
     /// @param topic : 주제
     /// @param in : 전달할 공유객체
     /// @param type : 알림타입
     /// @param viewclass : 전달받을 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 전체 뷰클래스)
-    static void BroadcastNotify(chars topic, id_share in, NotifyType type = NT_Normal, chars viewclass = nullptr);
+    /// @param safemode : 재귀호출을 막는 안전기능
+    static void BroadcastNotify(chars topic, id_share in, NotifyType type = NT_Normal, chars viewclass = nullptr, bool safemode = true);
 
     /// @brief 특정 콜백함수를 모든 뷰에 통과시킴
     /// @param cb : 콜백함수

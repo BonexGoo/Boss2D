@@ -62,12 +62,32 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 Context Json;
                 m->mBoxMap[0]->WriteJson(Json);
                 m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
-                m->StringToFile(m->mPipe.jsonpath(), Json.SaveJson());
+                Json.SaveJson().ToFile(m->mPipe.jsonpath(), true);
                 // 애니효과
                 m->mEasySaveEffect.Reset(1);
                 m->mEasySaveEffect.MoveTo(0, 1.0);
             }
         }
+    }
+    else if(type == NT_FileContent)
+    {
+        String ContentName = topic;
+        uint08s Content(in);
+        if(auto NewAsset = Asset::OpenForWrite(ContentName, true))
+        {
+            Asset::Write(NewAsset, &Content[0], Content.Count());
+            Asset::Close(NewAsset);
+            Content.Clear();
+        }
+
+        m->mPipe.ResetJsonPath(ContentName);
+        m->ResetBoxes();
+        ZEZayBox::ResetLastID(); // ID발급기 초기화
+
+        const String JsonText = String::FromAsset(ContentName);
+        const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
+        m->mBoxMap[0]->ReadJson(Json);
+        m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
     }
     else if(type == NT_Normal)
     {
@@ -93,7 +113,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 m->mBoxMap[CurZayBoxID]->Sort(m->mBoxMap);
             }
         }
-        jump(!String::Compare(topic, "HookClear"))
+        jump(!String::Compare(topic, "HookClear")) // 부모가 자식 전부와 연결해제
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
             m->mBoxMap[CurZayBoxID]->ClearChildrenHook(m->mBoxMap);
@@ -134,7 +154,12 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 m->mBoxMap[ParentID]->SubChild(m->mBoxMap[CurZayBoxID].Value());
             m->mBoxMap.Remove(CurZayBoxID);
         }
-        jump(!String::Compare(topic, "ZayBoxRemoveGroup")) // 제이박스 삭제(0-remove)
+        jump(!String::Compare(topic, "ZayBoxHookRemove"))
+        {
+            const sint32 CurZayBoxID = sint32o(in).ConstValue();
+            m->mBoxMap[CurZayBoxID]->ClearParentHook(m->mBoxMap);
+        }
+        jump(!String::Compare(topic, "ZayBoxRemoveGroup")) // 제이박스 및 자식들 삭제(0-remove)
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
             m->mBoxMap[CurZayBoxID]->RemoveChildren(m->mBoxMap);
@@ -209,6 +234,12 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
         })
     {
+        // 버전
+        ZAY_INNER(panel, 10)
+        ZAY_FONT(panel, 1.5)
+        ZAY_RGBA(panel, 0, 0, 0, 32)
+            panel.text(String::Format("[BUILD %s %s]", __DATE__, __TIME__), UIFA_LeftBottom, UIFE_Right);
+
         m->mWorkViewSize = Size(panel.w(), panel.h());
         if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
         {
@@ -262,17 +293,22 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 {
                     if(t == GT_InReleased)
                     {
-                        String JsonPath;
-                        if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "json 불러오기"))
-                        {
-                            m->mPipe.ResetJsonPath(JsonPath);
-                            m->ResetBoxes();
-                            const String JsonText = m->StringFromFile(JsonPath);
-                            const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-                            ZEZayBox::ResetLastID(); // ID발급기 초기화
-                            m->mBoxMap[0]->ReadJson(Json);
-                            m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
-                        }
+                        #if BOSS_NEED_EMBEDDED_ASSET
+                            Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
+                        #else
+                            String JsonPath;
+                            if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
+                            {
+                                m->mPipe.ResetJsonPath(JsonPath);
+                                m->ResetBoxes();
+                                ZEZayBox::ResetLastID(); // ID발급기 초기화
+
+                                const String JsonText = String::FromFile(JsonPath);
+                                const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
+                                m->mBoxMap[0]->ReadJson(Json);
+                                m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
+                            }
+                        #endif
                     }
                 });
 
@@ -299,7 +335,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             Context Json;
                             m->mBoxMap[0]->WriteJson(Json);
                             m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
-                            m->StringToFile(JsonPath, Json.SaveJson());
+                            Json.SaveJson().ToFile(JsonPath, true);
                         }
                     }
                 });
@@ -517,19 +553,22 @@ void ZEWidgetPipe::RunPipe()
     if(0 < mLastJsonPath.Length())
     {
         // 서버형 파이프생성
-        String PipeName;
-        do
-        {
-            Platform::Pipe::Close(mPipe);
-            const uint32 RandomValue = Platform::Utility::Random();
-            PipeName = String::Format("zayeditor:%08X", RandomValue);
-            mPipe = Platform::Pipe::Open(PipeName);
-        }
-        while(!mPipe || !Platform::Pipe::IsServer(mPipe));
+        String PipeName = "error";
+        #if !BOSS_WASM
+            do
+            {
+                Platform::Pipe::Close(mPipe);
+                const uint32 RandomValue = Platform::Utility::Random();
+                PipeName = String::Format("zayeditor:%08X", RandomValue);
+                mPipe = Platform::Pipe::Open(PipeName);
+            }
+            while(!mPipe || !Platform::Pipe::IsServer(mPipe));
+        #endif
+
         // 파이프파일 저장
         Context Json;
         Json.At("pipe").Set(PipeName);
-        m->StringToFile(mLastJsonPath + ".pipe", Json.SaveJson());
+        Json.SaveJson().ToFile(mLastJsonPath + ".pipe", true);
     }
 }
 
@@ -554,8 +593,12 @@ bool ZEWidgetPipe::TickOnce()
     if(mJsonPathUpdated || NewConnected != mConnected)
     {
         mJsonPathUpdated = false;
-        Platform::SetWindowName("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath))) +
-            ((NewConnected)? "] + Boss2D ZayEditor" : "] - Boss2D ZayEditor"));
+        #if BOSS_NEED_EMBEDDED_ASSET
+            Platform::SetWindowName("[" + mLastJsonPath + ((NewConnected)? "] + Boss2D ZayEditor" : "] - Boss2D ZayEditor"));
+        #else
+            Platform::SetWindowName("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath))) +
+                ((NewConnected)? "] + Boss2D ZayEditor" : "] - Boss2D ZayEditor"));
+        #endif
     }
 
     // 수신내용 처리
@@ -788,51 +831,6 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
 
 zayeditorData::~zayeditorData()
 {
-}
-
-String zayeditorData::StringFromFile(chars filename)
-{
-    id_file_read TextFile = Platform::File::OpenForRead(filename);
-    if(!TextFile) return String();
-    // UTF-8                "EF BB BF"
-    // UTF-16 Big Endian    "FE FF"
-    // UTF-16 Little Endian "FF FE"
-    // UTF-32 Big Endian    "00 00 FE FF"
-    // UTF-32 Little Endian "FF FE 00 00"
-
-    chararray Result;
-    sint32 TextSize = Platform::File::Size(TextFile);
-    if(3 <= TextSize)
-    {
-        char BOMTest[3];
-        Platform::File::Read(TextFile, (uint08*) BOMTest, 3);
-        if(BOMTest[0] == (char) 0xEF && BOMTest[1] == (char) 0xBB && BOMTest[2] == (char) 0xBF)
-        {
-            TextSize -= 3;
-            Result.AtWherever(TextSize) = '\0';
-            Platform::File::Read(TextFile, (uint08*) Result.AtDumping(0, TextSize), TextSize);
-        }
-        else
-        {
-            Result.AtWherever(TextSize) = '\0';
-            Result.At(0) = BOMTest[0];
-            Result.At(1) = BOMTest[1];
-            Result.At(2) = BOMTest[2];
-            Platform::File::Read(TextFile, (uint08*) Result.AtDumping(3, TextSize - 3), TextSize - 3);
-        }
-    }
-    Platform::File::Close(TextFile);
-    return String(Result);
-}
-
-void zayeditorData::StringToFile(chars filename, const String& text)
-{
-    if(id_file TextFile = Platform::File::OpenForWrite(filename, true))
-    {
-        Platform::File::Write(TextFile, (bytes) "\xEF\xBB\xBF", 3);
-        Platform::File::Write(TextFile, (bytes) (chars) text, text.Length());
-        Platform::File::Close(TextFile);
-    }
 }
 
 void zayeditorData::ResetBoxes()

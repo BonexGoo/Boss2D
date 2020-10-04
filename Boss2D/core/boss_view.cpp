@@ -99,7 +99,7 @@ namespace BOSS
         return nullptr;
     }
 
-    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
+    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool safemode)
     {
     }
 
