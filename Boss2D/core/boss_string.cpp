@@ -324,6 +324,12 @@ namespace BOSS
         return String(&m_words[CalcedIndex], CalcedLength);
     }
 
+    String String::Offset(sint32 offset) const
+    {
+        const sint32 CalcedOffset = Math::Min(offset, Length());
+        return String(&m_words[CalcedOffset], Length() - CalcedOffset);
+    }
+
     String String::Trim() const
     {
         sint32 BeginPos = 0;
@@ -535,8 +541,8 @@ namespace BOSS
 
     String String::FromFile(chars filename)
     {
-        id_file_read TextAsset = Platform::File::OpenForRead(filename);
-        if(!TextAsset) return String();
+        id_file_read TextFile = Platform::File::OpenForRead(filename);
+        if(!TextFile) return String();
         // UTF-8                "EF BB BF"
         // UTF-16 Big Endian    "FE FF"
         // UTF-16 Little Endian "FF FE"
@@ -544,16 +550,16 @@ namespace BOSS
         // UTF-32 Little Endian "FF FE 00 00"
 
         String Result;
-        sint32 TextSize = Platform::File::Size(TextAsset);
+        sint32 TextSize = Platform::File::Size(TextFile);
         if(3 <= TextSize)
         {
             char BOMTest[3];
-            Platform::File::Read(TextAsset, (uint08*) BOMTest, 3);
+            Platform::File::Read(TextFile, (uint08*) BOMTest, 3);
             if(BOMTest[0] == (char) 0xEF && BOMTest[1] == (char) 0xBB && BOMTest[2] == (char) 0xBF)
             {
                 TextSize -= 3;
                 Result.m_words.AtWherever(TextSize) = '\0';
-                Platform::File::Read(TextAsset, (uint08*) Result.m_words.AtDumping(0, TextSize), TextSize);
+                Platform::File::Read(TextFile, (uint08*) Result.m_words.AtDumping(0, TextSize), TextSize);
             }
             else
             {
@@ -561,16 +567,16 @@ namespace BOSS
                 Result.m_words.At(0) = BOMTest[0];
                 Result.m_words.At(1) = BOMTest[1];
                 Result.m_words.At(2) = BOMTest[2];
-                Platform::File::Read(TextAsset, (uint08*) Result.m_words.AtDumping(3, TextSize - 3), TextSize - 3);
+                Platform::File::Read(TextFile, (uint08*) Result.m_words.AtDumping(3, TextSize - 3), TextSize - 3);
             }
         }
-        Platform::File::Close(TextAsset);
+        Platform::File::Close(TextFile);
         return Result;
     }
 
-    String String::FromAsset(chars filename, id_assetpath_read assetpath)
+    String String::FromAsset(chars filename, id_assetpath_read assetpath, bool originalonly)
     {
-        id_asset_read TextAsset = Asset::OpenForRead(filename, assetpath);
+        id_asset_read TextAsset = Asset::OpenForRead(filename, assetpath, originalonly);
         if(!TextAsset) return String();
         // UTF-8                "EF BB BF"
         // UTF-16 Big Endian    "FE FF"

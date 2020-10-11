@@ -319,7 +319,7 @@ namespace BOSS
         }
 
         // String구성
-        chars CurString = data.GetString();
+        const String CurString = data.GetText();
         if(sint32* CurMap = map.Access(CurString))
             StringPos = *CurMap;
         else
@@ -332,7 +332,7 @@ namespace BOSS
             const sint32 CurStringCount = (CurStringSize + sizeof(sint32)) / sizeof(sint32);
             sint32* StringDump = col.AtDumping(StringPos, CurStringCount);
             Memory::Set(StringDump, 0x00, sizeof(sint32) * CurStringCount);
-            Memory::Copy(StringDump, CurString, CurStringSize);
+            Memory::Copy(StringDump, (chars) CurString, CurStringSize);
         }
 
         // Zen구성

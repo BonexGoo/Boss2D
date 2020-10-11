@@ -125,14 +125,14 @@ namespace BOSS
                         for(sint32 i = 0, iend = Actions.LengthOfIndexable(); i < iend; ++i)
                         {
                             const Context MessageRenderer = Actions[i]("addChatItemAction")("item")("liveChatTextMessageRenderer");
-                            String Id = MessageRenderer("id").GetString();
+                            String Id = MessageRenderer("id").GetText();
                             if(!mTimestamps.Access(Id))
                             {
                                 mTimestamps(Id) = MessageRenderer("timestampUsec").GetFloat();
                                 cb(data,
-                                    MessageRenderer("message")("runs")[0]("text").GetString(),
-                                    MessageRenderer("authorName")("simpleText").GetString(),
-                                    MessageRenderer("authorPhoto")("thumbnails")[0]("url").GetString());
+                                    MessageRenderer("message")("runs")[0]("text").GetText(),
+                                    MessageRenderer("authorName")("simpleText").GetText(),
+                                    MessageRenderer("authorPhoto")("thumbnails")[0]("url").GetText());
                             }
                         }
                     }

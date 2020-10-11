@@ -58,7 +58,7 @@ namespace BOSS
         else
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
-            const String Value = json.GetString("");
+            const String Value = json.GetText();
             auto& NewSolver = mSolvers.AtAdding();
             NewSolver.Link(mChain, Key);
             {
@@ -123,7 +123,7 @@ namespace BOSS
         else
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
-            const String Value = json.GetString("");
+            const String Value = json.GetText();
             if(auto CurSolver = Solver::Find(mChain, Key))
             {
                 sint32 IntOffset = 0;
@@ -347,11 +347,11 @@ namespace BOSS
         {
             mRefRoot = &root;
             hook(context("uiname"))
-                mUINameSolver.Link(root.ViewName()).Parse(fish.GetString());
+                mUINameSolver.Link(root.ViewName()).Parse(fish.GetText());
             hook(context("uiloop"))
-                mUILoopSolver.Link(root.ViewName()).Parse(fish.GetString());
+                mUILoopSolver.Link(root.ViewName()).Parse(fish.GetText());
             hook(context("comment"))
-                mComment = fish.GetString();
+                mComment = fish.GetText();
         }
 
     public:
@@ -416,7 +416,7 @@ namespace BOSS
         {
             ZayUIElement::Load(root, context);
 
-            const String ConditionText = context.GetString();
+            const String ConditionText = context.GetText();
             mConditionType = ZaySonUtility::ToCondition(ConditionText, &mWithElse);
             if(mConditionType == ZaySonInterface::ConditionType::Unknown)
                 root.SendErrorLog("조건문 판독실패", String::Format("알 수 없는 조건문입니다(%s, Load)", (chars) ConditionText));
@@ -432,14 +432,14 @@ namespace BOSS
     public:
         static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src)
         {
-            if(ZaySonUtility::ToCondition(src.GetString("")) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
+            if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
             {
                 Object<ZayConditionElement> NewCondition(ObjectAllocType::Now);
                 NewCondition->Load(root, src);
                 dest.AtAdding() = (id_share) NewCondition;
                 return true;
             }
-            else if(ZaySonUtility::ToCondition(src("compname").GetString("")) != ZaySonInterface::ConditionType::Unknown) // compname의 경우
+            else if(ZaySonUtility::ToCondition(src("compname").GetText()) != ZaySonInterface::ConditionType::Unknown) // compname의 경우
             {
                 Object<ZayConditionElement> NewCondition(ObjectAllocType::Now);
                 NewCondition->Load(root, src("compname"));
@@ -554,14 +554,14 @@ namespace BOSS
         {
             ZayUIElement::Load(root, context);
 
-            mDataName = context("dataname").GetString();
-            const String Type = context("datatype").GetString();
+            mDataName = context("dataname").GetText();
+            const String Type = context("datatype").GetText();
             if(!Type.Compare("viewscript"))
                 mDataType = ZaySonInterface::DataType::ViewScript;
             else if(!Type.Compare("imagemap"))
                 mDataType = ZaySonInterface::DataType::ImageMap;
-            mFilePath = context("filepath").GetString();
-            mUrl = context("url").GetString();
+            mFilePath = context("filepath").GetText();
+            mUrl = context("url").GetText();
         }
 
     public:
@@ -586,7 +586,7 @@ namespace BOSS
             ZayUIElement::Load(root, context);
 
             for(sint32 i = 0, iend = context.LengthOfIndexable(); i < iend; ++i)
-                mParamSolvers.AtAdding().Link(root.ViewName()).Parse(context[i].GetString());
+                mParamSolvers.AtAdding().Link(root.ViewName()).Parse(context[i].GetText());
         }
 
     public:
@@ -611,7 +611,7 @@ namespace BOSS
         {
             ZayUIElement::Load(root, context);
 
-            const String TextTest = context.GetString("");
+            const String TextTest = context.GetText();
             sint32 PosB, PosE;
             if(ZaySonUtility::IsFunctionCall(TextTest, &PosB, &PosE)) // 함수호출
             {
@@ -632,7 +632,7 @@ namespace BOSS
                 {
                     mRequestType = ZaySonInterface::RequestType::Variable;
                     mLSolver.Parse(&GetName[0]); // 좌항
-                    mRSolvers.AtAdding().Parse(GetValue.GetString()); // 우항
+                    mRSolvers.AtAdding().Parse(GetValue.GetText()); // 우항
                 }
             }
         }
@@ -723,7 +723,7 @@ namespace BOSS
             ZayUIElement::Load(root, context);
 
             hook(context("compname"))
-                mCompName = fish.GetString();
+                mCompName = fish.GetText();
 
             hook(context("compid"))
                 mCompID = fish.GetInt(-2);

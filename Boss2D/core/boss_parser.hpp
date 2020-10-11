@@ -31,6 +31,8 @@ namespace BOSS
         // Float
         const float ReadFloat();
         const floats ReadFloats(const char separator, const char endmark);
+        // Bool
+        const bool ReadBool();
         // Hex32
         const uint32 ReadHex32();
 
@@ -107,6 +109,29 @@ namespace BOSS
             if(offset) *offset = Offset;
             return Result;
         }
+
+        static const bool GetBool(chars source, sint32 length = -1, sint32* offset = nullptr)
+        {
+            if (source == nullptr || length == 0) return 0;
+            else if (length == -1) length = boss_strlen(source);
+            sint32 Offset = (offset) ? *offset : 0;
+
+            bool Value = false;
+            if(!String::CompareNoCase(&source[Offset], "true", 4))
+            {
+                Offset += 4;
+                Value = true;
+            }
+            else if(!String::CompareNoCase(&source[Offset], "false", 5))
+            {
+                Offset += 5;
+                Value = false;
+            }
+
+            if(offset) *offset = Offset;
+            return Value;
+        }
+
         template<typename TYPE = uint32>
         static const TYPE GetHex32(chars source, sint32 length = -1, sint32* offset = nullptr)
         {

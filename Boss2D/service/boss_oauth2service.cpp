@@ -62,8 +62,8 @@ namespace BOSS
         void Signin(chars option, bool dialog, bool clearcookies, id_bitmap clipper) override
         {
             Context ClientInfo(ST_Json, SO_OnlyReference, option);
-            data().mClientId = ClientInfo[0].GetString();
-            data().mClientSecret = ClientInfo[1].GetString();
+            data().mClientId = ClientInfo[0].GetText();
+            data().mClientSecret = ClientInfo[1].GetText();
             Bmp::Remove(data().mPictureClipper);
             data().mPictureClipper = clipper;
 
@@ -277,22 +277,22 @@ namespace BOSS
             chars ResultA = AddOn::Curl::GetString(data().mCurl,
                 "https://" "accounts.google.com/o/oauth2/token", nullptr, AddOn::Curl::ST_Post, PostData);
             const Context ResultAJson(ST_Json, SO_OnlyReference, ResultA);
-            data().mAccessToken = ResultAJson("access_token").GetString();
-            data().mRefreshToken = ResultAJson("refresh_token").GetString();
+            data().mAccessToken = ResultAJson("access_token").GetText();
+            data().mRefreshToken = ResultAJson("refresh_token").GetText();
 
             // 회원정보 얻기(https://developers.google.com/apis-explorer/?hl=ko#p/plus/v1/ 에 방문하여 슬라이드를 ON으로 변경)
             chars ResultB = AddOn::Curl::GetString(data().mCurl,
                 String::Format("https://" "www.googleapis.com/plus/v1/people/me?access_token=%s", (chars) data_const().mAccessToken));
             const Context ResultBJson(ST_Json, SO_OnlyReference, ResultB);
-            data().mName = ResultBJson("displayName").GetString();
-            data().mServiceId = String("google_") + ResultBJson("id").GetString();
+            data().mName = ResultBJson("displayName").GetText();
+            data().mServiceId = String("google_") + ResultBJson("id").GetText();
             data().mComment = String::Format("팔로워 %d명 - %s",
-                (sint32) ResultBJson("circledByCount").GetInt(), (chars) ResultBJson("tagline").GetString());
+                (sint32) ResultBJson("circledByCount").GetInt(), (chars) ResultBJson("tagline").GetText());
 
             // 사진/배경 얻기
-            data().mPictureUrl = ResultBJson("image")("url").GetString(nullptr);
+            data().mPictureUrl = ResultBJson("image")("url").GetText();
             ReloadPicture(data().mPictureUrl);
-            data().mBackgroundUrl = ResultBJson("cover")("coverPhoto")("url").GetString(nullptr);
+            data().mBackgroundUrl = ResultBJson("cover")("coverPhoto")("url").GetText();
             ReloadBackground(data().mBackgroundUrl);
         }
     };
@@ -336,23 +336,23 @@ namespace BOSS
                 (chars) data_const().mClientId, (chars) data_const().mClientSecret, code);
             chars ResultA = AddOn::Curl::GetString(data().mCurl, Url);
             const Context ResultAJson(ST_Json, SO_OnlyReference, ResultA);
-            data().mAccessToken = ResultAJson("access_token").GetString();
+            data().mAccessToken = ResultAJson("access_token").GetText();
 
             // 회원정보 얻기
             chars ResultB = AddOn::Curl::GetString(data().mCurl, String::Format(
                 "https://" "graph.facebook.com/me?access_token=%s&"
                 "fields=id,name,picture,cover,context", (chars) data().mAccessToken));
             const Context ResultBJson(ST_Json, SO_OnlyReference, ResultB);
-            data().mName = ResultBJson("name").GetString();
-            data().mServiceId = String("facebook_") + ResultBJson("id").GetString();
+            data().mName = ResultBJson("name").GetText();
+            data().mServiceId = String("facebook_") + ResultBJson("id").GetText();
             data().mComment = String::Format("좋아요 총 %d건",
                 (sint32) ResultBJson("context")("mutual_likes")("summary")("total_count").GetInt());
 
             // 사진/배경 얻기
-            data().mPictureUrl = ResultBJson("picture")("data")("url").GetString(nullptr);
+            data().mPictureUrl = ResultBJson("picture")("data")("url").GetText();
             if(0 < data().mPictureUrl.Length())
                 ReloadPicture(data().mPictureUrl);
-            data().mBackgroundUrl = ResultBJson("cover")("source").GetString(nullptr);
+            data().mBackgroundUrl = ResultBJson("cover")("source").GetText();
             if(0 < data().mBackgroundUrl.Length())
                 ReloadBackground(data().mBackgroundUrl);
         }
@@ -396,25 +396,25 @@ namespace BOSS
             chars ResultA = AddOn::Curl::GetString(data().mCurl,
                 "https://" "kauth.kakao.com/oauth/token", nullptr, AddOn::Curl::ST_Post, PostData);
             const Context ResultAJson(ST_Json, SO_OnlyReference, ResultA);
-            data().mAccessToken = ResultAJson("access_token").GetString();
-            data().mRefreshToken = ResultAJson("refresh_token").GetString();
+            data().mAccessToken = ResultAJson("access_token").GetText();
+            data().mRefreshToken = ResultAJson("refresh_token").GetText();
 
             // 회원정보 얻기
             chars ResultB = AddOn::Curl::GetString(data().mCurl,
                 "https://" "kapi.kakao.com/v1/api/story/profile",
                 String::Format("Authorization: Bearer %s", (chars) data().mAccessToken));
             const Context ResultBJson(ST_Json, SO_OnlyReference, ResultB);
-            data().mName = ResultBJson("nickName").GetString();
+            data().mName = ResultBJson("nickName").GetText();
             chars BirthType = "";
-            if(!String::Compare(ResultBJson("birthdayType").GetString(), "SOLAR")) BirthType = "(양력)";
-            else if(!String::Compare(ResultBJson("birthdayType").GetString(), "LUNAR")) BirthType = "(음력)";
+            if(!String::Compare(ResultBJson("birthdayType").GetText(), "SOLAR")) BirthType = "(양력)";
+            else if(!String::Compare(ResultBJson("birthdayType").GetText(), "LUNAR")) BirthType = "(음력)";
             const sint32 BirthDay = (sint32) ResultBJson("birthday").GetInt();
             data().mComment = String::Format("생일%s %d월 %d일", BirthType, BirthDay / 100, BirthDay % 100);
 
             // 사진/배경 얻기
-            data().mPictureUrl = ResultBJson("thumbnailURL").GetString(nullptr);
+            data().mPictureUrl = ResultBJson("thumbnailURL").GetText();
             ReloadPicture(data().mPictureUrl);
-            data().mBackgroundUrl = ResultBJson("bgImageURL").GetString(nullptr);
+            data().mBackgroundUrl = ResultBJson("bgImageURL").GetText();
             ReloadBackground(data().mBackgroundUrl);
 
             // ID정보 얻기
@@ -422,7 +422,7 @@ namespace BOSS
                 "https://" "kapi.kakao.com/v1/user/me",
                 String::Format("Authorization: Bearer %s", (chars) data().mAccessToken));
             const Context ResultCJson(ST_Json, SO_OnlyReference, ResultC);
-            data().mServiceId = String("kakao_") + ResultCJson("id").GetString();
+            data().mServiceId = String("kakao_") + ResultCJson("id").GetText();
         }
     };
 

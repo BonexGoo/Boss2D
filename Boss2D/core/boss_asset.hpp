@@ -35,9 +35,10 @@ namespace BOSS
         /// @brief 어셋열기(읽기전용)
         /// @param filename : 파일명
         /// @param assetpath : 어셋패스로 여러 폴더를 탐색
+        /// @param originalonly : 원본리소스만 대상으로 할지의 여부
         /// @return 어셋ID
         /// @see Close
-        static id_asset_read OpenForRead(chars filename, id_assetpath_read assetpath = nullptr);
+        static id_asset_read OpenForRead(chars filename, id_assetpath_read assetpath = nullptr, bool originalonly = false);
 
         /// @brief 어셋열기(쓰기전용)
         /// @param filename : 파일명

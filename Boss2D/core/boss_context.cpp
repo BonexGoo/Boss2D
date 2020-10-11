@@ -22,7 +22,6 @@ namespace BOSS
 
     void Context::Set(chars value, sint32 length, bool need_quotation)
     {
-        ClearCache();
         if(value)
         {
             sint32 Length = (length == -1)? boss_strlen(value) : length;
@@ -209,18 +208,22 @@ namespace BOSS
         return (this != &NullChild());
     }
 
-    chars Context::GetString() const
+    bool Context::HasValue() const
     {
-        if(!m_parsedString)
-        {
-            m_parsedString = new char[m_valueLength + 1];
-            Memory::Copy(m_parsedString, m_valueOffset, m_valueLength);
-            m_parsedString[m_valueLength] = '\0';
-        }
-        return (chars) m_parsedString;
+        return (m_valueOffset != nullptr);
     }
 
-    chars_endless Context::GetStringFast(sint32& length) const
+    const String Context::GetText() const
+    {
+        return String(m_valueOffset, m_valueLength);
+    }
+
+    const String Context::GetText(const String value) const
+    {
+        return (m_valueOffset)? GetText() : value;
+    }
+
+    chars_endless Context::GetTextFast(sint32& length) const
     {
         length = m_valueLength;
         return m_valueOffset;
@@ -228,21 +231,7 @@ namespace BOSS
 
     const sint64 Context::GetInt() const
     {
-        if(!m_parsedInt)
-            m_parsedInt = new sint64(Parser::GetInt<sint64>(m_valueOffset, m_valueLength));
-        return *m_parsedInt;
-    }
-
-    const float Context::GetFloat() const
-    {
-        if(!m_parsedFloat)
-            m_parsedFloat = new float(Parser::GetFloat(m_valueOffset, m_valueLength));
-        return *m_parsedFloat;
-    }
-
-    chars Context::GetString(chars value) const
-    {
-        return (m_valueOffset)? GetString() : value;
+        return Parser::GetInt<sint64>(m_valueOffset, m_valueLength);
     }
 
     const sint64 Context::GetInt(const sint64 value) const
@@ -250,9 +239,19 @@ namespace BOSS
         return (m_valueOffset)? GetInt() : value;
     }
 
+    const float Context::GetFloat() const
+    {
+        return Parser::GetFloat(m_valueOffset, m_valueLength);
+    }
+
     const float Context::GetFloat(const float value) const
     {
         return (m_valueOffset)? GetFloat() : value;
+    }
+
+    const bool Context::GetBool() const
+    {
+        return Parser::GetBool(m_valueOffset, m_valueLength);
     }
 
     void Context::DebugPrint() const
@@ -276,9 +275,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
     }
 
     Context::Context(const Context& rhs)
@@ -286,10 +282,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
-
         operator=(rhs);
     }
 
@@ -298,10 +290,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
-
         operator=(ToReference(rhs));
     }
 
@@ -310,10 +298,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
-
         LoadBin(src);
     }
 
@@ -322,10 +306,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
-
         switch(type)
         {
         case ST_Json: LoadJson(src); break;
@@ -338,10 +318,6 @@ namespace BOSS
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
         m_valueLength = 0;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
-
         switch(type)
         {
         case ST_Json: LoadJson(option, src, length); break;
@@ -351,12 +327,10 @@ namespace BOSS
 
     Context::~Context()
     {
-        ClearCache();
     }
 
     Context& Context::operator=(const Context& rhs)
     {
-        ClearCache();
         m_source = rhs.m_source;
         m_namableChild = rhs.m_namableChild;
         m_indexableChild = rhs.m_indexableChild;
@@ -368,7 +342,6 @@ namespace BOSS
 
     Context& Context::operator=(Context&& rhs)
     {
-        ClearCache();
         m_source = ToReference(rhs.m_source);
         m_namableChild = ToReference(rhs.m_namableChild);
         m_indexableChild = ToReference(rhs.m_indexableChild);
@@ -390,21 +363,9 @@ namespace BOSS
 
     void Context::SetValueForSource(chars value, sint32 length)
     {
-        if(m_valueOffset)
-            ClearCache();
         m_valueNeedQuotation = true;
         m_valueOffset = value;
         m_valueLength = length;
-    }
-
-    void Context::ClearCache()
-    {
-        delete[] m_parsedString;
-        delete m_parsedInt;
-        delete m_parsedFloat;
-        m_parsedString = nullptr;
-        m_parsedInt = nullptr;
-        m_parsedFloat = nullptr;
     }
 
     chars Context::FindMark(chars value, const char mark)
@@ -716,7 +677,7 @@ namespace BOSS
                     else
                     {
                         sint32 SavedNameLength = 0;
-                        chars_endless SavedName = (*SavedContext)("@name").GetStringFast(SavedNameLength);
+                        chars_endless SavedName = (*SavedContext)("@name").GetTextFast(SavedNameLength);
                         if(src - NameBegin != SavedNameLength || Memory::Compare(NameBegin, SavedName, SavedNameLength))
                             return AssertError("엘리먼트를 팝하는 과정에서 네임매칭에 실패하였습니다");
                     }
@@ -816,7 +777,7 @@ namespace BOSS
         if(Context* NameOption = m_namableChild.Access("@name"))
         {
             sint32 ValueLength = 0;
-            chars_endless Value = NameOption->GetStringFast(ValueLength);
+            chars_endless Value = NameOption->GetTextFast(ValueLength);
             Name.AddTail(Value, ValueLength);
         }
         dst += Name;
@@ -836,7 +797,7 @@ namespace BOSS
                 dst += '>';
             }
             sint32 ValueLength = 0;
-            chars_endless Value = ValueOption->GetStringFast(ValueLength);
+            chars_endless Value = ValueOption->GetTextFast(ValueLength);
             dst.AddTail(Value, ValueLength);
         }
         // 자식 엘리먼트(~tree)
@@ -879,7 +840,7 @@ namespace BOSS
             dst += Name;
             dst.AddTailFast("=\"");
             sint32 ValueLength = 0;
-            chars_endless Value = data->GetStringFast(ValueLength);
+            chars_endless Value = data->GetTextFast(ValueLength);
             dst.AddTail(Value, ValueLength);
             dst += '\"';
         }
@@ -906,8 +867,6 @@ namespace BOSS
 
         // 셋팅
         Set(Value, ValueLength);
-        m_parsedInt = new sint64(*((sint32*) &DataField[0]));
-        m_parsedFloat = new float(*((float*) &DataField[1]));
 
         // 키워드식 자식
         for(sint32 i = 0; i < DataField[2]; ++i)
@@ -988,7 +947,7 @@ namespace BOSS
         if(const Context* CurChild = m_namableChild.Access(key))
         {
             sint32 GetLength = 0;
-            chars_endless GetValue = CurChild->GetStringFast(GetLength);
+            chars_endless GetValue = CurChild->GetTextFast(GetLength);
             if(GetLength == length && !Memory::Compare(GetValue, value, length))
             {
                 if(option == CO_GetParent)

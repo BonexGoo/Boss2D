@@ -370,6 +370,7 @@ namespace BOSS
         Point toview(float x, float y) const;
         void test(UITestOrder order);
         void repaintOnce();
+        void capture(chars uiname = nullptr);
         VisibleState visible() const;
         uint32 fbo() const;
 

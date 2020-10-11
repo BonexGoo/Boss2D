@@ -88,6 +88,11 @@ namespace BOSS
         return Collector;
     }
 
+    const bool Parser::ReadBool()
+    {
+        return GetBool(m_source, m_source_base.Length(), &m_offset);
+    }
+
     const uint32 Parser::ReadHex32()
     {
         return GetHex32(m_source, m_source_base.Length(), &m_offset);

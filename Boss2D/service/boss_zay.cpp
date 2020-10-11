@@ -926,6 +926,16 @@ namespace BOSS
             m_updater->RepaintOnce();
     }
 
+    void ZayPanel::capture(chars uiname)
+    {
+        if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
+        {
+            if(uiname)
+                CurTouch->setcapture(uiname);
+            else CurTouch->clearcapture();
+        }
+    }
+
     VisibleState ZayPanel::visible() const
     {
         const Clip& LastClip = m_stack_clip[-1];

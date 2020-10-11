@@ -324,7 +324,7 @@ namespace BOSS
                             {
                                 Self->mPipeModifyTime = ModifyTime;
                                 Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe"));
-                                chars PipeName = Json("pipe").GetString();
+                                const String PipeName = Json("pipe").GetText();
                                 Platform::Pipe::Close(Self->mPipe);
                                 Self->mPipe = Platform::Pipe::Open(PipeName);
                                 ZayWidgetDOM::BindPipe(Self->mPipe);
@@ -348,7 +348,7 @@ namespace BOSS
     {
         while(auto NewJson = Platform::Pipe::RecvJson(mPipe))
         {
-            const String Type = (*NewJson)("type").GetString();
+            const String Type = (*NewJson)("type").GetText();
             branch;
             jump(!String::Compare(Type, "CompFocusIn"))
             {

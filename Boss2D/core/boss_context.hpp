@@ -123,36 +123,44 @@ namespace BOSS
         /// @return 유효여부
         bool IsValid() const;
 
+        /// @brief 값의 존재여부
+        /// @return 존재여부
+        bool HasValue() const;
+
         /// @brief 자신의 문자열값 얻기
-        /// @return 문자열값
-        chars GetString() const;
+        /// @return 스트링객체
+        const String GetText() const;
+
+        /// @brief 자신의 문자열값 얻기(디폴트처리)
+        /// @param value : 디폴트값
+        /// @return 스트링객체
+        const String GetText(const String value) const;
 
         /// @brief 빠르게 자신의 문자열값 얻기(chars_endless)
         /// @return 문자열값
-        chars_endless GetStringFast(sint32& length) const;
+        chars_endless GetTextFast(sint32& length) const;
 
         /// @brief 자신의 정수값 얻기
         /// @return 정수값
         const sint64 GetInt() const;
-
-        /// @brief 자신의 소수값 얻기
-        /// @return 소수값
-        const float GetFloat() const;
-
-        /// @brief 자신의 문자열값 얻기(디폴트처리)
-        /// @param value : 디폴트값
-        /// @return 문자열값
-        chars GetString(chars value) const;
 
         /// @brief 자신의 정수값 얻기(디폴트처리)
         /// @param value : 디폴트값
         /// @return 정수값
         const sint64 GetInt(const sint64 value) const;
 
+        /// @brief 자신의 소수값 얻기
+        /// @return 소수값
+        const float GetFloat() const;
+
         /// @brief 자신의 소수값 얻기(디폴트처리)
         /// @param value : 디폴트값
         /// @return 소수값
         const float GetFloat(const float value) const;
+
+        /// @brief 자신의 BOOL 얻기 
+        /// @return 소수값
+        const bool GetBool() const;
 
         /// @brief 자식콘텍스트 현황보고
         void DebugPrint() const;
@@ -205,7 +213,6 @@ namespace BOSS
     private:
         const Context& NullChild() const;
         void SetValueForSource(chars value, sint32 length);
-        void ClearCache();
         static chars FindMark(chars value, const char mark);
         static chars SkipBlank(chars value, bool exclude_nullzero);
         static chars SkipBlankReverse(chars value);
@@ -259,11 +266,6 @@ namespace BOSS
         bool m_valueNeedQuotation;
         chars m_valueOffset;
         sint32 m_valueLength;
-
-        // 캐시데이터
-        mutable char* m_parsedString;
-        mutable sint64* m_parsedInt;
-        mutable float* m_parsedFloat;
     };
     typedef Array<Context> Contexts;
 }

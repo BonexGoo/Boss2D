@@ -61,7 +61,7 @@ namespace BOSS
                 Output += "    enum Type {";
                 for(sint32 i = 0, iend = table.LengthOfIndexable(); i < iend; ++i)
                 {
-                    Output += table[i]("Name").GetString("ERROR");
+                    Output += table[i]("Name").GetText("ERROR");
                     Output += ", ";
                 }
                 Output += "Max, Null = -1};\r\n";
@@ -80,12 +80,12 @@ namespace BOSS
                 for(sint32 i = 0, iend = table.LengthOfIndexable(); i < iend; ++i)
                 {
                     Output += "        else if(!String::Compare(rhs, \"";
-                    Output += table[i]("Name").GetString("ERROR");
+                    Output += table[i]("Name").GetText("ERROR");
                     Output += "\")) // ";
-                    Output += table[i]("Description").GetString("No description available");
+                    Output += table[i]("Description").GetText("No description available");
                     Output += "\r\n";
                     Output += "            mName = ";
-                    Output += table[i]("Name").GetString("ERROR");
+                    Output += table[i]("Name").GetText("ERROR");
                     Output += ";\r\n";
                 }
                 Output += "        else\r\n";

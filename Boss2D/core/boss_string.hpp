@@ -207,6 +207,11 @@ namespace BOSS
         /// @return 새로운 객체
         String Middle(sint32 index, sint32 length) const;
 
+        /// @brief 부분생성(Offset)
+        /// @param offset : 시작할 위치
+        /// @return 새로운 객체
+        String Offset(sint32 offset) const;
+
         /// @brief 부분생성(Trim)
         /// @return 새로운 객체
         String Trim() const;
@@ -255,8 +260,9 @@ namespace BOSS
         /// @brief 어셋로드식 객체생성
         /// @param filename : 파일명
         /// @param assetpath : 우선탐색용 패스
+        /// @param originalonly : 원본리소스만 대상으로 할지의 여부
         /// @return 객체
-        static String FromAsset(chars filename, id_assetpath_read assetpath = nullptr);
+        static String FromAsset(chars filename, id_assetpath_read assetpath = nullptr, bool originalonly = false);
 
         /// @brief 컨버팅식 객체생성
         /// @param text : 컨버팅할 와이드스트링

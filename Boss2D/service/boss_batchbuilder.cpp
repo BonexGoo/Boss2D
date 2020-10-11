@@ -29,15 +29,15 @@ namespace BOSS
         {
             sint32 NextFindedPos = Command.Find(FindedPos + 1, FindKey);
             Context JsonCommand(ST_Json, SO_OnlyReference, ((chars) Command) + FindedPos + FindKey.Length());
-            if(!String::Compare(JsonCommand("type").GetString(), "replace"))
+            if(!String::Compare(JsonCommand("type").GetText(), "replace"))
             {
-                Process_Replace(Command, FindedPos, NextFindedPos, JsonCommand("prm").GetString());
-                ReplaceComment = JsonCommand("restore-comment").GetString();
+                Process_Replace(Command, FindedPos, NextFindedPos, JsonCommand("prm").GetText());
+                ReplaceComment = JsonCommand("restore-comment").GetText();
             }
-            else if(!String::Compare(JsonCommand("type").GetString(), "include-alias"))
+            else if(!String::Compare(JsonCommand("type").GetText(), "include-alias"))
             {
-                Process_IncludeAlias(Command, FindedPos, NextFindedPos, JsonCommand("prm").GetString());
-                AliasComment = JsonCommand("restore-comment").GetString();
+                Process_IncludeAlias(Command, FindedPos, NextFindedPos, JsonCommand("prm").GetText());
+                AliasComment = JsonCommand("restore-comment").GetText();
             }
             FindedPos = NextFindedPos;
         }
