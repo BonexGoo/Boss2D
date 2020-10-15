@@ -3143,7 +3143,7 @@
             {
                 QOpenGLContext* ctx = QOpenGLContext::currentContext();
                 QOpenGLFunctions* f = ctx->functions();
-                const float DeviceRatio = Platform::Utility::GetPixelRatio();
+                const float DeviceRatio = (fbo == 0)? Platform::Utility::GetPixelRatio() : 1;
 
                 f->glBindFramebuffer(GL_FRAMEBUFFER, fbo); TestGL(BOSS_DBG 0);
                 GLint ViewPortValues[4] = {0};
