@@ -434,10 +434,10 @@ namespace BOSS
         Platform::Graphics::FillPolygon(LastClip.l, LastClip.t, p);
     }
 
-    void ZayPanel::polyline(Points p, float thick) const
+    void ZayPanel::polyline(Points p, float thick, bool ring) const
     {
         const Clip& LastClip = m_stack_clip[-1];
-        Platform::Graphics::DrawPolyLine(LastClip.l, LastClip.t, p, thick);
+        Platform::Graphics::DrawPolyLine(LastClip.l, LastClip.t, p, thick, ring);
     }
 
     void ZayPanel::polybezier(Points p, float thick, bool showfirst, bool showlast) const

@@ -1595,24 +1595,25 @@
             #endif
         }
 
-        void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick)
+        void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick, bool ring)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
                 const sint32 Count = p.Count();
                 if(Count < 2) return;
 
-                QPointF* NewPoint = new QPointF[Count];
-                for(sint32 i = 0; i < Count; ++i)
+                const sint32 RealCount = (ring)? Count + 1 : Count;
+                QPointF* NewPoint = new QPointF[RealCount];
+                for(sint32 i = 0; i < RealCount; ++i)
                 {
-                    NewPoint[i].setX(x + p[i].x);
-                    NewPoint[i].setY(y + p[i].y);
+                    NewPoint[i].setX(x + p[i % Count].x);
+                    NewPoint[i].setY(y + p[i % Count].y);
                 }
 
                 CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
                 CanvasClass::get()->painter().setBrush(Qt::NoBrush);
                 CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPolyline(NewPoint, Count);
+                CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
                 delete[] NewPoint;
             #endif
         }

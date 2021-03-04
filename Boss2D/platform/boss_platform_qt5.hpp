@@ -4910,6 +4910,8 @@
             connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
             connect(this, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
             connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
+            connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
+                SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
         }
         virtual ~WebViewPrivate()
         {
@@ -4975,6 +4977,21 @@
             mNowLoading = false;
             mLoadingProgress = 100;
             mLoadingRate = 1;
+            if(mCb)
+                mCb(mData, "LoadFinished", "");
+        }
+        void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+        {
+            if(mCb)
+            {
+                switch(terminationStatus)
+                {
+                case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
+                case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
+                case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
+                case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
+                }
+            }
         }
 
     public:

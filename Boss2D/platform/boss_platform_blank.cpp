@@ -926,7 +926,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick)
+        void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick, bool ring)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
             const sint32 Count = p.Count();

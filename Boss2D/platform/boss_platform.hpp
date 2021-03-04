@@ -708,7 +708,8 @@ public:
         /// @param y : 상단위치(px)
         /// @param p : 꼭지점들(px)
         /// @param thick : 두께(px)
-        static void DrawPolyLine(float x, float y, Points p, float thick);
+        /// @param ring : 도형의 닫힘여부
+        static void DrawPolyLine(float x, float y, Points p, float thick, bool ring = false);
 
         /// @brief 폴리베지어 출력
         /// @param x : 좌측위치(px)

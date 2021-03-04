@@ -347,7 +347,7 @@ namespace BOSS
         void circle() const;
         void bezier(const Vector& begin, const Vector& end, float thick) const;
         void polygon(Points p) const;
-        void polyline(Points p, float thick) const;
+        void polyline(Points p, float thick, bool ring = false) const;
         void polybezier(Points p, float thick, bool showfirst, bool showlast) const;
         void ringbezier(Points p, float thick, float curve = 0.2) const;
         void polyimage(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3]) const;
