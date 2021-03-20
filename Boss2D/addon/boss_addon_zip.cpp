@@ -7,13 +7,20 @@ bool __LINK_ADDON_ZIP__() {return true;} // 링크옵션 /OPT:NOREF가 안되서
 
 #if BOSS_NEED_ADDON_ZIP
 
+#ifdef _UNICODE
+#undef _UNICODE
+#endif
+#ifdef UNICODE
+#undef UNICODE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern "C"
 {
-    #if !BOSS_LINUX
+    #if !BOSS_LINUX & !BOSS_WINDOWS_MINGW
         extern const char* strstr(const char*, char const* const);
     #endif
 }
@@ -107,7 +114,7 @@ namespace BOSS
 // for more info about .ZIP format, see ftp://ftp.cdrom.com/pub/infozip/doc/appnote-970311-iz.zip
 //   PkWare has also a specification at ftp://ftp.pkware.com/probdesc.zip
 
-// bonex added 2013.12.12
+// added 2013.12.12
 #ifdef _UNICODE
 #undef _UNICODE
 #endif
@@ -115,7 +122,7 @@ namespace BOSS
 #undef UNICODE
 #endif
 
-// bonex added 2013.12.12
+// added 2013.12.12
 #define MAX_PATH 1024
 #define DECLARE_HANDLE(name) typedef void* name;
 #define Int32x32To64(a, b)  ((LONGLONG)(((LONGLONG)((long)(a))) * ((long)(b))))
@@ -152,7 +159,7 @@ DECLARE_HANDLE(HZIP);
 typedef DWORD ZRESULT;
 // return codes from any of the zip functions. Listed later.
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 typedef struct
 {
     int index;                 // index of this file within the zip
@@ -321,7 +328,7 @@ namespace BOSS
 }
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 #define zmalloc(len) Memory::Alloc(len)
 #define zfree(p) Memory::Free(p)
 
@@ -2663,7 +2670,7 @@ typedef struct unz_file_info_internal_s
     uLong offset_curfile;// relative offset of local header 4 bytes
 } unz_file_info_internal;
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 typedef struct
 {
   bool canseek;
@@ -2673,7 +2680,7 @@ typedef struct
   void *buf; unsigned int len,pos; // if it's a memory block
 } LUFILE;
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 LUFILE *lufopen(void *z,unsigned int len,ZRESULT *err)
 {
     HANDLE h=0; bool canseek=false; *err=ZR_OK;
@@ -2686,7 +2693,7 @@ LUFILE *lufopen(void *z,unsigned int len,ZRESULT *err)
     return lf;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 int lufclose(LUFILE *stream)
 {
     if (stream==NULL) return EOF;
@@ -2694,19 +2701,19 @@ int lufclose(LUFILE *stream)
     return 0;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 int luferror(LUFILE *stream)
 {
     return 0;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 long int luftell(LUFILE *stream)
 {
     return stream->pos;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 int lufseek(LUFILE *stream, long offset, int whence)
 {
     if (whence==SEEK_SET) stream->pos=offset;
@@ -2715,7 +2722,7 @@ int lufseek(LUFILE *stream, long offset, int whence)
     return 0;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 size_t lufread(void *ptr,size_t size,size_t n,LUFILE *stream)
 {
     unsigned int toread = (unsigned int)(size*n);
@@ -3724,7 +3731,7 @@ FILETIME timet2filetime(const unsigned t)
     return ft;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 class TUnzip
 {
 public:
@@ -3741,7 +3748,7 @@ public:
     ZRESULT Close();
 };
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 ZRESULT TUnzip::Open(void *z,unsigned int len)
 {
     if (uf!=0 || currentfile!=-1) return ZR_NOTINITED;
@@ -3753,7 +3760,7 @@ ZRESULT TUnzip::Open(void *z,unsigned int len)
     return ZR_OK;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 ZRESULT TUnzip::Get(int index,ZIPENTRY *ze)
 {
     if (index<-1 || index>=(int)uf->gi.number_entry) return ZR_ARGS;
@@ -3912,7 +3919,7 @@ ZRESULT TUnzip::Find(const TCHAR *tname,bool ic,int *index,ZIPENTRY *ze)
   return ZR_OK;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 void EnsureDirectory(const TCHAR *dir)
 {
     const TCHAR *lastslash=dir, *c=lastslash;
@@ -3927,7 +3934,7 @@ void EnsureDirectory(const TCHAR *dir)
     TCHAR cd[MAX_PATH]; *cd=0; _tcscat(cd,dir);
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 ZRESULT TUnzip::Unzip(int index,void *dst,unsigned int len)
 {
     if (index!=currentfile)
@@ -3956,7 +3963,7 @@ ZRESULT TUnzip::Close()
 
 ZRESULT lasterrorU=ZR_OK;
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 unsigned int FormatZipMessage(ZRESULT code, TCHAR *buf,unsigned int len)
 {
     if (code==ZR_RECENT) code=lasterrorU;
@@ -3998,7 +4005,7 @@ typedef struct
     TUnzip *unz;
 } TUnzipHandleData;
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 HZIP OpenZipInternal(void *z,unsigned int len, const char *password)
 {
     TUnzip *unz = new TUnzip(password);
@@ -4040,7 +4047,7 @@ ZRESULT UnzipItemInternal(HZIP hz, int index, void *dst, unsigned int len)
 
 ZRESULT UnzipItem(HZIP hz, int index, void *z,unsigned int len) {return UnzipItemInternal(hz,index,z,len);}
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 ZRESULT CloseZip(HZIP hz)
 {
     if (hz==0) {lasterrorU=ZR_ARGS;return ZR_ARGS;}
@@ -4053,7 +4060,7 @@ ZRESULT CloseZip(HZIP hz)
     return lasterrorU;
 }
 
-// bonex modified 2013.12.12
+// modified 2013.12.12
 bool IsZipHandle(HZIP hz)
 {
     if (hz==0) return false;

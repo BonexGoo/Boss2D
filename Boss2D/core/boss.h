@@ -131,9 +131,6 @@
         typedef unsigned int boss_size_t;
         typedef int boss_ssize_t;
     #endif
-    #ifndef __cplusplus
-        typedef unsigned short wchar_t;
-    #endif
 #elif BOSS_MAC_OSX || BOSS_IPHONE
     typedef unsigned long boss_size_t;
     typedef long boss_ssize_t;
@@ -149,9 +146,6 @@
 #elif BOSS_WASM
     typedef unsigned long boss_size_t;
     typedef long boss_ssize_t;
-    #ifndef __cplusplus
-        typedef unsigned int wchar_t;
-    #endif
     typedef signed char __int8_t;
     typedef signed short __int16_t;
     typedef signed int __int32_t;
@@ -240,6 +234,8 @@
 #else
     #define BOSS_TRACE(...) do{} while(0)
 #endif
+
+#include <stddef.h>
 
 // About global function
 #ifdef __cplusplus

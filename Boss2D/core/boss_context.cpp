@@ -10,14 +10,24 @@ namespace BOSS
 
     Context& Context::At(sint32 index)
     {
-        while(m_indexableChild.Count() < index)
+        while(m_indexableChild.Count() <= index)
             m_indexableChild.AtAdding();
-        return m_indexableChild[index];
+        return m_indexableChild.At(index);
     }
 
     Context& Context::AtAdding()
     {
         return m_indexableChild.AtAdding();
+    }
+
+    void Context::Remove(chars key, sint32 length)
+    {
+        m_namableChild.Remove(String(key, length));
+    }
+
+    void Context::Remove(sint32 index)
+    {
+        m_indexableChild.SubtractionSection(index);
     }
 
     void Context::Set(chars value, sint32 length, bool need_quotation)
@@ -43,7 +53,7 @@ namespace BOSS
     {
         m_source.Clear();
         m_namableChild.Reset();
-        m_indexableChild.Reset();
+        m_indexableChild.Clear();
         Set(nullptr);
     }
 
@@ -78,8 +88,8 @@ namespace BOSS
             dst.AddTailFast("[\r\n");
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
-                Context* CurChild = m_indexableChild.Access(i);
-                CurChild->SaveJsonCore(tab + 1, String::FromInteger(i), dst, true, i + 1 == iend);
+                const Context& CurChild = m_indexableChild[i];
+                CurChild.SaveJsonCore(tab + 1, String::FromInteger(i), dst, true, i + 1 == iend);
             }
             dst.AddTailFast("]\r\n");
         }
@@ -104,8 +114,8 @@ namespace BOSS
     {
         for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
         {
-            Context* CurChild = m_indexableChild.Access(i);
-            CurChild->SaveXmlCore(0, String::FromInteger(i), dst);
+            const Context& CurChild = m_indexableChild[i];
+            CurChild.SaveXmlCore(0, String::FromInteger(i), dst);
         }
         return dst;
     }
@@ -116,7 +126,7 @@ namespace BOSS
             return false;
 
         m_namableChild.Reset();
-        m_indexableChild.Reset();
+        m_indexableChild.Clear();
 
         bytes SrcFocus = src + GetBinHeader().Length() + 1 + sizeof(sint32) + 1;
         LoadBinCore(SrcFocus);
@@ -134,7 +144,7 @@ namespace BOSS
     bool Context::LoadPrm(chars src, sint32 length)
     {
         m_namableChild.Reset();
-        m_indexableChild.Reset();
+        m_indexableChild.Clear();
 
         const String SrcString(src, length);
         sint32 PosBegin = 0;
@@ -189,7 +199,7 @@ namespace BOSS
     const Context& Context::operator[](sint32 index) const
     {
         if(0 <= index && index < m_indexableChild.Count())
-            return *m_indexableChild.Access(index);
+            return m_indexableChild[index];
         return NullChild();
     }
 
@@ -263,8 +273,8 @@ namespace BOSS
             m_namableChild.AccessByCallback(DebugPrintCoreCB, &tab);
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
-                Context* CurChild = m_indexableChild.Access(i);
-                CurChild->DebugPrintCore(0, String::FromInteger(i), true);
+                const Context& CurChild = m_indexableChild[i];
+                CurChild.DebugPrintCore(0, String::FromInteger(i), true);
             }
             BOSS_TRACE("=================================================");
         #endif
@@ -610,8 +620,8 @@ namespace BOSS
 
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
-                Context* CurChild = m_indexableChild.Access(i);
-                CurChild->SaveJsonCore(tab + 1, String::FromInteger(i), dst, true, i + 1 == iend);
+                const Context& CurChild = m_indexableChild[i];
+                CurChild.SaveJsonCore(tab + 1, String::FromInteger(i), dst, true, i + 1 == iend);
             }
 
             for(sint32 i = 0; i < tab; ++i)
@@ -810,8 +820,8 @@ namespace BOSS
             }
             for(sint32 i = 0, iend = TreeOption->m_indexableChild.Count(); i < iend; ++i)
             {
-                Context* CurChild = TreeOption->m_indexableChild.Access(i);
-                CurChild->SaveXmlCore(tab + 1, String::FromInteger(i), dst);
+                const Context& CurChild = TreeOption->m_indexableChild[i];
+                CurChild.SaveXmlCore(tab + 1, String::FromInteger(i), dst);
             }
             dst += TabString;
         }
@@ -894,7 +904,7 @@ namespace BOSS
                 src += sizeof(sint32) + 1;
 
                 // 자식루프
-                Context& NewChild = m_indexableChild[i];
+                Context& NewChild = m_indexableChild.At(i);
                 src = NewChild.LoadBinCore(src);
             }
         }
@@ -937,8 +947,8 @@ namespace BOSS
         // 배열식 자식
         for(sint32 i = 0; i < IChildCount; ++i)
         {
-            const Context* CurChild = m_indexableChild.Access(i);
-            CurChild->SaveBinCore(dst);
+            const Context& CurChild = m_indexableChild[i];
+            CurChild.SaveBinCore(dst);
         }
     }
 
@@ -960,8 +970,8 @@ namespace BOSS
         m_namableChild.AccessByCallback(CollectCoreCB, param);
         for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
         {
-            Context* CurChild = m_indexableChild.Access(i);
-            CurChild->CollectCore(this, key, value, length, result, option);
+            const Context& CurChild = m_indexableChild[i];
+            CurChild.CollectCore(this, key, value, length, result, option);
         }
     }
 
@@ -989,8 +999,8 @@ namespace BOSS
             m_namableChild.AccessByCallback(DebugPrintCoreCB, &tab);
             for(sint32 i = 0, iend = m_indexableChild.Count(); i < iend; ++i)
             {
-                Context* CurChild = m_indexableChild.Access(i);
-                CurChild->DebugPrintCore(tab + 1, String::FromInteger(i), true);
+                const Context& CurChild = m_indexableChild[i];
+                CurChild.DebugPrintCore(tab + 1, String::FromInteger(i), true);
             }
         #endif
     }

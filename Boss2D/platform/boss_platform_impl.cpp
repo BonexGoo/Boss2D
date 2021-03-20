@@ -12,6 +12,9 @@
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         #include <gtk/gtk.h>
     #endif
+    #include <arpa/inet.h>
+    #include <sys/ioctl.h>
+    #include <net/if.h>
 #elif BOSS_IPHONE
     #include "ios/src/BossWebView.h"
 #elif BOSS_ANDROID
@@ -190,6 +193,39 @@ namespace BOSS
                     DWORD VolSerial = 0;
                     if(GetVolumeInformationA("C:/", NULL, NULL, &VolSerial, NULL, NULL, NULL, NULL))
                         StringCollector("VolSerial") = String::Format("%X", VolSerial);
+                #elif BOSS_LINUX
+                    OSCode16 &= 0x02;
+                    const int Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+                    if(Sock != -1)
+                    {
+                        struct ifreq Ifr;
+                        struct ifconf Ifc;
+                        char Buf[1024];
+                        Ifc.ifc_len = sizeof(Buf);
+                        Ifc.ifc_buf = Buf;
+                        if(ioctl(Sock, SIOCGIFCONF, &Ifc) == -1) {}
+                        struct ifreq* It = Ifc.ifc_req;
+                        const struct ifreq* const End = It + (Ifc.ifc_len / sizeof(struct ifreq));
+                        while(It != End)
+                        {
+                            strcpy(Ifr.ifr_name, It->ifr_name);
+                            if(ioctl(Sock, SIOCGIFFLAGS, &Ifr) == 0)
+                            if(!(Ifr.ifr_flags & IFF_LOOPBACK))
+                            if(ioctl(Sock, SIOCGIFHWADDR, &Ifr) == 0)
+                            {
+                                String Ip6Text;
+                                bytes Ip6Code = (bytes) Ifr.ifr_hwaddr.sa_data;
+                                for(sint32 i = 0; i < 6; ++i)
+                                {
+                                    if(0 < i) Ip6Text += '.';
+                                    Ip6Text += String::FromInteger(Ip6Code[i] & 0xFF);
+                                }
+                                StringCollector("Ip6") = Ip6Text;
+                                break;
+                            }
+                            It++;
+                        }
+                    }
                 #else
                     OSCode16 &= 0x00;
                     StringCollector.AtAdding() = "null";

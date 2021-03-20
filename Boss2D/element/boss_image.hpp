@@ -73,8 +73,8 @@ namespace BOSS
         inline const sint32* PatchDstYArray() const {return &m_patch_cached_dst_y[0];}
 
     public:
-        Rect CalcChildRect(const Rect& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const;
-        bool UpdatePatchBy(float w, float h) const;
+        Rect CalcChildRect(const rect128& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const;
+        bool UpdatePatchBy(sint32 w, sint32 h) const;
 
     private:
         void ResetBitmap();

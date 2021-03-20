@@ -237,6 +237,7 @@ namespace BOSS
         typedef const void* (*FinderCB)(void*, chars);
         typedef void (*UpdaterCB)(void*, sint32);
         typedef void (*ScrollerCB)(const size64&, const point64&);
+        typedef void (*ReleaseCaptureCB)(payload olddata, payload newdata);
 
     public:
         ZayObject();
@@ -275,8 +276,9 @@ namespace BOSS
         void resizeForced(sint32 w = -1, sint32 h = -1);
         bool getResizingValue(sint32& w, sint32& h);
         // 캡쳐
-        void setCapture(chars uiname);
+        void setCapture(chars uiname, ReleaseCaptureCB cb_once = nullptr, payload data = nullptr);
         void clearCapture();
+        void eraseCapture(payload condition = nullptr);
 
     public:
         inline h_view view() const
@@ -319,7 +321,7 @@ namespace BOSS
             BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(InsideBinder, mRefImage(rhs.mRefImage), mGuideRect(rhs.mGuideRect))
             friend class ZayPanel;
         private:
-            InsideBinder(const Image* image, Rect rect = Rect()) : mRefImage(image), mGuideRect(rect) {}
+            InsideBinder(const Image* image, rect128 rect = {0, 0, 0, 0}) : mRefImage(image), mGuideRect(rect) {}
         public:
             ~InsideBinder() {}
         public:
@@ -336,7 +338,7 @@ namespace BOSS
             {return mRefImage->CalcChildRect(mGuideRect, ix, iy, xcount, ycount);}
         private:
             const Image* mRefImage;
-            Rect mGuideRect;
+            rect128 mGuideRect;
         };
 
     public:
@@ -364,13 +366,12 @@ namespace BOSS
         bool text(chars string, sint32 count, UIFontAlign align = UIFA_CenterMiddle, UIFontElide elide = UIFE_None) const;
         void text(float x, float y, chars string, UIFontAlign align = UIFA_CenterMiddle) const; // 중점식
         void text(float x, float y, chars string, sint32 count, UIFontAlign align = UIFA_CenterMiddle) const; // 중점식
-        bool textbox(chars string, sint32 linegap) const;
+        bool textbox(chars string, sint32 linegap, UIAlign align) const;
         void sub(chars uigroup, id_surface surface) const;
         PanelState state(chars uiname = nullptr) const;
         Point toview(float x, float y) const;
         void test(UITestOrder order);
         void repaintOnce();
-        void capture(chars uiname = nullptr);
         VisibleState visible() const;
         uint32 fbo() const;
 
@@ -510,11 +511,11 @@ namespace BOSS
             ZayPanel::SubGestureCB MakeGesture() const;
             sint32 ParamCount() const;
             const SolverValue& Param(sint32 i) const;
-            bool ParamToBool(sint32 i) const;
-            UIAlign ParamToUIAlign(sint32 i) const;
-            UIStretchForm ParamToUIStretchForm(sint32 i) const;
-            UIFontAlign ParamToUIFontAlign(sint32 i) const;
-            UIFontElide ParamToUIFontElide(sint32 i) const;
+            bool ParamToBool(sint32 i, bool& error) const;
+            UIAlign ParamToUIAlign(sint32 i, bool& error) const;
+            UIStretchForm ParamToUIStretchForm(sint32 i, bool& error) const;
+            UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;
+            UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
 
         private:
             void AddParam(const SolverValue& value);
@@ -701,8 +702,9 @@ namespace BOSS
             bool hovertest(sint32 x, sint32 y);
 
         public:
-            void setcapture(chars uiname);
+            void setcapture(chars uiname, ZayObject::ReleaseCaptureCB cb_once = nullptr, payload data = nullptr);
             void clearcapture();
+            void eraseCapture(payload condition = nullptr);
             const Element* getcapture() const;
             PanelState capturetest(chars uiname) const;
 
@@ -759,6 +761,8 @@ namespace BOSS
             sint32 m_updateid;
             sint32 m_hoverid;
             String m_captured_uiname;
+            ZayObject::ReleaseCaptureCB m_captured_cb_once;
+            payload m_captured_data;
             sint32 m_block_width;
             sint32 m_block_height;
             Element m_element;
@@ -809,7 +813,6 @@ namespace BOSS
         h_view SetView(h_view view) override;
         bool IsNative() override;
         void* GetClass() override;
-        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;
         void SetCallback(UpdaterCB cb, payload data) override;
         void DirtyAllSurfaces() override;
 
@@ -819,6 +822,7 @@ namespace BOSS
         void OnDestroy() override;
         void OnSize(sint32 w, sint32 h) override;
         void OnTick() override;
+        void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;
         void OnRender(sint32 width, sint32 height, float l, float t, float r, float b) override;
         void OnTouch(TouchType type, sint32 id, sint32 x, sint32 y) override;
         void OnKey(sint32 code, chars text, bool pressed) override;

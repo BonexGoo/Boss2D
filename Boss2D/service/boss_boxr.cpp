@@ -70,7 +70,7 @@ namespace BOSS
         }
 
         // Find filename by key-head
-        Array<String> FileNames;
+        Strings FileNames;
         const char KeyChars[] = {
             'a', 'b', 'c', 'd', 'e', 'f', 'g',
             'h', 'i', 'j', 'k', 'l', 'm', 'n',
@@ -79,7 +79,7 @@ namespace BOSS
         const sint32 KeyTailWidth = Bmp::GetWidth(Keys[-1]);
         for(sint32 i = 0; i < KeyHeads.Count(); ++i)
         {
-            FileNames.AtAdding();
+            String& NewFileName = FileNames.AtAdding();
             const sint32 jxbegin = KeyHeads[i].x + KeyHeadWidth;
             const sint32 jybegin = KeyHeads[i].y;
             sint32 jxlast = jxbegin;
@@ -104,7 +104,7 @@ namespace BOSS
                             }
                         if(IsFinded)
                         {
-                            FileNames.At(-1) += KeyChars[k];
+                            NewFileName += KeyChars[k];
                             jxlast = jx + kWidth;
                             jx = jx + kWidth - 1;
                             break;

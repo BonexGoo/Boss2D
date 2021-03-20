@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <boss_map.hpp>
+#include <boss_queue.hpp>
 #include <boss_share.hpp>
+#include <boss_string.hpp>
 
 namespace BOSS
 {
@@ -40,7 +42,7 @@ namespace BOSS
         virtual h_view SetView(h_view view);
         virtual bool IsNative();
         virtual void* GetClass();
-        virtual void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);
+        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool direct);
         virtual void SetCallback(UpdaterCB cb, payload data);
         virtual void DirtyAllSurfaces();
 
@@ -50,8 +52,19 @@ namespace BOSS
         virtual void OnDestroy();
         virtual void OnSize(sint32 w, sint32 h);
         virtual void OnTick();
+        virtual void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);
         virtual void OnRender(sint32 width, sint32 height, float l, float t, float r, float b);
         virtual void OnTouch(TouchType type, sint32 id, sint32 x, sint32 y);
         virtual void OnKey(sint32 code, chars text, bool pressed);
+
+    private:
+        struct Notify
+        {
+            NotifyType mType;
+            String mTopic;
+            id_cloned_share mClonedIn;
+        };
+        Queue<Notify*> mNotifyQueue;
+        sint32 mNotifyProcedure;
     };
 }

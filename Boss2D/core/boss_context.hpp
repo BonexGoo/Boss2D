@@ -30,6 +30,15 @@ namespace BOSS
         /// @return 해당 자식콘텍스트의 인스턴스
         Context& AtAdding();
 
+        /// @brief 자식콘텍스트를 제거(키워드식)
+        /// @param key : 자식콘텍스트의 이름
+        /// @param length : 이름의 길이(-1이면 자동설정)
+        void Remove(chars key, sint32 length = -1);
+
+        /// @brief 자식콘텍스트를 제거(배열식)
+        /// @param index : 자식콘텍스트의 순번
+        void Remove(sint32 index);
+
         /// @brief 자신의 값 설정
         /// @param value : 문자열값
         /// @param length : 길이(-1은 자동측정)
@@ -260,7 +269,7 @@ namespace BOSS
 
         // 자식연결
         Map<Context> m_namableChild;
-        Map<Context> m_indexableChild;
+        Array<Context> m_indexableChild;
 
         // 자기데이터
         bool m_valueNeedQuotation;

@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include <boss_array.hpp>
+#include <boss_mutex.hpp>
+#include <boss_object.hpp>
+#include <boss_storage.hpp>
 #include <boss_string.hpp>
 #include <boss_wstring.hpp>
 
@@ -20,17 +23,19 @@ namespace BOSS
         /// @brief 접속하기(서버)
         /// @param port : 포트번호
         /// @param methods : 원격함수들
+        /// @param autopartner : 자동으로 파트너를 지정
         /// @return 생성된 원격ID
         /// @see Disconnect
-        static id_remote ConnectForServer(uint16 port, MethodPtrs methods);
+        static id_remote ConnectForServer(uint16 port, MethodPtrs methods, bool autopartner);
 
         /// @brief 접속하기(클라이언트)
         /// @param domain : 도메인명(IP가능)
         /// @param port : 포트번호
         /// @param methods : 원격함수들
+        /// @param autopartner : 자동으로 파트너를 지정
         /// @return 생성된 원격ID
         /// @see Disconnect
-        static id_remote ConnectForClient(chars domain, uint16 port, MethodPtrs methods);
+        static id_remote ConnectForClient(chars domain, uint16 port, MethodPtrs methods, bool autopartner);
 
         /// @brief 접속끊기
         /// @param remote : 원격ID
@@ -42,15 +47,27 @@ namespace BOSS
         /// @return 상대방과 연결되었는지 여부
         static bool CommunicateOnce(id_remote_read remote);
 
-        /// @brief 마지막 접속시도시간 확인
+        /// @brief 연결된 파트너의 수량
         /// @param remote : 원격ID
-        /// @return 마지막 접속이후 연결시도한 시간(현재 접속되어 있다면 0)
-        static uint64 GetLastConnectingTime(id_remote_read remote);
+        /// @return 파트너의 수량
+        static sint32 CountOfPartners(id_remote_read remote);
 
-        /// @brief 새로운 상대방과 연결되었는지 확인
+        /// @brief 파트너를 지정
         /// @param remote : 원격ID
-        /// @return 연결여부(1회성, 함수호출후에는 새로운 상대방이 아니게 됨)
-        static bool CheckNewPartner(id_remote remote);
+        /// @param index : 파트너의 순번
+        /// @return 성공여부
+        static bool SelectPartnerByIndex(id_remote remote, sint32 index);
+
+        /// @brief 파트너를 지정
+        /// @param remote : 원격ID
+        /// @param peerid : 파트너의 PeerID(클라이언트의 경우 상대는 무조건 0)
+        /// @return 성공여부
+        static bool SelectPartnerByPeerID(id_remote remote, sint32 peerid);
+
+        /// @brief 파트너를 제거
+        /// @param remote : 원격ID
+        /// @param peerid : 파트너의 PeerID(클라이언트의 경우 상대는 무조건 0)
+        static void KickPartner(id_remote remote, sint32 peerid);
 
     public:
         class Param
@@ -154,6 +171,14 @@ namespace BOSS
                     mutable Params* m_params;
                 } call;
             };
+        };
+
+    public:
+        class GlobalValue
+        {
+        public:
+            static sint32& LastPeerID() {static sint32 _ = -1; return _;}
+            static sint32s& ExitPeerIDs() {return *BOSS_STORAGE_SYS(sint32s);}
         };
     };
 }

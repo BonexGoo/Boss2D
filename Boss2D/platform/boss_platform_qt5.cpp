@@ -172,9 +172,9 @@
             }
             Platform::Option::SetFlag("AssertPopup", false);
 
+            PlatformFree();
             // 스토리지(TLS) 영구제거
             Storage::ClearAll(SCL_SystemAndUser);
-            PlatformFree();
             return result;
         }
     #endif
@@ -639,17 +639,20 @@
             if(!g_data || !g_window)
                 return nullptr;
 
-            if(needout)
-            {
-                id_cloned_share Result;
-                ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, &Result);
-                return Result;
-            }
-            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, nullptr);
-            return nullptr;
+            id_cloned_share Result = nullptr;
+            ((ViewAPI*) view.get())->sendNotify(NT_Normal, topic, in, (needout)? &Result : nullptr);
+            return Result;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
+        void Platform::SendDirectNotify(h_view view, chars topic, id_share in)
+        {
+            BOSS_TRACE("SendDirectNotify(%s)", topic);
+            if(!g_data || !g_window)
+                return;
+            ((ViewAPI*) view.get())->sendDirectNotify(NT_Normal, topic, in);
+        }
+
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
         {
             BOSS_TRACE("BroadcastNotify(%s)", topic);
             if(!g_data || !g_window)
@@ -662,15 +665,26 @@
                     chars topic;
                     id_share in;
                     NotifyType type;
-                } Param = {topic, in, type};
+                    bool directly;
+                } Param = {topic, in, type, directly};
 
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
                     const Payload* Param = (const Payload*) param;
-                    ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr);
+                    if(Param->directly)
+                        ((ViewAPI*) view->get())->sendDirectNotify(Param->type, Param->topic, Param->in);
+                    else ((ViewAPI*) view->get())->sendNotify(Param->type, Param->topic, Param->in, nullptr);
                 }, &Param);
                 View::SearchEnd();
             }
+        }
+
+        void Platform::SendKeyEvent(h_view view, sint32 code, chars text, bool pressed)
+        {
+            BOSS_TRACE("SendKeyEvent(%d, %s)", code, (pressed)? "pressed" : "released");
+            if(!g_data || !g_window)
+                return;
+            ((ViewAPI*) view.get())->key(code, text, pressed);
         }
 
         void Platform::PassAllViews(PassCB cb, payload data)
@@ -1164,12 +1178,18 @@
             return Result;
         }
 
-        void Platform::Utility::SendToClipboard(chars text)
+        void Platform::Utility::SendToTextClipboard(chars text)
         {
             QClipboard* Clipboard = QApplication::clipboard();
             Clipboard->setText(text, QClipboard::Clipboard);
             if(Clipboard->supportsSelection())
                 Clipboard->setText(text, QClipboard::Selection);
+        }
+
+        String Platform::Utility::RecvFromTextClipboard()
+        {
+            QClipboard* Clipboard = QApplication::clipboard();
+            return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
         void Platform::Utility::SetCursor(CursorRole role)
@@ -1229,6 +1249,17 @@
         chars Platform::Utility::GetDeviceID()
         {
             return PlatformImpl::Wrap::Utility_GetDeviceID();
+        }
+
+        chars Platform::Utility::GetLocaleBCP47()
+        {
+            static char BCP47Code[8] = {'\0'};
+            if(BCP47Code[0] == '\0')
+            {
+                const QString BCP47Text = QLocale::system().bcp47Name();
+                boss_strcpy(BCP47Code, BCP47Text.toUtf8().constData());
+            }
+            return BCP47Code;
         }
 
         void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
@@ -2234,7 +2265,7 @@
                             TestBits[i].g = TestBits[i].a;
                             TestBits[i].b = TestBits[i].a;
                         }
-                        Bmp::ToAsset(Test, String::FromWChars(WString::Format(L"freefont_debug/texture_%d.bmp", mLastCell->mTexture.id(0))));
+                        Bmp::ToAsset(Test, String::Format("freefont_debug/texture_%d.bmp", mLastCell->mTexture.id(0)));
                         Bmp::Remove(Test);
                     #endif
 
@@ -2339,6 +2370,7 @@
                     }
                     Platform::Graphics::EndGL();
                 }
+                else BOSS_ASSERT("This is not GL mode!", false);
             }
             sint32 GetLengthOf(sint32 clipping_width, wchars string, sint32 count)
             {
@@ -2411,17 +2443,25 @@
                 {
                     FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height());
 
+                    WString Text = (sizeof(TYPE) == 1)?
+                        WString::FromChars((chars) string, count) : WString((wchars) string, count);
+                    if(elide != UIFE_None)
+                    if(w < Platform::Graphics::GetStringWidthW(Text))
+                    {
+                        const sint32 DotsSize = Platform::Graphics::GetStringWidthW(L"...");
+                        const sint32 ClipSize = w - DotsSize;
+                        if(0 < ClipSize)
+                        {
+                            const sint32 ClipCount = Platform::Graphics::GetLengthOfStringW(false, ClipSize, Text);
+                            Text = WString(Text, ClipCount) + L"...";
+                        }
+                        else Text.Empty();
+                    }
+
                     const sint32 XAlign = _GetXFontAlignCode(align);
                     sint32 TextWidth = 0;
                     if(XAlign != 0) // Center, Right, Justify에 모두 가로길이 필요
-                    {
-                        if(sizeof(TYPE) == 1)
-                        {
-                            const WString NewString = WString::FromChars((chars) string, count);
-                            TextWidth = CurFreeFont.GetWidth(NewString, NewString.Length());
-                        }
-                        else TextWidth = CurFreeFont.GetWidth((wchars) string, (count < 0)? boss_wcslen((wchars) string) : count);
-                    }
+                        TextWidth = CurFreeFont.GetWidth(Text, Text.Length());
 
                     sint32 DstX = x; // Left
                     switch(XAlign)
@@ -2451,14 +2491,7 @@
                     default:
                         break;
                     }
-
-                    if(sizeof(TYPE) == 1)
-                    {
-                        const WString NewString = WString::FromChars((chars) string, count);
-                        CurFreeFont.Render(DstX, DstY, NewString, NewString.Length(),
-                            CanvasClass::get()->color(), (XAlign == 3)? w / TextWidth : 1);
-                    }
-                    else CurFreeFont.Render(DstX, DstY, (wchars) string, (count < 0)? boss_wcslen((wchars) string) : count,
+                    CurFreeFont.Render(DstX, DstY, Text, Text.Length(),
                         CanvasClass::get()->color(), (XAlign == 3)? w / TextWidth : 1);
                 }
                 else
@@ -4254,71 +4287,95 @@
         ////////////////////////////////////////////////////////////////////////////////
         Strings Platform::Serial::GetAllNames(String* spec)
         {
-            return SerialClass::GetList(spec);
+            #ifndef BOSS_WASM
+                return SerialClass::GetList(spec);
+            #endif
+            return Strings();
         }
 
         id_serial Platform::Serial::Open(chars name, SerialDecodeCB dec, SerialEncodeCB enc)
         {
-            SerialClass* NewSerial = new SerialClass(name, dec, enc);
-            if(NewSerial->IsValid())
-                return (id_serial) NewSerial;
-            delete NewSerial;
+            #ifndef BOSS_WASM
+                SerialClass* NewSerial = new SerialClass(name, dec, enc);
+                if(NewSerial->IsValid())
+                    return (id_serial) NewSerial;
+                delete NewSerial;
+            #endif
             return nullptr;
         }
 
         void Platform::Serial::Close(id_serial serial)
         {
-            delete (SerialClass*) serial;
+            #ifndef BOSS_WASM
+                delete (SerialClass*) serial;
+            #endif
         }
 
         bool Platform::Serial::Connected(id_serial serial)
         {
-            if(!serial) return false;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            return CurSerial->Connected();
+            #ifndef BOSS_WASM
+                if(!serial) return false;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                return CurSerial->Connected();
+            #endif
+            return false;
         }
 
         bool Platform::Serial::ReadReady(id_serial serial, sint32* gettype)
         {
-            if(!serial) return false;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            return CurSerial->ReadReady(gettype);
+            #ifndef BOSS_WASM
+                if(!serial) return false;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                return CurSerial->ReadReady(gettype);
+            #endif
+            return false;
         }
 
         sint32 Platform::Serial::ReadAvailable(id_serial serial)
         {
-            if(!serial) return 0;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            return CurSerial->ReadAvailable();
+            #ifndef BOSS_WASM
+                if(!serial) return 0;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                return CurSerial->ReadAvailable();
+            #endif
+            return 0;
         }
 
         sint32 Platform::Serial::Read(id_serial serial, chars format, ...)
         {
-            if(!serial) return 0;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            va_list Args;
-            va_start(Args, format);
-            const sint32 Result = CurSerial->Read(format, Args);
-            va_end(Args);
-            return Result;
+            #ifndef BOSS_WASM
+                if(!serial) return 0;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                va_list Args;
+                va_start(Args, format);
+                const sint32 Result = CurSerial->Read(format, Args);
+                va_end(Args);
+                return Result;
+            #endif
+            return 0;
         }
 
         sint32 Platform::Serial::Write(id_serial serial, chars format, ...)
         {
-            if(!serial) return 0;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            va_list Args;
-            va_start(Args, format);
-            const sint32 Result = CurSerial->Write(format, Args);
-            va_end(Args);
-            return Result;
+            #ifndef BOSS_WASM
+                if(!serial) return 0;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                va_list Args;
+                va_start(Args, format);
+                const sint32 Result = CurSerial->Write(format, Args);
+                va_end(Args);
+                return Result;
+            #endif
+            return 0;
         }
 
         void Platform::Serial::WriteFlush(id_serial serial, sint32 type)
         {
-            if(!serial) return;
-            SerialClass* CurSerial = (SerialClass*) serial;
-            CurSerial->WriteFlush(type);
+            #ifndef BOSS_WASM
+                if(!serial) return;
+                SerialClass* CurSerial = (SerialClass*) serial;
+                CurSerial->WriteFlush(type);
+            #endif
         }
 
         ////////////////////////////////////////////////////////////////////////////////

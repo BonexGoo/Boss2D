@@ -1684,7 +1684,14 @@
         {
             BOSS_ASSERT("잘못된 시나리오입니다", m_view_manager);
             g_view = getWidget();
-            m_view_manager->SendNotify(type, topic, in, out);
+            m_view_manager->SendNotify(type, topic, in, out, false);
+        }
+
+        inline void sendDirectNotify(NotifyType type, chars topic, id_share in) const
+        {
+            BOSS_ASSERT("잘못된 시나리오입니다", m_view_manager);
+            g_view = getWidget();
+            m_view_manager->SendNotify(type, topic, in, nullptr, true);
         }
 
         inline bool setEventBlocked(bool block)
@@ -1824,15 +1831,15 @@
                 return;
             }
 
-            sint32 WheelValue = event->delta() / 120;
-            while(0 < WheelValue)
+            float WheelValue = event->delta() / 120.0f;
+            while (0 < WheelValue)
             {
-                WheelValue--;
+                WheelValue = Math::MaxF(0, WheelValue - 1);
                 touch(TT_WheelUp, 0, event->x(), event->y());
             }
-            while(WheelValue < 0)
+            while (WheelValue < 0)
             {
-                WheelValue++;
+                WheelValue = Math::MinF(WheelValue + 1, 0);
                 touch(TT_WheelDown, 0, event->x(), event->y());
             }
         }
@@ -3536,10 +3543,7 @@
                 QOpenGLContext* ctx = QOpenGLContext::currentContext();
                 QOpenGLFunctions* f = ctx->functions();
                 if(auto errorCode = f->glGetError())
-                {
                     BOSS_ASSERT_PRM(String::Format("TestGL(error:%d) is failed", errorCode), false);
-                    Platform::BroadcastNotify("TestGL", String::FromInteger((sint32) errorCode), NT_GLState);
-                }
             }
             static void TestShader(BOSS_DBG_PRM GLuint shader)
             {
@@ -3554,13 +3558,9 @@
                     GLsizei s;
                     f->glGetShaderInfoLog(shader, 4096, &s, log);
                     BOSS_ASSERT_PRM(String::Format("TestShader(%s) is failed", log), false);
-                    Platform::BroadcastNotify("TestShader", String(log), NT_GLState);
                 }
                 else if(auto errorCode = f->glGetError())
-                {
                     BOSS_ASSERT_PRM(String::Format("TestShader(error:%d) is failed", errorCode), false);
-                    Platform::BroadcastNotify("TestShader", String::FromInteger((sint32) errorCode), NT_GLState);
-                }
             }
             static void TestProgram(BOSS_DBG_PRM GLuint program)
             {
@@ -3576,14 +3576,10 @@
                     char* pszInfoLog = new char[i32InfoLogLength];
                     f->glGetProgramInfoLog(program, i32InfoLogLength, &i32CharsWritten, pszInfoLog);
                     BOSS_ASSERT_PRM(String::Format("TestProgram(%s) is failed", pszInfoLog), false);
-                    Platform::BroadcastNotify("TestProgram", String(pszInfoLog), NT_GLState);
                     delete [] pszInfoLog;
                 }
                 else if(auto errorCode = f->glGetError())
-                {
                     BOSS_ASSERT_PRM(String::Format("TestProgram(error:%d) is failed", errorCode), false);
-                    Platform::BroadcastNotify("TestProgram", String::FromInteger((sint32) errorCode), NT_GLState);
-                }
             }
         private:
             void LoadIdentity()
@@ -3950,7 +3946,12 @@
     public:
         static void Begin(ThreadCB cb, payload data, prioritytype priority)
         {
-            new ThreadClass(cb, nullptr, data, priority);
+            auto pThread = new ThreadClass(cb, nullptr, data, priority);
+
+            connect(pThread, &ThreadClass::started,pThread, &ThreadClass::runslot);
+            QObject::connect(pThread, &ThreadClass::finished, pThread, &QObject::deleteLater);
+            pThread->moveToThread(pThread);
+            pThread->start();
         }
         static void* BeginEx(ThreadExCB cb, payload data, prioritytype priority)
         {
@@ -3976,14 +3977,13 @@
         }
         virtual ~ThreadClass() {}
 
-    private:
-        void run() override
+    private slots:
+        void runslot()
         {
-            if(m_cb1) m_cb1(m_data);
-            else if(m_cb2) m_cb2(m_data);
+            if (m_cb1) this->m_cb1(m_data);
+            else if (m_cb2) this->m_cb2(m_data);
         }
 
-    private slots:
         void OnFinished()
         {
             delete this;
@@ -4501,7 +4501,7 @@
             STClass()
             {
                 static uint64 LastThreadID = 0;
-                m_lastId = (++LastThreadID) << 32;
+                m_lastId = (++LastThreadID) << 20;
             }
             ~STClass() {}
         public:
@@ -4520,7 +4520,7 @@
         static SocketBox* Access(id_socket id)
         {
             if(id == nullptr) return nullptr;
-            BOSS_ASSERT("타 스레드에서 생성된 소켓입니다", (ST().m_lastId >> 32) == (((ublock) id) >> 32));
+            BOSS_ASSERT("타 스레드에서 생성된 소켓입니다", (ST().m_lastId >> 20) == (((ublock) id) >> 20));
             return ST().m_map.Access(PtrToUint64(id));
         }
         static void Remove(id_socket id)

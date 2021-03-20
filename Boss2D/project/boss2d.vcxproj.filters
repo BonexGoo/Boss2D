@@ -255,6 +255,9 @@
     <ClCompile Include="..\service\boss_camera360service.cpp">
       <Filter>Boss2D\service</Filter>
     </ClCompile>
+    <ClCompile Include="..\service\boss_cumi.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
     <ClCompile Include="..\service\boss_firebaseservice.cpp">
       <Filter>Boss2D\service</Filter>
     </ClCompile>
@@ -594,6 +597,9 @@
       <Filter>Boss2D\service</Filter>
     </ClInclude>
     <ClInclude Include="..\service\boss_camera360service.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_cumi.hpp">
       <Filter>Boss2D\service</Filter>
     </ClInclude>
     <ClInclude Include="..\service\boss_firebaseservice.hpp">

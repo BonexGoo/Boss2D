@@ -290,16 +290,22 @@ namespace BOSS
         return Result;
     }
 
-    void ZayObject::setCapture(chars uiname)
+    void ZayObject::setCapture(chars uiname, ReleaseCaptureCB cb_once, payload data)
     {
         if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
-            CurTouch->setcapture(uiname);
+            CurTouch->setcapture(uiname, cb_once, data);
     }
 
     void ZayObject::clearCapture()
     {
         if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
             CurTouch->clearcapture();
+    }
+
+    void ZayObject::eraseCapture(payload condition)
+    {
+        if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
+            CurTouch->eraseCapture(condition);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -532,8 +538,8 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
         const sint32 YAlignCode = GetYAlignCode(align);
-        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - image.GetWidth()) / 2 : LastClip.Width() - image.GetWidth()));
-        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - image.GetHeight()) / 2 : LastClip.Height() - image.GetHeight()));
+        const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - image.GetWidth()) / 2 : LastClip.Width() - image.GetWidth()));
+        const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - image.GetHeight()) / 2 : LastClip.Height() - image.GetHeight()));
 
         if(visible)
         {
@@ -545,7 +551,14 @@ namespace BOSS
         }
 
         if(image.HasChild())
-            return InsideBinder(&image, Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight())));
+        {
+            rect128 NewRect;
+            NewRect.l = LastClip.l + DstX;
+            NewRect.t = LastClip.t + DstY;
+            NewRect.r = NewRect.l + image.GetWidth();
+            NewRect.b = NewRect.t + image.GetHeight();
+            return InsideBinder(&image, NewRect);
+        }
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -557,8 +570,8 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
         const sint32 YAlignCode = GetYAlignCode(align);
-        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - image.GetWidth() / 2 : x - image.GetWidth()));
-        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - image.GetHeight() / 2 : y - image.GetHeight()));
+        const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + image.GetWidth() / 2 - image.GetWidth() : x - image.GetWidth()));
+        const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + image.GetHeight() / 2 - image.GetHeight() : y - image.GetHeight()));
 
         if(visible)
         {
@@ -570,7 +583,14 @@ namespace BOSS
         }
 
         if(image.HasChild())
-            return InsideBinder(&image, Rect(Point(LastClip.l + DstX, LastClip.t + DstY), Size(image.GetWidth(), image.GetHeight())));
+        {
+            rect128 NewRect;
+            NewRect.l = LastClip.l + DstX;
+            NewRect.t = LastClip.t + DstY;
+            NewRect.r = NewRect.l + image.GetWidth();
+            NewRect.b = NewRect.t + image.GetHeight();
+            return InsideBinder(&image, NewRect);
+        }
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -581,8 +601,8 @@ namespace BOSS
         const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const float DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
-        const float DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
+        const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
+        const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
@@ -596,12 +616,41 @@ namespace BOSS
         const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const float DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x - ImageWidth / 2 : x - ImageWidth));
-        const float DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y - ImageHeight / 2 : y - ImageHeight));
+        const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + ImageWidth / 2 - ImageWidth : x - ImageWidth));
+        const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + ImageHeight / 2 - ImageHeight : y - ImageHeight));
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
         return InsideBinder(nullptr); // 안쪽영역없음
+    }
+
+    static inline void GetUIStretchFormClip(Clip& clip, UIStretchForm form, sint32 width, sint32 height)
+    {
+        const double XRate = clip.Width() / (double) width;
+        const double YRate = clip.Height() / (double) height;
+        if(form != UISF_Strong && XRate != YRate)
+        {
+            bool NeedChangeWidth = false;
+            switch(form)
+            {
+            case UISF_Inner: if(XRate > YRate) NeedChangeWidth = true; break;
+            case UISF_Outer: if(XRate < YRate) NeedChangeWidth = true; break;
+            case UISF_Width: break;
+            case UISF_Height: NeedChangeWidth = true; break;
+            }
+            if(NeedChangeWidth)
+            {
+                const sint32 RatedWidth = width * YRate;
+                clip.l += (clip.Width() - RatedWidth) / 2;
+                clip.r = clip.l + RatedWidth;
+            }
+            else
+            {
+                const sint32 RatedHeight = height * XRate;
+                clip.t += (clip.Height() - RatedHeight) / 2;
+                clip.b = clip.t + RatedHeight;
+            }
+        }
     }
 
     ZayPanel::InsideBinder ZayPanel::stretch(const Image& image, Image::Build build, UIStretchForm form, bool visible)
@@ -610,34 +659,16 @@ namespace BOSS
             return InsideBinder(nullptr); // 안쪽영역없음
 
         Clip LastClip = m_stack_clip[-1];
-        const sint32 ImageWidth = image.GetWidth();
-        const sint32 ImageHeight = image.GetHeight();
-        if(form != UISF_Strong)
-        {
-            float Rate = 0;
-            switch(form)
-            {
-            case UISF_Inner: Rate = Math::MinF(LastClip.Width() / ImageWidth, LastClip.Height() / ImageHeight); break;
-            case UISF_Outer: Rate = Math::MaxF(LastClip.Width() / ImageWidth, LastClip.Height() / ImageHeight); break;
-            case UISF_Width: Rate = LastClip.Width() / ImageWidth; break;
-            case UISF_Height: Rate = LastClip.Height() / ImageHeight; break;
-            }
-            const float InnerX = (LastClip.Width() - ImageWidth * Rate) * 0.5;
-            const float InnerY = (LastClip.Height() - ImageHeight * Rate) * 0.5;
-            LastClip.l += InnerX;
-            LastClip.t += InnerY;
-            LastClip.r -= InnerX;
-            LastClip.b -= InnerY;
-        }
+        const double XRate = LastClip.Width() / (double) image.GetWidth();
+        const double YRate = LastClip.Height() / (double) image.GetHeight();
+        GetUIStretchFormClip(LastClip, form, image.GetWidth(), image.GetHeight());
 
         if(visible)
         {
-            const float XRate = LastClip.Width() / ImageWidth;
-            const float YRate = LastClip.Height() / ImageHeight;
-            const float DstX = -image.L() * XRate;
-            const float DstY = -image.T() * YRate;
-            const sint32 DstWidth = (sint32) (image.GetImageWidth() * XRate + 0.5);
-            const sint32 DstHeight = (sint32) (image.GetImageHeight() * YRate + 0.5);
+            const sint32 DstX = -image.L() * XRate;
+            const sint32 DstY = -image.T() * YRate;
+            const sint32 DstWidth = image.GetImageWidth() * XRate;
+            const sint32 DstHeight = image.GetImageHeight() * YRate;
             if(build != Image::Build::Null)
             {
                 const Color& LastColor = m_stack_color[-1];
@@ -656,7 +687,7 @@ namespace BOSS
         }
 
         if(image.HasChild())
-            return InsideBinder(&image, Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b));
+            return InsideBinder(&image, {LastClip.l, LastClip.t, LastClip.r, LastClip.b});
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -665,30 +696,12 @@ namespace BOSS
         Clip LastClip = m_stack_clip[-1];
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        if(form != UISF_Strong)
-        {
-            float Rate = 0;
-            switch(form)
-            {
-            case UISF_Inner: Rate = Math::MinF(LastClip.Width() / ImageWidth, LastClip.Height() / ImageHeight); break;
-            case UISF_Outer: Rate = Math::MaxF(LastClip.Width() / ImageWidth, LastClip.Height() / ImageHeight); break;
-            case UISF_Width: Rate = LastClip.Width() / ImageWidth; break;
-            case UISF_Height: Rate = LastClip.Height() / ImageHeight; break;
-            }
-            const float InnerX = (LastClip.Width() - ImageWidth * Rate) * 0.5;
-            const float InnerY = (LastClip.Height() - ImageHeight * Rate) * 0.5;
-            LastClip.l += InnerX;
-            LastClip.t += InnerY;
-            LastClip.r -= InnerX;
-            LastClip.b -= InnerY;
-        }
+        const double XRate = LastClip.Width() / (double) ImageWidth;
+        const double YRate = LastClip.Height() / (double) ImageHeight;
+        GetUIStretchFormClip(LastClip, form, ImageWidth, ImageHeight);
 
-        const float XRate = LastClip.Width() / ImageWidth;
-        const float YRate = LastClip.Height() / ImageHeight;
-        const sint32 DstWidth = (sint32) (ImageWidth * XRate + 0.5);
-        const sint32 DstHeight = (sint32) (ImageHeight * YRate + 0.5);
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
-            LastClip.l, LastClip.t, DstWidth, DstHeight);
+            LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height());
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -714,7 +727,7 @@ namespace BOSS
         }
 
         if(image.HasChild())
-            return InsideBinder(&image, Rect(LastClip.l, LastClip.t, LastClip.r, LastClip.b));
+            return InsideBinder(&image, {LastClip.l, LastClip.t, LastClip.r, LastClip.b});
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -834,25 +847,45 @@ namespace BOSS
         Platform::Graphics::DrawString(CalcRect.l, CalcRect.t, CalcRect.Width(), CalcRect.Height(), string, count, UIFA_LeftTop);
     }
 
-    bool ZayPanel::textbox(chars string, sint32 linegap) const
+    bool ZayPanel::textbox(chars string, sint32 linegap, UIAlign align) const
     {
         String MultiText(string);
         MultiText.Replace("\\\\", "\\");
         MultiText.Replace("\\n", "\n");
         WString MultiTextW = WString::FromChars(MultiText);
-        wchars TextW = MultiTextW;
 
+        // 라인텍스트 사전조사
         const Clip& LastClip = m_stack_clip[-1];
-        sint32 AddY = 0;
-        while(*TextW)
+        struct LineText {wchars TextPtr; sint32 TextLength;};
+        Array<LineText, datatype_pod_canmemcpy> LineTexts;
+        for(wchars TextW = MultiTextW; *TextW;)
         {
-            const sint32 CurHeight = Platform::Graphics::GetStringHeight();
-            sint32 CurLength = Platform::Graphics::GetLengthOfStringW(true, LastClip.Width(), TextW);
-            Platform::Graphics::DrawStringW(LastClip.l, LastClip.t + AddY, LastClip.Width(), LastClip.Height(), TextW, CurLength, UIFA_LeftTop);
-            AddY += CurHeight + linegap;
+            const sint32 CurLength = Platform::Graphics::GetLengthOfStringW(true, LastClip.Width(), TextW);
+            auto& NewLineText = LineTexts.AtAdding();
+            NewLineText.TextPtr = TextW;
+            NewLineText.TextLength = CurLength;
             TextW += CurLength + (TextW[CurLength] == L' ');
         }
-        return false;
+
+        // 라인텍스트 출력
+        bool UsedElide = false;
+        if(0 < LineTexts.Count())
+        {
+            const sint32 TextHeight = Platform::Graphics::GetStringHeight();
+            const sint32 SumTextHeight = (TextHeight + linegap) * LineTexts.Count() - linegap;
+            const sint32 XAlignCode = GetXAlignCode(align);
+            const sint32 YAlignCode = GetYAlignCode(align);
+            const UIFontAlign AlignX = ((XAlignCode == 0)? UIFA_LeftTop : ((YAlignCode == 1)? UIFA_CenterTop : UIFA_RightTop));
+            sint32 AddY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - SumTextHeight) / 2 : LastClip.Height() - SumTextHeight));
+            for(sint32 i = 0, iend = LineTexts.Count(); i < iend; ++i)
+            {
+                auto& CurLineText = LineTexts[i];
+                UsedElide |= Platform::Graphics::DrawStringW(LastClip.l, LastClip.t + AddY, LastClip.Width(), TextHeight,
+                    CurLineText.TextPtr, CurLineText.TextLength, AlignX);
+                AddY += TextHeight + linegap;
+            }
+        }
+        return UsedElide;
     }
 
     void ZayPanel::sub(chars uigroup, id_surface surface) const
@@ -924,16 +957,6 @@ namespace BOSS
     {
         if(m_updater)
             m_updater->RepaintOnce();
-    }
-
-    void ZayPanel::capture(chars uiname)
-    {
-        if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
-        {
-            if(uiname)
-                CurTouch->setcapture(uiname);
-            else CurTouch->clearcapture();
-        }
     }
 
     VisibleState ZayPanel::visible() const
@@ -1430,20 +1453,21 @@ namespace BOSS
         return mParams[i];
     }
 
-    bool ZayExtend::Payload::ParamToBool(sint32 i) const
+    bool ZayExtend::Payload::ParamToBool(sint32 i, bool& error) const
     {
+        error = false;
         if(mParams[i].GetType() == SolverValueType::Text)
         {
             if(!mParams[i].ToText().CompareNoCase("true"))
                 return true;
             if(!mParams[i].ToText().CompareNoCase("false"))
                 return false;
-            BOSS_ASSERT("알 수 없는 Bool입니다", false);
+            error = true;
         }
-        return !!mParams[i].ToInteger();
+        return (mParams[i].ToInteger() != 0);
     }
 
-    UIAlign ZayExtend::Payload::ParamToUIAlign(sint32 i) const
+    UIAlign ZayExtend::Payload::ParamToUIAlign(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
         if(!String::CompareNoCase(Result, "UIA_", 4))
@@ -1459,11 +1483,11 @@ namespace BOSS
         jump(!Result.CompareNoCase("LeftBottom")) return UIA_LeftBottom;
         jump(!Result.CompareNoCase("CenterBottom")) return UIA_CenterBottom;
         jump(!Result.CompareNoCase("RightBottom")) return UIA_RightBottom;
-        BOSS_ASSERT("알 수 없는 UIAlign입니다", false);
+        error = true;
         return UIA_LeftTop;
     }
 
-    UIStretchForm ZayExtend::Payload::ParamToUIStretchForm(sint32 i) const
+    UIStretchForm ZayExtend::Payload::ParamToUIStretchForm(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
         if(!String::CompareNoCase(Result, "UISF_", 5))
@@ -1475,11 +1499,11 @@ namespace BOSS
         jump(!Result.CompareNoCase("Outer")) return UISF_Outer;
         jump(!Result.CompareNoCase("Width")) return UISF_Width;
         jump(!Result.CompareNoCase("Height")) return UISF_Height;
-        BOSS_ASSERT("알 수 없는 UIStretchForm입니다", false);
+        error = true;
         return UISF_Strong;
     }
 
-    UIFontAlign ZayExtend::Payload::ParamToUIFontAlign(sint32 i) const
+    UIFontAlign ZayExtend::Payload::ParamToUIFontAlign(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
         if(!String::CompareNoCase(Result, "UIFA_", 5))
@@ -1502,11 +1526,11 @@ namespace BOSS
         jump(!Result.CompareNoCase("CenterBottom")) return UIFA_CenterBottom;
         jump(!Result.CompareNoCase("RightBottom")) return UIFA_RightBottom;
         jump(!Result.CompareNoCase("JustifyBottom")) return UIFA_JustifyBottom;
-        BOSS_ASSERT("알 수 없는 UIFontAlign입니다", false);
+        error = true;
         return UIFA_LeftTop;
     }
 
-    UIFontElide ZayExtend::Payload::ParamToUIFontElide(sint32 i) const
+    UIFontElide ZayExtend::Payload::ParamToUIFontElide(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
         if(!String::CompareNoCase(Result, "UIFE_", 5))
@@ -1517,7 +1541,7 @@ namespace BOSS
         jump(!Result.CompareNoCase("Left")) return UIFE_Left;
         jump(!Result.CompareNoCase("Center")) return UIFE_Center;
         jump(!Result.CompareNoCase("Right")) return UIFE_Right;
-        BOSS_ASSERT("알 수 없는 UIFontElide입니다", false);
+        error = true;
         return UIFE_None;
     }
 
@@ -1654,13 +1678,6 @@ namespace BOSS
         return m_class;
     }
 
-    void ZayView::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
-    {
-        m_ref_func->m_lock(m_class);
-        m_ref_func->m_notify(type, topic, in, out);
-        m_ref_func->m_unlock();
-    }
-
     void ZayView::SetCallback(UpdaterCB cb, payload data)
     {
         ((ZayController*) m_class)->setCallback(_finder, this, cb, data);
@@ -1733,6 +1750,13 @@ namespace BOSS
         m_ref_func->m_unlock();
 
         ((ZayController*) m_class)->wakeUpCheck();
+    }
+
+    void ZayView::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
+    {
+        m_ref_func->m_lock(m_class);
+        m_ref_func->m_notify(type, topic, in, out);
+        m_ref_func->m_unlock();
     }
 
     void ZayView::OnRender(sint32 width, sint32 height, float l, float t, float r, float b)
@@ -2128,6 +2152,8 @@ namespace BOSS
         m_updateid = 0;
         m_hoverid = 0;
         m_captured_uiname.Empty();
+        m_captured_cb_once = nullptr;
+        m_captured_data = nullptr;
         m_block_width = 0;
         m_block_height = 0;
         m_focus = nullptr;
@@ -2150,6 +2176,8 @@ namespace BOSS
         m_updateid = rhs.m_updateid;
         m_hoverid = rhs.m_hoverid;
         m_captured_uiname = rhs.m_captured_uiname;
+        m_captured_cb_once = rhs.m_captured_cb_once;
+        m_captured_data = rhs.m_captured_data;
         m_block_width = rhs.m_block_width;
         m_block_height = rhs.m_block_height;
         m_element = rhs.m_element;
@@ -2311,15 +2339,35 @@ namespace BOSS
         return NeedUpdate;
     }
 
-    void ZayView::Touch::setcapture(chars uiname)
+    void ZayView::Touch::setcapture(chars uiname, ZayObject::ReleaseCaptureCB cb_once, payload data)
     {
         BOSS_ASSERT("uiname이 nullptr입니다", uiname);
+        if(m_captured_cb_once)
+            m_captured_cb_once(m_captured_data, data);
         m_captured_uiname = uiname;
+        m_captured_cb_once = cb_once;
+        m_captured_data = data;
     }
 
     void ZayView::Touch::clearcapture()
     {
+        if(m_captured_cb_once)
+        {
+            m_captured_cb_once(m_captured_data, nullptr);
+            m_captured_cb_once = nullptr;
+            m_captured_data = nullptr;
+        }
         m_captured_uiname.Empty();
+    }
+
+    void ZayView::Touch::eraseCapture(payload condition)
+    {
+        if(!condition || condition == m_captured_data)
+        {
+            m_captured_cb_once = nullptr;
+            m_captured_data = nullptr;
+            m_captured_uiname.Empty();
+        }
     }
 
     const ZayView::Element* ZayView::Touch::getcapture() const

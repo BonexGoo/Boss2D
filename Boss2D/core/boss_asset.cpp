@@ -2,7 +2,7 @@
 #include "boss_asset.hpp"
 
 #include <platform/boss_platform.hpp>
-#include <boss_gen_assets.hpp>
+#include <boss_assets.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetClass
@@ -398,7 +398,7 @@ namespace BOSS
 
     static void _Rebuild(const Context& info)
     {
-        if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source/boss_gen_assets.hpp"))
+        if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source-gen/boss_assets.hpp"))
         {
             String GenText;
             GenText += "#include <boss.hpp>\n";

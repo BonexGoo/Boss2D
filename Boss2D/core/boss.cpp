@@ -264,7 +264,8 @@ extern "C" int boss_vsnprintf(char* str, boss_size_t n, const char* format, boss
         sint32 CopiedSize = Size;
         if(str)
         {
-            if(CopiedSize > n - 1) CopiedSize = n - 1;
+            if(n - 1 < CopiedSize)
+                CopiedSize = sint32(n - 1);
             Memory::Copy(str, NewString, CopiedSize);
             str[CopiedSize] = '\0';
         }
@@ -1453,4 +1454,7 @@ extern "C" void boss_seterrno(int err)
 #endif
 #if !defined(BOSS_NEED_EMBEDDED_ASSET) || (BOSS_NEED_EMBEDDED_ASSET != 0 && BOSS_NEED_EMBEDDED_ASSET != 1)
     #error BOSS_NEED_EMBEDDED_ASSET macro is invalid use
+#endif
+#if !defined(BOSS_NEED_EMBEDDED_CACHE) || (BOSS_NEED_EMBEDDED_CACHE != 0 && BOSS_NEED_EMBEDDED_CACHE != 1)
+    #error BOSS_NEED_EMBEDDED_CACHE macro is invalid use
 #endif

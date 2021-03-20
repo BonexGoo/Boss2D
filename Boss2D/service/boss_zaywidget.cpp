@@ -369,10 +369,23 @@ namespace BOSS
     {
         const String ViewName = viewname;
 
-        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → 반복하기",
+        static auto RenderErrorBox = [](ZayPanel& panel)->void
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 128)
+                panel.fill();
+            ZAY_RGB(panel, 255, 0, 0)
+            {
+                ZAY_INNER(panel, 1)
+                    panel.rect(1);
+                panel.line(Point(0, 0), Point(panel.w(), panel.h()), 1);
+                panel.line(Point(panel.w(), 0), Point(0, panel.h()), 1);
+            }
+        };
+
+        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
-                BOSS_ASSERT("loop의 조건식이 없습니다", false);
+                BOSS_ASSERT("No conditional expression for 'loop'", false);
                 return panel._push_pass();
             });
 
@@ -381,80 +394,85 @@ namespace BOSS
             {
                 if(params.ParamCount() != 4 && params.ParamCount() != 5)
                     return panel._push_pass();
+                bool HasError = false;
                 auto L = params.Param(0).ToInteger();
                 auto T = params.Param(1).ToInteger();
                 auto R = params.Param(2).ToInteger();
                 auto B = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4);
+                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
                 return panel._push_clip_ui(L, T, R, B, Scissor, params.UIName(), params.MakeGesture());
             },
-            "[좌]"
-            "[상]"
-            "[우]"
-            "[하]#"
-            "[영역절삭여부:false|true]");
+            "[Left]"
+            "[Top]"
+            "[Right]"
+            "[Bottom]#"
+            "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "xywh",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 4 && params.ParamCount() != 5)
                     return panel._push_pass();
+                bool HasError = false;
                 auto X = params.Param(0).ToInteger();
                 auto Y = params.Param(1).ToInteger();
                 auto W = params.Param(2).ToInteger();
                 auto H = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4);
+                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
                 return panel._push_clip_ui(X, Y, X + W, Y + H, Scissor, params.UIName(), params.MakeGesture());
             },
-            "[좌]"
-            "[상]"
-            "[가로]"
-            "[세로]#"
-            "[영역절삭여부:false|true]");
+            "[X]"
+            "[Y]"
+            "[Width]"
+            "[Height]#"
+            "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "xyrr",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 4 && params.ParamCount() != 5)
                     return panel._push_pass();
+                bool HasError = false;
                 auto X = params.Param(0).ToInteger();
                 auto Y = params.Param(1).ToInteger();
                 auto RX = params.Param(2).ToInteger();
                 auto RY = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4);
+                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
                 return panel._push_clip_ui(X - RX, Y - RY, X + RX, Y + RY, Scissor, params.UIName(), params.MakeGesture());
             },
-            "[좌]"
-            "[상]"
-            "[RX]"
-            "[RY]#"
-            "[영역절삭여부:false|true]");
+            "[X]"
+            "[Y]"
+            "[RadiusX]"
+            "[RadiusY]#"
+            "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "inner",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 1 && params.ParamCount() != 2)
                     return panel._push_pass();
+                bool HasError = false;
                 auto V = params.Param(0).ToInteger();
-                auto Scissor = (params.ParamCount() < 2)? false : params.ParamToBool(1);
+                auto Scissor = (params.ParamCount() < 2)? false : params.ParamToBool(1, HasError);
                 return panel._push_clip_ui(V, V, panel.w() - V, panel.h() - V, Scissor, params.UIName(), params.MakeGesture());
             },
-            "[영역축소값:1]#"
-            "[영역절삭여부:false|true]");
+            "[Value:1]#"
+            "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "move",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 2 && params.ParamCount() != 3)
                     return panel._push_pass();
+                bool HasError = false;
                 auto X = params.Param(0).ToInteger();
                 auto Y = params.Param(1).ToInteger();
-                auto Scissor = (params.ParamCount() < 3)? false : params.ParamToBool(2);
+                auto Scissor = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
                 return panel._push_clip_ui(X, Y, panel.w() + X, panel.h() + Y, Scissor, params.UIName(), params.MakeGesture());
             },
-            "[X축-이동:0]"
-            "[Y축-이동:0]#"
-            "[영역절삭여부:false|true]");
+            "[X:0]"
+            "[Y:0]#"
+            "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "hscroll",
             ZAY_DECLARE_COMPONENT(panel, params, ViewName)
@@ -481,11 +499,11 @@ namespace BOSS
                         }
                     }, Sensitive, SenseBorder, 0 < LoopingSize, LoopingSize, 0);
             },
-            "[UI명칭]"
-            "[내용사이즈:0]#"
-            "[최초민감거리:0]"
-            "[센스보더한계:0]"
-            "[루프사이즈:0]");
+            "[UIName]"
+            "[ContentSize:0]#"
+            "[Sensitive:0]"
+            "[SenseBorder:0]"
+            "[LoopingSize:0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "color",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -498,10 +516,10 @@ namespace BOSS
                 auto A = (params.ParamCount() < 4)? 255 : params.Param(3).ToInteger();
                 return panel._push_color(R, G, B, A);
             },
-            "[빨강값:0~255]"
-            "[초록값:0~255]"
-            "[파랑값:0~255]#"
-            "[불투명도:0~255]");
+            "[Red:0~255]"
+            "[Green:0~255]"
+            "[Blue:0~255]#"
+            "[Opacity:0~255]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "hexcolor",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -514,8 +532,8 @@ namespace BOSS
                     return panel._push_color(Color(HexColor, Alpha));
                 return panel._push_pass();
             },
-            "[색상값:#ffffff]#"
-            "[불투명도:1.0]");
+            "[HexColor:#ffffff]#"
+            "[OpacityRate:1.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "font",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -526,8 +544,8 @@ namespace BOSS
                 chars Name = (params.ParamCount() < 2)? nullptr : (chars) params.Param(1).ToText();
                 return panel._push_sysfont(Size, Name);
             },
-            "[폰트크기:1.0]#"
-            "[폰트이름]");
+            "[SizeRate:1.0]#"
+            "[FontName]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "freefont",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -538,8 +556,8 @@ namespace BOSS
                 chars NickName = (params.ParamCount() < 2)? nullptr : (chars) params.Param(1).ToText();
                 return panel._push_freefont(Height, NickName);
             },
-            "[TTF폰트높이:10]#"
-            "[TTF폰트별칭]");
+            "[Height:10]#"
+            "[FontNick]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "zoom",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -549,7 +567,7 @@ namespace BOSS
                 auto Zoom = params.Param(0).ToFloat();
                 return panel._push_zoom(Zoom);
             },
-            "[비율값:1.0]");
+            "[ZoomRate:1.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Content, "fill",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -567,7 +585,7 @@ namespace BOSS
                 panel.rect(Thick);
                 return panel._push_pass();
             },
-            "[외곽선두께:1]");
+            "[Thick:1]");
 
         interface.AddComponent(ZayExtend::ComponentType::Content, "circle",
             ZAY_DECLARE_COMPONENT(panel, params)
@@ -581,8 +599,9 @@ namespace BOSS
             {
                 if(params.ParamCount() != 2)
                     return panel._push_pass();
+                bool HasError = false;
                 auto ImageName = params.Param(0).ToText();
-                auto Align = params.ParamToUIAlign(1);
+                auto Align = params.ParamToUIAlign(1, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, "r.", 2))
@@ -590,19 +609,23 @@ namespace BOSS
 
                 if(CurImage)
                     panel.icon(*CurImage, Align);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[이미지명칭:r.name]"
-            "[정렬방식:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
+            "[RName:r.name]"
+            "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "stretch",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
             {
                 if(params.ParamCount() != 2 && params.ParamCount() != 3)
                     return panel._push_pass();
+                bool HasError = false;
                 auto ImageName = params.Param(0).ToText();
-                auto Rebuild = params.ParamToBool(1);
-                auto Form = (params.ParamCount() < 3)? UISF_Strong : params.ParamToUIStretchForm(2);
+                auto Rebuild = params.ParamToBool(1, HasError);
+                auto Form = (params.ParamCount() < 3)? UISF_Strong : params.ParamToUIStretchForm(2, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, "r.", 2))
@@ -610,11 +633,14 @@ namespace BOSS
 
                 if(CurImage)
                     panel.stretch(*CurImage, (Rebuild)? Image::Build::AsyncNotNull : Image::Build::Null, Form);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[이미지명칭:r.name]"
-            "[선명화여부:true|false]#"
-            "[맞춤방식:Strong|Inner|Outer|Width|Height]");
+            "[RName:r.name]"
+            "[RebuildFlag:true|false]#"
+            "[Form:Strong|Inner|Outer|Width|Height]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "ninepatch",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
@@ -631,17 +657,18 @@ namespace BOSS
                     panel.ninepatch(*CurImage);
                 return panel._push_pass();
             },
-            "[이미지명칭:r.name]");
+            "[RName:r.name]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "pattern",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
             {
                 if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4)
                     return panel._push_pass();
+                bool HasError = false;
                 auto ImageName = params.Param(0).ToText();
-                auto Align = params.ParamToUIAlign(1);
-                auto ReversedXorder = (params.ParamCount() < 3)? false : params.ParamToBool(2);
-                auto ReversedYorder = (params.ParamCount() < 4)? false : params.ParamToBool(3);
+                auto Align = params.ParamToUIAlign(1, HasError);
+                auto ReversedXorder = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
+                auto ReversedYorder = (params.ParamCount() < 4)? false : params.ParamToBool(3, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, "r.", 2))
@@ -649,55 +676,69 @@ namespace BOSS
 
                 if(CurImage)
                     panel.pattern(*CurImage, Align, ReversedXorder, ReversedYorder);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[이미지명칭:r.name]"
-            "[정렬방식:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]#"
-            "[X축-역출력여부:false|true]"
-            "[Y축-역출력여부:false|true]");
+            "[RName:r.name]"
+            "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]#"
+            "[XReverseFlag:false|true]"
+            "[YReverseFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "text",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 1 && params.ParamCount() != 2 && params.ParamCount() != 3)
                     return panel._push_pass();
+                bool HasError = false;
                 auto Text = params.Param(0).ToText();
-                auto Align = (params.ParamCount() < 2)? UIFA_CenterMiddle : params.ParamToUIFontAlign(1);
-                auto Elide = (params.ParamCount() < 3)? UIFE_None : params.ParamToUIFontElide(2);
+                auto Align = (params.ParamCount() < 2)? UIFA_CenterMiddle : params.ParamToUIFontAlign(1, HasError);
+                auto Elide = (params.ParamCount() < 3)? UIFE_None : params.ParamToUIFontElide(2, HasError);
 
                 panel.text(Text, Align, Elide);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[텍스트]#"
-            "[정렬방식:"
+            "[Text]#"
+            "[FontAlign:"
                 "CenterMiddle|LeftTop|CenterTop|RightTop|JustifyTop|"
                 "LeftMiddle|RightMiddle|JustifyMiddle|"
                 "LeftAscent|CenterAscent|RightAscent|JustifyAscent|"
                 "LeftBottom|CenterBottom|RightBottom|JustifyBottom]"
-            "[생략기호방향:None|Left|Center|Right]");
+            "[Elide:None|Left|Center|Right]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "multi_text",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
-                if(params.ParamCount() != 2)
+                if(params.ParamCount() != 2 && params.ParamCount() != 3)
                     return panel._push_pass();
+                bool HasError = false;
                 auto Text = params.Param(0).ToText();
                 auto LineGap = params.Param(1).ToInteger();
+                auto Align = (params.ParamCount() < 3)? UIA_LeftTop : params.ParamToUIAlign(2, HasError);
 
-                panel.textbox(Text, LineGap);
+                panel.textbox(Text, LineGap, Align);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[텍스트]"
-            "[줄간격:10]");
+            "[Text]"
+            "[LineGap:10]#"
+            "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
             {
                 if(params.ParamCount() != 2 && params.ParamCount() != 3)
                     return panel._push_pass();
+                bool HasError = false;
                 auto UIName = ViewName + '.' + params.Param(0).ToText();
                 auto ImageName = params.Param(1).ToText();
-                auto NinePatch = (params.ParamCount() < 3)? false : params.ParamToBool(2);
+                auto NinePatch = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, "r.", 2))
@@ -715,19 +756,22 @@ namespace BOSS
                         panel.ninepatch(*CurImage);
                     else panel.stretch(*CurImage, Image::Build::AsyncNotNull);
                 }
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[UI명칭]"
-            "[이미지명칭:r.name]#"
-            "[나인패치여부:false|true]");
+            "[UIName]"
+            "[RName:r.name]#"
+            "[NinepatchFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "user_content",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
             {
-                BOSS_ASSERT("user_content로 AddComponent를 한번 더 등록하여 교체사용하세요", false);
+                BOSS_ASSERT("Register 'AddComponent' as 'user_content' once more and use it for replacement", false);
                 return panel._push_pass();
             },
-            "[알 수 없음]");
+            "[According to customization]");
     }
 
     void ZayWidget::BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)

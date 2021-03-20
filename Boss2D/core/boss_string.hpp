@@ -4,6 +4,9 @@
 
 namespace BOSS
 {
+    class String;
+    typedef Array<String> Strings;
+
     /// @brief 스트링지원
     class String
     {
@@ -315,6 +318,12 @@ namespace BOSS
         /// @return 길이(char단위)
         static sint32 GetLengthOfFirstLetter(chars text);
 
+        /// @brief 스트링 분할식 객체배열 생성
+        /// @param text : 스트링
+        /// @param comma : 분할음절
+        /// @return 분할된 스트링객체 배열
+        static Strings Split(chars text, char comma = ',');
+
     private:
         static const chararray& NullString();
         chararray* GetSafedRhs(chars& rhs);
@@ -324,5 +333,4 @@ namespace BOSS
         chararray m_words;
         mutable sint32s m_findmap;
     };
-    typedef Array<String> Strings;
 }

@@ -27,6 +27,7 @@ namespace BOSS
         static id_bitmap CloneFromNV21(bytes ys, uv16s uvs, sint32 width, sint32 height);
         static id_bitmap Copy(id_bitmap_read bitmap, sint32 l, sint32 t, sint32 r, sint32 b);
         static void FillColor(id_bitmap bitmap, argb32 color);
+        static void FillRect(id_bitmap bitmap, argb32 color, rect128 rect);
         static void ChangeColor(id_bitmap bitmap, argb32 from, argb32 to);
         static void SwapRedBlue(id_bitmap bitmap);
         static void Flatten(id_bitmap bitmap, uint08 r, uint08 g, uint08 b);

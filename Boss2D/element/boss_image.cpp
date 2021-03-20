@@ -636,12 +636,12 @@ namespace BOSS
         return Bmp::GetHeight(m_bitmap);
     }
 
-    Rect Image::CalcChildRect(const Rect& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
+    Rect Image::CalcChildRect(const rect128& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
     {
         BOSS_ASSERT("xcount는 1이상의 값이어야 합니다", 1 <= xcount);
         BOSS_ASSERT("ycount는 1이상의 값이어야 합니다", 1 <= ycount);
 
-        UpdatePatchBy(guide.Width(), guide.Height());
+        UpdatePatchBy(guide.r - guide.l, guide.b - guide.t);
         const sint32 x1 = Math::Min(Math::Max(0, ix), m_child_ixzone.Count() - 1);
         const sint32 y1 = Math::Min(Math::Max(0, iy), m_child_iyzone.Count() - 1);
         const sint32 x2 = Math::Min(Math::Max(0, ix + xcount - 1), m_child_ixzone.Count() - 1);
@@ -678,7 +678,7 @@ namespace BOSS
         return Rect(guide.l + L, guide.t + T, guide.l + R, guide.t + B);
     }
 
-    bool Image::UpdatePatchBy(float w, float h) const
+    bool Image::UpdatePatchBy(sint32 w, sint32 h) const
     {
         BOSS_ASSERT("m_patch_cached_dst_x이 할당되어 있지 않습니다", 0 < m_patch_cached_dst_x.Count());
         BOSS_ASSERT("m_patch_cached_dst_y이 할당되어 있지 않습니다", 0 < m_patch_cached_dst_y.Count());

@@ -774,6 +774,21 @@ namespace BOSS
         return 1;
     }
 
+    Strings String::Split(chars text, char comma)
+    {
+        Strings Collector;
+        chars Focus = text;
+        while(*text++ != '\0')
+        {
+            if(*text == comma || *text == '\0')
+            {
+                Collector.AtAdding() = String(Focus, text - Focus);
+                Focus = text + 1;
+            }
+        }
+        return Collector;
+    }
+
     const chararray& String::NullString()
     {
         return *BOSS_STORAGE_SYS(chararray, '\0');

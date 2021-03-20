@@ -37,10 +37,24 @@ namespace BOSS
 
     View::View()
     {
+        mNotifyProcedure = Platform::AddWindowProcedure(WE_Tick,
+            [](payload data)->void
+            {
+                auto Self = (View*) data;
+                while(auto OneNotify = Self->mNotifyQueue.Dequeue())
+                {
+                    Self->OnNotify(OneNotify->mType, OneNotify->mTopic, (id_share) OneNotify->mClonedIn, nullptr);
+                    Share::Destroy(OneNotify->mClonedIn);
+                    delete OneNotify;
+                }
+            }, this);
     }
 
     View::~View()
     {
+        Platform::SubWindowProcedure(mNotifyProcedure);
+        while(auto OldNotify = mNotifyQueue.Dequeue())
+            delete OldNotify;
     }
 
     View* View::Creator(chars viewclass)
@@ -108,8 +122,19 @@ namespace BOSS
         return nullptr;
     }
 
-    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
+    void View::SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool direct)
     {
+        if(out || direct)
+            OnNotify(type, topic, in, out);
+        else
+        {
+            auto NewNotify = new Notify();
+            NewNotify->mType = type;
+            NewNotify->mTopic = topic;
+            if(in) NewNotify->mClonedIn =
+                (id_cloned_share) ((Share*) in)->Clone();
+            mNotifyQueue.Enqueue(NewNotify);
+        }
     }
 
     void View::SetCallback(UpdaterCB cb, payload data)
@@ -138,6 +163,10 @@ namespace BOSS
     }
 
     void View::OnTick()
+    {
+    }
+
+    void View::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
     {
     }
 

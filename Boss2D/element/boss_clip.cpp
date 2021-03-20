@@ -17,7 +17,7 @@ namespace BOSS
         operator=(rhs);
     }
 
-    Clip::Clip(float l, float t, float r, float b, bool doScissor)
+    Clip::Clip(sint32 l, sint32 t, sint32 r, sint32 b, bool doScissor)
     {
         this->l = l;
         this->t = t;

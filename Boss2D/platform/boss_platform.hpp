@@ -225,12 +225,27 @@ public:
     /// @return 전달받을 공유객체
     static id_cloned_share SendNotify(h_view view, chars topic, id_share in, bool needout = false);
 
+    /// @brief 뷰에 알림사항 전달(다이렉트콜)
+    /// @param view : 뷰핸들
+    /// @param topic : 주제
+    /// @param in : 전달할 공유객체
+    static void SendDirectNotify(h_view view, chars topic, id_share in);
+
     /// @brief 다수의 뷰에 알림사항 방송
     /// @param topic : 주제
     /// @param in : 전달할 공유객체
     /// @param type : 알림타입
     /// @param viewclass : 전달받을 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 전체 뷰클래스)
-    static void BroadcastNotify(chars topic, id_share in, NotifyType type = NT_Normal, chars viewclass = nullptr);
+    /// @param directly : 다이렉트콜 여부
+    static void BroadcastNotify(chars topic, id_share in, NotifyType type = NT_Normal,
+        chars viewclass = nullptr, bool directly = false);
+
+    /// @brief 키이벤트를 강제로 발생
+    /// @param view : 뷰핸들
+    /// @param code : 키이벤트 코드값
+    /// @param text : 키이벤트 텍스트
+    /// @param pressed : 눌려진 상태여부
+    static void SendKeyEvent(h_view view, sint32 code, chars text, bool pressed);
 
     /// @brief 특정 콜백함수를 모든 뷰에 통과시킴
     /// @param cb : 콜백함수
@@ -424,7 +439,11 @@ public:
 
         /// @brief 클립보드에 스트링 보내기
         /// @param text : 보낼 스트링
-        static void SendToClipboard(chars text);
+        static void SendToTextClipboard(chars text);
+
+        /// @brief 클립보드에서 스트링 받기
+        /// @return 받은 스트링
+        static String RecvFromTextClipboard();
 
         /// @brief 커서모양 바꾸기
         /// @param role : 커서모양
@@ -450,6 +469,10 @@ public:
         /// @brief 디바이스ID 얻기
         /// @return 디바이스ID
         static chars GetDeviceID();
+
+        /// @brief 지역별 언어명칭(ko, en-GB등) 얻기
+        /// @return 언어명칭
+        static chars GetLocaleBCP47();
 
         /// @brief 콜백함수(ThreadCB)를 스레드방식으로 실행
         /// @param cb : 콜백함수
@@ -1380,7 +1403,7 @@ public:
 
         /// @brief 대기중인 읽기용 버퍼조사
         /// @param socket : 소켓ID
-        /// @return 읽을 수 있는 길이
+        /// @return 읽을 수 있는 길이(연결실패시 -1)
         /// @see Recv
         static sint32 RecvAvailable(id_socket socket);
 
@@ -1391,7 +1414,7 @@ public:
         /// @param timeout : 타임아웃
         /// @param ip_udp : UDP소켓일 경우, 접속자의 IP
         /// @param ip_port : UDP소켓일 경우, 접속자의 포트번호
-        /// @return 실제로 읽어온 길이
+        /// @return 실제로 읽어온 길이(연결실패시 -1)
         /// @see RecvAvailable
         static sint32 Recv(id_socket socket, uint08* data, sint32 size, sint32 timeout = 3000, ip4address* ip_udp = nullptr, uint16* port_udp = nullptr);
 
@@ -1400,7 +1423,7 @@ public:
         /// @param data : 쓸 데이터
         /// @param size : 데이터의 길이
         /// @param timeout : 타임아웃
-        /// @return 실제로 쓴 길이
+        /// @return 실제로 쓴 길이(연결실패시 -1)
         static sint32 Send(id_socket socket, bytes data, sint32 size, sint32 timeout = 3000);
 
         /// @brief gethostbyname 기능제공

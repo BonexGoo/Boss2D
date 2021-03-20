@@ -547,7 +547,7 @@ NON_EMPTY_TRANSLATION_UNIT
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_unix.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_vms.c>
     #include <addon/openssl-1.1.1a_for_boss/crypto/rand/rand_win.c>
-#elif BOSS_MAC_OSX | BOSS_IPHONE
+#elif BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE
     static uint64_t get_time_stamp(void)
     {
         return time(NULL);

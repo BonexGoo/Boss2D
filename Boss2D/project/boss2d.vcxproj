@@ -114,6 +114,7 @@
     <ClCompile Include="..\service\boss_boxr.cpp" />
     <ClCompile Include="..\service\boss_brii.cpp" />
     <ClCompile Include="..\service\boss_camera360service.cpp" />
+    <ClCompile Include="..\service\boss_cumi.cpp" />
     <ClCompile Include="..\service\boss_firebaseservice.cpp" />
     <ClCompile Include="..\service\boss_livechatservice.cpp" />
     <ClCompile Include="..\service\boss_oauth2service.cpp" />
@@ -232,6 +233,7 @@
     <ClInclude Include="..\service\boss_boxr.hpp" />
     <ClInclude Include="..\service\boss_brii.hpp" />
     <ClInclude Include="..\service\boss_camera360service.hpp" />
+    <ClInclude Include="..\service\boss_cumi.hpp" />
     <ClInclude Include="..\service\boss_firebaseservice.hpp" />
     <ClInclude Include="..\service\boss_livechatservice.hpp" />
     <ClInclude Include="..\service\boss_oauth2service.hpp" />
@@ -418,7 +420,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties lreleaseOptions="" lupdateOnBuild="0" lupdateOptions="" MocDir=".\GeneratedFiles\$(ConfigurationName)" MocOptions="" Qt5Version_x0020_Win32="$(DefaultQtVersion)" Qt5Version_x0020_x64="$(DefaultQtVersion)" RccDir=".\GeneratedFiles" UicDir=".\GeneratedFiles" />
+      <UserProperties lreleaseOptions="" lupdateOnBuild="0" lupdateOptions="" MocDir=".\GeneratedFiles\$(ConfigurationName)" MocOptions="" Qt5Version_x0020_Win32="msvc2019" Qt5Version_x0020_x64="msvc2019_64" RccDir=".\GeneratedFiles" UicDir=".\GeneratedFiles" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

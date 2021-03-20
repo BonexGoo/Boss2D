@@ -381,6 +381,20 @@ namespace BOSS
         Memory::Fill(CurBits, 4 * CurWidth * CurHeight, &color, 4);
     }
 
+    void Bmp::FillRect(id_bitmap bitmap, argb32 color, rect128 rect)
+    {
+        BOSS_ASSERT("본 함수는 32비트 비트맵만 지원합니다", GetBitCount(bitmap) == 32);
+        const sint32 CurWidth = GetWidth(bitmap);
+        const sint32 CurHeight = GetHeight(bitmap);
+        bitmappixel* CurBits = (bitmappixel*) GetBits(bitmap);
+        for(sint32 y = rect.t; y < rect.b; ++y)
+        for(sint32 x = rect.l; x < rect.r; ++x)
+        {
+            bitmappixel& CurBit = CurBits[x + (CurHeight - 1 - y) * CurWidth];
+            CurBit = *((bitmappixel*) &color);
+        }
+    }
+
     void Bmp::ChangeColor(id_bitmap bitmap, argb32 from, argb32 to)
     {
         BOSS_ASSERT("본 함수는 32비트 비트맵만 지원합니다", GetBitCount(bitmap) == 32);

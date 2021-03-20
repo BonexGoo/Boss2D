@@ -97,11 +97,12 @@ namespace BOSS
             int write_pos;
         } NewBmp(2 + Bmp::GetFileSizeWithoutBM(bmp24));
 
-        NewBmp.copy("BM", 2);
+        NewBmp.copy((void*) "BM", 2);
         NewBmp.copy((void*) bmp24, Bmp::GetFileSizeWithoutBM(bmp24));
 
         array2d<rgb_pixel> NewImg;
-        load_bmp(NewImg, std::istream(&NewBmp));
+        std::istream NewStream(&NewBmp);
+        load_bmp(NewImg, NewStream);
         const sint32 ImageWidth = NewImg.nc();
         const sint32 ImageHeight = NewImg.nr();
 

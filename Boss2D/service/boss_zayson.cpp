@@ -1112,11 +1112,20 @@ namespace BOSS
                 ZAY_FONT(panel, Math::MaxF(0.8, (fish.mRect.r - fish.mRect.l) * 0.005))
                 {
                     // 영역표시
-                    ZAY_RGBA(panel, 255, 0, 0, 128)
                     if(fish.mFill)
-                        panel.fill();
-                    else ZAY_INNER(panel, 5)
-                        panel.rect(10);
+                    {
+                        ZAY_RGBA(panel, 255, 0, 0, 96)
+                            panel.fill();
+                    }
+                    else
+                    {
+                        ZAY_RGBA(panel, 255, 0, 0, 96)
+                            panel.rect(5);
+                        ZAY_INNER(panel, 5)
+                        ZAY_RGBA(panel, 0, 255, 0, 64)
+                            panel.rect(5);
+                    }
+
                     // UI명칭
                     if(0 < fish.mUIName.Length())
                     {

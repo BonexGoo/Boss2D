@@ -33,19 +33,20 @@ private:
     };
 
 public:
-    RemoteClass(uint16 port) : m_isServer(true)
+    RemoteClass(uint16 port, bool autopartner) : m_isServer(true), m_autoPartner(autopartner)
     {
         server.m_id = Platform::Server::Create(true);
-        server.m_peerID = -1;
-        server.m_peerCount = 0;
+        m_MutexPeerID = Mutex::Open();
+        m_partnersPeerID = -1;
         Platform::Server::Listen(server.m_id, port);
     }
-    RemoteClass(chars domain, uint16 port) : m_isServer(false)
+    RemoteClass(chars domain, uint16 port, bool autopartner) : m_isServer(false), m_autoPartner(autopartner)
     {
         client.m_id = Platform::Socket::OpenForTcp();
         client.m_domain = new String(domain);
         client.m_port = port;
-        client.m_isConnected = false;
+        m_MutexPeerID = Mutex::Open();
+        m_partnersPeerID = -1;
     }
     ~RemoteClass()
     {
@@ -56,6 +57,7 @@ public:
             Platform::Socket::Close(client.m_id);
             delete client.m_domain;
         }
+        Mutex::Close(m_MutexPeerID);
     }
     RemoteClass& operator=(const RemoteClass&)
     {
@@ -309,7 +311,7 @@ private:
         // 송신처리
         while(CallSpec* OneCallSpec = m_callQueue.Dequeue())
         {
-            if(OneCallSpec->m_localcall || server.m_peerID == -1)
+            if(OneCallSpec->m_localcall || m_partnersPeerID == -1)
             {
                 if(OneCallSpec->m_needreturn)
                 {
@@ -321,38 +323,47 @@ private:
                 else OneCallSpec->m_method->func.m_cb(OneCallSpec->m_method->func.m_data, *OneCallSpec->m_params, nullptr, true);
             }
             else if(uint08s* NewMessage = CallSpecToMessage(OneCallSpec))
-                Platform::Server::SendToPeer(server.m_id, server.m_peerID,
+                Platform::Server::SendToPeer(server.m_id, m_partnersPeerID,
                     NewMessage->AtDumping(0, NewMessage->Count()), NewMessage->Count());
             delete OneCallSpec;
         }
 
         // 수신처리
+        Remote::GlobalValue::ExitPeerIDs().Clear();
         while(Platform::Server::TryNextPacket(server.m_id))
-        switch(Platform::Server::GetPacketType(server.m_id))
         {
-        case packettype_entrance:
-            if(server.m_peerID == -1)
-                server.m_peerID = Platform::Server::GetPacketPeerID(server.m_id);
-            server.m_peerCount++;
-            break;
-        case packettype_message:
+            const sint32 PeerID = Platform::Server::GetPacketPeerID(server.m_id);
+            Remote::GlobalValue::LastPeerID() = PeerID;
+            switch(Platform::Server::GetPacketType(server.m_id))
             {
-                // 호출 또는 결과전달
-                String MethodName;
-                if(id_cloned_share Result = MessageToCallOrReturn(Platform::Server::GetPacketBuffer(server.m_id), MethodName))
-                if(uint08s* NewMessage = ResultToMessage(MethodName, Result))
-                    Platform::Server::SendToPeer(server.m_id, server.m_peerID,
-                        NewMessage->AtDumping(0, NewMessage->Count()), NewMessage->Count());
+            case packettype_entrance:
+                if(m_autoPartner)
+                    m_partnersPeerID = PeerID;
+                m_peerIDs.AtAdding() = PeerID;
+                break;
+            case packettype_message:
+                {
+                    // 호출 또는 결과전달
+                    String MethodName;
+                    if(id_cloned_share Result = MessageToCallOrReturn(Platform::Server::GetPacketBuffer(server.m_id), MethodName))
+                    if(uint08s* NewMessage = ResultToMessage(MethodName, Result))
+                        Platform::Server::SendToPeer(server.m_id, PeerID,
+                            NewMessage->AtDumping(0, NewMessage->Count()), NewMessage->Count());
+                }
+                break;
+            case packettype_leaved:
+            case packettype_kicked:
+                if(m_partnersPeerID == PeerID)
+                    m_partnersPeerID = -1;
+                for(sint32 i = m_peerIDs.Count() - 1; 0 <= i; --i)
+                    if(m_peerIDs[i] == PeerID)
+                        m_peerIDs.SubtractionSection(i);
+                Remote::GlobalValue::ExitPeerIDs().AtAdding() = PeerID;
+                break;
             }
-            break;
-        case packettype_leaved:
-        case packettype_kicked:
-            if(server.m_peerID == Platform::Server::GetPacketPeerID(server.m_id))
-                server.m_peerID = -1;
-            server.m_peerCount--;
-            break;
+            Remote::GlobalValue::LastPeerID() = -1;
         }
-        return server.m_peerCount;
+        return (0 < m_peerIDs.Count());
     }
 
     bool CommunicateOnceForClient()
@@ -360,13 +371,18 @@ private:
         BOSS_ASSERT("잘못된 호출입니다", !m_isServer);
 
         // 접속시도
-        if(!client.m_isConnected)
-            client.m_isConnected = Platform::Socket::Connect(client.m_id, *client.m_domain, client.m_port);
+        if(m_peerIDs.Count() == 0)
+        if(Platform::Socket::Connect(client.m_id, *client.m_domain, client.m_port))
+        {
+            if(m_autoPartner)
+                m_partnersPeerID = 0;
+            m_peerIDs.AtAdding() = 0;
+        }
 
         // 송신처리
         while(CallSpec* OneCallSpec = m_callQueue.Dequeue())
         {
-            if(OneCallSpec->m_localcall || !client.m_isConnected)
+            if(OneCallSpec->m_localcall || m_partnersPeerID == -1)
             {
                 if(OneCallSpec->m_needreturn)
                 {
@@ -384,36 +400,84 @@ private:
         }
 
         // 수신처리
-        while(client.m_isConnected && 4 < Platform::Socket::RecvAvailable(client.m_id))
+        Remote::GlobalValue::ExitPeerIDs().Clear();
+        if(0 < m_peerIDs.Count())
         {
-            sint32 PacketSize = 0;
-            Platform::Socket::Recv(client.m_id, (uint08*) &PacketSize, 4);
-            sint32 RecvFocus = 0, RecvSize = 0;
-            do
+            sint32 RecvAvailableSize = Platform::Socket::RecvAvailable(client.m_id);
+            if(RecvAvailableSize < 0)
+                m_peerIDs.Clear();
+            else if(4 < RecvAvailableSize)
             {
-                RecvFocus += RecvSize;
-                RecvSize = Platform::Socket::Recv(client.m_id, m_tempBuffer.AtDumping(RecvFocus, PacketSize), PacketSize);
-                if(RecvSize < 0) return false;
-                PacketSize -= RecvSize;
-            }
-            while(0 < PacketSize);
+                sint32 PacketSize = 0;
+                RecvAvailableSize = Platform::Socket::Recv(client.m_id, (uint08*) &PacketSize, 4);
+                if(RecvAvailableSize < 0)
+                    m_peerIDs.Clear();
+                else if(0 < PacketSize)
+                {
+                    sint32 RecvFocus = 0, RecvSize = 0;
+                    do
+                    {
+                        RecvFocus += RecvSize;
+                        RecvSize = Platform::Socket::Recv(client.m_id, m_tempBuffer.AtDumping(RecvFocus, PacketSize), PacketSize);
+                        if(RecvSize < 0)
+                        {
+                            m_peerIDs.Clear();
+                            break;
+                        }
+                        PacketSize -= RecvSize;
+                    }
+                    while(0 < PacketSize);
 
-            // 호출 또는 결과전달
-            String MethodName;
-            if(id_cloned_share Result = MessageToCallOrReturn(&m_tempBuffer[0], MethodName))
-            if(uint08s* NewMessage = ResultToMessage(MethodName, Result))
-                Platform::Socket::Send(client.m_id,
-                    NewMessage->AtDumping(0, NewMessage->Count()), NewMessage->Count());
+                    // 호출 또는 결과전달
+                    if(PacketSize == 0)
+                    {
+                        String MethodName;
+                        if(id_cloned_share Result = MessageToCallOrReturn(&m_tempBuffer[0], MethodName))
+                        if(uint08s* NewMessage = ResultToMessage(MethodName, Result))
+                            Platform::Socket::Send(client.m_id,
+                                NewMessage->AtDumping(0, NewMessage->Count()), NewMessage->Count());
+                    }
+                }
+            }
+
+            // 서버와의 연결해제 상황
+            if(m_peerIDs.Count() == 0)
+            {
+                m_partnersPeerID = -1;
+                Remote::GlobalValue::ExitPeerIDs().AtAdding() = 0;
+            }
         }
-        return client.m_isConnected;
+        return (0 < m_peerIDs.Count());
     }
 
 public:
     bool CommunicateOnce()
     {
-        if(m_isServer)
-            return (0 < CommunicateOnceForServer());
-        return CommunicateOnceForClient();
+        bool Result = false;
+        Mutex::Lock(m_MutexPeerID);
+        {
+            // 킥요청 처리
+            sint32 KickedPeerID = m_kickedPeerIDs.Dequeue(-1);
+            while(KickedPeerID != -1)
+            {
+                if(m_partnersPeerID == KickedPeerID)
+                    m_partnersPeerID = -1;
+                for(sint32 i = m_peerIDs.Count() - 1; 0 <= i; --i)
+                    if(m_peerIDs[i] == KickedPeerID)
+                        m_peerIDs.SubtractionSection(i);
+                if(m_isServer)
+                    Platform::Server::KickPeer(server.m_id, KickedPeerID);
+                else Platform::Socket::Disconnect(client.m_id);
+                KickedPeerID = m_kickedPeerIDs.Dequeue(-1);
+            }
+
+            // 시나리오 진행
+            if(m_isServer)
+                Result = (0 < CommunicateOnceForServer());
+            else Result = CommunicateOnceForClient();
+        }
+        Mutex::Unlock(m_MutexPeerID);
+        return Result;
     }
 
     void BindMethod(const String name, const Remote::Method* method) const
@@ -428,24 +492,79 @@ public:
         *params = nullptr;
     }
 
+    sint32 CountOfPartners() const
+    {
+        sint32 Result = 0;
+        Mutex::Lock(m_MutexPeerID);
+        {
+            Result = m_peerIDs.Count();
+        }
+        Mutex::Unlock(m_MutexPeerID);
+        return Result;
+    }
+
+    bool SelectPartnerByIndex(sint32 index)
+    {
+        bool Result = false;
+        Mutex::Lock(m_MutexPeerID);
+        {
+            if(0 <= index && index < m_peerIDs.Count())
+            {
+                m_partnersPeerID = m_peerIDs[index];
+                Result = true;
+            }
+            else m_partnersPeerID = -1;
+        }
+        Mutex::Unlock(m_MutexPeerID);
+        return Result;
+    }
+
+    bool SelectPartnerByPeerID(sint32 peerid)
+    {
+        bool Result = false;
+        Mutex::Lock(m_MutexPeerID);
+        {
+            m_partnersPeerID = -1;
+            for(sint32 i = 0, iend = m_peerIDs.Count(); i < iend; ++i)
+            {
+                if(m_peerIDs[i] == peerid)
+                {
+                    m_partnersPeerID = peerid;
+                    Result = true;
+                    break;
+                }
+            }
+        }
+        Mutex::Unlock(m_MutexPeerID);
+        return false;
+    }
+
+    void KickPartner(sint32 peerid)
+    {
+        if(peerid != -1)
+            m_kickedPeerIDs.Enqueue(peerid);
+    }
+
 private:
     const bool m_isServer;
+    const bool m_autoPartner;
     union
     {
         struct
         {
             id_server m_id;
-            sint32 m_peerID;
-            sint32 m_peerCount;
         } server;
         struct
         {
             id_socket m_id;
             String* m_domain;
             uint16 m_port;
-            bool m_isConnected;
         } client;
     };
+    id_mutex m_MutexPeerID;
+    sint32 m_partnersPeerID;
+    sint32s m_peerIDs;
+    Queue<sint32> m_kickedPeerIDs;
     mutable Map<const Remote::Method*> m_callMethods;
     mutable Queue<CallSpec*> m_callQueue;
     uint08s m_tempBuffer;
@@ -453,17 +572,17 @@ private:
 
 namespace BOSS
 {
-    id_remote Remote::ConnectForServer(uint16 port, MethodPtrs methods)
+    id_remote Remote::ConnectForServer(uint16 port, MethodPtrs methods, bool autopartner)
     {
-        RemoteClass* NewRemote = new RemoteClass(port);
+        RemoteClass* NewRemote = new RemoteClass(port, autopartner);
         for(sint32 i = 0, iend = methods.Count(); i < iend; ++i)
             methods[i]->SetRemote((id_remote_read) NewRemote);
         return (id_remote) NewRemote;
     }
 
-    id_remote Remote::ConnectForClient(chars domain, uint16 port, MethodPtrs methods)
+    id_remote Remote::ConnectForClient(chars domain, uint16 port, MethodPtrs methods, bool autopartner)
     {
-        RemoteClass* NewRemote = new RemoteClass(domain, port);
+        RemoteClass* NewRemote = new RemoteClass(domain, port, autopartner);
         for(sint32 i = 0, iend = methods.Count(); i < iend; ++i)
             methods[i]->SetRemote((id_remote_read) NewRemote);
         return (id_remote) NewRemote;
@@ -481,14 +600,31 @@ namespace BOSS
         return false;
     }
 
-    uint64 Remote::GetLastConnectingTime(id_remote_read remote)
+    sint32 Remote::CountOfPartners(id_remote_read remote)
     {
+        if(RemoteClass* CurRemote = (RemoteClass*) remote)
+            return CurRemote->CountOfPartners();
         return 0;
     }
 
-    bool Remote::CheckNewPartner(id_remote remote)
+    bool Remote::SelectPartnerByIndex(id_remote remote, sint32 index)
     {
+        if(RemoteClass* CurRemote = (RemoteClass*) remote)
+            return CurRemote->SelectPartnerByIndex(index);
         return false;
+    }
+
+    bool Remote::SelectPartnerByPeerID(id_remote remote, sint32 peerid)
+    {
+        if(RemoteClass* CurRemote = (RemoteClass*) remote)
+            return CurRemote->SelectPartnerByPeerID(peerid);
+        return false;
+    }
+
+    void Remote::KickPartner(id_remote remote, sint32 peerid)
+    {
+        if(RemoteClass* CurRemote = (RemoteClass*) remote)
+            CurRemote->KickPartner(peerid);
     }
 
     void Remote::Param::Store(id_cloned_share rhs)
