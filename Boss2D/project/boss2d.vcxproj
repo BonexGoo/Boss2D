@@ -120,18 +120,23 @@
     <ClCompile Include="..\service\boss_oauth2service.cpp" />
     <ClCompile Include="..\service\boss_parasource.cpp" />
     <ClCompile Include="..\service\boss_streamingservice.cpp" />
+    <ClCompile Include="..\service\boss_summit.cpp" />
     <ClCompile Include="..\service\boss_tryworld.cpp" />
     <ClCompile Include="..\service\boss_typolar.cpp" />
     <ClCompile Include="..\service\boss_zay.cpp" />
     <ClCompile Include="..\service\boss_zayson.cpp" />
     <ClCompile Include="..\service\boss_zaywidget.cpp" />
-    <ClCompile Include="GeneratedFiles\Debug\moc_boss_platform_qt5.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_boss_platform_qt5.cpp">
+    <ClCompile Include="GeneratedFiles\Debug32\moc_boss_platform_qt5.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug64\moc_boss_platform_qt5.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release32\moc_boss_platform_qt5.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release64\moc_boss_platform_qt5.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -239,6 +244,7 @@
     <ClInclude Include="..\service\boss_oauth2service.hpp" />
     <ClInclude Include="..\service\boss_parasource.hpp" />
     <ClInclude Include="..\service\boss_streamingservice.hpp" />
+    <ClInclude Include="..\service\boss_summit.hpp" />
     <ClInclude Include="..\service\boss_tryworld.hpp" />
     <ClInclude Include="..\service\boss_typolar.hpp" />
     <ClInclude Include="..\service\boss_zay.hpp" />
@@ -246,21 +252,21 @@
     <ClInclude Include="..\service\boss_zaywidget.hpp" />
     <CustomBuild Include="..\platform\boss_platform_qt5.hpp">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing boss_platform_qt5.hpp...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DBOSS_NDEBUG=0 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\."</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing $(Configuration)$(PlatformArchitecture)\boss_platform_qt5.hpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DBOSS_NDEBUG=0 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing boss_platform_qt5.hpp...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DBOSS_NDEBUG=0 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\."</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing $(Configuration)$(PlatformArchitecture)\boss_platform_qt5.hpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DBOSS_NDEBUG=0 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing boss_platform_qt5.hpp...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -DBOSS_NDEBUG=1 -DQT_NO_DEBUG -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\."</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -DBOSS_NDEBUG=1 -DQT_NO_DEBUG -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing boss_platform_qt5.hpp...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -DBOSS_NDEBUG=1 -DQT_NO_DEBUG -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\."</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -DBOSS_NDEBUG=1 -DQT_NO_DEBUG -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_MULTIMEDIA_LIB -DQT_PURCHASING_LIB -DQT_SERIALPORT_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINEWIDGETS_LIB -DQT_HAVE_WEBENGINEWIDGETS=1  "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\."</Command>
     </CustomBuild>
     <ClInclude Include="..\platform\win32\glew.h" />
   </ItemGroup>
@@ -313,20 +319,20 @@
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\</OutDir>
+    <IntDir>$(SolutionDir)..\[boss2d]\$(Configuration)$(PlatformArchitecture)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\</OutDir>
+    <IntDir>$(SolutionDir)..\[boss2d]\$(Configuration)$(PlatformArchitecture)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\</OutDir>
+    <IntDir>$(SolutionDir)..\[boss2d]\$(Configuration)$(PlatformArchitecture)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\[boss2d]\$(PlatformTarget)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\</OutDir>
+    <IntDir>$(SolutionDir)..\[boss2d]\$(Configuration)$(PlatformArchitecture)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -346,7 +352,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -367,7 +373,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -389,7 +395,7 @@
       <AdditionalDependencies>qtmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -412,7 +418,7 @@
       <AdditionalDependencies>qtmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(PlatformTarget)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture)\$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -420,7 +426,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties lreleaseOptions="" lupdateOnBuild="0" lupdateOptions="" MocDir=".\GeneratedFiles\$(ConfigurationName)" MocOptions="" Qt5Version_x0020_Win32="msvc2019" Qt5Version_x0020_x64="msvc2019_64" RccDir=".\GeneratedFiles" UicDir=".\GeneratedFiles" />
+      <UserProperties lreleaseOptions="" lupdateOnBuild="0" lupdateOptions="" MocDir=".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)" MocOptions="" Qt5Version_x0020_Win32="msvc2019" Qt5Version_x0020_x64="$(DefaultQtVersion)" RccDir=".\GeneratedFiles" UicDir=".\GeneratedFiles" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

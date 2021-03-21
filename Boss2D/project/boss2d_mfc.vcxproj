@@ -118,15 +118,18 @@
     <ClCompile Include="..\service\boss_boxr.cpp" />
     <ClCompile Include="..\service\boss_brii.cpp" />
     <ClCompile Include="..\service\boss_camera360service.cpp" />
+    <ClCompile Include="..\service\boss_cumi.cpp" />
     <ClCompile Include="..\service\boss_firebaseservice.cpp" />
     <ClCompile Include="..\service\boss_livechatservice.cpp" />
     <ClCompile Include="..\service\boss_oauth2service.cpp" />
     <ClCompile Include="..\service\boss_parasource.cpp" />
     <ClCompile Include="..\service\boss_streamingservice.cpp" />
+    <ClCompile Include="..\service\boss_summit.cpp" />
     <ClCompile Include="..\service\boss_tryworld.cpp" />
     <ClCompile Include="..\service\boss_typolar.cpp" />
     <ClCompile Include="..\service\boss_zay.cpp" />
     <ClCompile Include="..\service\boss_zayson.cpp" />
+    <ClCompile Include="..\service\boss_zaywidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\addon\boss_addon_aac.hpp" />
@@ -229,15 +232,18 @@
     <ClInclude Include="..\service\boss_boxr.hpp" />
     <ClInclude Include="..\service\boss_brii.hpp" />
     <ClInclude Include="..\service\boss_camera360service.hpp" />
+    <ClInclude Include="..\service\boss_cumi.hpp" />
     <ClInclude Include="..\service\boss_firebaseservice.hpp" />
     <ClInclude Include="..\service\boss_livechatservice.hpp" />
     <ClInclude Include="..\service\boss_oauth2service.hpp" />
     <ClInclude Include="..\service\boss_parasource.hpp" />
     <ClInclude Include="..\service\boss_streamingservice.hpp" />
+    <ClInclude Include="..\service\boss_summit.hpp" />
     <ClInclude Include="..\service\boss_tryworld.hpp" />
     <ClInclude Include="..\service\boss_typolar.hpp" />
     <ClInclude Include="..\service\boss_zay.hpp" />
     <ClInclude Include="..\service\boss_zayson.hpp" />
+    <ClInclude Include="..\service\boss_zaywidget.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

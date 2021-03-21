@@ -361,7 +361,7 @@ namespace BOSS
         else
         {
             // 무시해야하는 파일은 제외
-            chars Ignores[] = BOSS_NEED_EMBEDDED_IGNORES;
+            chars Ignores[] = BOSS_ASSET_IGNORES;
             const String LowerName = String(itemname).Lower();
             for(sint32 i = 0, iend = sizeof(Ignores) / sizeof(chars); i < iend; ++i)
                 if(LowerName.Find(0, Ignores[i]) != -1)

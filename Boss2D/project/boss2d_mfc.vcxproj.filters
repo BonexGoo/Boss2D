@@ -150,51 +150,6 @@
     <ClCompile Include="..\core\boss_wstring.cpp">
       <Filter>Boss2D\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\service\boss_asyncfilemanager.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_backey.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_batchbuilder.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_boxr.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_brii.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_camera360service.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_firebaseservice.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_livechatservice.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_oauth2service.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_parasource.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_streamingservice.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_tryworld.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_typolar.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_zay.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\service\boss_zayson.cpp">
-      <Filter>Boss2D\service</Filter>
-    </ClCompile>
     <ClCompile Include="..\addon\boss_addon_aac.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
@@ -341,6 +296,60 @@
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_ziparchive-4.6.7_for_zlib.c">
       <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_asyncfilemanager.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_backey.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_batchbuilder.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_boxr.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_brii.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_camera360service.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_cumi.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_firebaseservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_livechatservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_oauth2service.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_parasource.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_streamingservice.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_summit.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_tryworld.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_typolar.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_zay.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_zayson.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
+    <ClCompile Include="..\service\boss_zaywidget.cpp">
+      <Filter>Boss2D\service</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -491,51 +500,6 @@
     <ClInclude Include="..\core\boss_wstring.hpp">
       <Filter>Boss2D\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\service\boss_asyncfilemanager.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_backey.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_batchbuilder.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_boxr.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_brii.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_camera360service.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_firebaseservice.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_livechatservice.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_oauth2service.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_parasource.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_streamingservice.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_tryworld.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_typolar.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_zay.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\service\boss_zayson.hpp">
-      <Filter>Boss2D\service</Filter>
-    </ClInclude>
     <ClInclude Include="..\addon\boss_addon_aac.hpp">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
@@ -670,6 +634,60 @@
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_ziparchive-4.6.7.h">
       <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_asyncfilemanager.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_backey.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_batchbuilder.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_boxr.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_brii.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_camera360service.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_cumi.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_firebaseservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_livechatservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_oauth2service.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_parasource.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_streamingservice.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_summit.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_tryworld.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_typolar.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_zay.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_zayson.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\service\boss_zaywidget.hpp">
+      <Filter>Boss2D\service</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

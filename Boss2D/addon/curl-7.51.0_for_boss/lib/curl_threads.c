@@ -104,7 +104,8 @@ curl_thread_t Curl_thread_create(unsigned int (CURL_STDCALL *func) (void*),
                                  void *arg)
 {
 #ifdef _WIN32_WCE
-  return CreateThread(NULL, 0, func, arg, 0, NULL);
+  // removed by BOSS:return CreateThread(NULL, 0, func, arg, 0, NULL);
+  return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) func, arg, 0, NULL); // added by BOSS
 #else
   curl_thread_t t;
   t = (curl_thread_t)_beginthreadex(NULL, 0, func, arg, 0, NULL);
