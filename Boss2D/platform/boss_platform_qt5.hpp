@@ -57,10 +57,8 @@
     #include <QUdpSocket>
     #include <QTcpServer>
     #include <QNetworkInterface>
-
-    #ifdef QT_HAVE_PURCHASING
-        #include <QtPurchasing>
-    #endif
+    #include <QWebSocket>
+    #include <QWebSocketServer>
 
     #ifdef QT_HAVE_SERIALPORT
         #include <QtSerialPort>
@@ -90,6 +88,10 @@
     #ifdef QT_HAVE_WEBENGINEWIDGETS
         #include <QWebEngineView>
         #include <QWebEngineProfile>
+    #endif
+
+    #ifdef QT_HAVE_PURCHASING
+        #include <QtPurchasing>
     #endif
 
     #if BOSS_IPHONE
@@ -4230,15 +4232,15 @@
         };
     #endif
 
-    class TCPPeerData : public QObjectUserData
+    class PeerData : public QObjectUserData
     {
     public:
         const sint32 ID;
         sint32 PacketNeeds;
 
     public:
-        TCPPeerData() : ID(MakeID()) {PacketNeeds = 0;}
-        virtual ~TCPPeerData() {}
+        PeerData() : ID(MakeID()) {PacketNeeds = 0;}
+        virtual ~PeerData() {}
 
     public:
         static uint ClassID()
@@ -4246,7 +4248,7 @@
         static int MakeID() {static int _ = -1; return ++_;}
     };
 
-    class TCPPacket
+    class PeerPacket
     {
     public:
         const packettype Type;
@@ -4254,50 +4256,109 @@
         buffer Buffer;
 
     public:
-        TCPPacket(packettype type, sint32 peerid, sint32 buffersize)
+        PeerPacket(packettype type, sint32 peerid, sint32 buffersize)
             : Type(type), PeerID(peerid) {Buffer = Buffer::Alloc(BOSS_DBG buffersize);}
-        ~TCPPacket() {Buffer::Free(Buffer);}
+        ~PeerPacket() {Buffer::Free(Buffer);}
     public:
         void DestroyMe() {delete this;}
     };
 
-    class TCPAgent : public QTcpServer
+    class ServerClass : public QObject
+    {
+        Q_OBJECT
+
+    protected:
+        Queue<PeerPacket*> mPacketQueue;
+        PeerPacket* mFocusedPacket;
+
+    public:
+        ServerClass()
+        {
+            mFocusedPacket = new PeerPacket(packettype_null, -1, 0);
+        }
+        virtual ~ServerClass()
+        {
+            for(PeerPacket* UnusedPacket = nullptr; UnusedPacket = mPacketQueue.Dequeue();)
+                UnusedPacket->DestroyMe();
+            delete mFocusedPacket;
+        }
+
+    public:
+        bool TryPacket()
+        {
+            PeerPacket* PopPacket = mPacketQueue.Dequeue();
+            if(!PopPacket) return false;
+            delete mFocusedPacket;
+            mFocusedPacket = PopPacket;
+            return true;
+        }
+
+        PeerPacket* GetFocusedPacket()
+        {
+            return mFocusedPacket;
+        }
+
+    public:
+        virtual bool Listen(uint16 port) = 0;
+        virtual bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) = 0;
+        virtual bool KickPeer(int peerid) = 0;
+        virtual bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) = 0;
+    };
+
+    class TCPServerClass : public ServerClass
     {
         Q_OBJECT
 
     private:
-        bool UsingSizeField;
-        Map<QTcpSocket*> Peers;
-        Queue<TCPPacket*> PacketQueue;
-        TCPPacket* FocusedPacket;
+        QTcpServer* mServer;
+        bool mUsingSizeField;
+        Map<QTcpSocket*> mPeers;
+
+    public:
+        TCPServerClass(bool sizefield = false)
+        {
+            mServer = new QTcpServer(this);
+            mUsingSizeField = sizefield;
+            connect(mServer, SIGNAL(newConnection()), this, SLOT(acceptPeer()));
+        }
+
+        ~TCPServerClass() override
+        {
+            mServer->close();
+        }
+
+        TCPServerClass& operator=(const TCPServerClass&)
+        {
+            BOSS_ASSERT("호출불가", false);
+            return *this;
+        }
 
     private slots:
         void acceptPeer()
         {
-            QTcpSocket* Peer = nextPendingConnection();
-            TCPPeerData* NewData = new TCPPeerData();
-            Peers[NewData->ID] = Peer;
-            Peer->setUserData(TCPPeerData::ClassID(), NewData);
-            PacketQueue.Enqueue(new TCPPacket(packettype_entrance, NewData->ID, 0));
+            QTcpSocket* Peer = mServer->nextPendingConnection();
+            PeerData* NewData = new PeerData();
+            mPeers[NewData->ID] = Peer;
+            Peer->setUserData(PeerData::ClassID(), NewData);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewData->ID, 0));
 
-            if(!UsingSizeField) connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
+            if(!mUsingSizeField) connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
             else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
-            connect(Peer, SIGNAL(error(QAbstractSocket::SocketError)),
-                this, SLOT(errorPeer(QAbstractSocket::SocketError)));
+            connect(Peer, SIGNAL(disconnected()), this, SLOT(disconnected()));
             Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
         }
 
         void readyPeer()
         {
             QTcpSocket* Peer = (QTcpSocket*) sender();
-            TCPPeerData* Data = (TCPPeerData*) Peer->userData(TCPPeerData::ClassID());
-            sint64 PacketSize = Peer->bytesAvailable();
+            PeerData* Data = (PeerData*) Peer->userData(PeerData::ClassID());
+            const sint64 PacketSize = Peer->bytesAvailable();
 
             if(0 < PacketSize)
             {
-                TCPPacket* NewPacket = new TCPPacket(packettype_message, Data->ID, PacketSize);
+                PeerPacket* NewPacket = new PeerPacket(packettype_message, Data->ID, PacketSize);
                 Peer->read((char*) NewPacket->Buffer, PacketSize);
-                PacketQueue.Enqueue(NewPacket);
+                mPacketQueue.Enqueue(NewPacket);
             }
             Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
@@ -4305,7 +4366,7 @@
         void readyPeerWithSizeField()
         {
             QTcpSocket* Peer = (QTcpSocket*) sender();
-            TCPPeerData* Data = (TCPPeerData*) Peer->userData(TCPPeerData::ClassID());
+            PeerData* Data = (PeerData*) Peer->userData(PeerData::ClassID());
             sint64 PacketSize = Peer->bytesAvailable();
 
             while(0 < PacketSize)
@@ -4326,9 +4387,9 @@
                     if(Data->PacketNeeds <= PacketSize)
                     {
                         PacketSize -= Data->PacketNeeds;
-                        TCPPacket* NewPacket = new TCPPacket(packettype_message, Data->ID, Data->PacketNeeds);
+                        PeerPacket* NewPacket = new PeerPacket(packettype_message, Data->ID, Data->PacketNeeds);
                         Peer->read((char*) NewPacket->Buffer, Data->PacketNeeds);
-                        PacketQueue.Enqueue(NewPacket);
+                        mPacketQueue.Enqueue(NewPacket);
                         Data->PacketNeeds = 0;
                     }
                     else break;
@@ -4337,84 +4398,187 @@
             Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
 
-        void errorPeer(QAbstractSocket::SocketError error)
+        void disconnected()
         {
             QTcpSocket* Peer = (QTcpSocket*) sender();
-            TCPPeerData* Data = (TCPPeerData*) Peer->userData(TCPPeerData::ClassID());
-            Peers.Remove(Data->ID);
+            PeerData* Data = (PeerData*) Peer->userData(PeerData::ClassID());
 
-            if(error == QAbstractSocket::RemoteHostClosedError)
+            mPeers.Remove(Data->ID);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, Data->ID, 0));
+            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+        }
+
+    private:
+        bool Listen(uint16 port) override
+        {
+            if(mServer->isListening()) return true;
+            return mServer->listen(QHostAddress::Any, port);
+        }
+
+        bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) override
+        {
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
             {
-                PacketQueue.Enqueue(new TCPPacket(packettype_leaved, Data->ID, 0));
+                if((*Peer)->write((chars) buffer, buffersize) == buffersize)
+                    return true;
+
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, peerid, 0));
                 Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
             }
-            else
-            {
-                PacketQueue.Enqueue(new TCPPacket(packettype_kicked, Data->ID, 0));
-                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
-            }
-        }
-
-    public:
-        TCPAgent(bool sizefield = false)
-        {
-            UsingSizeField = sizefield;
-            FocusedPacket = new TCPPacket(packettype_null, -1, 0);
-            connect(this, SIGNAL(newConnection()), this, SLOT(acceptPeer()));
-        }
-
-        virtual ~TCPAgent()
-        {
-            for(TCPPacket* UnusedPacket = nullptr; UnusedPacket = PacketQueue.Dequeue();)
-                UnusedPacket->DestroyMe();
-            delete FocusedPacket;
-        }
-
-        TCPAgent& operator=(const TCPAgent&)
-        {
-            BOSS_ASSERT("호출불가", false);
-            return *this;
-        }
-
-    public:
-        bool TryPacket()
-        {
-            TCPPacket* PopPacket = PacketQueue.Dequeue();
-            if(!PopPacket) return false;
-            delete FocusedPacket;
-            FocusedPacket = PopPacket;
-            return true;
-        }
-
-        TCPPacket* GetFocusedPacket()
-        {
-            return FocusedPacket;
-        }
-
-        bool SendPacket(int peerid, const void* buffer, sint32 buffersize)
-        {
-            if(QTcpSocket** Peer = Peers.Access(peerid))
-                return ((*Peer)->write((chars) buffer, buffersize) == buffersize);
-            Peers.Remove(peerid);
             return false;
         }
 
-        bool KickPeer(int peerid)
+        bool KickPeer(int peerid) override
         {
-            if(QTcpSocket** Peer = Peers.Access(peerid))
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
             {
                 (*Peer)->disconnectFromHost();
-                Peers.Remove(peerid);
-                PacketQueue.Enqueue(new TCPPacket(packettype_kicked, peerid, 0));
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
                 Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
                 return true;
             }
             return false;
         }
 
-        bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port)
+        bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) override
         {
-            if(QTcpSocket** Peer = Peers.Access(peerid))
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
+            {
+                if(ip4)
+                {
+                    auto IPv4Address = (*Peer)->peerAddress().toIPv4Address();
+                    ip4->ip[0] = (IPv4Address >> 24) & 0xFF;
+                    ip4->ip[1] = (IPv4Address >> 16) & 0xFF;
+                    ip4->ip[2] = (IPv4Address >>  8) & 0xFF;
+                    ip4->ip[3] = (IPv4Address >>  0) & 0xFF;
+                }
+                if(ip6)
+                {
+                    auto IPv6Address = (*Peer)->peerAddress().toIPv6Address();
+                    *ip6 = *((ip6address*) &IPv6Address);
+                }
+                if(port) *port = (*Peer)->peerPort();
+                return true;
+            }
+            return false;
+        }
+    };
+
+    class WSServerClass : public ServerClass
+    {
+        Q_OBJECT
+
+    private:
+        QWebSocketServer* mServer;
+        Map<QWebSocket*> mPeers;
+
+    public:
+        WSServerClass(chars name = "noname")
+        {
+            mServer = new QWebSocketServer(name, QWebSocketServer::NonSecureMode, this);
+            connect(mServer, &QWebSocketServer::newConnection, this, &WSServerClass::acceptPeer);
+        }
+
+        ~WSServerClass() override
+        {
+            mServer->close();
+        }
+
+        WSServerClass& operator=(const WSServerClass&)
+        {
+            BOSS_ASSERT("호출불가", false);
+            return *this;
+        }
+
+    private slots:
+        void acceptPeer()
+        {
+            QWebSocket* Peer = mServer->nextPendingConnection();
+            PeerData* NewData = new PeerData();
+            mPeers[NewData->ID] = Peer;
+            Peer->setUserData(PeerData::ClassID(), NewData);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewData->ID, 0));
+
+            connect(Peer, &QWebSocket::textFrameReceived, this, &WSServerClass::textReceived);
+            connect(Peer, &QWebSocket::binaryFrameReceived, this, &WSServerClass::binaryReceived);
+            connect(Peer, &QWebSocket::disconnected, this, &WSServerClass::disconnected);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
+        }
+
+        void textReceived(const QString& frame, bool isLastFrame)
+        {
+            binaryReceived(frame.toUtf8(), isLastFrame);
+        }
+
+        void binaryReceived(const QByteArray& frame, bool isLastFrame)
+        {
+            QWebSocket* Peer = (QWebSocket*) sender();
+            PeerData* Data = (PeerData*) Peer->userData(PeerData::ClassID());
+            const sint64 PacketSize = frame.size();
+
+            if(0 < PacketSize)
+            {
+                PeerPacket* NewPacket = new PeerPacket(packettype_message, Data->ID, PacketSize);
+                Memory::Copy((void*) NewPacket->Buffer, frame.constData(), PacketSize);
+                mPacketQueue.Enqueue(NewPacket);
+            }
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+        }
+
+        void disconnected()
+        {
+            QWebSocket* Peer = (QWebSocket*) sender();
+            PeerData* Data = (PeerData*) Peer->userData(PeerData::ClassID());
+
+            mPeers.Remove(Data->ID);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, Data->ID, 0));
+            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+        }
+
+    private:
+        bool Listen(uint16 port) override
+        {
+            if(mServer->isListening()) return true;
+            return mServer->listen(QHostAddress::Any, port);
+        }
+
+        bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
+            {
+                if(utf8)
+                {
+                    if((*Peer)->sendTextMessage(QString::fromUtf8((chars) buffer, buffersize)) == buffersize)
+                        return true;
+                }
+                else if((*Peer)->sendBinaryMessage(QByteArray((chars) buffer, buffersize)) == buffersize)
+                    return true;
+
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, peerid, 0));
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            }
+            return false;
+        }
+
+        bool KickPeer(int peerid) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
+            {
+                (*Peer)->disconnect();
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
+                return true;
+            }
+            return false;
+        }
+
+        bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
             {
                 if(ip4)
                 {
@@ -7091,7 +7255,9 @@
     class EditTracker : public QLineEdit {Q_OBJECT};
     class ListTracker : public QListWidget {Q_OBJECT};
     class ThreadClass : public QThread {Q_OBJECT};
-    class TCPAgent : public QTcpServer {Q_OBJECT};
+    class ServerClass : public QObject {Q_OBJECT};
+    class TCPServerClass : public ServerClass {Q_OBJECT};
+    class WSServerClass : public ServerClass {Q_OBJECT};
     class PipePrivate : public QObject {Q_OBJECT};
     class PipeServerPrivate : public PipePrivate {Q_OBJECT};
     class PipeClientPrivate : public PipePrivate {Q_OBJECT};

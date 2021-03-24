@@ -35,7 +35,7 @@ private:
 public:
     RemoteClass(uint16 port, bool autopartner) : m_isServer(true), m_autoPartner(autopartner)
     {
-        server.m_id = Platform::Server::Create(true);
+        server.m_id = Platform::Server::CreateTCP(true);
         m_MutexPeerID = Mutex::Open();
         m_partnersPeerID = -1;
         Platform::Server::Listen(server.m_id, port);

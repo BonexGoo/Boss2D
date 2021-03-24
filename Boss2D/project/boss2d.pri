@@ -15,6 +15,7 @@ equals(QT_ENABLE_GRAPHICS, "ok"){
     CONFIG -= app_bundle
 }
 QT += network
+QT += websocket
 qtHaveModule(serialport){
     QT += serialport
     DEFINES += QT_HAVE_SERIALPORT

@@ -660,7 +660,7 @@
             return false;
         }
 
-        float Platform::Utility::GetPixelRatio()
+        float Platform::Utility::GetPixelRatio(sint32 screenid)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return 1;
@@ -1847,7 +1847,13 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////
-        id_server Platform::Server::Create(bool sizefield)
+        id_server Platform::Server::CreateTCP(bool sizefield)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
+        id_server Platform::Server::CreateWS(chars name)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
@@ -1888,7 +1894,7 @@
             return nullptr;
         }
 
-        bool Platform::Server::SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize)
+        bool Platform::Server::SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize, bool utf8)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return false;

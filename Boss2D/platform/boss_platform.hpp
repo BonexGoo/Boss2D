@@ -459,8 +459,9 @@ public:
         static bool GetCursorPosInWindow(point64& pos);
 
         /// @brief OS의 사용자배율 얻기
+        /// @param screenid : 스크린ID(-1일 경우 마우스가 위치한 스크린)
         /// @return 사용자배율(1.0, 1.25, 1.5, 1.75, 2.0...)
-        static float GetPixelRatio();
+        static float GetPixelRatio(sint32 screenid = -1);
 
         /// @brief OS명칭 얻기
         /// @return OS명칭
@@ -1452,11 +1453,17 @@ public:
         /// @param sizefield : 사이즈필드 사용여부
         /// @return 서버ID(nullptr은 실패)
         /// @see Release, Listen
-        static id_server Create(bool sizefield);
+        static id_server CreateTCP(bool sizefield);
+
+        /// @brief 서버ID 할당
+        /// @param name : 핸드셰이킹에 필요한 서버이름
+        /// @return 서버ID(nullptr은 실패)
+        /// @see Release, Listen
+        static id_server CreateWS(chars name);
 
         /// @brief 서버ID 반환
         /// @param server : 서버ID
-        /// @see Create
+        /// @see CreateTCP, CreateWS
         static void Release(id_server server);
 
         /// @brief 서비스개시
@@ -1496,8 +1503,9 @@ public:
         /// @param peerid : 송신자ID
         /// @param buffer : 데이터버퍼
         /// @param buffersize : 버퍼의 길이
+        /// @param utf8 : 데이터가 UTF8텍스트인지의 여부(웹소켓에 필요)
         /// @return 성공여부
-        static bool SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize);
+        static bool SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize, bool utf8 = false);
 
         /// @brief 특정 송신자를 접속해제
         /// @param server : 서버ID

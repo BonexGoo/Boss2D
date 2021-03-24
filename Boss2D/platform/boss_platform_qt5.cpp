@@ -1235,9 +1235,12 @@
                 || ClientRect.right() <= CursorPos.x() || ClientRect.bottom() <= CursorPos.y());
         }
 
-        float Platform::Utility::GetPixelRatio()
+        float Platform::Utility::GetPixelRatio(sint32 screenid)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
+            if(screenid != -1)
+            if(auto CurScreen = ApplicationPrivate::desktop()->screen(screenid))
+                return CurScreen->devicePixelRatioF(); ////////// 정상작동X
             return g_window->devicePixelRatioF();
         }
 
@@ -3919,11 +3922,18 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////
-        id_server Platform::Server::Create(bool sizefield)
+        id_server Platform::Server::CreateTCP(bool sizefield)
         {
-            TCPAgent* NewAgent = (TCPAgent*) Buffer::AllocNoConstructorOnce<TCPAgent>(BOSS_DBG 1);
-            BOSS_CONSTRUCTOR(NewAgent, 0, TCPAgent, sizefield);
-            return (id_server) NewAgent;
+            auto NewServer = (TCPServerClass*) Buffer::AllocNoConstructorOnce<TCPServerClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewServer, 0, TCPServerClass, sizefield);
+            return (id_server)(ServerClass*) NewServer;
+        }
+
+        id_server Platform::Server::CreateWS(chars name)
+        {
+            auto NewServer = (WSServerClass*) Buffer::AllocNoConstructorOnce<WSServerClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewServer, 0, WSServerClass, name);
+            return (id_server)(ServerClass*) NewServer;
         }
 
         void Platform::Server::Release(id_server server)
@@ -3933,26 +3943,23 @@
 
         bool Platform::Server::Listen(id_server server, uint16 port)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
-            {
-                if(CurAgent->isListening()) return true;
-                return CurAgent->listen(QHostAddress::Any, port);
-            }
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->Listen(port);
             return false;
         }
 
         bool Platform::Server::TryNextPacket(id_server server)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
                 return CurAgent->TryPacket();
             return false;
         }
 
         packettype Platform::Server::GetPacketType(id_server server)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
             {
-                TCPPacket* FocusedPacket = CurAgent->GetFocusedPacket();
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
                 return FocusedPacket->Type;
             }
             return packettype_null;
@@ -3960,9 +3967,9 @@
 
         sint32 Platform::Server::GetPacketPeerID(id_server server)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
             {
-                TCPPacket* FocusedPacket = CurAgent->GetFocusedPacket();
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
                 return FocusedPacket->PeerID;
             }
             return -1;
@@ -3970,32 +3977,32 @@
 
         bytes Platform::Server::GetPacketBuffer(id_server server, sint32* getsize)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
             {
-                TCPPacket* FocusedPacket = CurAgent->GetFocusedPacket();
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
                 if(getsize) *getsize = Buffer::CountOf(FocusedPacket->Buffer);
                 return (bytes) FocusedPacket->Buffer;
             }
             return nullptr;
         }
 
-        bool Platform::Server::SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize)
+        bool Platform::Server::SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize, bool utf8)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
-                return CurAgent->SendPacket(peerid, buffer, buffersize);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->SendPacket(peerid, buffer, buffersize, utf8);
             return false;
         }
 
         bool Platform::Server::KickPeer(id_server server, sint32 peerid)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
                 return CurAgent->KickPeer(peerid);
             return false;
         }
 
         bool Platform::Server::GetPeerInfo(id_server server, sint32 peerid, ip4address* ip4, ip6address* ip6, uint16* port)
         {
-            if(TCPAgent* CurAgent = (TCPAgent*) server)
+            if(auto CurAgent = (ServerClass*) server)
                 return CurAgent->GetPeerAddress(peerid, ip4, ip6, port);
             return false;
         }
@@ -4603,5 +4610,20 @@
             return nullptr;
         }
     }
+
+    // QT의 MOC코드 포함
+    #if BOSS_NDEBUG
+        #if BOSS_X64
+            #include "../GeneratedFiles/Release64/moc_boss_platform_qt5.cpp"
+        #else
+            #include "../GeneratedFiles/Release32/moc_boss_platform_qt5.cpp"
+        #endif
+    #else
+        #if BOSS_X64
+            #include "../GeneratedFiles/Debug64/moc_boss_platform_qt5.cpp"
+        #else
+            #include "../GeneratedFiles/Debug32/moc_boss_platform_qt5.cpp"
+        #endif
+    #endif
 
 #endif

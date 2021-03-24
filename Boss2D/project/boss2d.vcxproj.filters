@@ -1,11 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
-      <Extensions>moc;h;cpp</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
     <Filter Include="Boss2D">
       <UniqueIdentifier>{8fb3137a-4e98-4b28-a300-32f9512ec7f4}</UniqueIdentifier>
     </Filter>
@@ -32,18 +27,6 @@
     </Filter>
     <Filter Include="Boss2D\platform\win32">
       <UniqueIdentifier>{807cfafa-cf2c-4557-8be9-304ca1d55fe6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Generated Files\Release64">
-      <UniqueIdentifier>{a0bb63e1-e9dd-453d-bd71-7b19a7bbb913}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Generated Files\Release32">
-      <UniqueIdentifier>{026d129c-2ff9-469b-9e58-3bd48c502adf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Generated Files\Debug64">
-      <UniqueIdentifier>{92f1f0ff-7a2d-4684-829c-cbfce2bda954}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Generated Files\Debug32">
-      <UniqueIdentifier>{2643d3db-ad8e-4e0f-acf3-44ccb3b4c4b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -367,18 +350,6 @@
     </ClCompile>
     <ClCompile Include="..\service\boss_zaywidget.cpp">
       <Filter>Boss2D\service</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release64\moc_boss_platform_qt5.cpp">
-      <Filter>Generated Files\Release64</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release32\moc_boss_platform_qt5.cpp">
-      <Filter>Generated Files\Release32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug64\moc_boss_platform_qt5.cpp">
-      <Filter>Generated Files\Debug64</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug32\moc_boss_platform_qt5.cpp">
-      <Filter>Generated Files\Debug32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
