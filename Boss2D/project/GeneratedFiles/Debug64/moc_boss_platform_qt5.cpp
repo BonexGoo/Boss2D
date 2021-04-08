@@ -5238,6 +5238,395 @@ int PurchasePrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     _id = QObject::qt_metacall(_c, _id, _a);
     return _id;
 }
+struct qt_meta_stringdata_BluetoothSearchPrivate_t {
+    QByteArrayData data[5];
+    char stringdata0[72];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_BluetoothSearchPrivate_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_BluetoothSearchPrivate_t qt_meta_stringdata_BluetoothSearchPrivate = {
+    {
+QT_MOC_LITERAL(0, 0, 22), // "BluetoothSearchPrivate"
+QT_MOC_LITERAL(1, 23, 17), // "serviceDiscovered"
+QT_MOC_LITERAL(2, 41, 0), // ""
+QT_MOC_LITERAL(3, 42, 21), // "QBluetoothServiceInfo"
+QT_MOC_LITERAL(4, 64, 7) // "service"
+
+    },
+    "BluetoothSearchPrivate\0serviceDiscovered\0"
+    "\0QBluetoothServiceInfo\0service"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_BluetoothSearchPrivate[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    1,   19,    2, 0x08 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void, 0x80000000 | 3,    4,
+
+       0        // eod
+};
+
+void BluetoothSearchPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<BluetoothSearchPrivate *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->serviceDiscovered((*reinterpret_cast< const QBluetoothServiceInfo(*)>(_a[1]))); break;
+        default: ;
+        }
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+        case 0:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QBluetoothServiceInfo >(); break;
+            }
+            break;
+        }
+    }
+}
+
+QT_INIT_METAOBJECT const QMetaObject BluetoothSearchPrivate::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_BluetoothSearchPrivate.data,
+    qt_meta_data_BluetoothSearchPrivate,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *BluetoothSearchPrivate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *BluetoothSearchPrivate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_BluetoothSearchPrivate.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int BluetoothSearchPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_BluetoothPrivate_t {
+    QByteArrayData data[1];
+    char stringdata0[17];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_BluetoothPrivate_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_BluetoothPrivate_t qt_meta_stringdata_BluetoothPrivate = {
+    {
+QT_MOC_LITERAL(0, 0, 16) // "BluetoothPrivate"
+
+    },
+    "BluetoothPrivate"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_BluetoothPrivate[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void BluetoothPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+QT_INIT_METAOBJECT const QMetaObject BluetoothPrivate::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_BluetoothPrivate.data,
+    qt_meta_data_BluetoothPrivate,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *BluetoothPrivate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *BluetoothPrivate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_BluetoothPrivate.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int BluetoothPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    return _id;
+}
+struct qt_meta_stringdata_BluetoothServerPrivate_t {
+    QByteArrayData data[5];
+    char stringdata0[69];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_BluetoothServerPrivate_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_BluetoothServerPrivate_t qt_meta_stringdata_BluetoothServerPrivate = {
+    {
+QT_MOC_LITERAL(0, 0, 22), // "BluetoothServerPrivate"
+QT_MOC_LITERAL(1, 23, 17), // "OnClientConnected"
+QT_MOC_LITERAL(2, 41, 0), // ""
+QT_MOC_LITERAL(3, 42, 14), // "OnDisconnected"
+QT_MOC_LITERAL(4, 57, 11) // "OnReadyRead"
+
+    },
+    "BluetoothServerPrivate\0OnClientConnected\0"
+    "\0OnDisconnected\0OnReadyRead"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_BluetoothServerPrivate[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       3,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   29,    2, 0x08 /* Private */,
+       3,    0,   30,    2, 0x08 /* Private */,
+       4,    0,   31,    2, 0x08 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void BluetoothServerPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<BluetoothServerPrivate *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->OnClientConnected(); break;
+        case 1: _t->OnDisconnected(); break;
+        case 2: _t->OnReadyRead(); break;
+        default: ;
+        }
+    }
+    Q_UNUSED(_a);
+}
+
+QT_INIT_METAOBJECT const QMetaObject BluetoothServerPrivate::staticMetaObject = { {
+    QMetaObject::SuperData::link<BluetoothPrivate::staticMetaObject>(),
+    qt_meta_stringdata_BluetoothServerPrivate.data,
+    qt_meta_data_BluetoothServerPrivate,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *BluetoothServerPrivate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *BluetoothServerPrivate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_BluetoothServerPrivate.stringdata0))
+        return static_cast<void*>(this);
+    return BluetoothPrivate::qt_metacast(_clname);
+}
+
+int BluetoothServerPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = BluetoothPrivate::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 3)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 3;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 3)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 3;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_BluetoothClientPrivate_t {
+    QByteArrayData data[8];
+    char stringdata0[115];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_BluetoothClientPrivate_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_BluetoothClientPrivate_t qt_meta_stringdata_BluetoothClientPrivate = {
+    {
+QT_MOC_LITERAL(0, 0, 22), // "BluetoothClientPrivate"
+QT_MOC_LITERAL(1, 23, 11), // "OnConnected"
+QT_MOC_LITERAL(2, 35, 0), // ""
+QT_MOC_LITERAL(3, 36, 14), // "OnDisconnected"
+QT_MOC_LITERAL(4, 51, 11), // "OnReadyRead"
+QT_MOC_LITERAL(5, 63, 15), // "OnErrorOccurred"
+QT_MOC_LITERAL(6, 79, 29), // "QBluetoothSocket::SocketError"
+QT_MOC_LITERAL(7, 109, 5) // "error"
+
+    },
+    "BluetoothClientPrivate\0OnConnected\0\0"
+    "OnDisconnected\0OnReadyRead\0OnErrorOccurred\0"
+    "QBluetoothSocket::SocketError\0error"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_BluetoothClientPrivate[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       4,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   34,    2, 0x08 /* Private */,
+       3,    0,   35,    2, 0x08 /* Private */,
+       4,    0,   36,    2, 0x08 /* Private */,
+       5,    1,   37,    2, 0x08 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 6,    7,
+
+       0        // eod
+};
+
+void BluetoothClientPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<BluetoothClientPrivate *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->OnConnected(); break;
+        case 1: _t->OnDisconnected(); break;
+        case 2: _t->OnReadyRead(); break;
+        case 3: _t->OnErrorOccurred((*reinterpret_cast< QBluetoothSocket::SocketError(*)>(_a[1]))); break;
+        default: ;
+        }
+    }
+}
+
+QT_INIT_METAOBJECT const QMetaObject BluetoothClientPrivate::staticMetaObject = { {
+    QMetaObject::SuperData::link<BluetoothPrivate::staticMetaObject>(),
+    qt_meta_stringdata_BluetoothClientPrivate.data,
+    qt_meta_data_BluetoothClientPrivate,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *BluetoothClientPrivate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *BluetoothClientPrivate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_BluetoothClientPrivate.stringdata0))
+        return static_cast<void*>(this);
+    return BluetoothPrivate::qt_metacast(_clname);
+}
+
+int BluetoothClientPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = BluetoothPrivate::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 4)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 4;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 4)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 4;
+    }
+    return _id;
+}
 struct qt_meta_stringdata_CameraSurface_t {
     QByteArrayData data[1];
     char stringdata0[14];

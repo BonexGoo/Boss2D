@@ -4243,50 +4243,76 @@
         ////////////////////////////////////////////////////////////////////////////////
         // BLUETOOTH
         ////////////////////////////////////////////////////////////////////////////////
-        Strings Platform::Bluetooth::GetAllUuids(chars service_uuid, sint32 timeout, String* spec)
+        Strings Platform::Bluetooth::GetAllAdapters(String* spec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return Strings();
+            // iOS, Windows는 리스팅불가
+            return BluetoothSearchPrivate::GetList(spec);
         }
 
-        id_bluetooth Platform::Bluetooth::Open(chars uuid)
+        void Platform::Bluetooth::SearchingBegin(chars adapter)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            BluetoothSearchPrivate::SearchingBegin(adapter);
         }
 
-        void Platform::Bluetooth::Close(id_bluetooth bluetooth)
+        void Platform::Bluetooth::SearchingEnd()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            BluetoothSearchPrivate::SearchingEnd();
+        }
+
+        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
+        {
+            auto NewBluetooth = new BluetoothServerPrivate();
+            if(!NewBluetooth->Init(service, uuid))
+            {
+                delete NewBluetooth;
+                return nullptr;
+            }
+            return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+        }
+
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
+        {
+            auto NewBluetooth = new BluetoothClientPrivate();
+            if(!NewBluetooth->Init(uuid))
+            {
+                delete NewBluetooth;
+                return nullptr;
+            }
+            return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+        }
+
+        void Platform::Bluetooth::Release(id_bluetooth bluetooth)
+        {
+            if(auto OldBluetooth = (BluetoothPrivate*) bluetooth)
+                delete OldBluetooth;
         }
 
         bool Platform::Bluetooth::Connected(id_bluetooth bluetooth)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Connected();
             return false;
         }
 
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->ReadAvailable();
+            return -1;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Read(data, size);
+            return -1;
         }
 
-        void Platform::Bluetooth::Write(id_bluetooth bluetooth, const uint08* data, const sint32 size)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-        }
-
-        chars Platform::Bluetooth::EventFlush(id_bluetooth bluetooth)
-        {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Write(data, size);
+            return false;
         }
 
         ////////////////////////////////////////////////////////////////////////////////

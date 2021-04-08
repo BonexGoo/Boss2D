@@ -16,6 +16,7 @@ equals(QT_ENABLE_GRAPHICS, "ok"){
 }
 QT += network
 QT += websocket
+QT += bluetooth
 qtHaveModule(serialport){
     QT += serialport
     DEFINES += QT_HAVE_SERIALPORT

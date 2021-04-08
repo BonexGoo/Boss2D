@@ -2141,19 +2141,35 @@
         ////////////////////////////////////////////////////////////////////////////////
         // BLUETOOTH
         ////////////////////////////////////////////////////////////////////////////////
-        Strings Platform::Bluetooth::GetAllUuids(chars service_uuid, sint32 timeout, String* spec)
+        Strings Platform::Bluetooth::GetAllAdapters(String* spec)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return Strings();
         }
 
-        id_bluetooth Platform::Bluetooth::Open(chars uuid)
+        void Platform::Bluetooth::SearchingBegin(chars adapter)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Bluetooth::SearchingEnd()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
         }
 
-        void Platform::Bluetooth::Close(id_bluetooth bluetooth)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
+        void Platform::Bluetooth::Release(id_bluetooth bluetooth)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
@@ -2167,24 +2183,19 @@
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return -1;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return -1;
         }
 
-        void Platform::Bluetooth::Write(id_bluetooth bluetooth, const uint08* data, const sint32 size)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
             BOSS_ASSERT("Further development is needed.", false);
-        }
-
-        chars Platform::Bluetooth::EventFlush(id_bluetooth bluetooth)
-        {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            return false;
         }
 
         ////////////////////////////////////////////////////////////////////////////////

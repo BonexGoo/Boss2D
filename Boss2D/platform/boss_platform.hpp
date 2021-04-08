@@ -1718,25 +1718,37 @@ public:
     class Bluetooth
     {
     public:
-        /// @brief 블루투스이름 리스팅
-        /// @param service_uuid : 블루투스기기의 서비스Uuid("{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}")
-        /// @param timeout : 검색제한시간(ms)
-        /// @param spec : json형태로 블루투스들의 스펙을 받음(선택사항)
-        /// @return 검색된 모든 블루투스Uuid
-        static Strings GetAllUuids(chars service_uuid, sint32 timeout, String* spec = nullptr);
+        /// @brief 블루투스어댑터 리스팅
+        /// @param spec : json형태로 블루투스어댑터들의 스펙을 받음(선택사항)
+        /// @return 존재하는 모든 블루투스어댑터이름
+        static Strings GetAllAdapters(String* spec = nullptr);
 
-        /// @brief 블루투스ID 할당
+        /// @brief 블루투스Uuid 탐색시작
+        /// @param adapter : 어댑터이름(nullptr로 생략가능)
+        static void SearchingBegin(chars adapter = nullptr);
+
+        /// @brief 블루투스Uuid 탐색종료
+        static void SearchingEnd();
+
+        /// @brief 서버역할로 블루투스ID 생성
+        /// @param service : 서비스이름
         /// @param uuid : 블루투스Uuid
         /// @return 블루투스ID(nullptr은 실패)
-        /// @see Close
-        static id_bluetooth Open(chars uuid);
+        /// @see Release
+        static id_bluetooth CreateServer(chars service, chars uuid);
+
+        /// @brief 클라이언트역할로 블루투스ID 생성
+        /// @param uuid : 연결할 서버의 블루투스Uuid
+        /// @return 블루투스ID(nullptr은 실패)
+        /// @see Release
+        static id_bluetooth CreateClient(chars uuid);
 
         /// @brief 블루투스ID 반환
         /// @param bluetooth : 블루투스ID
-        /// @see Open
-        static void Close(id_bluetooth bluetooth);
+        /// @see CreateServer, CreateClient
+        static void Release(id_bluetooth bluetooth);
 
-        /// @brief 현재 접속상황
+        /// @brief 접속상황
         /// @param bluetooth : 블루투스ID
         /// @return 접속여부
         static bool Connected(id_bluetooth bluetooth);
@@ -1758,12 +1770,7 @@ public:
         /// @param data : 보낼 데이터
         /// @param size : data의 크기(바이트단위)
         /// @return 에러여부
-        static void Write(id_bluetooth bluetooth, const uint08* data, const sint32 size);
-
-        /// @brief 적재된 이벤트메시지를 소환
-        /// @param bluetooth : 블루투스ID
-        /// @return 이벤트메시지를 반환(없으면 nullptr)
-        static chars EventFlush(id_bluetooth bluetooth);
+        static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

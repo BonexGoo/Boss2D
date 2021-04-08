@@ -59,6 +59,7 @@
     #include <QNetworkInterface>
     #include <QWebSocket>
     #include <QWebSocketServer>
+    #include <QtBluetooth>
 
     #ifdef QT_HAVE_SERIALPORT
         #include <QtSerialPort>
@@ -5422,6 +5423,366 @@
         class PurchasePrivate : public QObject {Q_OBJECT};
     #endif
 
+    class BluetoothSearchPrivate : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        static Strings GetList(String* spec)
+        {
+            Strings Result;
+            Context SpecCollector;
+
+            auto& Self = ST();
+            Self.mAdapters = QBluetoothLocalDevice::allDevices();
+            for(sint32 i = 0, iend = Self.mAdapters.count(); i < iend; ++i)
+            {
+                const String CurName = Self.mAdapters.at(i).name().toUtf8().constData();
+                Result.AtAdding() = CurName;
+                if(spec)
+                {
+                    Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
+                    NewChild.At("name").Set(CurName);
+                    NewChild.At("address").Set(Self.mAdapters.at(i).address().toString().toUtf8().constData());
+                }
+            }
+            if(spec)
+                *spec = SpecCollector.SaveJson(*spec);
+            return Result;
+        }
+
+    public:
+        static void SearchingBegin(chars adapter)
+        {
+            const QBluetoothAddress SelectedAdapter;
+            if(adapter)
+            {
+                // 차후 개발
+                BOSS_ASSERT("차후 개발", false);
+            }
+
+            auto& Self = ST();
+            delete Self.mDiscoveryAgent;
+            Self.mDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(SelectedAdapter);
+            Self.mDiscoveredServices.empty();
+            connect(Self.mDiscoveryAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
+                &Self, &BluetoothSearchPrivate::serviceDiscovered);
+
+            if(Self.mDiscoveryAgent->isActive())
+                Self.mDiscoveryAgent->stop();
+            Self.mDiscoveryAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
+        }
+        static void SearchingEnd()
+        {
+            auto& Self = ST();
+            if(Self.mDiscoveryAgent)
+            {
+                Self.mDiscoveryAgent->stop();
+                delete Self.mDiscoveryAgent;
+                Self.mDiscoveryAgent = nullptr;
+            }
+        }
+        static const QBluetoothServiceInfo* GetSearchedService(chars uuid)
+        {
+            auto& Self = ST();
+            auto Result = Self.mDiscoveredServices.find(QString::fromUtf8(uuid));
+            if(Result != Self.mDiscoveredServices.end())
+                return &Result.value();
+            return nullptr;
+        }
+
+    private slots:
+        void serviceDiscovered(const QBluetoothServiceInfo& service)
+        {
+            Strings UuidCollector;
+            for(const auto& CurUuid : service.device().serviceUuids())
+            {
+                mDiscoveredServices.insert(CurUuid.toString(), service);
+                UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
+            }
+            const String ServiceName = service.serviceName().toUtf8().constData();
+            Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothUuid);
+        }
+
+    private:
+        BluetoothSearchPrivate()
+        {
+            mDiscoveryAgent = nullptr;
+        }
+        ~BluetoothSearchPrivate()
+        {
+            delete mDiscoveryAgent;
+        }
+
+    private:
+        static BluetoothSearchPrivate& ST()
+        {static BluetoothSearchPrivate _; return _;}
+
+    private:
+        QList<QBluetoothHostInfo> mAdapters;
+        QBluetoothServiceDiscoveryAgent* mDiscoveryAgent;
+        QMap<QString, QBluetoothServiceInfo> mDiscoveredServices;
+    };
+
+    class BluetoothPrivate : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        virtual bool Connected() = 0;
+        virtual sint32 ReadAvailable() = 0;
+        virtual sint32 Read(uint08* data, const sint32 size) = 0;
+        virtual bool Write(const uint08* data, const sint32 size) = 0;
+
+    public:
+        BluetoothPrivate()
+        {
+        }
+        virtual ~BluetoothPrivate()
+        {
+        }
+    };
+
+    class BluetoothServerPrivate : public BluetoothPrivate
+    {
+        Q_OBJECT
+
+    public:
+        bool Init(chars service, chars uuid, chars description = "-Description-", chars provider = "-Provider-")
+        {
+            mServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
+            mClient = nullptr;
+            mRecvData.clear();
+
+            const QBluetoothAddress LocalAdapter = QBluetoothAddress();
+            connect(mServer, &QBluetoothServer::newConnection, this, &BluetoothServerPrivate::OnClientConnected);
+            mServer->listen(LocalAdapter);
+
+            SetServiceInfo(service, uuid, description, provider);
+            mServiceInfo.registerService(LocalAdapter);
+            return true;
+        }
+
+    public:
+        bool Connected() override
+        {
+            return (mClient != nullptr);
+        }
+        sint32 ReadAvailable() override
+        {
+            return mRecvData.count();
+        }
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            if(mClient)
+            {
+                const sint32 MinSize = Math::Min(mRecvData.count(), size);
+                Memory::Copy(data, mRecvData.constData(), MinSize);
+                mRecvData.remove(0, MinSize);
+                return MinSize;
+            }
+            return -1;
+        }
+        bool Write(const uint08* data, const sint32 size) override
+        {
+            if(mClient)
+            {
+                mClient->write((chars) data, size);
+                return mClient->waitForBytesWritten(3000);
+            }
+            return false;
+        }
+
+    private slots:
+        void OnClientConnected()
+        {
+            if(mServer && !mClient)
+            {
+                mClient = mServer->nextPendingConnection();
+                connect(mClient, &QBluetoothSocket::disconnected, this, &BluetoothServerPrivate::OnDisconnected);
+                connect(mClient, &QBluetoothSocket::readyRead, this, &BluetoothServerPrivate::OnReadyRead);
+                Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
+            }
+        }
+        void OnDisconnected()
+        {
+            mClient->deleteLater();
+            mClient = nullptr;
+            Platform::BroadcastNotify("disconnected", nullptr, NT_BluetoothReceive);
+        }
+        void OnReadyRead()
+        {
+            auto ReadSize = mClient->bytesAvailable();
+            if(0 < ReadSize)
+            {
+                mRecvData += mClient->read(ReadSize);
+                Platform::BroadcastNotify("message", nullptr, NT_BluetoothReceive);
+            }
+        }
+
+    private:
+        void SetServiceInfo(chars service, chars uuid, chars description, chars provider)
+        {
+            // Profile구성
+            QBluetoothServiceInfo::Sequence ProfileSequence;
+            QBluetoothServiceInfo::Sequence ClassID;
+            ClassID << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
+            ClassID << QVariant::fromValue(quint16(0x100));
+            ProfileSequence.append(QVariant::fromValue(ClassID));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, ProfileSequence);
+
+            // Service구성
+            ClassID.clear();
+            ClassID << QVariant::fromValue(QBluetoothUuid(QString::fromUtf8(uuid)));
+            ClassID << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, ClassID);
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, tr(service));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription, tr(description));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, tr(provider));
+            mServiceInfo.setServiceUuid(QBluetoothUuid(QString::fromUtf8(uuid)));
+
+            // Browse구성
+            QBluetoothServiceInfo::Sequence PublicBrowse;
+            PublicBrowse << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList, PublicBrowse);
+
+            // Protocol구성
+            QBluetoothServiceInfo::Sequence ProtocolDescriptorList;
+            QBluetoothServiceInfo::Sequence Protocol;
+            Protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::L2cap));
+            ProtocolDescriptorList.append(QVariant::fromValue(Protocol));
+            Protocol.clear();
+            Protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm));
+            Protocol << QVariant::fromValue(quint8(mServer->serverPort()));
+            ProtocolDescriptorList.append(QVariant::fromValue(Protocol));
+            mServiceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, ProtocolDescriptorList);
+        }
+
+    public:
+        BluetoothServerPrivate()
+        {
+            mServer = nullptr;
+            mClient = nullptr;
+        }
+        ~BluetoothServerPrivate() override
+        {
+            delete mServer;
+        }
+
+    private:
+        QBluetoothServer* mServer;
+        QBluetoothServiceInfo mServiceInfo;
+        QBluetoothSocket* mClient;
+        QByteArray mRecvData;
+    };
+
+    class BluetoothClientPrivate : public BluetoothPrivate
+    {
+        Q_OBJECT
+
+    public:
+        bool Init(chars uuid)
+        {
+            if(auto CurService = BluetoothSearchPrivate::GetSearchedService(uuid))
+            {
+                mSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
+                mConnected = false;
+                mPeerName.clear();
+                mRecvData.clear();
+
+                connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientPrivate::OnConnected);
+                connect(mSocket, &QBluetoothSocket::disconnected, this, &BluetoothClientPrivate::OnDisconnected);
+                connect(mSocket, &QBluetoothSocket::readyRead, this, &BluetoothClientPrivate::OnReadyRead);
+                connect(mSocket, QOverload<QBluetoothSocket::SocketError>::of(&QBluetoothSocket::error),
+                    this, &BluetoothClientPrivate::OnErrorOccurred);
+                mSocket->connectToService(*CurService);
+                return true;
+            }
+            return false;
+        }
+
+    public:
+        bool Connected() override
+        {
+            return mConnected;
+        }
+        sint32 ReadAvailable() override
+        {
+            return mRecvData.count();
+        }
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            if(mSocket)
+            {
+                const sint32 MinSize = Math::Min(mRecvData.count(), size);
+                Memory::Copy(data, mRecvData.constData(), MinSize);
+                mRecvData.remove(0, MinSize);
+                return MinSize;
+            }
+            return -1;
+        }
+        bool Write(const uint08* data, const sint32 size) override
+        {
+            if(mSocket)
+            {
+                mSocket->write((chars) data, size);
+                return mSocket->waitForBytesWritten(3000);
+            }
+            return false;
+        }
+
+    private slots:
+        void OnConnected()
+        {
+            if(mSocket)
+            {
+                mConnected = true;
+                mPeerName = mSocket->peerName();
+                Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
+            }
+        }
+        void OnDisconnected()
+        {
+            mConnected = false;
+            mPeerName.clear();
+            Platform::BroadcastNotify("disconnected", nullptr, NT_BluetoothReceive);
+        }
+        void OnReadyRead()
+        {
+            if(mSocket)
+            {
+                auto ReadSize = mSocket->bytesAvailable();
+                if(0 < ReadSize)
+                {
+                    mRecvData += mSocket->read(ReadSize);
+                    Platform::BroadcastNotify("message", nullptr, NT_BluetoothReceive);
+                }
+            }
+        }
+        void OnErrorOccurred(QBluetoothSocket::SocketError error)
+        {
+            mConnected = false;
+            Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
+        }
+
+    public:
+        BluetoothClientPrivate()
+        {
+            mSocket = nullptr;
+            mConnected = false;
+        }
+        ~BluetoothClientPrivate() override
+        {
+            delete mSocket;
+        }
+
+    private:
+        QBluetoothSocket* mSocket;
+        bool mConnected;
+        QString mPeerName;
+        QByteArray mRecvData;
+    };
+
     #if BOSS_ANDROID & defined(QT_HAVE_SERIALPORT)
         typedef QSerialPortInfo SerialPortInfoClass;
         class SerialPortForAndroid
@@ -7264,6 +7625,10 @@
     class WebEngineViewForExtraDesktop : public QObject {Q_OBJECT};
     class WebViewPrivate : public WebEngineViewClass {Q_OBJECT};
     class PurchasePrivate : public QInAppStore {Q_OBJECT};
+    class BluetoothSearchPrivate : public QObject {Q_OBJECT};
+    class BluetoothPrivate : public QObject {Q_OBJECT};
+    class BluetoothServerPrivate : public BluetoothPrivate {Q_OBJECT};
+    class BluetoothClientPrivate : public BluetoothPrivate {Q_OBJECT};
     class CameraSurface : public QAbstractVideoSurface {Q_OBJECT};
     class MicrophoneClass : public QAudioProbe {Q_OBJECT};
 
