@@ -5428,59 +5428,81 @@
         Q_OBJECT
 
     public:
-        static Strings GetList(String* spec)
+        static void DeviceBegin()
         {
-            Strings Result;
-            Context SpecCollector;
+            DeviceEnd();
 
             auto& Self = ST();
-            Self.mAdapters = QBluetoothLocalDevice::allDevices();
-            for(sint32 i = 0, iend = Self.mAdapters.count(); i < iend; ++i)
+            Self.mDiscoveredDevices.empty();
+            Self.mDiscoveryDeviceAgent = new QBluetoothDeviceDiscoveryAgent();
+
+            connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+                &Self, &BluetoothSearchPrivate::deviceDiscovered);
+            connect(Self.mDiscoveryDeviceAgent, SIGNAL(finished()), &Self, SLOT(scanDeviceFinished()));
+
+            Self.mDiscoveryDeviceAgent->start();
+            Platform::BroadcastNotify("ScanDeviceStarted", nullptr, NT_BluetoothSearch);
+        }
+        static void DeviceEnd()
+        {
+            auto& Self = ST();
+            if(Self.mDiscoveryDeviceAgent)
             {
-                const String CurName = Self.mAdapters.at(i).name().toUtf8().constData();
-                Result.AtAdding() = CurName;
-                if(spec)
+                if(Self.mDiscoveryDeviceAgent->isActive())
                 {
-                    Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
-                    NewChild.At("name").Set(CurName);
-                    NewChild.At("address").Set(Self.mAdapters.at(i).address().toString().toUtf8().constData());
+                    Self.mDiscoveryDeviceAgent->stop();
+                    Self.scanDeviceFinished();
                 }
+                delete Self.mDiscoveryDeviceAgent;
+                Self.mDiscoveryDeviceAgent = nullptr;
             }
-            if(spec)
-                *spec = SpecCollector.SaveJson(*spec);
-            return Result;
         }
 
     public:
-        static void SearchingBegin(chars adapter)
+        static void ServiceBegin(chars deviceaddress)
         {
-            const QBluetoothAddress SelectedAdapter;
-            if(adapter)
-            {
-                // 차후 개발
-                BOSS_ASSERT("차후 개발", false);
-            }
+            QBluetoothLocalDevice LocalDevice;
+            QBluetoothAddress LocalAdapter = LocalDevice.address();
+            ServiceEnd();
 
             auto& Self = ST();
-            delete Self.mDiscoveryAgent;
-            Self.mDiscoveryAgent = new QBluetoothServiceDiscoveryAgent(SelectedAdapter);
+
             Self.mDiscoveredServices.empty();
-            connect(Self.mDiscoveryAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
-                &Self, &BluetoothSearchPrivate::serviceDiscovered);
+            Self.mDiscoveryServiceAgent = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
+            if(deviceaddress)
+            if(auto CurDevice = BluetoothSearchPrivate::GetSearchedDevice(deviceaddress))
+                Self.mDiscoveryServiceAgent->setRemoteAddress(CurDevice->address());
 
-            if(Self.mDiscoveryAgent->isActive())
-                Self.mDiscoveryAgent->stop();
-            Self.mDiscoveryAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
+            connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
+                &Self, &BluetoothSearchPrivate::serviceDiscovered);
+            connect(Self.mDiscoveryServiceAgent, SIGNAL(finished()), &Self, SLOT(scanServiceFinished()));
+
+            Self.mDiscoveryServiceAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
+            Platform::BroadcastNotify("ScanServiceStarted", nullptr, NT_BluetoothSearch);
         }
-        static void SearchingEnd()
+        static void ServiceEnd()
         {
             auto& Self = ST();
-            if(Self.mDiscoveryAgent)
+            if(Self.mDiscoveryServiceAgent)
             {
-                Self.mDiscoveryAgent->stop();
-                delete Self.mDiscoveryAgent;
-                Self.mDiscoveryAgent = nullptr;
+                if(Self.mDiscoveryServiceAgent->isActive())
+                {
+                    Self.mDiscoveryServiceAgent->stop();
+                    Self.scanServiceFinished();
+                }
+                delete Self.mDiscoveryServiceAgent;
+                Self.mDiscoveryServiceAgent = nullptr;
             }
+        }
+
+    public:
+        static const QBluetoothDeviceInfo* GetSearchedDevice(chars address)
+        {
+            auto& Self = ST();
+            auto Result = Self.mDiscoveredDevices.find(QString::fromUtf8(address));
+            if(Result != Self.mDiscoveredDevices.end())
+                return &Result.value();
+            return nullptr;
         }
         static const QBluetoothServiceInfo* GetSearchedService(chars uuid)
         {
@@ -5492,26 +5514,43 @@
         }
 
     private slots:
+        void deviceDiscovered(const QBluetoothDeviceInfo& device)
+        {
+            const String NewAddress = device.address().toString().toUtf8().constData();
+            mDiscoveredDevices.insert(device.address().toString(), device);
+            const String DeviceName = device.name().toUtf8().constData();
+            Platform::BroadcastNotify(DeviceName, NewAddress, NT_BluetoothDevice);
+        }
+        void scanDeviceFinished()
+        {
+            Platform::BroadcastNotify("ScanDeviceFinished", nullptr, NT_BluetoothSearch);
+        }
         void serviceDiscovered(const QBluetoothServiceInfo& service)
         {
             Strings UuidCollector;
-            for(const auto& CurUuid : service.device().serviceUuids())
+            for(const auto& CurUuid : service.serviceClassUuids())
             {
                 mDiscoveredServices.insert(CurUuid.toString(), service);
                 UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
             }
             const String ServiceName = service.serviceName().toUtf8().constData();
-            Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothUuid);
+            Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
+        }
+        void scanServiceFinished()
+        {
+            Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
         }
 
     private:
         BluetoothSearchPrivate()
         {
-            mDiscoveryAgent = nullptr;
+            mDiscoveryDeviceAgent = nullptr;
+            mDiscoveryServiceAgent = nullptr;
         }
         ~BluetoothSearchPrivate()
         {
-            delete mDiscoveryAgent;
+            delete mDiscoveryDeviceAgent;
+            delete mDiscoveryServiceAgent;
         }
 
     private:
@@ -5519,8 +5558,9 @@
         {static BluetoothSearchPrivate _; return _;}
 
     private:
-        QList<QBluetoothHostInfo> mAdapters;
-        QBluetoothServiceDiscoveryAgent* mDiscoveryAgent;
+        QBluetoothDeviceDiscoveryAgent* mDiscoveryDeviceAgent;
+        QMap<QString, QBluetoothDeviceInfo> mDiscoveredDevices;
+        QBluetoothServiceDiscoveryAgent* mDiscoveryServiceAgent;
         QMap<QString, QBluetoothServiceInfo> mDiscoveredServices;
     };
 

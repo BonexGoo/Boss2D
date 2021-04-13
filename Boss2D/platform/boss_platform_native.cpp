@@ -2141,18 +2141,22 @@
         ////////////////////////////////////////////////////////////////////////////////
         // BLUETOOTH
         ////////////////////////////////////////////////////////////////////////////////
-        Strings Platform::Bluetooth::GetAllAdapters(String* spec)
-        {
-            BOSS_ASSERT("Further development is needed.", false);
-            return Strings();
-        }
-
-        void Platform::Bluetooth::SearchingBegin(chars adapter)
+        void Platform::Bluetooth::SearchingDeviceBegin()
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Bluetooth::SearchingEnd()
+        void Platform::Bluetooth::SearchingDeviceEnd()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Bluetooth::SearchingServiceEnd()
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
@@ -2183,7 +2187,7 @@
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            return 0;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)

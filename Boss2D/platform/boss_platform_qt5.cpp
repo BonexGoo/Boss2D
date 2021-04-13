@@ -4243,20 +4243,24 @@
         ////////////////////////////////////////////////////////////////////////////////
         // BLUETOOTH
         ////////////////////////////////////////////////////////////////////////////////
-        Strings Platform::Bluetooth::GetAllAdapters(String* spec)
+        void Platform::Bluetooth::SearchingDeviceBegin()
         {
-            // iOS, Windows는 리스팅불가
-            return BluetoothSearchPrivate::GetList(spec);
+            BluetoothSearchPrivate::DeviceBegin();
         }
 
-        void Platform::Bluetooth::SearchingBegin(chars adapter)
+        void Platform::Bluetooth::SearchingDeviceEnd()
         {
-            BluetoothSearchPrivate::SearchingBegin(adapter);
+            BluetoothSearchPrivate::DeviceEnd();
         }
 
-        void Platform::Bluetooth::SearchingEnd()
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
         {
-            BluetoothSearchPrivate::SearchingEnd();
+            BluetoothSearchPrivate::ServiceBegin(deviceaddress);
+        }
+
+        void Platform::Bluetooth::SearchingServiceEnd()
+        {
+            BluetoothSearchPrivate::ServiceEnd();
         }
 
         id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
@@ -4298,7 +4302,7 @@
         {
             if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
                 return CurBluetooth->ReadAvailable();
-            return -1;
+            return 0;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)

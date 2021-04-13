@@ -1718,17 +1718,18 @@ public:
     class Bluetooth
     {
     public:
-        /// @brief 블루투스어댑터 리스팅
-        /// @param spec : json형태로 블루투스어댑터들의 스펙을 받음(선택사항)
-        /// @return 존재하는 모든 블루투스어댑터이름
-        static Strings GetAllAdapters(String* spec = nullptr);
+        /// @brief 블루투스장치 탐색시작
+        static void SearchingDeviceBegin();
 
-        /// @brief 블루투스Uuid 탐색시작
-        /// @param adapter : 어댑터이름(nullptr로 생략가능)
-        static void SearchingBegin(chars adapter = nullptr);
+        /// @brief 블루투스장치 탐색종료
+        static void SearchingDeviceEnd();
 
-        /// @brief 블루투스Uuid 탐색종료
-        static void SearchingEnd();
+        /// @brief 블루투스서비스 탐색시작
+        /// @param deviceaddress : 장치주소(nullptr로 생략가능)
+        static void SearchingServiceBegin(chars deviceaddress = nullptr);
+
+        /// @brief 블루투스서비스 탐색종료
+        static void SearchingServiceEnd();
 
         /// @brief 서버역할로 블루투스ID 생성
         /// @param service : 서비스이름
@@ -1755,7 +1756,7 @@ public:
 
         /// @brief 현재 읽기스트림의 사이즈얻기
         /// @param bluetooth : 블루투스ID
-        /// @return 대기중인 읽기스트림의 바이트길이(에러시 -1)
+        /// @return 대기중인 읽기스트림의 바이트길이
         static sint32 ReadAvailable(id_bluetooth bluetooth);
 
         /// @brief 읽기스트림에서 읽기

@@ -2076,18 +2076,22 @@
         ////////////////////////////////////////////////////////////////////////////////
         // BLUETOOTH
         ////////////////////////////////////////////////////////////////////////////////
-        Strings Platform::Bluetooth::GetAllAdapters(String* spec)
-        {
-            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return Strings();
-        }
-
-        void Platform::Bluetooth::SearchingBegin(chars adapter)
+        void Platform::Bluetooth::SearchingDeviceBegin()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Bluetooth::SearchingEnd()
+        void Platform::Bluetooth::SearchingDeviceEnd()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Bluetooth::SearchingServiceEnd()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
@@ -2118,7 +2122,7 @@
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return -1;
+            return 0;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)
