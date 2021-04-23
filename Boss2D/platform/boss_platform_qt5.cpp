@@ -4253,9 +4253,9 @@
             BluetoothSearchPrivate::DeviceEnd();
         }
 
-        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
-            BluetoothSearchPrivate::ServiceBegin(deviceaddress);
+            BluetoothSearchPrivate::ServiceBegin(deviceaddress, uuidfilters);
         }
 
         void Platform::Bluetooth::SearchingServiceEnd()

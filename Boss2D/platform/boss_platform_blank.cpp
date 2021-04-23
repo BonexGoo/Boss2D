@@ -2086,7 +2086,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }

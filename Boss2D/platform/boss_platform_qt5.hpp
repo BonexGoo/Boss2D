@@ -5459,19 +5459,34 @@
         }
 
     public:
-        static void ServiceBegin(chars deviceaddress)
+        static void ServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
             QBluetoothLocalDevice LocalDevice;
             QBluetoothAddress LocalAdapter = LocalDevice.address();
             ServiceEnd();
 
             auto& Self = ST();
-
             Self.mDiscoveredServices.empty();
             Self.mDiscoveryServiceAgent = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
+
+            // 디바이스타겟 등록
             if(deviceaddress)
             if(auto CurDevice = BluetoothSearchPrivate::GetSearchedDevice(deviceaddress))
                 Self.mDiscoveryServiceAgent->setRemoteAddress(CurDevice->address());
+
+            // UUID필터 등록
+            if(uuidfilters.Count() == 1)
+            {
+                const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
+                Self.mDiscoveryServiceAgent->setUuidFilter(NewUUID);
+            }
+            else if(1 < uuidfilters.Count())
+            {
+                QList<QBluetoothUuid> NewUUIDs;
+                for(sint32 i = 0, iend = uuidfilters.Count(); i < iend; ++i)
+                    NewUUIDs += QBluetoothUuid(QString::fromUtf8((chars) uuidfilters[i]));
+                Self.mDiscoveryServiceAgent->setUuidFilter(NewUUIDs);
+            }
 
             connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
                 &Self, &BluetoothSearchPrivate::serviceDiscovered);

@@ -2326,7 +2326,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress)
+        void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

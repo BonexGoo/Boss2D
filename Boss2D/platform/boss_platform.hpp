@@ -1726,7 +1726,9 @@ public:
 
         /// @brief 블루투스서비스 탐색시작
         /// @param deviceaddress : 장치주소(nullptr로 생략가능)
-        static void SearchingServiceBegin(chars deviceaddress = nullptr);
+        /// @param uuidfilters : UUID필터들(생략가능)
+        static void SearchingServiceBegin(chars deviceaddress = nullptr,
+            Strings uuidfilters = Strings());
 
         /// @brief 블루투스서비스 탐색종료
         static void SearchingServiceEnd();
