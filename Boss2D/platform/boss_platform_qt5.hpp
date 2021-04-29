@@ -5546,7 +5546,8 @@
         }
         void scanDeviceErrorOccurred(QBluetoothDeviceDiscoveryAgent::Error error)
         {
-            Platform::BroadcastNotify("ScanDeviceFinished", nullptr, NT_BluetoothSearch);
+            auto ErrorText = mDiscoveryDeviceAgent->errorString();
+            Platform::BroadcastNotify("ScanDeviceError", String(ErrorText.toUtf8().constData()), NT_BluetoothSearch);
         }
         void serviceDiscovered(const QBluetoothServiceInfo& service)
         {
@@ -5565,7 +5566,8 @@
         }
         void scanServiceErrorOccurred(QBluetoothServiceDiscoveryAgent::Error error)
         {
-            Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
+            auto ErrorText = mDiscoveryServiceAgent->errorString();
+            Platform::BroadcastNotify("ScanServiceError", String(ErrorText.toUtf8().constData()), NT_BluetoothSearch);
         }
 
     private:
