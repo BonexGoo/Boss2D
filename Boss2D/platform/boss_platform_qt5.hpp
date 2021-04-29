@@ -5439,6 +5439,8 @@
             connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
                 &Self, &BluetoothSearchPrivate::deviceDiscovered);
             connect(Self.mDiscoveryDeviceAgent, SIGNAL(finished()), &Self, SLOT(scanDeviceFinished()));
+            connect(Self.mDiscoveryDeviceAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
+                &Self, &BluetoothSearchPrivate::scanDeviceErrorOccurred);
 
             Self.mDiscoveryDeviceAgent->start();
             Platform::BroadcastNotify("ScanDeviceStarted", nullptr, NT_BluetoothSearch);
@@ -5491,6 +5493,8 @@
             connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
                 &Self, &BluetoothSearchPrivate::serviceDiscovered);
             connect(Self.mDiscoveryServiceAgent, SIGNAL(finished()), &Self, SLOT(scanServiceFinished()));
+            connect(Self.mDiscoveryServiceAgent, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
+                &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred);
 
             Self.mDiscoveryServiceAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
             Platform::BroadcastNotify("ScanServiceStarted", nullptr, NT_BluetoothSearch);
@@ -5540,6 +5544,10 @@
         {
             Platform::BroadcastNotify("ScanDeviceFinished", nullptr, NT_BluetoothSearch);
         }
+        void scanDeviceErrorOccurred(QBluetoothDeviceDiscoveryAgent::Error error)
+        {
+            Platform::BroadcastNotify("ScanDeviceFinished", nullptr, NT_BluetoothSearch);
+        }
         void serviceDiscovered(const QBluetoothServiceInfo& service)
         {
             Strings UuidCollector;
@@ -5552,6 +5560,10 @@
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
         void scanServiceFinished()
+        {
+            Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
+        }
+        void scanServiceErrorOccurred(QBluetoothServiceDiscoveryAgent::Error error)
         {
             Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
         }

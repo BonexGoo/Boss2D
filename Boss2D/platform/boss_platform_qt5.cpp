@@ -4324,7 +4324,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         Strings Platform::Serial::GetAllNames(String* spec)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 return SerialClass::GetList(spec);
             #endif
             return Strings();
@@ -4332,7 +4332,7 @@
 
         id_serial Platform::Serial::Open(chars name, SerialDecodeCB dec, SerialEncodeCB enc)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 SerialClass* NewSerial = new SerialClass(name, dec, enc);
                 if(NewSerial->IsValid())
                     return (id_serial) NewSerial;
@@ -4343,14 +4343,14 @@
 
         void Platform::Serial::Close(id_serial serial)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 delete (SerialClass*) serial;
             #endif
         }
 
         bool Platform::Serial::Connected(id_serial serial)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return false;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 return CurSerial->Connected();
@@ -4360,7 +4360,7 @@
 
         bool Platform::Serial::ReadReady(id_serial serial, sint32* gettype)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return false;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 return CurSerial->ReadReady(gettype);
@@ -4370,7 +4370,7 @@
 
         sint32 Platform::Serial::ReadAvailable(id_serial serial)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return 0;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 return CurSerial->ReadAvailable();
@@ -4380,7 +4380,7 @@
 
         sint32 Platform::Serial::Read(id_serial serial, chars format, ...)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return 0;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 va_list Args;
@@ -4394,7 +4394,7 @@
 
         sint32 Platform::Serial::Write(id_serial serial, chars format, ...)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return 0;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 va_list Args;
@@ -4408,7 +4408,7 @@
 
         void Platform::Serial::WriteFlush(id_serial serial, sint32 type)
         {
-            #ifndef BOSS_WASM
+            #if !BOSS_WASM
                 if(!serial) return;
                 SerialClass* CurSerial = (SerialClass*) serial;
                 CurSerial->WriteFlush(type);
