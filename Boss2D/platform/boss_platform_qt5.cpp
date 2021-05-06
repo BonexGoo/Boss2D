@@ -4330,10 +4330,10 @@
             return Strings();
         }
 
-        id_serial Platform::Serial::Open(chars name, SerialDecodeCB dec, SerialEncodeCB enc)
+        id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
             #if !BOSS_WASM
-                SerialClass* NewSerial = new SerialClass(name, dec, enc);
+                SerialClass* NewSerial = new SerialClass(name, baudrate, dec, enc);
                 if(NewSerial->IsValid())
                     return (id_serial) NewSerial;
                 delete NewSerial;

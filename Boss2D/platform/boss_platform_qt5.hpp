@@ -6357,7 +6357,7 @@
         }
 
     public:
-        SerialClass(chars name, SerialDecodeCB dec, SerialEncodeCB enc)
+        SerialClass(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
             mSerial = nullptr;
             mDec = (dec)? dec : DefaultSerialDecode;
@@ -6369,7 +6369,7 @@
                 if(*name == '\0' || CurPort.portName() == name || CurPort.description() == name)
                 {
                     mSerial = new SerialPortClass(CurPort);
-                    mSerial->setBaudRate(SerialPortClass::Baud115200);
+                    mSerial->setBaudRate((SerialPortClass::BaudRate) baudrate);
                     mSerial->setDataBits(SerialPortClass::Data8);
                     mSerial->setParity(SerialPortClass::NoParity);
                     mSerial->setStopBits(SerialPortClass::OneStop);
@@ -6402,13 +6402,14 @@
 
         bool Connected()
         {
-            return (mSerial->error() == SerialPortClass::NoError);
+            auto ErrorCode = mSerial->error();
+            return (ErrorCode == SerialPortClass::NoError);
         }
 
         bool ReadReady(sint32* gettype)
         {
             // 데이터수신시 읽기스트림에 추가연결
-            if(mSerial->waitForReadyRead(1))
+            if(sint32 WaitBytes = mSerial->bytesAvailable())
             {
                 QByteArray NewArray = mSerial->readAll();
                 Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
@@ -6418,8 +6419,6 @@
             if(0 < mReadStream.Count())
             {
                 // 디코딩과정
-                mLastDecodedData.SubtractionAll();
-                mLastDecodedDataFocus = 0;
                 const sint32 UsedLength = mDec(&mReadStream[0], mReadStream.Count(), mLastDecodedData, gettype);
                 if(0 < UsedLength)
                 {
@@ -6428,7 +6427,7 @@
                     if(0 < CopyLength)
                     {
                         uint08s NewReadStream;
-                        Memory::Copy(NewReadStream.AtDumping(0, CopyLength), &mReadStream[UsedLength], CopyLength);
+                        Memory::Copy(NewReadStream.AtDumpingAdded(CopyLength), &mReadStream[UsedLength], CopyLength);
                         mReadStream = NewReadStream;
                     }
                     else mReadStream.SubtractionAll();
@@ -6501,7 +6500,14 @@
                     }
                     // 일반적인 읽기
                     else Chunk(LastPtr, LastLength, CurEndian).Load(va_arg(args, void*), LastLength);
+
+                    // 데이터처리
                     mLastDecodedDataFocus += LastLength;
+                    if(mLastDecodedData.Count() == mLastDecodedDataFocus)
+                    {
+                        mLastDecodedData.SubtractionAll();
+                        mLastDecodedDataFocus = 0;
+                    }
                 }
                 else if(*Pos == '[')
                 {
@@ -6648,13 +6654,13 @@
     private:
         static sint32 DefaultSerialDecode(bytes data, sint32 length, uint08s& outdata, sint32* outtype)
         {
-            Memory::Copy(outdata.AtDumping(0, length), data, length);
+            Memory::Copy(outdata.AtDumpingAdded(length), data, length);
             return length;
         }
 
         static void DefaultSerialEncode(bytes data, sint32 length, uint08s& outdata, sint32 type)
         {
-            Memory::Copy(outdata.AtDumping(0, length), data, length);
+            Memory::Copy(outdata.AtDumpingAdded(length), data, length);
         }
     };
 

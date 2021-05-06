@@ -2386,7 +2386,7 @@
             return Strings();
         }
 
-        id_serial Platform::Serial::Open(chars name, SerialDecodeCB dec, SerialEncodeCB enc)
+        id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
