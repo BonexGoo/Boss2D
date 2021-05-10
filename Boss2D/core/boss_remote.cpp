@@ -42,7 +42,7 @@ public:
     }
     RemoteClass(chars domain, uint16 port, bool autopartner) : m_isServer(false), m_autoPartner(autopartner)
     {
-        client.m_id = Platform::Socket::OpenForTcp();
+        client.m_id = Platform::Socket::OpenForTCP();
         client.m_domain = new String(domain);
         client.m_port = port;
         m_MutexPeerID = Mutex::Open();

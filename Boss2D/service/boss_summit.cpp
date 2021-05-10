@@ -167,7 +167,7 @@ namespace BOSS
         mProgramToken = -1;
         mAccessToken = -1;
         mRelayToken = -1;
-        mRelaySocket = Platform::Socket::OpenForTcp();
+        mRelaySocket = Platform::Socket::OpenForTCP();
         mRelayProcedure = Platform::AddWindowProcedure(WE_Tick,
             [](payload data)->void
             {

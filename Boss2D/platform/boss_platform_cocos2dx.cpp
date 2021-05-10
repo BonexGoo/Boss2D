@@ -1943,13 +1943,19 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOCKET
         ////////////////////////////////////////////////////////////////////////////////
-        id_socket Platform::Socket::OpenForTcp()
+        id_socket Platform::Socket::OpenForTCP()
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
         }
 
-        id_socket Platform::Socket::OpenForUdp()
+        id_socket Platform::Socket::OpenForUDP()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
+        id_socket Platform::Socket::OpenForWS()
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -1991,7 +1997,7 @@
             return -1;
         }
 
-        sint32 Platform::Socket::Send(id_socket socket, bytes data, sint32 size, sint32 timeout)
+        sint32 Platform::Socket::Send(id_socket socket, bytes data, sint32 size, sint32 timeout, bool utf8)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return -1;

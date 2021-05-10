@@ -1364,12 +1364,17 @@ public:
         /// @brief 소켓열기(TCP)
         /// @return 소켓ID
         /// @see Close
-        static id_socket OpenForTcp();
+        static id_socket OpenForTCP();
 
         /// @brief 소켓열기(UDP)
         /// @return 소켓ID
         /// @see Close
-        static id_socket OpenForUdp();
+        static id_socket OpenForUDP();
+
+        /// @brief 소켓열기(WS)
+        /// @return 소켓ID
+        /// @see Close
+        static id_socket OpenForWS();
 
         /// @brief 소켓닫기
         /// @param socket : 소켓ID
@@ -1424,8 +1429,9 @@ public:
         /// @param data : 쓸 데이터
         /// @param size : 데이터의 길이
         /// @param timeout : 타임아웃
+        /// @param utf8 : 데이터가 UTF8텍스트인지의 여부(웹소켓에 필요)
         /// @return 실제로 쓴 길이(연결실패시 -1)
-        static sint32 Send(id_socket socket, bytes data, sint32 size, sint32 timeout = 3000);
+        static sint32 Send(id_socket socket, bytes data, sint32 size, sint32 timeout = 3000, bool utf8 = false);
 
         /// @brief gethostbyname 기능제공
         /// @param name : 호스트명

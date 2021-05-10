@@ -45,7 +45,7 @@ namespace BOSS
             if(!mSocket)
             {
                 mConnected = false;
-                mSocket = Platform::Socket::OpenForTcp();
+                mSocket = Platform::Socket::OpenForTCP();
                 mDomain = domain;
                 mPort = port;
             }

@@ -4608,35 +4608,71 @@
     public:
         SocketBox()
         {
+            m_type = Type::NIL;
             m_socket = nullptr;
-            m_udp = false;
+            m_wsocket = nullptr;
             m_udpip.clear();
             m_udpport = 0;
         }
         virtual ~SocketBox()
         {
             delete m_socket;
+            delete m_wsocket;
         }
 
     public:
-        void Init(bool udp)
+        void Init(chars type)
         {
-            m_socket = (udp)? (QAbstractSocket*) new QUdpSocket() : (QAbstractSocket*) new QTcpSocket();
-            connect(m_socket, &QAbstractSocket::connected, this, &SocketBox::OnConnected);
-            connect(m_socket, &QAbstractSocket::disconnected, this, &SocketBox::OnDisconnected);
-            connect(m_socket, &QAbstractSocket::readyRead, this, &SocketBox::OnReadyRead);
-            m_udp = udp;
+            if(!String::Compare(type, "TCP"))
+            {
+                m_type = Type::TCP;
+                m_socket = (QAbstractSocket*) new QTcpSocket();
+            }
+            else if(!String::Compare(type, "UDP"))
+            {
+                m_type = Type::UDP;
+                m_socket = (QAbstractSocket*) new QUdpSocket();
+            }
+            else if(!String::Compare(type, "WS"))
+            {
+                m_type = Type::WS;
+                m_wsocket = new QWebSocket();
+            }
+
+            if(m_socket)
+            {
+                connect(m_socket, &QAbstractSocket::connected, this, &SocketBox::OnConnected);
+                connect(m_socket, &QAbstractSocket::disconnected, this, &SocketBox::OnDisconnected);
+                connect(m_socket, &QAbstractSocket::readyRead, this, &SocketBox::OnReadyRead);
+            }
+            else if(m_wsocket)
+            {
+                connect(m_wsocket, &QWebSocket::connected, this, &SocketBox::OnWebConnected);
+                connect(m_wsocket, &QWebSocket::disconnected, this, &SocketBox::OnWebDisconnected);
+                connect(m_wsocket, &QWebSocket::textFrameReceived, this, &SocketBox::OnWebTextReceived);
+                connect(m_wsocket, &QWebSocket::binaryFrameReceived, this, &SocketBox::OnWebBinaryReceived);
+            }
         }
         bool CheckState(chars name)
         {
-            if(!m_udp)
+            switch(m_type)
             {
+            case Type::TCP:
                 if(!m_socket->isValid())
                     return false;
                 if(m_socket->state() == QAbstractSocket::UnconnectedState)
                     return false;
+                return true;
+            case Type::UDP:
+                return true;
+            case Type::WS:
+                if(!m_wsocket->isValid())
+                    return false;
+                if(m_wsocket->state() == QAbstractSocket::UnconnectedState)
+                    return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
     private slots:
@@ -4652,10 +4688,29 @@
         {
             Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
         }
+        void OnWebConnected()
+        {
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive);
+        }
+        void OnWebDisconnected()
+        {
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive);
+        }
+        void OnWebTextReceived(const QString& frame, bool isLastFrame)
+        {
+            OnWebBinaryReceived(frame.toUtf8(), isLastFrame);
+        }
+        void OnWebBinaryReceived(const QByteArray& frame, bool isLastFrame)
+        {
+            m_wbytes += frame;
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+        }
 
     public:
+        enum class Type {NIL, TCP, UDP, WS} m_type;
         QAbstractSocket* m_socket;
-        bool m_udp;
+        QWebSocket* m_wsocket;
+        QByteArray m_wbytes;
         QHostAddress m_udpip;
         quint16 m_udpport;
 
@@ -4676,10 +4731,10 @@
         static inline STClass& ST() {return *BOSS_STORAGE_SYS(STClass);}
 
     public:
-        static void Create(id_socket& result, bool udp)
+        static void Create(id_socket& result, chars type)
         {
             STClass& CurClass = ST();
-            CurClass.m_map[++CurClass.m_lastId].Init(udp);
+            CurClass.m_map[++CurClass.m_lastId].Init(type);
             result = (id_socket) AnyTypeToPtr(CurClass.m_lastId);
         }
         static SocketBox* Access(id_socket id)
