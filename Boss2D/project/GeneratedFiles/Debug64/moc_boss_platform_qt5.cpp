@@ -5064,8 +5064,8 @@ int WebPagePrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 struct qt_meta_stringdata_WebViewPrivate_t {
-    QByteArrayData data[14];
-    char stringdata0[205];
+    QByteArrayData data[18];
+    char stringdata0[262];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -5087,7 +5087,11 @@ QT_MOC_LITERAL(9, 92, 14), // "onLoadFinished"
 QT_MOC_LITERAL(10, 107, 23), // "renderProcessTerminated"
 QT_MOC_LITERAL(11, 131, 46), // "QWebEnginePage::RenderProcess..."
 QT_MOC_LITERAL(12, 178, 17), // "terminationStatus"
-QT_MOC_LITERAL(13, 196, 8) // "exitCode"
+QT_MOC_LITERAL(13, 196, 8), // "exitCode"
+QT_MOC_LITERAL(14, 205, 28), // "onFeaturePermissionRequested"
+QT_MOC_LITERAL(15, 234, 1), // "q"
+QT_MOC_LITERAL(16, 236, 23), // "QWebEnginePage::Feature"
+QT_MOC_LITERAL(17, 260, 1) // "f"
 
     },
     "WebViewPrivate\0onTitleChanged\0\0title\0"
@@ -5095,7 +5099,9 @@ QT_MOC_LITERAL(13, 196, 8) // "exitCode"
     "onLoadProgress\0progress\0onLoadFinished\0"
     "renderProcessTerminated\0"
     "QWebEnginePage::RenderProcessTerminationStatus\0"
-    "terminationStatus\0exitCode"
+    "terminationStatus\0exitCode\0"
+    "onFeaturePermissionRequested\0q\0"
+    "QWebEnginePage::Feature\0f"
 };
 #undef QT_MOC_LITERAL
 
@@ -5105,7 +5111,7 @@ static const uint qt_meta_data_WebViewPrivate[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -5113,12 +5119,13 @@ static const uint qt_meta_data_WebViewPrivate[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   44,    2, 0x08 /* Private */,
-       4,    1,   47,    2, 0x08 /* Private */,
-       6,    0,   50,    2, 0x08 /* Private */,
-       7,    1,   51,    2, 0x08 /* Private */,
-       9,    1,   54,    2, 0x08 /* Private */,
-      10,    2,   57,    2, 0x08 /* Private */,
+       1,    1,   49,    2, 0x08 /* Private */,
+       4,    1,   52,    2, 0x08 /* Private */,
+       6,    0,   55,    2, 0x08 /* Private */,
+       7,    1,   56,    2, 0x08 /* Private */,
+       9,    1,   59,    2, 0x08 /* Private */,
+      10,    2,   62,    2, 0x08 /* Private */,
+      14,    2,   67,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::QString,    3,
@@ -5127,6 +5134,7 @@ static const uint qt_meta_data_WebViewPrivate[] = {
     QMetaType::Void, QMetaType::Int,    8,
     QMetaType::Void, QMetaType::Bool,    2,
     QMetaType::Void, 0x80000000 | 11, QMetaType::Int,   12,   13,
+    QMetaType::Void, QMetaType::QUrl, 0x80000000 | 16,   15,   17,
 
        0        // eod
 };
@@ -5143,6 +5151,7 @@ void WebViewPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 3: _t->onLoadProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->onLoadFinished((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 5: _t->renderProcessTerminated((*reinterpret_cast< QWebEnginePage::RenderProcessTerminationStatus(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< const QUrl(*)>(_a[1])),(*reinterpret_cast< QWebEnginePage::Feature(*)>(_a[2]))); break;
         default: ;
         }
     }
@@ -5177,13 +5186,13 @@ int WebViewPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
 }

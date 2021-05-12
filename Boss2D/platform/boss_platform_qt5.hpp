@@ -5132,6 +5132,8 @@
             connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
             connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
                 SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
+            connect(page(), SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
+                SLOT(onFeaturePermissionRequested(const QUrl&, QWebEnginePage::Feature)));
         }
         virtual ~WebViewPrivate()
         {
@@ -5212,6 +5214,10 @@
                 case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
                 }
             }
+        }
+        void onFeaturePermissionRequested(const QUrl& q, QWebEnginePage::Feature f)
+        {
+            page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
         }
 
     public:
@@ -5490,33 +5496,48 @@
             auto& Self = ST();
             Mutex::Lock(Self.mDiscoverMutex);
             {
-                Self.mDiscoveredDevices.empty();
                 Self.mDiscoveryDeviceAgent = new QBluetoothDeviceDiscoveryAgent();
+
+                Self.mDiscoveryDeviceAgent->start();
             }
             Mutex::Unlock(Self.mDiscoverMutex);
 
             connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
                 &Self, &BluetoothSearchPrivate::deviceDiscovered);
-            connect(Self.mDiscoveryDeviceAgent, SIGNAL(finished()), &Self, SLOT(scanDeviceFinished()));
+            connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::finished,
+                &Self, &BluetoothSearchPrivate::scanDeviceFinished);
             connect(Self.mDiscoveryDeviceAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
                 &Self, &BluetoothSearchPrivate::scanDeviceErrorOccurred);
 
-            Self.mDiscoveryDeviceAgent->start();
             Platform::BroadcastNotify("ScanDeviceStarted", nullptr, NT_BluetoothSearch);
         }
         static void DeviceEnd()
         {
             auto& Self = ST();
-            if(Self.mDiscoveryDeviceAgent)
+            Mutex::Lock(Self.mDiscoverMutex);
             {
-                if(Self.mDiscoveryDeviceAgent->isActive())
+                Self.mDiscoveredDevices.empty();
+
+                if(Self.mDiscoveryDeviceAgent)
                 {
-                    Self.mDiscoveryDeviceAgent->stop();
-                    Self.scanDeviceFinished();
+                    if(Self.mDiscoveryDeviceAgent->isActive())
+                    {
+                        Self.mDiscoveryDeviceAgent->stop();
+                        Self.scanDeviceFinished();
+                    }
+
+                    disconnect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+                        &Self, &BluetoothSearchPrivate::deviceDiscovered);
+                    disconnect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::finished,
+                        &Self, &BluetoothSearchPrivate::scanDeviceFinished);
+                    disconnect(Self.mDiscoveryDeviceAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
+                        &Self, &BluetoothSearchPrivate::scanDeviceErrorOccurred);
+
+                    delete Self.mDiscoveryDeviceAgent;
+                    Self.mDiscoveryDeviceAgent = nullptr;
                 }
-                delete Self.mDiscoveryDeviceAgent;
-                Self.mDiscoveryDeviceAgent = nullptr;
             }
+            Mutex::Unlock(Self.mDiscoverMutex);
         }
 
     public:
@@ -5529,62 +5550,77 @@
             auto& Self = ST();
             Mutex::Lock(Self.mDiscoverMutex);
             {
-                Self.mDiscoveredServices.empty();
                 Self.mDiscoveryServiceAgent = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
+
+                // 디바이스타겟 등록
+                if(deviceaddress)
+                if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, false))
+                {
+                    Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
+                    delete NewDevice;
+                }
+
+                // UUID필터 등록
+                if(uuidfilters.Count() == 1)
+                {
+                    const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
+                    Self.mDiscoveryServiceAgent->setUuidFilter(NewUUID);
+                }
+                else if(1 < uuidfilters.Count())
+                {
+                    QList<QBluetoothUuid> NewUUIDs;
+                    for(sint32 i = 0, iend = uuidfilters.Count(); i < iend; ++i)
+                        NewUUIDs += QBluetoothUuid(QString::fromUtf8((chars) uuidfilters[i]));
+                    Self.mDiscoveryServiceAgent->setUuidFilter(NewUUIDs);
+                }
+
+                Self.mDiscoveryServiceAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
             }
             Mutex::Unlock(Self.mDiscoverMutex);
 
-            // 디바이스타겟 등록
-            if(deviceaddress)
-            if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress))
-            {
-                Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
-                delete NewDevice;
-            }
-
-            // UUID필터 등록
-            if(uuidfilters.Count() == 1)
-            {
-                const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
-                Self.mDiscoveryServiceAgent->setUuidFilter(NewUUID);
-            }
-            else if(1 < uuidfilters.Count())
-            {
-                QList<QBluetoothUuid> NewUUIDs;
-                for(sint32 i = 0, iend = uuidfilters.Count(); i < iend; ++i)
-                    NewUUIDs += QBluetoothUuid(QString::fromUtf8((chars) uuidfilters[i]));
-                Self.mDiscoveryServiceAgent->setUuidFilter(NewUUIDs);
-            }
-
             connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
                 &Self, &BluetoothSearchPrivate::serviceDiscovered);
-            connect(Self.mDiscoveryServiceAgent, SIGNAL(finished()), &Self, SLOT(scanServiceFinished()));
+            connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::finished,
+                &Self, &BluetoothSearchPrivate::scanServiceFinished);
             connect(Self.mDiscoveryServiceAgent, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
                 &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred);
 
-            Self.mDiscoveryServiceAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
             Platform::BroadcastNotify("ScanServiceStarted", nullptr, NT_BluetoothSearch);
         }
         static void ServiceEnd()
         {
             auto& Self = ST();
-            if(Self.mDiscoveryServiceAgent)
+            Mutex::Lock(Self.mDiscoverMutex);
             {
-                if(Self.mDiscoveryServiceAgent->isActive())
+                Self.mDiscoveredServices.empty();
+
+                if(Self.mDiscoveryServiceAgent)
                 {
-                    Self.mDiscoveryServiceAgent->stop();
-                    Self.scanServiceFinished();
+                    if(Self.mDiscoveryServiceAgent->isActive())
+                    {
+                        Self.mDiscoveryServiceAgent->stop();
+                        Self.scanServiceFinished();
+                    }
+
+                    disconnect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
+                        &Self, &BluetoothSearchPrivate::serviceDiscovered);
+                    disconnect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::finished,
+                        &Self, &BluetoothSearchPrivate::scanServiceFinished);
+                    disconnect(Self.mDiscoveryServiceAgent, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
+                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred);
+
+                    delete Self.mDiscoveryServiceAgent;
+                    Self.mDiscoveryServiceAgent = nullptr;
                 }
-                delete Self.mDiscoveryServiceAgent;
-                Self.mDiscoveryServiceAgent = nullptr;
             }
+            Mutex::Unlock(Self.mDiscoverMutex);
         }
 
     public:
-        static const QBluetoothDeviceInfo* GetClonedSearchedDevice(chars address)
+        static const QBluetoothDeviceInfo* GetClonedSearchedDevice(chars address, bool locking)
         {
             auto& Self = ST();
-            Mutex::Lock(Self.mDiscoverMutex);
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
                 auto Result = Self.mDiscoveredDevices.find(QString::fromUtf8(address));
                 if(Result != Self.mDiscoveredDevices.end())
@@ -5594,13 +5630,13 @@
                     return NewDeviceInfo;
                 }
             }
-            Mutex::Unlock(Self.mDiscoverMutex);
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return nullptr;
         }
-        static const QBluetoothServiceInfo* GetClonedSearchedService(chars uuid)
+        static const QBluetoothServiceInfo* GetClonedSearchedService(chars uuid, bool locking)
         {
             auto& Self = ST();
-            Mutex::Lock(Self.mDiscoverMutex);
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
                 auto Result = Self.mDiscoveredServices.find(QString::fromUtf8(uuid));
                 if(Result != Self.mDiscoveredServices.end())
@@ -5610,7 +5646,7 @@
                     return NewServiceInfo;
                 }
             }
-            Mutex::Unlock(Self.mDiscoverMutex);
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return nullptr;
         }
 
@@ -5843,7 +5879,7 @@
     public:
         bool Init(chars uuid)
         {
-            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService(uuid))
+            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService(uuid, true))
             {
                 mSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
                 mConnected = false;
