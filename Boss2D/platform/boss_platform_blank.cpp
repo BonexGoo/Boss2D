@@ -660,10 +660,16 @@
             return false;
         }
 
-        float Platform::Utility::GetPixelRatio(sint32 screenid)
+        float Platform::Utility::GetPixelRatio()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return 1;
+        }
+
+        sint32 Platform::Utility::GetPhysicalDpi()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return 70;
         }
 
         chars Platform::Utility::GetOSName()

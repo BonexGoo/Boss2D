@@ -145,6 +145,9 @@
             int result = 0;
             Platform::Option::SetFlag("AssertPopup", true);
             {
+                //#if BOSS_WINDOWS
+                //    SetProcessDPIAware(); // 화면DPI에 따른 좌표계문제를 해결
+                //#endif
                 QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
                 ApplicationPrivate app(argc, argv);
 
@@ -377,7 +380,8 @@
                 return g_data->m_lastWindowNormalRect;
             const QRect LastGeometry = g_window->geometry();
             return {LastGeometry.x(), LastGeometry.y(),
-                LastGeometry.x() + LastGeometry.width(), LastGeometry.y() + LastGeometry.height()};
+                (LastGeometry.x() + LastGeometry.width()),
+                (LastGeometry.y() + LastGeometry.height())};
         }
 
         void Platform::SetWindowVisible(bool visible)
@@ -1235,13 +1239,16 @@
                 || ClientRect.right() <= CursorPos.x() || ClientRect.bottom() <= CursorPos.y());
         }
 
-        float Platform::Utility::GetPixelRatio(sint32 screenid)
+        float Platform::Utility::GetPixelRatio()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
-            if(screenid != -1)
-            if(auto CurScreen = ApplicationPrivate::desktop()->screen(screenid))
-                return CurScreen->devicePixelRatioF(); ////////// 정상작동X
             return g_window->devicePixelRatioF();
+        }
+
+        sint32 Platform::Utility::GetPhysicalDpi()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
+            return g_window->physicalDpiX();
         }
 
         chars Platform::Utility::GetOSName()
@@ -4754,18 +4761,20 @@
         }
     }
 
-    // QT의 MOC코드 포함
-    #if BOSS_NDEBUG
-        #if BOSS_X64
-            #include "../GeneratedFiles/Release64/moc_boss_platform_qt5.cpp"
+    // QTCREATOR가 아닌 경우 MOC코드 포함
+    #if !defined(BOSS_QTCREATOR) || BOSS_QTCREATOR != 1
+        #if BOSS_NDEBUG
+            #if BOSS_X64
+                #include "../project/GeneratedFiles/Release64/moc_boss_platform_qt5.cpp"
+            #else
+                #include "../project/GeneratedFiles/Release32/moc_boss_platform_qt5.cpp"
+            #endif
         #else
-            #include "../GeneratedFiles/Release32/moc_boss_platform_qt5.cpp"
-        #endif
-    #else
-        #if BOSS_X64
-            #include "../GeneratedFiles/Debug64/moc_boss_platform_qt5.cpp"
-        #else
-            #include "../GeneratedFiles/Debug32/moc_boss_platform_qt5.cpp"
+            #if BOSS_X64
+                #include "../project/GeneratedFiles/Debug64/moc_boss_platform_qt5.cpp"
+            #else
+                #include "../project/GeneratedFiles/Debug32/moc_boss_platform_qt5.cpp"
+            #endif
         #endif
     #endif
 

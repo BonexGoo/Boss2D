@@ -5099,6 +5099,10 @@
         }
 
     private:
+        bool certificateError(const QWebEngineCertificateError& error) override
+        {
+            return true;
+        }
         void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
         {
             if(mCb)
@@ -5132,8 +5136,8 @@
             connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
             connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
                 SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
-            connect(page(), SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
-                SLOT(onFeaturePermissionRequested(const QUrl&, QWebEnginePage::Feature)));
+            connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
+                SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
         }
         virtual ~WebViewPrivate()
         {
@@ -5215,7 +5219,7 @@
                 }
             }
         }
-        void onFeaturePermissionRequested(const QUrl& q, QWebEnginePage::Feature f)
+        void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
         {
             page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
         }

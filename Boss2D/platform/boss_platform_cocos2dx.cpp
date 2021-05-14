@@ -718,10 +718,16 @@
             return false;
         }
 
-        float Platform::Utility::GetPixelRatio(sint32 screenid)
+        float Platform::Utility::GetPixelRatio()
         {
             BOSS_ASSERT("Further development is needed.", false);
             return 1;
+        }
+
+        sint32 Platform::Utility::GetPhysicalDpi()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 70;
         }
 
         chars Platform::Utility::GetOSName()

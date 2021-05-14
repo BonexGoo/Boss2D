@@ -459,9 +459,12 @@ public:
         static bool GetCursorPosInWindow(point64& pos);
 
         /// @brief OS의 사용자배율 얻기
-        /// @param screenid : 스크린ID(-1일 경우 마우스가 위치한 스크린)
         /// @return 사용자배율(1.0, 1.25, 1.5, 1.75, 2.0...)
-        static float GetPixelRatio(sint32 screenid = -1);
+        static float GetPixelRatio();
+
+        /// @brief OS의 DPI값 얻기
+        /// @return DPI값(70, 109...)
+        static sint32 GetPhysicalDpi();
 
         /// @brief OS명칭 얻기
         /// @return OS명칭

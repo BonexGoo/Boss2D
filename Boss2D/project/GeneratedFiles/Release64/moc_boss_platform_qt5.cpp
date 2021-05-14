@@ -5151,7 +5151,7 @@ void WebViewPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 3: _t->onLoadProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->onLoadFinished((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 5: _t->renderProcessTerminated((*reinterpret_cast< QWebEnginePage::RenderProcessTerminationStatus(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
-        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< const QUrl(*)>(_a[1])),(*reinterpret_cast< QWebEnginePage::Feature(*)>(_a[2]))); break;
+        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< QUrl(*)>(_a[1])),(*reinterpret_cast< QWebEnginePage::Feature(*)>(_a[2]))); break;
         default: ;
         }
     }

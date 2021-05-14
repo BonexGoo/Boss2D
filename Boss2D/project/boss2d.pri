@@ -15,7 +15,7 @@ equals(QT_ENABLE_GRAPHICS, "ok"){
     CONFIG -= app_bundle
 }
 QT += network
-QT += websocket
+QT += websockets
 QT += bluetooth
 qtHaveModule(serialport){
     QT += serialport
@@ -104,6 +104,7 @@ CONFIG(debug, debug|release){
 CONFIG(release, debug|release){
     DEFINES += BOSS_NDEBUG=1
 }
+DEFINES += BOSS_QTCREATOR=1
 
 ###########################################################
 # ADDON
