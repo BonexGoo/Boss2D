@@ -1036,6 +1036,37 @@ public:
     };
 
     ////////////////////////////////////////////////////////////////////////////////
+    /// @brief 애니메이션지원
+    class Animate
+    {
+        /// @brief 로띠로 애니메이션 열기
+        /// @param filename : 파일명
+        /// @return 애니메이션ID
+        /// @see Close
+        static id_animate OpenForLottie(chars filename);
+
+        /// @brief 애니메이션 닫기
+        /// @param animate : 애니메이션ID
+        /// @see OpenForLottie
+        static void Close(id_animate animate);
+
+        /// @brief 애니메이션 포커싱
+        /// @param animate : 애니메이션ID
+        /// @param delta : 진행할 시간(초)
+        /// @param rewind : 되감기여부
+        /// @return 포커싱결과(초)
+        static float Seek(id_animate animate, float delta, bool rewind);
+
+        /// @brief 애니메이션 출력
+        /// @param animate : 애니메이션ID
+        /// @param ox : 출력위치X(px)
+        /// @param oy : 출력위치Y(px)
+        /// @param scale : 기준크기(1)
+        /// @param rotate : 회전각도(360)
+        static void Draw(id_animate animate, float ox, float oy, float scale, float rotate);
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
     /// @brief 파일지원
     class File
     {

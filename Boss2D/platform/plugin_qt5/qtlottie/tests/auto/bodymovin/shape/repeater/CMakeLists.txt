@@ -1,0 +1,9 @@
+qt_internal_add_test(tst_repeater
+    SOURCES
+        tst_bmrepeater.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::GuiPrivate
+        Qt::Test
+        Qt::BodymovinPrivate
+)

@@ -2897,6 +2897,27 @@
         }
 
         ////////////////////////////////////////////////////////////////////////////////
+        // ANIMATE
+        ////////////////////////////////////////////////////////////////////////////////
+        id_animate Platform::Animate::OpenForLottie(chars filename)
+        {
+            return nullptr;
+        }
+
+        void Platform::Animate::Close(id_animate animate)
+        {
+        }
+
+        float Platform::Animate::Seek(id_animate animate, float delta, bool rewind)
+        {
+            return 0;
+        }
+
+        void Platform::Animate::Draw(id_animate animate, float ox, float oy, float scale, float rotate)
+        {
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
         // FILE
         ////////////////////////////////////////////////////////////////////////////////
         bool Platform::File::Exist(chars filename)

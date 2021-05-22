@@ -1,0 +1,9 @@
+qt_internal_add_test(tst_trimpath
+    SOURCES
+        tst_bmtrimpath.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::GuiPrivate
+        Qt::Test
+        Qt::BodymovinPrivate
+)

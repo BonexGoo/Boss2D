@@ -1,0 +1,9 @@
+qt_internal_add_test(tst_rect
+    SOURCES
+        tst_bmrect.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::GuiPrivate
+        Qt::Test
+        Qt::BodymovinPrivate
+)

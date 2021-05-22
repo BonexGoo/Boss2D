@@ -1325,6 +1325,31 @@
         }
 
         ////////////////////////////////////////////////////////////////////////////////
+        // ANIMATE
+        ////////////////////////////////////////////////////////////////////////////////
+        id_animate Platform::Animate::OpenForLottie(chars filename)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
+        void Platform::Animate::Close(id_animate animate)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        float Platform::Animate::Seek(id_animate animate, float delta, bool rewind)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
+        }
+
+        void Platform::Animate::Draw(id_animate animate, float ox, float oy, float scale, float rotate)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
         // FILE
         ////////////////////////////////////////////////////////////////////////////////
         bool Platform::File::Exist(chars filename)
