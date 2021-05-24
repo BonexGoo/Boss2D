@@ -16,6 +16,7 @@
     #pragma comment(lib, "wmcodecdspuuid.lib")
     #pragma comment(lib, "strmiids.lib")
     #pragma comment(lib, "quartz.lib")
+    #pragma comment(lib, "winmm.lib")
 #endif
 
 #include <addon/webrtc-jumpingyang001_for_boss/rtc_base/third_party/base64/base64.cc>

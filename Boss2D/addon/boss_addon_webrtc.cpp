@@ -428,7 +428,7 @@ bool WebRtcManager::CreateAnswer(const Context& offer_sdp)
     while(!mConnectionFactory.get())
         Platform::Utility::Sleep(1, false, true);
 
-    if(!String::Compare("offer", offer_sdp("Sdp")("Type").GetString()))
+    if(!String::Compare("offer", offer_sdp("Sdp")("Type").GetText()))
     {
         mConnectionConfig.sdp_semantics = SdpSemantics::kUnifiedPlan;
         mConnectionConfig.enable_dtls_srtp = true;
@@ -439,7 +439,7 @@ bool WebRtcManager::CreateAnswer(const Context& offer_sdp)
 
         if(mConnector->mPeerConnection.get())
         {
-            const String SdpText = String::FromUrlString(offer_sdp("Sdp")("Contents").GetString());
+            const String SdpText = String::FromUrlString(offer_sdp("Sdp")("Contents").GetText());
             SdpParseError SdpError;
             if(auto NewSessionDesc = CreateSessionDescription("offer", (chars) SdpText, &SdpError))
             {
@@ -462,9 +462,9 @@ bool WebRtcManager::CreateAnswer(const Context& offer_sdp)
 
 bool WebRtcManager::BindSdp(const Context& answer_sdp)
 {
-    if(!String::Compare("answer", answer_sdp("Sdp")("Type").GetString()))
+    if(!String::Compare("answer", answer_sdp("Sdp")("Type").GetText()))
     {
-        const String SdpText = String::FromUrlString(answer_sdp("Sdp")("Contents").GetString());
+        const String SdpText = String::FromUrlString(answer_sdp("Sdp")("Contents").GetText());
         SdpParseError SdpError;
         if(auto NewSessionDesc = CreateSessionDescription("answer", (chars) SdpText, &SdpError))
         {
@@ -485,8 +485,8 @@ bool WebRtcManager::AddIce(const Context& offer_sdp)
         hook(fish[i])
         {
             SdpParseError SdpError;
-            if(auto NewIceCandidate = CreateIceCandidate(fish("SdpMid").GetString(),
-                fish("SdpMLineIndex").GetInt(), fish("Sdp").GetString(), &SdpError))
+            if(auto NewIceCandidate = CreateIceCandidate((chars) fish("SdpMid").GetText(),
+                fish("SdpMLineIndex").GetInt(), (chars) fish("Sdp").GetText(), &SdpError))
             {
                 mConnector->mPeerConnection->AddIceCandidate(NewIceCandidate);
             }
