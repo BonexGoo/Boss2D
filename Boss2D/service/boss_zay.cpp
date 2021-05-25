@@ -659,9 +659,9 @@ namespace BOSS
             return InsideBinder(nullptr); // 안쪽영역없음
 
         Clip LastClip = m_stack_clip[-1];
+        GetUIStretchFormClip(LastClip, form, image.GetWidth(), image.GetHeight());
         const double XRate = LastClip.Width() / (double) image.GetWidth();
         const double YRate = LastClip.Height() / (double) image.GetHeight();
-        GetUIStretchFormClip(LastClip, form, image.GetWidth(), image.GetHeight());
 
         if(visible)
         {
@@ -684,25 +684,24 @@ namespace BOSS
             }
             else Platform::Graphics::DrawImage(image.GetImage(), 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
+            return InsideBinder({LastClip.l, LastClip.t, LastClip.r, LastClip.b});
         }
-
-        if(image.HasChild())
-            return InsideBinder(&image, {LastClip.l, LastClip.t, LastClip.r, LastClip.b});
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
     ZayPanel::InsideBinder ZayPanel::stretchNative(id_image_read image, UIStretchForm form) const
     {
+        if(!image)
+            return InsideBinder(nullptr); // 안쪽영역없음
+
         Clip LastClip = m_stack_clip[-1];
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const double XRate = LastClip.Width() / (double) ImageWidth;
-        const double YRate = LastClip.Height() / (double) ImageHeight;
         GetUIStretchFormClip(LastClip, form, ImageWidth, ImageHeight);
 
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height());
-        return InsideBinder(nullptr); // 안쪽영역없음
+        return InsideBinder({LastClip.l, LastClip.t, LastClip.r, LastClip.b});
     }
 
     ZayPanel::InsideBinder ZayPanel::ninepatch(const Image& image, bool visible)

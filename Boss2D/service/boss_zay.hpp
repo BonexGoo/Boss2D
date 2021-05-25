@@ -321,6 +321,7 @@ namespace BOSS
             BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(InsideBinder, mRefImage(rhs.mRefImage), mGuideRect(rhs.mGuideRect))
             friend class ZayPanel;
         private:
+            InsideBinder(rect128 rect) : mRefImage((const Image*) 1), mGuideRect(rect) {}
             InsideBinder(const Image* image, rect128 rect = {0, 0, 0, 0}) : mRefImage(image), mGuideRect(rect) {}
         public:
             ~InsideBinder() {}
@@ -335,7 +336,11 @@ namespace BOSS
             operator bool() const {return (mRefImage != nullptr);}
         public:
             Rect flush(sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
-            {return mRefImage->CalcChildRect(mGuideRect, ix, iy, xcount, ycount);}
+            {
+                if(mRefImage == (const Image*) 1)
+                    return mGuideRect;
+                return mRefImage->CalcChildRect(mGuideRect, ix, iy, xcount, ycount);
+            }
         private:
             const Image* mRefImage;
             rect128 mGuideRect;
