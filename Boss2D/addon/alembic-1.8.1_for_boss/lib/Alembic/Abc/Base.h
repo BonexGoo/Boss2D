@@ -37,8 +37,8 @@
 #ifndef Alembic_Abc_Base_h
 #define Alembic_Abc_Base_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/ErrorHandler.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ErrorHandler_h //original-code:<Alembic/Abc/ErrorHandler.h>
 
 namespace Alembic {
 namespace Abc {

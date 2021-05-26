@@ -42,7 +42,7 @@
 #include <vector>
 #include <string>
 
-#include <Alembic/AbcGeom/ICamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICamera_h //original-code:<Alembic/AbcGeom/ICamera.h>
 
 MObject create(Alembic::AbcGeom::ICamera & iNode, MObject & iParent);
 

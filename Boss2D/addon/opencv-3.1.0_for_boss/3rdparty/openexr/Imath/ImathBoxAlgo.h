@@ -77,8 +77,8 @@
 
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
-#include "ImathLineAlgo.h"
-#include "ImathPlane.h"
+#include BOSS_OPENCV_U_ImathLineAlgo_h //original-code:"ImathLineAlgo.h"
+#include BOSS_OPENCV_U_ImathPlane_h //original-code:"ImathPlane.h"
 
 namespace Imath {
 

@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcMaterial_InternalUtil_h
 #define Alembic_AbcMaterial_InternalUtil_h
 
-#include <Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
 
 namespace Alembic {
 namespace AbcMaterial {

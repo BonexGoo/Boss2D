@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreHDF5_Foundation_h
 #define Alembic_AbcCoreHDF5_Foundation_h
 
-#include <Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
 
-#include <Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
 
 #include <vector>
 #include <string>

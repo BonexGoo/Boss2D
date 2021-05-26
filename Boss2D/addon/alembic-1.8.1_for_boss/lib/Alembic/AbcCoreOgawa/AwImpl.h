@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreOgawa_AwImpl_h
 #define Alembic_AbcCoreOgawa_AwImpl_h
 
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/WrittenSampleMap.h>
-#include <Alembic/AbcCoreOgawa/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__WrittenSampleMap_h //original-code:<Alembic/AbcCoreOgawa/WrittenSampleMap.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__WriteUtil_h //original-code:<Alembic/AbcCoreOgawa/WriteUtil.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

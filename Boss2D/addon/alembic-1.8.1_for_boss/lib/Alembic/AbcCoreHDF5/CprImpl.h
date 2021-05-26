@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreHDF5_CprImpl_h
 #define Alembic_AbcCoreHDF5_CprImpl_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/CprData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CprData_h //original-code:<Alembic/AbcCoreHDF5/CprData.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

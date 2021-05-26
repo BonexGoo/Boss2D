@@ -41,7 +41,7 @@
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
 #include "IexMathExc.h"
-#include "ImathFun.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
 
 inline void glVertex    ( const Imath::V3f &v ) { glVertex3f(v.x,v.y,v.z);   }
 inline void glVertex    ( const Imath::V2f &v ) { glVertex2f(v.x,v.y);       }

@@ -37,14 +37,14 @@
 #ifndef Alembic_Abc_Foundation_h
 #define Alembic_Abc_Foundation_h
 
-#include <Alembic/AbcCoreAbstract/All.h>
-#include <Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
 
-#include <ImathVec.h>
-#include <ImathBox.h>
-#include <ImathMatrix.h>
-#include <ImathQuat.h>
-#include <ImathColor.h>
+#include BOSS_OPENCV_V_ImathVec_h //original-code:<ImathVec.h>
+#include BOSS_OPENCV_V_ImathBox_h //original-code:<ImathBox.h>
+#include BOSS_OPENCV_V_ImathMatrix_h //original-code:<ImathMatrix.h>
+#include BOSS_OPENCV_V_ImathQuat_h //original-code:<ImathQuat.h>
+#include BOSS_OPENCV_V_ImathColor_h //original-code:<ImathColor.h>
 
 #include <iostream>
 #include <string>

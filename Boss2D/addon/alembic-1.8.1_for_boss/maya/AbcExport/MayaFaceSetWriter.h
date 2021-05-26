@@ -39,7 +39,7 @@
 
 #include "Foundation.h"
 #include "AttributesWriter.h"
-#include <Alembic/AbcGeom/OFaceSet.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OFaceSet_h //original-code:<Alembic/AbcGeom/OFaceSet.h>
 #include <maya/MFnSingleIndexedComponent.h>
 
 // Writes an MFnMesh as a poly mesh OR a subd mesh

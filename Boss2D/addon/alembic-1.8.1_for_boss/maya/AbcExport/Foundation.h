@@ -37,7 +37,7 @@
 #ifndef AbcExport_Foundation_h
 #define AbcExport_Foundation_h
 
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 
 #include <maya/MAnimControl.h>
 #include <maya/MAnimUtil.h>

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/OScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OScalarProperty_h //original-code:<Alembic/Abc/OScalarProperty.h>
 
 namespace Alembic {
 namespace Abc {

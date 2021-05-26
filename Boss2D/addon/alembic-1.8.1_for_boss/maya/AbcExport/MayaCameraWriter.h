@@ -41,7 +41,7 @@
 #include "AttributesWriter.h"
 #include "MayaTransformWriter.h"
 
-#include <Alembic/AbcGeom/OCamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OCamera_h //original-code:<Alembic/AbcGeom/OCamera.h>
 
 // Writes an MFnCamera
 class MayaCameraWriter

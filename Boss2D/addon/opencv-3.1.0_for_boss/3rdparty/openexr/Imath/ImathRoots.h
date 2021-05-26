@@ -43,7 +43,7 @@
 //
 //---------------------------------------------------------------------
 
-#include <ImathMath.h>
+#include BOSS_OPENCV_V_ImathMath_h //original-code:<ImathMath.h>
 #include <complex>
 
 namespace Imath {

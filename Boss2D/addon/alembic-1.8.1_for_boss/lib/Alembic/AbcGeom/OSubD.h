@@ -38,12 +38,12 @@
 #define Alembic_AbcGeom_OSubD_h
 
 #include <map>
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/SchemaInfoDeclarations.h>
-#include <Alembic/AbcGeom/OGeomBase.h>
-#include <Alembic/AbcGeom/OFaceSet.h>
-#include <Alembic/AbcGeom/OGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__SchemaInfoDeclarations_h //original-code:<Alembic/AbcGeom/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OGeomBase_h //original-code:<Alembic/AbcGeom/OGeomBase.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OFaceSet_h //original-code:<Alembic/AbcGeom/OFaceSet.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OGeomParam_h //original-code:<Alembic/AbcGeom/OGeomParam.h>
 
 namespace Alembic {
 namespace AbcGeom {

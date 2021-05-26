@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/CprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__CprImpl_h //original-code:<Alembic/AbcCoreOgawa/CprImpl.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ArchiveWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArchiveWriter_h //original-code:<Alembic/AbcCoreAbstract/ArchiveWriter.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

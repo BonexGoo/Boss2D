@@ -34,10 +34,10 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/OObject.h>
-#include <Alembic/Abc/OArchive.h>
-#include <Alembic/Abc/OCompoundProperty.h>
-#include <Alembic/Abc/OTypedScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OObject_h //original-code:<Alembic/Abc/OObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArchive_h //original-code:<Alembic/Abc/OArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OCompoundProperty_h //original-code:<Alembic/Abc/OCompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OTypedScalarProperty_h //original-code:<Alembic/Abc/OTypedScalarProperty.h>
 
 namespace Alembic {
 namespace Abc {

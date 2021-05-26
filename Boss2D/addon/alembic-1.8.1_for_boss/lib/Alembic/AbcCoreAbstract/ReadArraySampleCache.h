@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreAbstract_ReadArraySampleCache_h
 #define Alembic_AbcCoreAbstract_ReadArraySampleCache_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/ArraySample.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySample_h //original-code:<Alembic/AbcCoreAbstract/ArraySample.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

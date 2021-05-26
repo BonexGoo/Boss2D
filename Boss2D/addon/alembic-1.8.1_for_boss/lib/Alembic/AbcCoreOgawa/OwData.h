@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreOgawa_OwData_h
 #define Alembic_AbcCoreOgawa_OwData_h
 
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/MetaDataMap.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__MetaDataMap_h //original-code:<Alembic/AbcCoreOgawa/MetaDataMap.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

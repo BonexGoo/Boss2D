@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/Visibility.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Visibility_h //original-code:<Alembic/AbcGeom/Visibility.h>
 
 
 namespace Alembic {

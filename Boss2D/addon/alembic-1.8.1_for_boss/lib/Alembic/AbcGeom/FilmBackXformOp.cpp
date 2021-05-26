@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/FilmBackXformOp.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__FilmBackXformOp_h //original-code:<Alembic/AbcGeom/FilmBackXformOp.h>
 
 namespace Alembic {
 namespace AbcGeom {

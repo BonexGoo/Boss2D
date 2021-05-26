@@ -37,40 +37,40 @@
 #ifndef Alembic_Abc_All_h
 #define Alembic_Abc_All_h
 
-#include <Alembic/Abc/Base.h>
-#include <Alembic/Abc/ErrorHandler.h>
-#include <Alembic/Util/Export.h>
-#include <Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Base_h //original-code:<Alembic/Abc/Base.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ErrorHandler_h //original-code:<Alembic/Abc/ErrorHandler.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
 
-#include <Alembic/Abc/ArchiveInfo.h>
-#include <Alembic/Abc/Argument.h>
-#include <Alembic/Abc/IArchive.h>
-#include <Alembic/Abc/IArrayProperty.h>
-#include <Alembic/Abc/IBaseProperty.h>
-#include <Alembic/Abc/ICompoundProperty.h>
-#include <Alembic/Abc/IObject.h>
-#include <Alembic/Abc/ISampleSelector.h>
-#include <Alembic/Abc/IScalarProperty.h>
-#include <Alembic/Abc/ISchema.h>
-#include <Alembic/Abc/ISchemaObject.h>
-#include <Alembic/Abc/ITypedArrayProperty.h>
-#include <Alembic/Abc/ITypedScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ArchiveInfo_h //original-code:<Alembic/Abc/ArchiveInfo.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Argument_h //original-code:<Alembic/Abc/Argument.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IArchive_h //original-code:<Alembic/Abc/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IArrayProperty_h //original-code:<Alembic/Abc/IArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IBaseProperty_h //original-code:<Alembic/Abc/IBaseProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ICompoundProperty_h //original-code:<Alembic/Abc/ICompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IObject_h //original-code:<Alembic/Abc/IObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISampleSelector_h //original-code:<Alembic/Abc/ISampleSelector.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IScalarProperty_h //original-code:<Alembic/Abc/IScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISchema_h //original-code:<Alembic/Abc/ISchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISchemaObject_h //original-code:<Alembic/Abc/ISchemaObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ITypedArrayProperty_h //original-code:<Alembic/Abc/ITypedArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ITypedScalarProperty_h //original-code:<Alembic/Abc/ITypedScalarProperty.h>
 
-#include <Alembic/Abc/OArchive.h>
-#include <Alembic/Abc/OArrayProperty.h>
-#include <Alembic/Abc/OBaseProperty.h>
-#include <Alembic/Abc/OCompoundProperty.h>
-#include <Alembic/Abc/OObject.h>
-#include <Alembic/Abc/OScalarProperty.h>
-#include <Alembic/Abc/OSchema.h>
-#include <Alembic/Abc/OSchemaObject.h>
-#include <Alembic/Abc/OTypedArrayProperty.h>
-#include <Alembic/Abc/OTypedScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArchive_h //original-code:<Alembic/Abc/OArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArrayProperty_h //original-code:<Alembic/Abc/OArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OBaseProperty_h //original-code:<Alembic/Abc/OBaseProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OCompoundProperty_h //original-code:<Alembic/Abc/OCompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OObject_h //original-code:<Alembic/Abc/OObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OScalarProperty_h //original-code:<Alembic/Abc/OScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchemaObject_h //original-code:<Alembic/Abc/OSchemaObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OTypedArrayProperty_h //original-code:<Alembic/Abc/OTypedArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OTypedScalarProperty_h //original-code:<Alembic/Abc/OTypedScalarProperty.h>
 
-#include <Alembic/Abc/Reference.h>
-#include <Alembic/Abc/SourceName.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Reference_h //original-code:<Alembic/Abc/Reference.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__SourceName_h //original-code:<Alembic/Abc/SourceName.h>
 
-#include <Alembic/Abc/TypedArraySample.h>
-#include <Alembic/Abc/TypedPropertyTraits.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedArraySample_h //original-code:<Alembic/Abc/TypedArraySample.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedPropertyTraits_h //original-code:<Alembic/Abc/TypedPropertyTraits.h>
 
 #endif

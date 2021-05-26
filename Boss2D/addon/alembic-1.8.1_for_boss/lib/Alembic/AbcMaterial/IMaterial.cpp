@@ -35,7 +35,7 @@
 //-*****************************************************************************
 
 
-#include <Alembic/AbcMaterial/IMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__IMaterial_h //original-code:<Alembic/AbcMaterial/IMaterial.h>
 #include "InternalUtil.h"
 
 #include <set>

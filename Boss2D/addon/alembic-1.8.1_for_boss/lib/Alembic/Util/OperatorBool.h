@@ -36,7 +36,7 @@
 #ifndef Alembic_Util_OperatorBool_h
 #define Alembic_Util_OperatorBool_h
 
-#include <Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
 
 //-*****************************************************************************
 #define ALEMBIC_OPERATOR_BOOL( PASS_COND )                              \

@@ -41,7 +41,7 @@
 #include "AttributesWriter.h"
 #include "MayaTransformWriter.h"
 
-#include <Alembic/AbcGeom/ONuPatch.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ONuPatch_h //original-code:<Alembic/AbcGeom/ONuPatch.h>
 
 class MayaNurbsSurfaceWriter
 {

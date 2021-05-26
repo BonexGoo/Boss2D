@@ -34,13 +34,13 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/AwImpl.h>
-#include <Alembic/AbcCoreHDF5/OwData.h>
-#include <Alembic/AbcCoreHDF5/OwImpl.h>
-#include <Alembic/AbcCoreHDF5/WriteUtil.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
-#include <Alembic/AbcCoreHDF5/HDF5HierarchyWriter.h>
-#include <Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__AwImpl_h //original-code:<Alembic/AbcCoreHDF5/AwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OwData_h //original-code:<Alembic/AbcCoreHDF5/OwData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OwImpl_h //original-code:<Alembic/AbcCoreHDF5/OwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WriteUtil_h //original-code:<Alembic/AbcCoreHDF5/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5HierarchyWriter_h //original-code:<Alembic/AbcCoreHDF5/HDF5HierarchyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Hierarchy_h //original-code:<Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

@@ -42,7 +42,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 
 namespace Imf {
 

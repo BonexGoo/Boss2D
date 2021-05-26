@@ -37,12 +37,12 @@
 #ifndef ABCIMPORT_CREATE_SCENE_H_
 #define ABCIMPORT_CREATE_SCENE_H_
 
-#include <Alembic/AbcGeom/ICamera.h>
-#include <Alembic/AbcGeom/ICurves.h>
-#include <Alembic/AbcGeom/IPoints.h>
-#include <Alembic/AbcGeom/IPolyMesh.h>
-#include <Alembic/AbcGeom/ISubD.h>
-#include <Alembic/AbcGeom/IXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICamera_h //original-code:<Alembic/AbcGeom/ICamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICurves_h //original-code:<Alembic/AbcGeom/ICurves.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPoints_h //original-code:<Alembic/AbcGeom/IPoints.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPolyMesh_h //original-code:<Alembic/AbcGeom/IPolyMesh.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ISubD_h //original-code:<Alembic/AbcGeom/ISubD.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IXform_h //original-code:<Alembic/AbcGeom/IXform.h>
 
 #include "NodeIteratorVisitorHelper.h"
 

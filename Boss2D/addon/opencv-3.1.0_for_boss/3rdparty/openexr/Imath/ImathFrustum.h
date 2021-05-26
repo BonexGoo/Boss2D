@@ -39,11 +39,11 @@
 
 
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "ImathPlane.h"
-#include "ImathLine.h"
+#include BOSS_OPENCV_U_ImathPlane_h //original-code:"ImathPlane.h"
+#include BOSS_OPENCV_U_ImathLine_h //original-code:"ImathLine.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
-#include "ImathLimits.h"
-#include "ImathFun.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
 #include "IexMathExc.h"
 
 namespace Imath {

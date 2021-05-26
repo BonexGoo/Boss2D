@@ -37,7 +37,7 @@
 #ifndef Alembic_Abc_TypedPropertyTraits_h
 #define Alembic_Abc_TypedPropertyTraits_h
 
-#include <Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
 
 //-*****************************************************************************
 // The property traits class maps ValueTypes with their protocol

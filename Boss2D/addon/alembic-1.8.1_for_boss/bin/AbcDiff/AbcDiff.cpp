@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcCoreFactory/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
-#include <Alembic/AbcCoreLayer/Util.h>
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__All_h //original-code:<Alembic/AbcCoreFactory/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Util_h //original-code:<Alembic/AbcCoreLayer/Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 
 // util which compares the property headers and returns if they are the same
 bool headerCmp(const Alembic::Abc::PropertyHeader * iHeaderA,

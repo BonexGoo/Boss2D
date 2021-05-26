@@ -34,10 +34,10 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcCoreFactory/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__All_h //original-code:<Alembic/AbcCoreFactory/All.h>
 
-#include <ImathBoxAlgo.h>
+#include BOSS_ALEMBIC_V_ImathBoxAlgo_h //original-code:<ImathBoxAlgo.h>
 
 #include <iostream>
 

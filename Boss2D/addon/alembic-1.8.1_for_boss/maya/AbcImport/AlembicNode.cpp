@@ -72,8 +72,8 @@
 #include <maya/MExternalContentInfoTable.h>
 #endif
 
-#include <Alembic/AbcCoreFactory/IFactory.h>
-#include <Alembic/AbcGeom/Visibility.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__IFactory_h //original-code:<Alembic/AbcCoreFactory/IFactory.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Visibility_h //original-code:<Alembic/AbcGeom/Visibility.h>
 
 MObject AlembicNode::mTimeAttr;
 MObject AlembicNode::mAbcFileNameAttr;

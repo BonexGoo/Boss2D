@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcGeom_ILight_h
 #define Alembic_AbcGeom_ILight_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/ICamera.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICamera_h //original-code:<Alembic/AbcGeom/ICamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__SchemaInfoDeclarations_h //original-code:<Alembic/AbcGeom/SchemaInfoDeclarations.h>
 
 namespace Alembic {
 namespace AbcGeom {

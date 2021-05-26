@@ -42,7 +42,7 @@
 
 #include <vector>
 
-#include <Alembic/AbcGeom/INuPatch.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__INuPatch_h //original-code:<Alembic/AbcGeom/INuPatch.h>
 
 MObject createNurbs(double iFrame, Alembic::AbcGeom::INuPatch & iNode,
     MObject & iParent);

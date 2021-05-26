@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcCoreAbstract_DataType_h
 #define Alembic_AbcCoreAbstract_DataType_h
 
-#include <Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

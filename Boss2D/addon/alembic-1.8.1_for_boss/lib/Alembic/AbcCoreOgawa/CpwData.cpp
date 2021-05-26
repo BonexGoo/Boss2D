@@ -34,12 +34,12 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/CpwData.h>
-#include <Alembic/AbcCoreOgawa/WriteUtil.h>
-#include <Alembic/AbcCoreOgawa/SpwImpl.h>
-#include <Alembic/AbcCoreOgawa/ApwImpl.h>
-#include <Alembic/AbcCoreOgawa/CpwImpl.h>
-#include <Alembic/AbcCoreOgawa/AwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__CpwData_h //original-code:<Alembic/AbcCoreOgawa/CpwData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__WriteUtil_h //original-code:<Alembic/AbcCoreOgawa/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__SpwImpl_h //original-code:<Alembic/AbcCoreOgawa/SpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ApwImpl_h //original-code:<Alembic/AbcCoreOgawa/ApwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__CpwImpl_h //original-code:<Alembic/AbcCoreOgawa/CpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__AwImpl_h //original-code:<Alembic/AbcCoreOgawa/AwImpl.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ReadUtil_h //original-code:<Alembic/AbcCoreOgawa/ReadUtil.h>
 
 #if defined(_MSC_VER)
 #  if defined(max)
@@ -45,7 +45,7 @@
 #  endif
 #endif
 
-#include <halfLimits.h>
+#include BOSS_OPENCV_V_halfLimits_h //original-code:<halfLimits.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

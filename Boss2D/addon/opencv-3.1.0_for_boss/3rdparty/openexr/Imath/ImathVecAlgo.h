@@ -48,7 +48,7 @@
 //-------------------------------------------------------------------------
 
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "ImathLimits.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
 
 namespace Imath {
 

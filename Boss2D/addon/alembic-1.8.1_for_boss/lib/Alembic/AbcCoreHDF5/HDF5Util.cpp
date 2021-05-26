@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

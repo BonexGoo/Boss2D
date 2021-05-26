@@ -37,8 +37,8 @@
 #ifndef Alembic_Abc_ISampleSelector_h
 #define Alembic_Abc_ISampleSelector_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
 
 namespace Alembic {
 namespace Abc {

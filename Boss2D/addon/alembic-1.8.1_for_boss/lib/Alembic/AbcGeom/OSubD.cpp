@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/OSubD.h>
-#include <Alembic/AbcGeom/GeometryScope.h>
-#include <Alembic/AbcGeom/OFaceSet.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OSubD_h //original-code:<Alembic/AbcGeom/OSubD.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__GeometryScope_h //original-code:<Alembic/AbcGeom/GeometryScope.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OFaceSet_h //original-code:<Alembic/AbcGeom/OFaceSet.h>
 
 namespace Alembic {
 namespace AbcGeom {
@@ -101,7 +101,7 @@ OSubDSchema::OSubDSchema( Abc::OCompoundProperty iParent,
 }
 
 //-*****************************************************************************
-inline void SetPropUsePrevIfNull( Abc::OInt32Property iProp, int32_t iVal )
+inline void SetPropUsePrevIfNull_OSubD_BOSS( Abc::OInt32Property iProp, int32_t iVal ) // added by BOSS: _OSubD_BOSS
 {
     if ( iVal != ABC_GEOM_SUBD_NULL_INT_VALUE )
     {
@@ -112,7 +112,6 @@ inline void SetPropUsePrevIfNull( Abc::OInt32Property iProp, int32_t iVal )
         iProp.setFromPrevious( );
     }
 }
-
 //-*****************************************************************************
 void OSubDSchema::set( const Sample &iSamp )
 {
@@ -293,19 +292,19 @@ void OSubDSchema::set( const Sample &iSamp )
 
         if ( m_faceVaryingInterpolateBoundaryProperty )
         {
-            SetPropUsePrevIfNull( m_faceVaryingInterpolateBoundaryProperty,
+            SetPropUsePrevIfNull_OSubD_BOSS( m_faceVaryingInterpolateBoundaryProperty, // added by BOSS: _OSubD_BOSS
                                   iSamp.getFaceVaryingInterpolateBoundary() );
         }
 
         if ( m_faceVaryingPropagateCornersProperty )
         {
-            SetPropUsePrevIfNull( m_faceVaryingPropagateCornersProperty,
+            SetPropUsePrevIfNull_OSubD_BOSS( m_faceVaryingPropagateCornersProperty, // added by BOSS: _OSubD_BOSS
                                   iSamp.getFaceVaryingPropagateCorners() );
         }
 
         if ( m_interpolateBoundaryProperty )
         {
-            SetPropUsePrevIfNull( m_interpolateBoundaryProperty,
+            SetPropUsePrevIfNull_OSubD_BOSS( m_interpolateBoundaryProperty, // added by BOSS: _OSubD_BOSS
                                   iSamp.getInterpolateBoundary() );
         }
 

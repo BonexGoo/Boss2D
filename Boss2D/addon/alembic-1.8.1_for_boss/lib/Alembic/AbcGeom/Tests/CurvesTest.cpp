@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 
 // We include some global mesh data to test with from an external source
 // to keep this example code clean.

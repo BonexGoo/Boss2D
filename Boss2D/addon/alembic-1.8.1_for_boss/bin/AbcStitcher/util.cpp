@@ -36,7 +36,7 @@
 
 #include "util.h"
 
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 
 using namespace Alembic::AbcGeom;
 using namespace Alembic::Abc;

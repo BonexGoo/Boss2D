@@ -37,10 +37,10 @@
 #ifndef AbcClients_WFObjConvert_Foundation_h
 #define AbcClients_WFObjConvert_Foundation_h
 
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
 
-#include <ImathVec.h>
+#include BOSS_OPENCV_V_ImathVec_h //original-code:<ImathVec.h>
 
 #include <boost/static_assert.hpp>
 #include <boost/scoped_ptr.hpp>

@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/CompoundPropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/ArrayPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__CompoundPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/CompoundPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArrayPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/ArrayPropertyWriter.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

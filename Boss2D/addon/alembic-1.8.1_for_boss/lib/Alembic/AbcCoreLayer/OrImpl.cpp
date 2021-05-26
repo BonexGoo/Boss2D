@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreLayer/OrImpl.h>
-#include <Alembic/AbcCoreLayer/CprImpl.h>
-#include <Alembic/Abc/ICompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__OrImpl_h //original-code:<Alembic/AbcCoreLayer/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__CprImpl_h //original-code:<Alembic/AbcCoreLayer/CprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ICompoundProperty_h //original-code:<Alembic/Abc/ICompoundProperty.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

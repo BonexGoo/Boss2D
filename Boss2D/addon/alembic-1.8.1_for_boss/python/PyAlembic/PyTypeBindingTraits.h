@@ -37,7 +37,7 @@
 #ifndef PyAlembic_PyTypeBindingTraits_h
 #define PyAlembic_PyTypeBindingTraits_h
 
-#include <Alembic/Util/PlainOldDataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__PlainOldDataType_h //original-code:<Alembic/Util/PlainOldDataType.h>
 #include <Foundation.h>
 
 #include <PyImathFixedArray.h>

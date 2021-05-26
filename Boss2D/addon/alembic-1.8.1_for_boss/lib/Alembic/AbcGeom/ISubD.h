@@ -37,12 +37,12 @@
 #ifndef Alembic_AbcGeom_ISubD_h
 #define Alembic_AbcGeom_ISubD_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/SchemaInfoDeclarations.h>
-#include <Alembic/AbcGeom/IGeomParam.h>
-#include <Alembic/AbcGeom/IFaceSet.h>
-#include <Alembic/AbcGeom/IGeomBase.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__SchemaInfoDeclarations_h //original-code:<Alembic/AbcGeom/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IGeomParam_h //original-code:<Alembic/AbcGeom/IGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IFaceSet_h //original-code:<Alembic/AbcGeom/IFaceSet.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IGeomBase_h //original-code:<Alembic/AbcGeom/IGeomBase.h>
 
 namespace Alembic {
 namespace AbcGeom {

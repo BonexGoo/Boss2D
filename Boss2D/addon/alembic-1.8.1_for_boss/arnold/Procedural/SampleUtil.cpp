@@ -36,10 +36,10 @@
 #include "SampleUtil.h"
 
 #include <algorithm>
-#include <ImathMatrix.h>
-#include <ImathMatrixAlgo.h>
-#include <ImathQuat.h>
-#include <ImathEuler.h>
+#include BOSS_OPENCV_V_ImathMatrix_h //original-code:<ImathMatrix.h>
+#include BOSS_OPENCV_V_ImathMatrixAlgo_h //original-code:<ImathMatrixAlgo.h>
+#include BOSS_OPENCV_V_ImathQuat_h //original-code:<ImathQuat.h>
+#include BOSS_OPENCV_V_ImathEuler_h //original-code:<ImathEuler.h>
 
 //-*****************************************************************************
 void GetRelevantSampleTimes( ProcArgs &args, TimeSamplingPtr timeSampling,

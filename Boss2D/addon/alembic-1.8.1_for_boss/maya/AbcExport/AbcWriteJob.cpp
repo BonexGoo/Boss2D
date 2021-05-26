@@ -37,10 +37,10 @@
 #include "AbcWriteJob.h"
 
 #ifdef ALEMBIC_WITH_HDF5
-#include <Alembic/AbcCoreHDF5/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__All_h //original-code:<Alembic/AbcCoreHDF5/All.h>
 #endif
 
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 namespace
 {
     void hasDuplicates(const util::ShapeSet & dagPath, unsigned int stripDepth)

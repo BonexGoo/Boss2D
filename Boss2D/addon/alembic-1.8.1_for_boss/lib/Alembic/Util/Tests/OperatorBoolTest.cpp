@@ -33,7 +33,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Util/OperatorBool.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__OperatorBool_h //original-code:<Alembic/Util/OperatorBool.h>
 #include <iostream>
 
 //-*****************************************************************************

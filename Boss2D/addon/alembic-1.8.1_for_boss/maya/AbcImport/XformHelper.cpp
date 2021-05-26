@@ -38,7 +38,7 @@
 #include "XformHelper.h"
 #include "NodeIteratorVisitorHelper.h"
 
-#include <Alembic/AbcGeom/IXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IXform_h //original-code:<Alembic/AbcGeom/IXform.h>
 
 #include <maya/MObject.h>
 #include <maya/MEulerRotation.h>

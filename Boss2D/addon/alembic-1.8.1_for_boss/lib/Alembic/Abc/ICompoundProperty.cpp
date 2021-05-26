@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/ICompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ICompoundProperty_h //original-code:<Alembic/Abc/ICompoundProperty.h>
 
 namespace Alembic {
 namespace Abc {

@@ -37,8 +37,8 @@
 #ifndef Alembic_Util_PlainOldDataType_h
 #define Alembic_Util_PlainOldDataType_h
 
-#include <Alembic/Util/Foundation.h>
-#include <Alembic/Util/Exception.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Exception_h //original-code:<Alembic/Util/Exception.h>
 
 // stdint.h is not in anything prior to Visual Studio 2010
 #if !defined(_MSC_VER) || _MSC_VER >= 1600

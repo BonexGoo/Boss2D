@@ -43,7 +43,7 @@
 #include <vector>
 #include <string>
 
-#include <Alembic/AbcGeom/IPoints.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPoints_h //original-code:<Alembic/AbcGeom/IPoints.h>
 
 MStatus getPointArbGeomParamsInfos( const Alembic::AbcGeom::IPoints & iNode, MObject & iObject,
 		PointSampleDataList & iData );

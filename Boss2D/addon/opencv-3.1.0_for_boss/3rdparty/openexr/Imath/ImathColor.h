@@ -44,7 +44,7 @@
 //----------------------------------------------------
 
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 
 namespace Imath {
 

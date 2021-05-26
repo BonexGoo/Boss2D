@@ -33,10 +33,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-*****************************************************************************
-#include <Alembic/AbcCoreHDF5/HDF5HierarchyWriter.h>
-#include <Alembic/AbcCoreHDF5/WriteUtil.h>
-#include <Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
-#include <Alembic/AbcCoreHDF5/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5HierarchyWriter_h //original-code:<Alembic/AbcCoreHDF5/HDF5HierarchyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WriteUtil_h //original-code:<Alembic/AbcCoreHDF5/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Hierarchy_h //original-code:<Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WriteUtil_h //original-code:<Alembic/AbcCoreHDF5/WriteUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

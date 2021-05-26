@@ -37,17 +37,17 @@
 #ifndef ABCIMPORT_NODE_ITERATOR_HELPER_H_
 #define ABCIMPORT_NODE_ITERATOR_HELPER_H_
 
-#include <Alembic/Abc/IArrayProperty.h>
-#include <Alembic/Abc/IScalarProperty.h>
-#include <Alembic/Abc/IObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IArrayProperty_h //original-code:<Alembic/Abc/IArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IScalarProperty_h //original-code:<Alembic/Abc/IScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IObject_h //original-code:<Alembic/Abc/IObject.h>
 
-#include <Alembic/AbcGeom/ICamera.h>
-#include <Alembic/AbcGeom/ICurves.h>
-#include <Alembic/AbcGeom/INuPatch.h>
-#include <Alembic/AbcGeom/IPoints.h>
-#include <Alembic/AbcGeom/IPolyMesh.h>
-#include <Alembic/AbcGeom/ISubD.h>
-#include <Alembic/AbcGeom/IXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICamera_h //original-code:<Alembic/AbcGeom/ICamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICurves_h //original-code:<Alembic/AbcGeom/ICurves.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__INuPatch_h //original-code:<Alembic/AbcGeom/INuPatch.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPoints_h //original-code:<Alembic/AbcGeom/IPoints.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPolyMesh_h //original-code:<Alembic/AbcGeom/IPolyMesh.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ISubD_h //original-code:<Alembic/AbcGeom/ISubD.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IXform_h //original-code:<Alembic/AbcGeom/IXform.h>
 
 // MTypes.h includes windows.h
 // Suppress min/max macros

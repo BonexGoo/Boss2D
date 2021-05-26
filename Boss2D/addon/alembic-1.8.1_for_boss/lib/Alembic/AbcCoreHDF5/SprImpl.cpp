@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/SprImpl.h>
-#include <Alembic/AbcCoreHDF5/ReadUtil.h>
-#include <Alembic/AbcCoreHDF5/StringReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__SprImpl_h //original-code:<Alembic/AbcCoreHDF5/SprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadUtil_h //original-code:<Alembic/AbcCoreHDF5/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__StringReadUtil_h //original-code:<Alembic/AbcCoreHDF5/StringReadUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

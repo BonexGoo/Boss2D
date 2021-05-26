@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcGeom_XformSample_h
 #define Alembic_AbcGeom_XformSample_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
 
-#include <Alembic/AbcGeom/XformOp.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__XformOp_h //original-code:<Alembic/AbcGeom/XformOp.h>
 
 namespace Alembic {
 namespace AbcGeom {

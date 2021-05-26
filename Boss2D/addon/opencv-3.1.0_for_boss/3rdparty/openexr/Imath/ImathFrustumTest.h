@@ -45,9 +45,9 @@
 //
 //-------------------------------------------------------------------------
 
-#include "ImathFrustum.h"
+#include BOSS_OPENCV_U_ImathFrustum_h //original-code:"ImathFrustum.h"
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
-#include "ImathSphere.h"
+#include BOSS_OPENCV_U_ImathSphere_h //original-code:"ImathSphere.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
 

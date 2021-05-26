@@ -39,7 +39,7 @@
 //!     the \ref Alembic::Util::TokenMap class
 //-*****************************************************************************
 
-#include <Alembic/Util/TokenMap.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__TokenMap_h //original-code:<Alembic/Util/TokenMap.h>
 
 namespace Alembic {
 namespace Util {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/IFaceSet.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IFaceSet_h //original-code:<Alembic/AbcGeom/IFaceSet.h>
 
 namespace Alembic {
 namespace AbcGeom {

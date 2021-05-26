@@ -55,7 +55,7 @@
 //
 //----------------------------------------------------------------------
 
-#include "ImathExc.h"
+#include BOSS_OPENCV_U_ImathExc_h //original-code:"ImathExc.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
 
 #include <iostream>

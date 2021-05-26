@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/OrImpl.h>
-#include <Alembic/AbcCoreOgawa/StreamManager.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__OrImpl_h //original-code:<Alembic/AbcCoreOgawa/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__StreamManager_h //original-code:<Alembic/AbcCoreOgawa/StreamManager.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

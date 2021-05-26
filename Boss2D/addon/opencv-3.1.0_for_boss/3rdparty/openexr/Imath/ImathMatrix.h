@@ -43,11 +43,11 @@
 //
 //----------------------------------------------------------------
 
-#include "ImathPlatform.h"
-#include "ImathFun.h"
-#include "ImathExc.h"
+#include BOSS_OPENCV_U_ImathPlatform_h //original-code:"ImathPlatform.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
+#include BOSS_OPENCV_U_ImathExc_h //original-code:"ImathExc.h"
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "ImathShear.h"
+#include BOSS_OPENCV_U_ImathShear_h //original-code:"ImathShear.h"
 
 #include <cstring>
 #include <iostream>

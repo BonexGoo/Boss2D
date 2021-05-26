@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/OPoints.h>
-#include <Alembic/AbcGeom/GeometryScope.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OPoints_h //original-code:<Alembic/AbcGeom/OPoints.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__GeometryScope_h //original-code:<Alembic/AbcGeom/GeometryScope.h>
 
 namespace Alembic {
 namespace AbcGeom {

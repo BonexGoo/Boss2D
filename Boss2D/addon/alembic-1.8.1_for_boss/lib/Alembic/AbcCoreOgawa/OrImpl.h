@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreOgawa_OrImpl_h
 #define Alembic_AbcCoreOgawa_OrImpl_h
 
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/OrData.h>
-#include <Alembic/AbcCoreOgawa/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__OrData_h //original-code:<Alembic/AbcCoreOgawa/OrData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ArImpl_h //original-code:<Alembic/AbcCoreOgawa/ArImpl.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

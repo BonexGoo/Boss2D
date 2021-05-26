@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

@@ -71,9 +71,9 @@
 //
 //------------------------------------------------------------------
 
-#include "ImathLine.h"
-#include "ImathVecAlgo.h"
-#include "ImathFun.h"
+#include BOSS_OPENCV_U_ImathLine_h //original-code:"ImathLine.h"
+#include BOSS_OPENCV_U_ImathVecAlgo_h //original-code:"ImathVecAlgo.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
 
 namespace Imath {
 

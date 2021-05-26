@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcMaterial_OMaterial_h
 #define Alembic_AbcMaterial_OMaterial_h
 
-#include <Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcMaterial/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__SchemaInfoDeclarations_h //original-code:<Alembic/AbcMaterial/SchemaInfoDeclarations.h>
 
 namespace Alembic {
 namespace AbcMaterial {
@@ -145,13 +145,13 @@ protected:
     class Data;
 
     // shared and not scoped because we want this to survive a copy
-    Util::shared_ptr< Data > m_data;
+    Alembic::Util::shared_ptr< Data > m_data; // added by BOSS: Alembic::
 };
 
 //! Object declaration
 typedef Abc::OSchemaObject<OMaterialSchema> OMaterial;
 
-typedef Util::shared_ptr< OMaterial > OMaterialPtr;
+typedef Alembic::Util::shared_ptr< OMaterial > OMaterialPtr; // added by BOSS: Alembic::
 
 } // End namespace ALEMBIC_VERSION_NS
 

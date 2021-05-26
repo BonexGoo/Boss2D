@@ -38,10 +38,10 @@
 #include <sstream>
 #include <time.h>
 
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/MetaData.h>
-#include <Alembic/AbcCoreAbstract/ArchiveWriter.h>
-#include <Alembic/AbcCoreAbstract/ArchiveReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__MetaData_h //original-code:<Alembic/AbcCoreAbstract/MetaData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArchiveWriter_h //original-code:<Alembic/AbcCoreAbstract/ArchiveWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArchiveReader_h //original-code:<Alembic/AbcCoreAbstract/ArchiveReader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

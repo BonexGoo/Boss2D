@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreHDF5_OwImpl_h
 #define Alembic_AbcCoreHDF5_OwImpl_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/OwData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OwData_h //original-code:<Alembic/AbcCoreHDF5/OwData.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/ICamera.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICamera_h //original-code:<Alembic/AbcGeom/ICamera.h>
 
 namespace Alembic {
 namespace AbcGeom {

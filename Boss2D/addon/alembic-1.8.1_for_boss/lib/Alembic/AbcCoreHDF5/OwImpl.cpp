@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/OwImpl.h>
-#include <Alembic/AbcCoreHDF5/AwImpl.h>
-#include <Alembic/AbcCoreHDF5/CpwImpl.h>
-#include <Alembic/AbcCoreHDF5/WriteUtil.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OwImpl_h //original-code:<Alembic/AbcCoreHDF5/OwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__AwImpl_h //original-code:<Alembic/AbcCoreHDF5/AwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CpwImpl_h //original-code:<Alembic/AbcCoreHDF5/CpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WriteUtil_h //original-code:<Alembic/AbcCoreHDF5/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

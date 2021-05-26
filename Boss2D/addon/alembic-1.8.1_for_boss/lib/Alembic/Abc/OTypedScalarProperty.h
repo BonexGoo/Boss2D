@@ -36,9 +36,9 @@
 #ifndef Alembic_Abc_OTypedScalarProperty_h
 #define Alembic_Abc_OTypedScalarProperty_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/OScalarProperty.h>
-#include <Alembic/Abc/TypedPropertyTraits.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OScalarProperty_h //original-code:<Alembic/Abc/OScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedPropertyTraits_h //original-code:<Alembic/Abc/TypedPropertyTraits.h>
 
 namespace Alembic {
 namespace Abc {

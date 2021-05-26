@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcCoreAbstract_ArchiveWriter_h
 #define Alembic_AbcCoreAbstract_ArchiveWriter_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/MetaData.h>
-#include <Alembic/AbcCoreAbstract/ForwardDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__MetaData_h //original-code:<Alembic/AbcCoreAbstract/MetaData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ForwardDeclarations_h //original-code:<Alembic/AbcCoreAbstract/ForwardDeclarations.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

@@ -52,7 +52,7 @@
 #include <ImfMatrixAttribute.h>
 #include BOSS_OPENCV_V_ImfChannelList_h //original-code:<ImfChannelList.h>
 #include <ImfLut.h>
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 #include <string.h>
 
 using Imath::Box2i;

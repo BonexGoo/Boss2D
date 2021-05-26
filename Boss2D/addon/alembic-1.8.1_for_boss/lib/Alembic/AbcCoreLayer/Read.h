@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreLayer_Read_h
 #define Alembic_AbcCoreLayer_Read_h
 
-#include <Alembic/AbcCoreAbstract/All.h>
-#include <Alembic/AbcCoreLayer/Foundation.h>
-#include <Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Foundation_h //original-code:<Alembic/AbcCoreLayer/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

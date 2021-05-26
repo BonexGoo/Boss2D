@@ -33,9 +33,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-*****************************************************************************
-#include <Alembic/AbcCoreHDF5/HDF5HierarchyReader.h>
-#include <Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
-#include <Alembic/AbcCoreHDF5/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5HierarchyReader_h //original-code:<Alembic/AbcCoreHDF5/HDF5HierarchyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Hierarchy_h //original-code:<Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadUtil_h //original-code:<Alembic/AbcCoreHDF5/ReadUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

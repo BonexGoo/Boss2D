@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreLayer/ArImpl.h>
-#include <Alembic/AbcCoreAbstract/ReadArraySampleCache.h>
-#include <Alembic/Abc/IArchive.h>
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreLayer/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__ArImpl_h //original-code:<Alembic/AbcCoreLayer/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ReadArraySampleCache_h //original-code:<Alembic/AbcCoreAbstract/ReadArraySampleCache.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IArchive_h //original-code:<Alembic/Abc/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__OrImpl_h //original-code:<Alembic/AbcCoreLayer/OrImpl.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

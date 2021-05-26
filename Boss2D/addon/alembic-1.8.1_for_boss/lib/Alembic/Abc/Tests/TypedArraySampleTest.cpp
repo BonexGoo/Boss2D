@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 #include <Alembic/AbcCoreAbstract/Tests/Assert.h>
 
-#include <ImathMath.h>
+#include BOSS_OPENCV_V_ImathMath_h //original-code:<ImathMath.h>
 
 #include <limits>
 

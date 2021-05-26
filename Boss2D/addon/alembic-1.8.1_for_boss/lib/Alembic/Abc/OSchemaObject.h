@@ -37,9 +37,9 @@
 #ifndef Alembic_Abc_OSchemaObject_h
 #define Alembic_Abc_OSchemaObject_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/OObject.h>
-#include <Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OObject_h //original-code:<Alembic/Abc/OObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
 
 namespace Alembic {
 namespace Abc {

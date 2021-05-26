@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreHDF5_WrittenArraySampleMap_h
 #define Alembic_AbcCoreHDF5_WrittenArraySampleMap_h
 
-#include <Alembic/AbcCoreAbstract/ArraySampleKey.h>
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySampleKey_h //original-code:<Alembic/AbcCoreAbstract/ArraySampleKey.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
 
 
 namespace Alembic {

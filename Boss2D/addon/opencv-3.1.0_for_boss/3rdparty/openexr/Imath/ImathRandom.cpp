@@ -40,7 +40,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "ImathRandom.h"
+#include BOSS_OPENCV_U_ImathRandom_h //original-code:"ImathRandom.h"
 #include BOSS_OPENCV_U_ImathInt64_h //original-code:"ImathInt64.h"
 
 namespace Imath {

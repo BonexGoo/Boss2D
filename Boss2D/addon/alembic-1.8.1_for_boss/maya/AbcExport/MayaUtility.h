@@ -38,8 +38,8 @@
 #define AlembicExport_MayaUtility_h
 
 #include "Foundation.h"
-#include <Alembic/Abc/OArrayProperty.h>
-#include <Alembic/Abc/OScalarProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArrayProperty_h //original-code:<Alembic/Abc/OArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OScalarProperty_h //original-code:<Alembic/Abc/OScalarProperty.h>
 
 namespace util
 {

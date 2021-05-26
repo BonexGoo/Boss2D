@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 
-#include <Alembic/AbcMaterial/OMaterial.h>
-#include <Alembic/AbcMaterial/IMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__OMaterial_h //original-code:<Alembic/AbcMaterial/OMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__IMaterial_h //original-code:<Alembic/AbcMaterial/IMaterial.h>
 
 #include <Alembic/AbcCoreAbstract/Tests/Assert.h>
 

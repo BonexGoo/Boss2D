@@ -453,6 +453,12 @@
     <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\fake_QQuick.cpp">
       <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
     </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\element\boss_clip.hpp">
@@ -871,6 +877,12 @@
     </ClInclude>
     <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h">
       <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.h">
+      <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

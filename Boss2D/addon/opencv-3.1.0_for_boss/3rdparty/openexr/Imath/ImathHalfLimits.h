@@ -43,8 +43,8 @@
 //
 //--------------------------------------------------
 
-#include "ImathLimits.h"
-#include "half.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 
 namespace Imath {
 

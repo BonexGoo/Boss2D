@@ -38,8 +38,8 @@
 #define Alembic_AbcGeom_Basis_h
 
 #include <string>
-#include <Alembic/Util/Foundation.h>
-#include <Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
 
 namespace Alembic {
 namespace AbcGeom {

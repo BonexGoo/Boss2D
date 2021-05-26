@@ -35,7 +35,7 @@
 //-*****************************************************************************
 
 #include <AbcClients/WFObjConvert/All.h>
-#include <Alembic/AbcCoreHDF5/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__All_h //original-code:<Alembic/AbcCoreHDF5/All.h>
 
 #include <iostream>
 #include <stdio.h>

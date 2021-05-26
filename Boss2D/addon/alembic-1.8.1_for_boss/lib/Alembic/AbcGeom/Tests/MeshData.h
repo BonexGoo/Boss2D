@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcGeom_Tests_MeshData_h
 #define Alembic_AbcGeom_Tests_MeshData_h
 
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 
 namespace Abc = Alembic::Abc;
 

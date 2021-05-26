@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcCoreFactory_All_h
 #define Alembic_AbcCoreFactory_All_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreFactory/IFactory.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__IFactory_h //original-code:<Alembic/AbcCoreFactory/IFactory.h>
 
 #endif

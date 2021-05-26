@@ -42,7 +42,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "ImathMatrixAlgo.h"
+#include BOSS_OPENCV_U_ImathMatrixAlgo_h //original-code:"ImathMatrixAlgo.h"
 #include <cmath>
 #include <algorithm> // for std::max()
 

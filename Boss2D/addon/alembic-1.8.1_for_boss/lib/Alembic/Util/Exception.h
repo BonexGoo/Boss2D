@@ -42,7 +42,7 @@
 #ifndef Alembic_Util_Exception_h
 #define Alembic_Util_Exception_h
 
-#include <Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
 
 //! \brief Alembic namespace
 //! ...

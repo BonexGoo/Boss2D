@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCollection/OCollections.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCollection__OCollections_h //original-code:<Alembic/AbcCollection/OCollections.h>
 
 namespace Alembic {
 namespace AbcCollection {

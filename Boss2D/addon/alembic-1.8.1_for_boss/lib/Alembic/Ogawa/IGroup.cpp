@@ -33,9 +33,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Ogawa/IGroup.h>
-#include <Alembic/Ogawa/IArchive.h>
-#include <Alembic/Ogawa/IStreams.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IGroup_h //original-code:<Alembic/Ogawa/IGroup.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IArchive_h //original-code:<Alembic/Ogawa/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IStreams_h //original-code:<Alembic/Ogawa/IStreams.h>
 
 namespace Alembic {
 namespace Ogawa {

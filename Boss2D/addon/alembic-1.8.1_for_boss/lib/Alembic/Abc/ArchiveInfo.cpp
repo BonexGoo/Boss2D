@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/ArchiveInfo.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ArchiveInfo_h //original-code:<Alembic/Abc/ArchiveInfo.h>
 
 namespace Alembic {
 namespace Abc {

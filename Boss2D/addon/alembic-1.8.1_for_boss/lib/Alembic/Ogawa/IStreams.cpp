@@ -33,7 +33,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Ogawa/IStreams.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IStreams_h //original-code:<Alembic/Ogawa/IStreams.h>
 #include <fstream>
 #include <stdexcept>
 

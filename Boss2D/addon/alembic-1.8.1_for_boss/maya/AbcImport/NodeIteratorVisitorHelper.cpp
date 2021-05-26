@@ -39,7 +39,7 @@
 #include "CreateSceneHelper.h"
 #include "NodeIteratorVisitorHelper.h"
 
-#include <Alembic/AbcCoreFactory/IFactory.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__IFactory_h //original-code:<Alembic/AbcCoreFactory/IFactory.h>
 
 #include <maya/MDoubleArray.h>
 #include <maya/MFloatArray.h>

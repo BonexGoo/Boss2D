@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcGeom_SchemaInfoDeclarations_h
 #define Alembic_AbcGeom_SchemaInfoDeclarations_h
 
-#include <Alembic/Abc/OSchema.h>
-#include <Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
 
 namespace Alembic {
 namespace AbcGeom {

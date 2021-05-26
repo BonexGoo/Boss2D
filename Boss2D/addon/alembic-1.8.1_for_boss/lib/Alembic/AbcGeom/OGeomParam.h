@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcGeom_OGeomParam_h
 #define Alembic_AbcGeom_OGeomParam_h
 
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/GeometryScope.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__GeometryScope_h //original-code:<Alembic/AbcGeom/GeometryScope.h>
 
 namespace Alembic {
 namespace AbcGeom {

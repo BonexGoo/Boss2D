@@ -49,7 +49,7 @@
 //
 //---------------------------------------------------------------------------
 
-#include <half.h>
+#include BOSS_OPENCV_V_half_h //original-code:<half.h>
 #include <math.h>
 #include <iostream>
 #include <iomanip>

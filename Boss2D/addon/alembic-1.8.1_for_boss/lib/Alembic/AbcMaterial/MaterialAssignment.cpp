@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcMaterial/MaterialAssignment.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialAssignment_h //original-code:<Alembic/AbcMaterial/MaterialAssignment.h>
 
 namespace Alembic {
 namespace AbcMaterial {

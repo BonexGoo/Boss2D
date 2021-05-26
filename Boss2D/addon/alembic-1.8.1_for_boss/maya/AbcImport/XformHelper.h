@@ -43,7 +43,7 @@
 #include <vector>
 #include <string>
 
-#include <Alembic/AbcGeom/IXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IXform_h //original-code:<Alembic/AbcGeom/IXform.h>
 #include "NodeIteratorVisitorHelper.h"
 
 MStatus connectToXform(const Alembic::AbcGeom::XformSample & iSamp,

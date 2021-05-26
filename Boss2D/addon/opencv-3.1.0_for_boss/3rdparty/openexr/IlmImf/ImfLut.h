@@ -48,7 +48,7 @@
 #include <ImfRgbaFile.h>
 #include BOSS_OPENCV_V_ImfFrameBuffer_h //original-code:<ImfFrameBuffer.h>
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
-#include "halfFunction.h"
+#include BOSS_OPENCV_U_halfFunction_h //original-code:"halfFunction.h"
 
 namespace Imf {
 

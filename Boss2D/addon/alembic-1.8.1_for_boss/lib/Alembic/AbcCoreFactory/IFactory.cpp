@@ -35,12 +35,12 @@
 //-*****************************************************************************
 
 #include <fstream>
-#include <Alembic/AbcCoreOgawa/All.h>
-#include <Alembic/AbcCoreLayer/Read.h>
-#include <Alembic/AbcCoreFactory/IFactory.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Read_h //original-code:<Alembic/AbcCoreLayer/Read.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__IFactory_h //original-code:<Alembic/AbcCoreFactory/IFactory.h>
 
 #ifdef ALEMBIC_WITH_HDF5
-#include <Alembic/AbcCoreHDF5/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__All_h //original-code:<Alembic/AbcCoreHDF5/All.h>
 #endif
 
 namespace Alembic {

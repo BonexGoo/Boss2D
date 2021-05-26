@@ -41,7 +41,7 @@
 #include "AttributesWriter.h"
 #include "MayaTransformWriter.h"
 
-#include <Alembic/AbcGeom/OXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OXform_h //original-code:<Alembic/AbcGeom/OXform.h>
 
 // Writes a locator node as an xform
 class MayaLocatorWriter

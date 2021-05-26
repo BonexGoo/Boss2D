@@ -45,7 +45,7 @@
 #include <ImfStdIO.h>
 #include <ImfCompressor.h>
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
-#include "ImathFun.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
 #include <ImfXdr.h>
 #include <ImfConvert.h>
 #include BOSS_OPENCV_V_ImfThreading_h //original-code:<ImfThreading.h>

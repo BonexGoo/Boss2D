@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/CompoundPropertyReader.h>
-#include <Alembic/AbcCoreAbstract/ScalarPropertyReader.h>
-#include <Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__CompoundPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/CompoundPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/ScalarPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArrayPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

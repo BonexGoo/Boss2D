@@ -33,7 +33,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Util/Dimensions.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Dimensions_h //original-code:<Alembic/Util/Dimensions.h>
 
 int main( int, char** )
 {

@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreOgawa_ReadWrite_h
 #define Alembic_AbcCoreOgawa_ReadWrite_h
 
-#include <Alembic/AbcCoreAbstract/All.h>
-#include <Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

@@ -36,7 +36,7 @@
 
 #include "InternalUtil.h"
 
-#include <Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
 
 #include <sstream>
 

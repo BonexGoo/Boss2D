@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/BasePropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__BasePropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/BasePropertyWriter.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

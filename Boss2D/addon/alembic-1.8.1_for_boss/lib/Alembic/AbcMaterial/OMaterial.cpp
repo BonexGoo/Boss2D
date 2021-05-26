@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcMaterial/OMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__OMaterial_h //original-code:<Alembic/AbcMaterial/OMaterial.h>
 #include "InternalUtil.h"
 
 

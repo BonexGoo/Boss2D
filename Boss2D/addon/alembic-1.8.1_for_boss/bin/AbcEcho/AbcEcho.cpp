@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcCoreAbstract/All.h>
-#include <Alembic/AbcCoreFactory/All.h>
-#include <Alembic/Util/All.h>
-#include <Alembic/Abc/TypedPropertyTraits.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__All_h //original-code:<Alembic/AbcCoreFactory/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedPropertyTraits_h //original-code:<Alembic/Abc/TypedPropertyTraits.h>
 
 #include <iostream>
 #include <sstream>

@@ -57,8 +57,8 @@
 //-*****************************************************************************
 
 // Alembic Includes
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 
 #include <Alembic/AbcGeom/Tests/NurbsData.h>
 

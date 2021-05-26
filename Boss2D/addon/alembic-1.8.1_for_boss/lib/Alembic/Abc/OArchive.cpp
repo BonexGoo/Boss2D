@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/OArchive.h>
-#include <Alembic/Abc/OObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArchive_h //original-code:<Alembic/Abc/OArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OObject_h //original-code:<Alembic/Abc/OObject.h>
 
 namespace Alembic {
 namespace Abc {

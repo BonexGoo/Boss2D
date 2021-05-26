@@ -39,7 +39,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "ImathColorAlgo.h"
+#include BOSS_OPENCV_U_ImathColorAlgo_h //original-code:"ImathColorAlgo.h"
 
 namespace Imath {
 

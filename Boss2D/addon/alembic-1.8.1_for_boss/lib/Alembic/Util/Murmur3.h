@@ -39,8 +39,8 @@
 #ifndef Alembic_Util_Murmur3_h
 #define Alembic_Util_Murmur3_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
 
 namespace Alembic {
 namespace Util {

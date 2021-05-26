@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/IXform.h>
-#include <Alembic/AbcGeom/XformOp.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IXform_h //original-code:<Alembic/AbcGeom/IXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__XformOp_h //original-code:<Alembic/AbcGeom/XformOp.h>
 
 namespace Alembic {
 namespace AbcGeom {

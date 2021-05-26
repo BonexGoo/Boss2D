@@ -104,7 +104,7 @@
 
 #include BOSS_OPENCV_V_ImfInt64_h //original-code:<ImfInt64.h>
 #include "IexMathExc.h"
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 #include <limits.h>
 
 namespace Imf {

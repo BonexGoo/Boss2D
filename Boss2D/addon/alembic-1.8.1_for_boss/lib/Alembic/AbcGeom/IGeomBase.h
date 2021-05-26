@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcGeom_IGeometrySchema_h
 #define Alembic_AbcGeom_IGeometrySchema_h
 
-#include <Alembic/Abc/ISchema.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/IGeomParam.h>
-#include <Alembic/AbcGeom/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISchema_h //original-code:<Alembic/Abc/ISchema.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IGeomParam_h //original-code:<Alembic/AbcGeom/IGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__SchemaInfoDeclarations_h //original-code:<Alembic/AbcGeom/SchemaInfoDeclarations.h>
 
 namespace Alembic {
 namespace AbcGeom {

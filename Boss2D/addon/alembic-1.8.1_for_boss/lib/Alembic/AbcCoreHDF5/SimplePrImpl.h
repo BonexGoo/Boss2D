@@ -37,13 +37,13 @@
 #ifndef Alembic_AbcCoreHDF5_SimplePrImpl_h
 #define Alembic_AbcCoreHDF5_SimplePrImpl_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
 
-#include <Alembic/AbcCoreHDF5/OrImpl.h>
-#include <Alembic/AbcCoreHDF5/ArImpl.h>
-#include <Alembic/AbcCoreHDF5/ReadUtil.h>
-#include <Alembic/AbcCoreHDF5/DataTypeRegistry.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OrImpl_h //original-code:<Alembic/AbcCoreHDF5/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ArImpl_h //original-code:<Alembic/AbcCoreHDF5/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadUtil_h //original-code:<Alembic/AbcCoreHDF5/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__DataTypeRegistry_h //original-code:<Alembic/AbcCoreHDF5/DataTypeRegistry.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

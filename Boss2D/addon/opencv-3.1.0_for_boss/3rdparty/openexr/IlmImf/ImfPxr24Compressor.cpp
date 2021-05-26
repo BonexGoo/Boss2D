@@ -69,9 +69,9 @@
 #include BOSS_OPENCV_V_ImfChannelList_h //original-code:<ImfChannelList.h>
 #include <ImfMisc.h>
 #include <ImfCheckedArithmetic.h>
-#include <ImathFun.h>
+#include BOSS_OPENCV_V_ImathFun_h //original-code:<ImathFun.h>
 #include <Iex.h>
-#include <half.h>
+#include BOSS_OPENCV_V_half_h //original-code:<half.h>
 #include <zlib.h>
 #include <assert.h>
 #include <algorithm>

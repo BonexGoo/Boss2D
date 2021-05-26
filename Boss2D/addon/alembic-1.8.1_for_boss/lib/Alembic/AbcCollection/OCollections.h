@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCollection_OCollections_h
 #define Alembic_AbcCollection_OCollections_h
 
-#include <Alembic/Abc/All.h>
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCollection/SchemaInfoDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCollection__SchemaInfoDeclarations_h //original-code:<Alembic/AbcCollection/SchemaInfoDeclarations.h>
 
 namespace Alembic {
 namespace AbcCollection {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/INuPatch.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__INuPatch_h //original-code:<Alembic/AbcGeom/INuPatch.h>
 
 namespace Alembic {
 namespace AbcGeom {

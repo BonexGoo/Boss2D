@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcGeom_Foundation_h
 #define Alembic_AbcGeom_Foundation_h
 
-#include <Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
 
-#include <ImathMatrixAlgo.h>
-#include <ImathEuler.h>
+#include BOSS_OPENCV_V_ImathMatrixAlgo_h //original-code:<ImathMatrixAlgo.h>
+#include BOSS_OPENCV_V_ImathEuler_h //original-code:<ImathEuler.h>
 
 
 namespace Alembic {

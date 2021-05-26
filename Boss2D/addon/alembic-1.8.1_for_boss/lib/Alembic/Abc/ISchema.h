@@ -37,9 +37,9 @@
 #ifndef Alembic_Abc_ISchema_h
 #define Alembic_Abc_ISchema_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/OSchema.h>
-#include <Alembic/Abc/ICompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ICompoundProperty_h //original-code:<Alembic/Abc/ICompoundProperty.h>
 
 namespace Alembic {
 namespace Abc {

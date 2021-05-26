@@ -39,7 +39,7 @@
 //-----------------------------------------------------------------------------
 
 #include <ImfFramesPerSecond.h>
-#include "ImathFun.h"
+#include BOSS_OPENCV_U_ImathFun_h //original-code:"ImathFun.h"
 
 using namespace Imath;
 

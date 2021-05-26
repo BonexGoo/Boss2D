@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ScalarSample.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarSample_h //original-code:<Alembic/AbcCoreAbstract/ScalarSample.h>
 #include <typeinfo>
 
 namespace Alembic {

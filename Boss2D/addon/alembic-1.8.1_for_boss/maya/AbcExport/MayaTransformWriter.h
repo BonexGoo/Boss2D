@@ -39,8 +39,8 @@
 
 #include "Foundation.h"
 
-#include <Alembic/AbcGeom/OXform.h>
-#include <Alembic/AbcGeom/XformOp.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OXform_h //original-code:<Alembic/AbcGeom/OXform.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__XformOp_h //original-code:<Alembic/AbcGeom/XformOp.h>
 
 #include "AttributesWriter.h"
 

@@ -1,7 +1,7 @@
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
 
-#include <Alembic/AbcMaterial/MaterialAssignment.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialAssignment_h //original-code:<Alembic/AbcMaterial/MaterialAssignment.h>
 #include "PrintMaterial.h"
 #include <Alembic/AbcCoreAbstract/Tests/Assert.h>
 

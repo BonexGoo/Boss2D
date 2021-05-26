@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/GeometryScope.h>
-#include <Alembic/AbcGeom/IGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__GeometryScope_h //original-code:<Alembic/AbcGeom/GeometryScope.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IGeomParam_h //original-code:<Alembic/AbcGeom/IGeomParam.h>
 
 namespace Alembic {
 namespace AbcGeom {

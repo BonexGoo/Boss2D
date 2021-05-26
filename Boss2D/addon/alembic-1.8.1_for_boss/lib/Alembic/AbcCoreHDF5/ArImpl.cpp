@@ -34,13 +34,13 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/ArImpl.h>
-#include <Alembic/AbcCoreHDF5/OrData.h>
-#include <Alembic/AbcCoreHDF5/OrImpl.h>
-#include <Alembic/AbcCoreHDF5/ReadUtil.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
-#include <Alembic/AbcCoreHDF5/HDF5HierarchyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ArImpl_h //original-code:<Alembic/AbcCoreHDF5/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OrData_h //original-code:<Alembic/AbcCoreHDF5/OrData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OrImpl_h //original-code:<Alembic/AbcCoreHDF5/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadUtil_h //original-code:<Alembic/AbcCoreHDF5/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5HierarchyReader_h //original-code:<Alembic/AbcCoreHDF5/HDF5HierarchyReader.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

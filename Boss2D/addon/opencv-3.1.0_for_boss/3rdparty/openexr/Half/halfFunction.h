@@ -64,7 +64,7 @@
 //	Example:
 //
 //	    #include <math.h>
-//	    #include <halfFunction.h>
+//	    #include BOSS_OPENCV_V_halfFunction_h //original-code:<halfFunction.h>
 //
 //	    halfFunction<half> hsin (sin);
 //
@@ -83,7 +83,7 @@
 #ifndef _HALF_FUNCTION_H_
 #define _HALF_FUNCTION_H_
 
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 
 #include <IlmBaseConfig.h>
 #ifndef ILMBASE_HAVE_LARGE_STACK

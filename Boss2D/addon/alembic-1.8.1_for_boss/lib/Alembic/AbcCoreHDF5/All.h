@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreHDF5_All_h
 #define Alembic_AbcCoreHDF5_All_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreHDF5/ReadWrite.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadWrite_h //original-code:<Alembic/AbcCoreHDF5/ReadWrite.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

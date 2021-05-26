@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcGeom_OGeometrySchema_h
 #define Alembic_AbcGeom_OGeometrySchema_h
 
-#include <Alembic/Abc/OSchema.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/AbcGeom/OGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OGeomParam_h //original-code:<Alembic/AbcGeom/OGeomParam.h>
 
 namespace Alembic {
 namespace AbcGeom {

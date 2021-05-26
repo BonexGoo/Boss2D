@@ -44,7 +44,7 @@
 #include "XformHelper.h"
 #include "CreateSceneHelper.h"
 
-#include <Alembic/AbcGeom/Visibility.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Visibility_h //original-code:<Alembic/AbcGeom/Visibility.h>
 
 #include <maya/MString.h>
 #include <maya/MStringArray.h>

@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreHDF5_WriteUtil_h
 #define Alembic_AbcCoreHDF5_WriteUtil_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/WrittenArraySampleMap.h>
-#include <Alembic/AbcCoreHDF5/StringWriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WrittenArraySampleMap_h //original-code:<Alembic/AbcCoreHDF5/WrittenArraySampleMap.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__StringWriteUtil_h //original-code:<Alembic/AbcCoreHDF5/StringWriteUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

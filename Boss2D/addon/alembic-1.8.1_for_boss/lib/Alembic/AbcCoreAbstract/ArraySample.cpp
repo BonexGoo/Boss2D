@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ArraySample.h>
-#include <Alembic/Util/Murmur3.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySample_h //original-code:<Alembic/AbcCoreAbstract/ArraySample.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Murmur3_h //original-code:<Alembic/Util/Murmur3.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

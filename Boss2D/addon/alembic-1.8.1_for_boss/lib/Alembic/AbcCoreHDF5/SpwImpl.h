@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreHDF5_SpwImpl_h
 #define Alembic_AbcCoreHDF5_SpwImpl_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/SimplePwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__SimplePwImpl_h //original-code:<Alembic/AbcCoreHDF5/SimplePwImpl.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/IPolyMesh.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IPolyMesh_h //original-code:<Alembic/AbcGeom/IPolyMesh.h>
 
 namespace Alembic {
 namespace AbcGeom {

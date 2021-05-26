@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
 #include <iostream>
 
 #ifdef ALEMBIC_WITH_HDF5
-#include <Alembic/AbcCoreHDF5/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__All_h //original-code:<Alembic/AbcCoreHDF5/All.h>
 #endif
 
 namespace Abc = Alembic::Abc;

@@ -36,10 +36,10 @@
 #ifndef Alembic_Abc_OTypedArrayProperty_h
 #define Alembic_Abc_OTypedArrayProperty_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/OArrayProperty.h>
-#include <Alembic/Abc/TypedPropertyTraits.h>
-#include <Alembic/Abc/TypedArraySample.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArrayProperty_h //original-code:<Alembic/Abc/OArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedPropertyTraits_h //original-code:<Alembic/Abc/TypedPropertyTraits.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__TypedArraySample_h //original-code:<Alembic/Abc/TypedArraySample.h>
 
 namespace Alembic {
 namespace Abc {

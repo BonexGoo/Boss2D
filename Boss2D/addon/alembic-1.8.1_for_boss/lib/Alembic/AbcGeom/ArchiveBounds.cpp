@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/ArchiveBounds.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ArchiveBounds_h //original-code:<Alembic/AbcGeom/ArchiveBounds.h>
 
 namespace Alembic {
 namespace AbcGeom {

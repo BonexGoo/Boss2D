@@ -64,8 +64,8 @@
 #ifndef Alembic_Util_SpookyV2_h
 #define Alembic_Util_SpookyV2_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Util/PlainOldDataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__PlainOldDataType_h //original-code:<Alembic/Util/PlainOldDataType.h>
 
 namespace Alembic {
 namespace Util {

@@ -80,8 +80,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "ImathPlatform.h"
-#include "ImathLimits.h"
+#include BOSS_OPENCV_U_ImathPlatform_h //original-code:"ImathPlatform.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
 #include <math.h>
 
 namespace Imath {

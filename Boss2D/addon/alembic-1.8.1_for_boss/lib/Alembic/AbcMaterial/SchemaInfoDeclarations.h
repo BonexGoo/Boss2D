@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcMaterial_SchemaInfoDeclarations_h
 #define Alembic_AbcMaterial_SchemaInfoDeclarations_h
 
-#include <Alembic/Abc/OSchema.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchema_h //original-code:<Alembic/Abc/OSchema.h>
 
 namespace Alembic {
 namespace AbcMaterial {

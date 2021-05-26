@@ -41,7 +41,7 @@
 #include "AttributesWriter.h"
 #include "MayaTransformWriter.h"
 
-#include <Alembic/AbcGeom/OCurves.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OCurves_h //original-code:<Alembic/AbcGeom/OCurves.h>
 
 class MayaNurbsCurveWriter
 {

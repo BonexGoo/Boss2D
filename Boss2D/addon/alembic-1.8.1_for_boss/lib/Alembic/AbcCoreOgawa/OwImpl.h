@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreOgawa_OwImpl_h
 #define Alembic_AbcCoreOgawa_OwImpl_h
 
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/OwData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__OwData_h //original-code:<Alembic/AbcCoreOgawa/OwData.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

@@ -37,11 +37,11 @@
 #ifndef Alembic_Abc_OCompoundProperty_h
 #define Alembic_Abc_OCompoundProperty_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/Argument.h>
-#include <Alembic/Abc/Base.h>
-#include <Alembic/Abc/OBaseProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Argument_h //original-code:<Alembic/Abc/Argument.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Base_h //original-code:<Alembic/Abc/Base.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OBaseProperty_h //original-code:<Alembic/Abc/OBaseProperty.h>
 
 namespace Alembic {
 namespace Abc {

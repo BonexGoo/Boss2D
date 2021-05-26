@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreLayer/Read.h>
-#include <Alembic/AbcCoreLayer/Foundation.h>
-#include <Alembic/AbcCoreLayer/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Read_h //original-code:<Alembic/AbcCoreLayer/Read.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Foundation_h //original-code:<Alembic/AbcCoreLayer/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__ArImpl_h //original-code:<Alembic/AbcCoreLayer/ArImpl.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

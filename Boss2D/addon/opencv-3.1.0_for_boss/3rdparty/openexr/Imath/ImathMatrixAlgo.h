@@ -49,11 +49,11 @@
 //-------------------------------------------------------------------------
 
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
-#include "ImathQuat.h"
-#include "ImathEuler.h"
-#include "ImathExc.h"
+#include BOSS_OPENCV_U_ImathQuat_h //original-code:"ImathQuat.h"
+#include BOSS_OPENCV_U_ImathEuler_h //original-code:"ImathEuler.h"
+#include BOSS_OPENCV_U_ImathExc_h //original-code:"ImathExc.h"
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "ImathLimits.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
 #include <math.h>
 
 

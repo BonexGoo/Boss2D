@@ -37,30 +37,30 @@
 #ifndef Alembic_AbcCoreAbstract_All_h
 #define Alembic_AbcCoreAbstract_All_h
 
-#include <Alembic/AbcCoreAbstract/ArchiveReader.h>
-#include <Alembic/AbcCoreAbstract/ArchiveWriter.h>
-#include <Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
-#include <Alembic/AbcCoreAbstract/ArrayPropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/ArraySample.h>
-#include <Alembic/AbcCoreAbstract/ArraySampleKey.h>
-#include <Alembic/AbcCoreAbstract/BasePropertyReader.h>
-#include <Alembic/AbcCoreAbstract/BasePropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/CompoundPropertyReader.h>
-#include <Alembic/AbcCoreAbstract/CompoundPropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/DataType.h>
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreAbstract/ForwardDeclarations.h>
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/MetaData.h>
-#include <Alembic/AbcCoreAbstract/ObjectHeader.h>
-#include <Alembic/AbcCoreAbstract/ObjectReader.h>
-#include <Alembic/AbcCoreAbstract/ObjectWriter.h>
-#include <Alembic/AbcCoreAbstract/PropertyHeader.h>
-#include <Alembic/AbcCoreAbstract/ScalarPropertyReader.h>
-#include <Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
-#include <Alembic/AbcCoreAbstract/ScalarSample.h>
-#include <Alembic/AbcCoreAbstract/TimeSampling.h>
-#include <Alembic/AbcCoreAbstract/TimeSamplingType.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArchiveReader_h //original-code:<Alembic/AbcCoreAbstract/ArchiveReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArchiveWriter_h //original-code:<Alembic/AbcCoreAbstract/ArchiveWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArrayPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArrayPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/ArrayPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySample_h //original-code:<Alembic/AbcCoreAbstract/ArraySample.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySampleKey_h //original-code:<Alembic/AbcCoreAbstract/ArraySampleKey.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__BasePropertyReader_h //original-code:<Alembic/AbcCoreAbstract/BasePropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__BasePropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/BasePropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__CompoundPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/CompoundPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__CompoundPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/CompoundPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__DataType_h //original-code:<Alembic/AbcCoreAbstract/DataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ForwardDeclarations_h //original-code:<Alembic/AbcCoreAbstract/ForwardDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__MetaData_h //original-code:<Alembic/AbcCoreAbstract/MetaData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ObjectHeader_h //original-code:<Alembic/AbcCoreAbstract/ObjectHeader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ObjectReader_h //original-code:<Alembic/AbcCoreAbstract/ObjectReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ObjectWriter_h //original-code:<Alembic/AbcCoreAbstract/ObjectWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__PropertyHeader_h //original-code:<Alembic/AbcCoreAbstract/PropertyHeader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/ScalarPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarPropertyWriter_h //original-code:<Alembic/AbcCoreAbstract/ScalarPropertyWriter.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ScalarSample_h //original-code:<Alembic/AbcCoreAbstract/ScalarSample.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__TimeSampling_h //original-code:<Alembic/AbcCoreAbstract/TimeSampling.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__TimeSamplingType_h //original-code:<Alembic/AbcCoreAbstract/TimeSamplingType.h>
 
 #endif
 

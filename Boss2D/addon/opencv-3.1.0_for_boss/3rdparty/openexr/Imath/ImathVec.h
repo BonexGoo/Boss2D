@@ -43,9 +43,9 @@
 //
 //----------------------------------------------------
 
-#include "ImathExc.h"
-#include "ImathLimits.h"
-#include "ImathMath.h"
+#include BOSS_OPENCV_U_ImathExc_h //original-code:"ImathExc.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
+#include BOSS_OPENCV_U_ImathMath_h //original-code:"ImathMath.h"
 
 #include <iostream>
 

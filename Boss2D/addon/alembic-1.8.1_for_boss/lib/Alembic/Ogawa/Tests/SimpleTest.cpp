@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Ogawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__All_h //original-code:<Alembic/Ogawa/All.h>
 #include <Alembic/AbcCoreAbstract/Tests/Assert.h>
 #include <iostream>
 

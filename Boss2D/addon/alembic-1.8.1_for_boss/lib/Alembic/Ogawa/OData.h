@@ -36,9 +36,9 @@
 #ifndef Alembic_Ogawa_OData_h
 #define Alembic_Ogawa_OData_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Ogawa/Foundation.h>
-#include <Alembic/Ogawa/OStream.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__Foundation_h //original-code:<Alembic/Ogawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__OStream_h //original-code:<Alembic/Ogawa/OStream.h>
 
 namespace Alembic {
 namespace Ogawa {

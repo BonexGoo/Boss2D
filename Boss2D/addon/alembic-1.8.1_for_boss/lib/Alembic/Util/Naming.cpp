@@ -33,8 +33,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Util/Exception.h>
-#include <Alembic/Util/Naming.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Exception_h //original-code:<Alembic/Util/Exception.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Naming_h //original-code:<Alembic/Util/Naming.h>
 
 namespace Alembic {
 namespace Util {

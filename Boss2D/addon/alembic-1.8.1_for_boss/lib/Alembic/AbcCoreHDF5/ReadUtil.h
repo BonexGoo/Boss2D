@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcCoreHDF5_ReadUtil_h
 #define Alembic_AbcCoreHDF5_ReadUtil_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
-#include <Alembic/AbcCoreHDF5/StringReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Hierarchy_h //original-code:<Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__StringReadUtil_h //original-code:<Alembic/AbcCoreHDF5/StringReadUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

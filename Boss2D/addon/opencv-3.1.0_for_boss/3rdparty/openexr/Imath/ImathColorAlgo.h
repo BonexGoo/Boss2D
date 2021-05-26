@@ -38,9 +38,9 @@
 #define INCLUDED_IMATHCOLORALGO_H
 
 
-#include "ImathColor.h"
-#include "ImathMath.h"
-#include "ImathLimits.h"
+#include BOSS_OPENCV_U_ImathColor_h //original-code:"ImathColor.h"
+#include BOSS_OPENCV_U_ImathMath_h //original-code:"ImathMath.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
 
 namespace Imath {
 

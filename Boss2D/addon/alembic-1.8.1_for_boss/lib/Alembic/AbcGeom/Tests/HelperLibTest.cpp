@@ -34,11 +34,11 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/All.h>
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcGeom/Visibility.h>
-#include <Alembic/AbcGeom/ArchiveBounds.h>
-#include <Alembic/AbcGeom/IGeomParam.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__All_h //original-code:<Alembic/AbcCoreOgawa/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Visibility_h //original-code:<Alembic/AbcGeom/Visibility.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ArchiveBounds_h //original-code:<Alembic/AbcGeom/ArchiveBounds.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__IGeomParam_h //original-code:<Alembic/AbcGeom/IGeomParam.h>
 
 #include <Alembic/AbcCoreAbstract/Tests/Assert.h>
 

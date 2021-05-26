@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreAbstract_ForwardDeclarations_h
 #define Alembic_AbcCoreAbstract_ForwardDeclarations_h
 
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/PropertyHeader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__PropertyHeader_h //original-code:<Alembic/AbcCoreAbstract/PropertyHeader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

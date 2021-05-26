@@ -125,11 +125,11 @@
 //----------------------------------------------------------------------
 
 
-#include "ImathMath.h"
+#include BOSS_OPENCV_U_ImathMath_h //original-code:"ImathMath.h"
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
-#include "ImathQuat.h"
+#include BOSS_OPENCV_U_ImathQuat_h //original-code:"ImathQuat.h"
 #include BOSS_OPENCV_U_ImathMatrix_h //original-code:"ImathMatrix.h"
-#include "ImathLimits.h"
+#include BOSS_OPENCV_U_ImathLimits_h //original-code:"ImathLimits.h"
 #include <iostream>
 
 namespace Imath {

@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcGeom_XformOp_h
 #define Alembic_AbcGeom_XformOp_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
 
 #include <set>
 

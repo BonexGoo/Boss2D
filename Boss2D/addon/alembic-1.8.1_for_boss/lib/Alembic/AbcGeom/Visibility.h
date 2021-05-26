@@ -38,9 +38,9 @@
 #define Alembic_AbcGeom_Visibility_h
 
 #include <string.h>
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcGeom/Foundation.h>
-#include <Alembic/Abc/OSchemaObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__Foundation_h //original-code:<Alembic/AbcGeom/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OSchemaObject_h //original-code:<Alembic/Abc/OSchemaObject.h>
 
 
 

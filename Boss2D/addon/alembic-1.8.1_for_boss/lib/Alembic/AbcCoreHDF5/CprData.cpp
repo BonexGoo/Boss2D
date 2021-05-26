@@ -34,12 +34,12 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/CprData.h>
-#include <Alembic/AbcCoreHDF5/ReadUtil.h>
-#include <Alembic/AbcCoreHDF5/HDF5Util.h>
-#include <Alembic/AbcCoreHDF5/CprImpl.h>
-#include <Alembic/AbcCoreHDF5/SprImpl.h>
-#include <Alembic/AbcCoreHDF5/AprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CprData_h //original-code:<Alembic/AbcCoreHDF5/CprData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__ReadUtil_h //original-code:<Alembic/AbcCoreHDF5/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Util_h //original-code:<Alembic/AbcCoreHDF5/HDF5Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CprImpl_h //original-code:<Alembic/AbcCoreHDF5/CprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__SprImpl_h //original-code:<Alembic/AbcCoreHDF5/SprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__AprImpl_h //original-code:<Alembic/AbcCoreHDF5/AprImpl.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

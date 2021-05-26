@@ -34,10 +34,10 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/SprImpl.h>
-#include <Alembic/AbcCoreOgawa/ReadUtil.h>
-#include <Alembic/AbcCoreOgawa/StreamManager.h>
-#include <Alembic/AbcCoreOgawa/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__SprImpl_h //original-code:<Alembic/AbcCoreOgawa/SprImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ReadUtil_h //original-code:<Alembic/AbcCoreOgawa/ReadUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__StreamManager_h //original-code:<Alembic/AbcCoreOgawa/StreamManager.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__OrImpl_h //original-code:<Alembic/AbcCoreOgawa/OrImpl.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

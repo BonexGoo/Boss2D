@@ -42,7 +42,7 @@
 #include <set>
 #include <string>
 
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 #include "NodeIteratorVisitorHelper.h"
 
 #include <maya/MGlobal.h>

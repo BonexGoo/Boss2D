@@ -37,14 +37,14 @@
 #ifndef Alembic_Ogawa_All_h
 #define Alembic_Ogawa_All_h
 
-#include <Alembic/Ogawa/Foundation.h>
-#include <Alembic/Ogawa/IArchive.h>
-#include <Alembic/Ogawa/IData.h>
-#include <Alembic/Ogawa/IGroup.h>
-#include <Alembic/Ogawa/IStreams.h>
-#include <Alembic/Ogawa/OArchive.h>
-#include <Alembic/Ogawa/OData.h>
-#include <Alembic/Ogawa/OGroup.h>
-#include <Alembic/Ogawa/OStream.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__Foundation_h //original-code:<Alembic/Ogawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IArchive_h //original-code:<Alembic/Ogawa/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IData_h //original-code:<Alembic/Ogawa/IData.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IGroup_h //original-code:<Alembic/Ogawa/IGroup.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IStreams_h //original-code:<Alembic/Ogawa/IStreams.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__OArchive_h //original-code:<Alembic/Ogawa/OArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__OData_h //original-code:<Alembic/Ogawa/OData.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__OGroup_h //original-code:<Alembic/Ogawa/OGroup.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__OStream_h //original-code:<Alembic/Ogawa/OStream.h>
 
 #endif

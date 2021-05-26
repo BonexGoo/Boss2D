@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/ONuPatch.h>
-#include <Alembic/AbcGeom/GeometryScope.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ONuPatch_h //original-code:<Alembic/AbcGeom/ONuPatch.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__GeometryScope_h //original-code:<Alembic/AbcGeom/GeometryScope.h>
 #include <iostream>
 
 namespace Alembic {
@@ -101,7 +101,7 @@ ONuPatchSchema::ONuPatchSchema( Abc::OCompoundProperty iParent,
 }
 
 //-*****************************************************************************
-inline void SetPropUsePrevIfNull( Abc::OInt32Property iProp, int32_t iVal )
+inline void SetPropUsePrevIfNull_ONuPatch_BOSS( Abc::OInt32Property iProp, int32_t iVal ) // added by BOSS: _ONuPatch_BOSS
 {
     if ( ! iProp ) { return; }
 
@@ -114,7 +114,6 @@ inline void SetPropUsePrevIfNull( Abc::OInt32Property iProp, int32_t iVal )
         iProp.setFromPrevious();
     }
 }
-
 //-*****************************************************************************
 void ONuPatchSchema::set( const ONuPatchSchema::Sample &iSamp  )
 {
@@ -227,10 +226,10 @@ void ONuPatchSchema::set( const ONuPatchSchema::Sample &iSamp  )
     {
         // TODO this would all go away, remove the lightweight constructor
         SetPropUsePrevIfNull( m_positionsProperty, iSamp.getPositions() );
-        SetPropUsePrevIfNull( m_numUProperty, iSamp.getNu() );
-        SetPropUsePrevIfNull( m_numVProperty, iSamp.getNv() );
-        SetPropUsePrevIfNull( m_uOrderProperty, iSamp.getUOrder() );
-        SetPropUsePrevIfNull( m_vOrderProperty, iSamp.getVOrder() );
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_numUProperty, iSamp.getNu() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_numVProperty, iSamp.getNv() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_uOrderProperty, iSamp.getUOrder() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_vOrderProperty, iSamp.getVOrder() ); // added by BOSS: _ONuPatch_BOSS
         SetPropUsePrevIfNull( m_uKnotProperty, iSamp.getUKnot() );
         SetPropUsePrevIfNull( m_vKnotProperty, iSamp.getVKnot() );
 
@@ -259,7 +258,7 @@ void ONuPatchSchema::set( const ONuPatchSchema::Sample &iSamp  )
         // handle trim curves
         if ( m_trimNumLoopsProperty )
         {
-            SetPropUsePrevIfNull( m_trimNumLoopsProperty, iSamp.getTrimNumLoops() );
+            SetPropUsePrevIfNull_ONuPatch_BOSS( m_trimNumLoopsProperty, iSamp.getTrimNumLoops() ); // added by BOSS: _ONuPatch_BOSS
             SetPropUsePrevIfNull( m_trimNumCurvesProperty, iSamp.getTrimNumCurves() );
             SetPropUsePrevIfNull( m_trimNumVerticesProperty,
                                     iSamp.getTrimNumVertices() );
@@ -330,10 +329,10 @@ void ONuPatchSchema::selectiveSet( const Sample &iSamp )
     // Assuming all knot properties get created in ::createKnotProperties()
     if( m_numUProperty )
     {
-        SetPropUsePrevIfNull( m_numUProperty, iSamp.getNu() );
-        SetPropUsePrevIfNull( m_numVProperty, iSamp.getNv() );
-        SetPropUsePrevIfNull( m_uOrderProperty, iSamp.getUOrder() );
-        SetPropUsePrevIfNull( m_vOrderProperty, iSamp.getVOrder() );
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_numUProperty, iSamp.getNu() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_numVProperty, iSamp.getNv() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_uOrderProperty, iSamp.getUOrder() ); // added by BOSS: _ONuPatch_BOSS
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_vOrderProperty, iSamp.getVOrder() ); // added by BOSS: _ONuPatch_BOSS
         SetPropUsePrevIfNull( m_uKnotProperty, iSamp.getUKnot() );
         SetPropUsePrevIfNull( m_vKnotProperty, iSamp.getVKnot() );
     }
@@ -396,7 +395,7 @@ void ONuPatchSchema::selectiveSet( const Sample &iSamp )
 
     if ( m_trimNumLoopsProperty )
     {
-        SetPropUsePrevIfNull( m_trimNumLoopsProperty, iSamp.getTrimNumLoops() );
+        SetPropUsePrevIfNull_ONuPatch_BOSS( m_trimNumLoopsProperty, iSamp.getTrimNumLoops() ); // added by BOSS: _ONuPatch_BOSS
         SetPropUsePrevIfNull( m_trimNumCurvesProperty, iSamp.getTrimNumCurves() );
         SetPropUsePrevIfNull( m_trimNumVerticesProperty,
                                 iSamp.getTrimNumVertices() );

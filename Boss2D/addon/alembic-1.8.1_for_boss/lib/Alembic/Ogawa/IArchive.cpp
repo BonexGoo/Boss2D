@@ -33,7 +33,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Ogawa/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IArchive_h //original-code:<Alembic/Ogawa/IArchive.h>
 
 namespace Alembic {
 namespace Ogawa {

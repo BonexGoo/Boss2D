@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/CacheImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CacheImpl_h //original-code:<Alembic/AbcCoreHDF5/CacheImpl.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

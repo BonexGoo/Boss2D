@@ -36,13 +36,13 @@
 #ifndef Alembic_Util_Foundation_h
 #define Alembic_Util_Foundation_h
 
-#include <Alembic/Util/Config.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Config_h //original-code:<Alembic/Util/Config.h>
 
 #include <unordered_map>
 
 #include <memory>
 
-#include <half.h>
+#include BOSS_OPENCV_V_half_h //original-code:<half.h>
 
 #include <iomanip>
 #include <iostream>
@@ -60,7 +60,7 @@
 #include <cstring>
 #include <cassert>
 
-#include <Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
 
 #ifdef _MSC_VER
 

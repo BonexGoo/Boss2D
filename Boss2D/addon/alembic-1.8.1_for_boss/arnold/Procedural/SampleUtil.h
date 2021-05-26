@@ -36,7 +36,7 @@
 #ifndef Alembic_Arnold_SampleUtil_h
 #define Alembic_Arnold_SampleUtil_h
 
-#include <Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
 
 #include "ProcArgs.h"
 

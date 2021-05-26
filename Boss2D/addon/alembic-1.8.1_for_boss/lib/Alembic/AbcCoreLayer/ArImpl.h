@@ -37,7 +37,7 @@
 #ifndef Alembic_AbcCoreLayer_ArImpl_h
 #define Alembic_AbcCoreLayer_ArImpl_h
 
-#include <Alembic/AbcCoreLayer/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Foundation_h //original-code:<Alembic/AbcCoreLayer/Foundation.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

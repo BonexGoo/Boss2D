@@ -45,7 +45,7 @@
 
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
-#include "ImathLine.h"
+#include BOSS_OPENCV_U_ImathLine_h //original-code:"ImathLine.h"
 
 namespace Imath {
 

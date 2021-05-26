@@ -37,8 +37,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/time.h>
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcCoreFactory/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__All_h //original-code:<Alembic/AbcCoreFactory/All.h>
 
 double getTimeSec()
 {

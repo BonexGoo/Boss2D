@@ -45,7 +45,7 @@
 //---------------------------------------------------------------------------
 
 #include <assert.h>
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 
 using namespace std;
 
@@ -54,9 +54,9 @@ using namespace std;
 //-------------------------------------------------------------
 
 HALF_EXPORT_CONST half::uif half::_toFloat[1 << 16] =
-#include "toFloat.h"
+#include BOSS_OPENCV_U_toFloat_h //original-code:"toFloat.h"
 HALF_EXPORT_CONST unsigned short half::_eLut[1 << 9] =
-#include "eLut.h"
+#include BOSS_OPENCV_U_eLut_h //original-code:"eLut.h"
 
 
 //-----------------------------------------------

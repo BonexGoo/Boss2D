@@ -39,6 +39,7 @@
     <ClCompile Include="..\addon\boss_addon_zipa.cpp" />
     <ClCompile Include="..\addon\boss_fakewin.cpp" />
     <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp" />
+    <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp" />
     <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
     <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp" />
     <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
@@ -53,6 +54,7 @@
     <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.c" />
     <ClCompile Include="..\addon\boss_integration_opencv-3.1.0.cpp" />
     <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.c" />
+    <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.cpp" />
     <ClCompile Include="..\addon\boss_integration_openh264-1.6.0.cpp" />
     <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_decoder.cpp" />
     <ClCompile Include="..\addon\boss_integration_openh264-1.6.0_for_encoder.cpp" />
@@ -177,6 +179,7 @@
     <ClInclude Include="..\addon\boss_addon_zipa.hpp" />
     <ClInclude Include="..\addon\boss_fakewin.h" />
     <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h" />
+    <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h" />
     <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
     <ClInclude Include="..\addon\boss_integration_dlib-19.17.h" />
     <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />
@@ -191,6 +194,7 @@
     <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_libtiff.h" />
     <ClInclude Include="..\addon\boss_integration_opencv-3.1.0.h" />
     <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_libjpeg.h" />
+    <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.h" />
     <ClInclude Include="..\addon\boss_integration_openh264-1.6.0.h" />
     <ClInclude Include="..\addon\boss_integration_openssl-1.1.1a.h" />
     <ClInclude Include="..\addon\boss_integration_psd_sdk-commit23.h" />

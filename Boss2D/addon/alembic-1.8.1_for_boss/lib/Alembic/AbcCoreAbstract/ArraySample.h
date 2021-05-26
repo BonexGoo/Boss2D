@@ -37,10 +37,10 @@
 #ifndef Alembic_AbcCoreAbstract_ArraySample_h
 #define Alembic_AbcCoreAbstract_ArraySample_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/ArraySampleKey.h>
-#include <Alembic/AbcCoreAbstract/DataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArraySampleKey_h //original-code:<Alembic/AbcCoreAbstract/ArraySampleKey.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__DataType_h //original-code:<Alembic/AbcCoreAbstract/DataType.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

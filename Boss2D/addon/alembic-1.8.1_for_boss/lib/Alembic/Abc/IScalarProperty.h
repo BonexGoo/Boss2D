@@ -36,13 +36,13 @@
 #ifndef Alembic_Abc_IScalarProperty_h
 #define Alembic_Abc_IScalarProperty_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/Base.h>
-#include <Alembic/Abc/Argument.h>
-#include <Alembic/Abc/ISampleSelector.h>
-#include <Alembic/Abc/IBaseProperty.h>
-#include <Alembic/Abc/ICompoundProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Base_h //original-code:<Alembic/Abc/Base.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Argument_h //original-code:<Alembic/Abc/Argument.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISampleSelector_h //original-code:<Alembic/Abc/ISampleSelector.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IBaseProperty_h //original-code:<Alembic/Abc/IBaseProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ICompoundProperty_h //original-code:<Alembic/Abc/ICompoundProperty.h>
 
 namespace Alembic {
 namespace Abc {

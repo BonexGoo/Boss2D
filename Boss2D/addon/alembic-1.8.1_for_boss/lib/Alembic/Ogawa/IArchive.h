@@ -36,10 +36,10 @@
 #ifndef Alembic_Ogawa_IArchive_h
 #define Alembic_Ogawa_IArchive_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Ogawa/Foundation.h>
-#include <Alembic/Ogawa/IStreams.h>
-#include <Alembic/Ogawa/IGroup.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__Foundation_h //original-code:<Alembic/Ogawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IStreams_h //original-code:<Alembic/Ogawa/IStreams.h>
+#include BOSS_ALEMBIC_V_Alembic__Ogawa__IGroup_h //original-code:<Alembic/Ogawa/IGroup.h>
 
 #include <istream>
 

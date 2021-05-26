@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreAbstract_ObjectHeader_h
 #define Alembic_AbcCoreAbstract_ObjectHeader_h
 
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/MetaData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__MetaData_h //original-code:<Alembic/AbcCoreAbstract/MetaData.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcMaterial/MaterialFlatten.h>
-#include <Alembic/AbcMaterial/MaterialAssignment.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialFlatten_h //original-code:<Alembic/AbcMaterial/MaterialFlatten.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialAssignment_h //original-code:<Alembic/AbcMaterial/MaterialAssignment.h>
 
 #include <set>
 

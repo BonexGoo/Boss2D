@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/SpwImpl.h>
-#include <Alembic/AbcCoreOgawa/CpwImpl.h>
-#include <Alembic/AbcCoreOgawa/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__SpwImpl_h //original-code:<Alembic/AbcCoreOgawa/SpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__CpwImpl_h //original-code:<Alembic/AbcCoreOgawa/CpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__WriteUtil_h //original-code:<Alembic/AbcCoreOgawa/WriteUtil.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

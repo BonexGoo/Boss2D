@@ -36,16 +36,16 @@
 #ifndef Alembic_Util_All_h
 #define Alembic_Util_All_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/Util/Foundation.h>
-#include <Alembic/Util/Digest.h>
-#include <Alembic/Util/Dimensions.h>
-#include <Alembic/Util/Exception.h>
-#include <Alembic/Util/Murmur3.h>
-#include <Alembic/Util/Naming.h>
-#include <Alembic/Util/OperatorBool.h>
-#include <Alembic/Util/PlainOldDataType.h>
-#include <Alembic/Util/TokenMap.h>
-#include <Alembic/Util/SpookyV2.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Digest_h //original-code:<Alembic/Util/Digest.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Dimensions_h //original-code:<Alembic/Util/Dimensions.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Exception_h //original-code:<Alembic/Util/Exception.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Murmur3_h //original-code:<Alembic/Util/Murmur3.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Naming_h //original-code:<Alembic/Util/Naming.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__OperatorBool_h //original-code:<Alembic/Util/OperatorBool.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__PlainOldDataType_h //original-code:<Alembic/Util/PlainOldDataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__TokenMap_h //original-code:<Alembic/Util/TokenMap.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__SpookyV2_h //original-code:<Alembic/Util/SpookyV2.h>
 
 #endif

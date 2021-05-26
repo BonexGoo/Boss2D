@@ -34,12 +34,12 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/XformSample.h>
-#include <Alembic/AbcGeom/XformOp.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__XformSample_h //original-code:<Alembic/AbcGeom/XformSample.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__XformOp_h //original-code:<Alembic/AbcGeom/XformOp.h>
 
-#include <ImathMatrix.h>
-#include <ImathMatrixAlgo.h>
-#include <ImathQuat.h>
+#include BOSS_OPENCV_V_ImathMatrix_h //original-code:<ImathMatrix.h>
+#include BOSS_OPENCV_V_ImathMatrixAlgo_h //original-code:<ImathMatrixAlgo.h>
+#include BOSS_OPENCV_V_ImathQuat_h //original-code:<ImathQuat.h>
 
 #include <math.h>
 #ifndef M_PI

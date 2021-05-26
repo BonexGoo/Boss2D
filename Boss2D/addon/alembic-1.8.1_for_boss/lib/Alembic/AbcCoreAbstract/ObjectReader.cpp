@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ObjectReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ObjectReader_h //original-code:<Alembic/AbcCoreAbstract/ObjectReader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

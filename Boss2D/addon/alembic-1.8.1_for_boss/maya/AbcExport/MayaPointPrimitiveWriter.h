@@ -41,7 +41,7 @@
 #include "AttributesWriter.h"
 #include "MayaTransformWriter.h"
 
-#include <Alembic/AbcGeom/OPoints.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__OPoints_h //original-code:<Alembic/AbcGeom/OPoints.h>
 
 class MayaPointPrimitiveWriter
 {

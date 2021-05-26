@@ -37,11 +37,11 @@
 #ifndef Alembic_AbcCoreAbstract_CompoundPropertyReader_h
 #define Alembic_AbcCoreAbstract_CompoundPropertyReader_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCoreAbstract/Foundation.h>
-#include <Alembic/AbcCoreAbstract/BasePropertyReader.h>
-#include <Alembic/AbcCoreAbstract/ForwardDeclarations.h>
-#include <Alembic/AbcCoreAbstract/PropertyHeader.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__Foundation_h //original-code:<Alembic/AbcCoreAbstract/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__BasePropertyReader_h //original-code:<Alembic/AbcCoreAbstract/BasePropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ForwardDeclarations_h //original-code:<Alembic/AbcCoreAbstract/ForwardDeclarations.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__PropertyHeader_h //original-code:<Alembic/AbcCoreAbstract/PropertyHeader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

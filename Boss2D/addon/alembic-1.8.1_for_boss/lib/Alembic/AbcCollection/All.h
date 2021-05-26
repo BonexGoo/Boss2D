@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCollection_All_h
 #define Alembic_AbcCollection_All_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcCollection/ICollections.h>
-#include <Alembic/AbcCollection/OCollections.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCollection__ICollections_h //original-code:<Alembic/AbcCollection/ICollections.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCollection__OCollections_h //original-code:<Alembic/AbcCollection/OCollections.h>
 
 #endif

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/ILight.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ILight_h //original-code:<Alembic/AbcGeom/ILight.h>
 
 namespace Alembic {
 namespace AbcGeom {

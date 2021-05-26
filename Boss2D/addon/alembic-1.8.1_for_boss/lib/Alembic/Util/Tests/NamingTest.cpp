@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Util/Naming.h>
-#include <Alembic/Util/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Naming_h //original-code:<Alembic/Util/Naming.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Foundation_h //original-code:<Alembic/Util/Foundation.h>
 
 #include <string>
 #include <vector>

@@ -34,8 +34,8 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/CpwImpl.h>
-#include <Alembic/AbcCoreHDF5/WriteUtil.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__CpwImpl_h //original-code:<Alembic/AbcCoreHDF5/CpwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__WriteUtil_h //original-code:<Alembic/AbcCoreHDF5/WriteUtil.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

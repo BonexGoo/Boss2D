@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreHDF5/OrImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__OrImpl_h //original-code:<Alembic/AbcCoreHDF5/OrImpl.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

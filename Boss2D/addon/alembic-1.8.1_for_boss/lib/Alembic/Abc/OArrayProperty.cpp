@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/OArrayProperty.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__OArrayProperty_h //original-code:<Alembic/Abc/OArrayProperty.h>
 
 namespace Alembic {
 namespace Abc {

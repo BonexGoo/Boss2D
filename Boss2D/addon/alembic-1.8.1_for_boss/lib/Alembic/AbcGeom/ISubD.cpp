@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcGeom/ISubD.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ISubD_h //original-code:<Alembic/AbcGeom/ISubD.h>
 
 namespace Alembic {
 namespace AbcGeom {

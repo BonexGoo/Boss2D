@@ -37,11 +37,11 @@
 #ifndef Alembic_Abc_IBaseProperty_h
 #define Alembic_Abc_IBaseProperty_h
 
-#include <Alembic/Abc/Foundation.h>
-#include <Alembic/Abc/Base.h>
-#include <Alembic/Abc/Argument.h>
-#include <Alembic/Abc/IObject.h>
-#include <Alembic/Abc/IArchive.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Foundation_h //original-code:<Alembic/Abc/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Base_h //original-code:<Alembic/Abc/Base.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__Argument_h //original-code:<Alembic/Abc/Argument.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IObject_h //original-code:<Alembic/Abc/IObject.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__IArchive_h //original-code:<Alembic/Abc/IArchive.h>
 
 namespace Alembic {
 namespace Abc {

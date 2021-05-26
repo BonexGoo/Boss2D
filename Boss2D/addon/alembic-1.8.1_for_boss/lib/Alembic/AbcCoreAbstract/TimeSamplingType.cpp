@@ -34,9 +34,9 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/TimeSamplingType.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__TimeSamplingType_h //original-code:<Alembic/AbcCoreAbstract/TimeSamplingType.h>
 
-#include <ImathMath.h>
+#include BOSS_OPENCV_V_ImathMath_h //original-code:<ImathMath.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

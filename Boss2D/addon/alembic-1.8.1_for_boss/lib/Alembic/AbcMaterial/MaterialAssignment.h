@@ -38,9 +38,9 @@
 #ifndef Alembic_AbcMaterial_MaterialAssignment_h
 #define Alembic_AbcMaterial_MaterialAssignment_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcMaterial/IMaterial.h>
-#include <Alembic/AbcMaterial/OMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__IMaterial_h //original-code:<Alembic/AbcMaterial/IMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__OMaterial_h //original-code:<Alembic/AbcMaterial/OMaterial.h>
 
 namespace Alembic {
 namespace AbcMaterial {

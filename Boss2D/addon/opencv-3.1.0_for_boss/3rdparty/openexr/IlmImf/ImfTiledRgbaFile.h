@@ -49,7 +49,7 @@
 #include BOSS_OPENCV_V_ImfFrameBuffer_h //original-code:<ImfFrameBuffer.h>
 #include BOSS_OPENCV_U_ImathVec_h //original-code:"ImathVec.h"
 #include BOSS_OPENCV_U_ImathBox_h //original-code:"ImathBox.h"
-#include "half.h"
+#include BOSS_OPENCV_U_half_h //original-code:"half.h"
 #include BOSS_OPENCV_V_ImfTileDescription_h //original-code:<ImfTileDescription.h>
 #include <ImfRgba.h>
 #include BOSS_OPENCV_V_ImfThreading_h //original-code:<ImfThreading.h>

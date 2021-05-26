@@ -1,7 +1,7 @@
 #ifndef Alembic_AbcMaterialTest_PrintMaterial_h
 #define Alembic_AbcMaterialTest_PrintMaterial_h
 
-#include <Alembic/AbcMaterial/MaterialFlatten.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialFlatten_h //original-code:<Alembic/AbcMaterial/MaterialFlatten.h>
 
 void printFlattenedMaterial(Alembic::AbcMaterial::IMaterial & material);
 

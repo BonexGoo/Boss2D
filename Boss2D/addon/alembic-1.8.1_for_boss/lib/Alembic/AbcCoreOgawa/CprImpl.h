@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreOgawa_CprImpl_h
 #define Alembic_AbcCoreOgawa_CprImpl_h
 
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/CprData.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__CprData_h //original-code:<Alembic/AbcCoreOgawa/CprData.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

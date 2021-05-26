@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ReadArraySampleCache.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ReadArraySampleCache_h //original-code:<Alembic/AbcCoreAbstract/ReadArraySampleCache.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

@@ -37,9 +37,9 @@
 #ifndef Alembic_AbcMaterial_All_h
 #define Alembic_AbcMaterial_All_h
 
-#include <Alembic/AbcMaterial/IMaterial.h>
-#include <Alembic/AbcMaterial/OMaterial.h>
-#include <Alembic/AbcMaterial/MaterialAssignment.h>
-#include <Alembic/AbcMaterial/MaterialFlatten.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__IMaterial_h //original-code:<Alembic/AbcMaterial/IMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__OMaterial_h //original-code:<Alembic/AbcMaterial/OMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialAssignment_h //original-code:<Alembic/AbcMaterial/MaterialAssignment.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialFlatten_h //original-code:<Alembic/AbcMaterial/MaterialFlatten.h>
 
 #endif

@@ -34,10 +34,10 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreOgawa/ReadWrite.h>
-#include <Alembic/AbcCoreOgawa/Foundation.h>
-#include <Alembic/AbcCoreOgawa/AwImpl.h>
-#include <Alembic/AbcCoreOgawa/ArImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ReadWrite_h //original-code:<Alembic/AbcCoreOgawa/ReadWrite.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__Foundation_h //original-code:<Alembic/AbcCoreOgawa/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__AwImpl_h //original-code:<Alembic/AbcCoreOgawa/AwImpl.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreOgawa__ArImpl_h //original-code:<Alembic/AbcCoreOgawa/ArImpl.h>
 
 namespace Alembic {
 namespace AbcCoreOgawa {

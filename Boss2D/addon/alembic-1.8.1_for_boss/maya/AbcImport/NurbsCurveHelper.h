@@ -42,7 +42,7 @@
 #include <vector>
 #include <string>
 
-#include <Alembic/AbcGeom/ICurves.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__ICurves_h //original-code:<Alembic/AbcGeom/ICurves.h>
 
 MObject createCurves(const std::string & iName,
     Alembic::AbcGeom::ICurvesSchema::Sample & iSample,

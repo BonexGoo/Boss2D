@@ -36,8 +36,8 @@
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
 
-#include <Alembic/Util/Murmur3.h>
-#include <Alembic/Util/PlainOldDataType.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Murmur3_h //original-code:<Alembic/Util/Murmur3.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__PlainOldDataType_h //original-code:<Alembic/Util/PlainOldDataType.h>
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include <machine/endian.h>

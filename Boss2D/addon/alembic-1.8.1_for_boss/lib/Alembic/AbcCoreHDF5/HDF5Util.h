@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcCoreHDF5_HDF5Util_h
 #define Alembic_AbcCoreHDF5_HDF5Util_h
 
-#include <Alembic/AbcCoreHDF5/Foundation.h>
-#include <Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__Foundation_h //original-code:<Alembic/AbcCoreHDF5/Foundation.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreHDF5__HDF5Hierarchy_h //original-code:<Alembic/AbcCoreHDF5/HDF5Hierarchy.h>
 
 namespace Alembic {
 namespace AbcCoreHDF5 {

@@ -34,15 +34,15 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__All_h //original-code:<Alembic/AbcCoreAbstract/All.h>
 
 #include "Assert.h"
 
 #include <float.h>
 #include <stdlib.h>
 
-#include <ImathMath.h>
-#include <ImathRandom.h>
+#include BOSS_OPENCV_V_ImathMath_h //original-code:<ImathMath.h>
+#include BOSS_OPENCV_V_ImathRandom_h //original-code:<ImathRandom.h>
 
 #include <vector>
 #include <iostream>

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreAbstract__ArrayPropertyReader_h //original-code:<Alembic/AbcCoreAbstract/ArrayPropertyReader.h>
 
 namespace Alembic {
 namespace AbcCoreAbstract {

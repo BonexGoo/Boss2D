@@ -37,8 +37,8 @@
 #ifndef Alembic_AbcMaterial_MaterialFlatten_h
 #define Alembic_AbcMaterial_MaterialFlatten_h
 
-#include <Alembic/Util/Export.h>
-#include <Alembic/AbcMaterial/IMaterial.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__Export_h //original-code:<Alembic/Util/Export.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__IMaterial_h //original-code:<Alembic/AbcMaterial/IMaterial.h>
 
 namespace Alembic {
 namespace AbcMaterial {

@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/Abc/ISampleSelector.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__ISampleSelector_h //original-code:<Alembic/Abc/ISampleSelector.h>
 
 namespace Alembic {
 namespace Abc {

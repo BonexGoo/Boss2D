@@ -34,7 +34,7 @@
 //
 //-*****************************************************************************
 
-#include <Alembic/AbcCoreLayer/Util.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreLayer__Util_h //original-code:<Alembic/AbcCoreLayer/Util.h>
 
 namespace Alembic {
 namespace AbcCoreLayer {

@@ -43,8 +43,8 @@
 
 #ifdef PRMAN_USE_ABCMATERIAL
 
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcMaterial/MaterialFlatten.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcMaterial__MaterialFlatten_h //original-code:<Alembic/AbcMaterial/MaterialFlatten.h>
 
 using namespace Alembic::AbcGeom;
 namespace Mat = Alembic::AbcMaterial;
