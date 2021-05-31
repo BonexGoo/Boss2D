@@ -6334,6 +6334,7 @@
             SerialPortForWindows(const SerialPortInfoClass& info)
             {
                 mPortName = info.portName().toUtf8().constData();
+                mLocation = info.systemLocation().toUtf8().constData();
                 mBaudRate = UnknownBaud;
                 mDataBits = UnknownDataBits;
                 mParity = UnknownParity;
@@ -6358,10 +6359,13 @@
                 case QIODevice::ReadWrite: mode = GENERIC_READ | GENERIC_WRITE; break;
                 default: BOSS_ASSERT("알 수 없는 flag값입니다", false); return false;
                 }
-                HANDLE NewFd = CreateFileA(mPortName, mode, 0, 0, OPEN_EXISTING, 0, 0);
-                BOSS_TRACE("SerialPortForWindows::open::CreateFileA(%s, %d) fd = %d", (chars) mPortName, mode, NewFd);
+                HANDLE NewFd = CreateFileA(mLocation, mode, 0, 0, OPEN_EXISTING, 0, 0);
                 if(NewFd == INVALID_HANDLE_VALUE)
+                {
+                    BOSS_ASSERT(String::Format("SerialPortForWindows::open::CreateFileA(%s, %08X) error",
+                        (chars) mPortName, mode), false);
                     return false;
+                }
                 mFd = reconfigurePort(NewFd);
                 return (mFd != INVALID_HANDLE_VALUE);
             }
@@ -6454,7 +6458,7 @@
                 DCB Dcb;
                 if(!GetCommState(fd, &Dcb))
                 {
-                    BOSS_TRACE("SerialPortForWindows::reconfigurePort::GetCommState() error");
+                    BOSS_ASSERT("SerialPortForWindows::reconfigurePort::GetCommState() error", false);
                     close();
                     return INVALID_HANDLE_VALUE;
                 }
@@ -6503,7 +6507,7 @@
 
                 if(!SetCommState(fd, &Dcb))
                 {
-                    BOSS_TRACE("SerialPortForWindows::reconfigurePort::SetCommState() error");
+                    BOSS_ASSERT("SerialPortForWindows::reconfigurePort::SetCommState() error", false);
                     close();
                     return INVALID_HANDLE_VALUE;
                 }
@@ -6700,10 +6704,10 @@
                     mSerial->setFlowControl(SerialPortClass::NoFlowControl);
                     if(!mSerial->open(QIODevice::ReadWrite))
                     {
-                        BOSS_TRACE("QSerialPort error: port=%s, error=%s(%d)",
+                        BOSS_ASSERT(String::Format("QSerialPort error: port=%s, error=%s(%d)",
                             mSerial->portName().toUtf8().constData(),
                             mSerial->errorString().toUtf8().constData(),
-                            (sint32) mSerial->error());
+                            (sint32) mSerial->error()), false);
                         delete mSerial;
                         mSerial = nullptr;
                         if(*name == '\0')
