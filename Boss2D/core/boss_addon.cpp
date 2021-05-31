@@ -6,6 +6,7 @@
 
 // 링크옵션 /OPT:NOREF가 안되서 임시코드
 bool __LINK_ADDON_AAC__();
+bool __LINK_ADDON_ABC__();
 bool __LINK_ADDON_ALPR__();
 bool __LINK_ADDON_CURL__();
 bool __LINK_ADDON_DLIB__();
@@ -25,6 +26,7 @@ bool __LINK_ADDON_ZIP__();
 bool __LINK_ADDON_ZIPA__();
 static bool _ =
     __LINK_ADDON_AAC__() |
+    __LINK_ADDON_ABC__() |
     __LINK_ADDON_ALPR__() |
     __LINK_ADDON_CURL__() |
     __LINK_ADDON_DLIB__() |
@@ -63,6 +65,21 @@ namespace BOSS
 
     void AddOn::Aac::SilenceTo(id_acc acc, id_flash flash, uint64 timems)
     {Core_AddOn_Aac_SilenceTo()(acc, flash, timems);}
+
+    ////////////////////////////////////////////////////////////////////////////////
+    static void Abc_Error() {BOSS_ASSERT("Abc애드온이 준비되지 않았습니다", false);}
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, Create, id_abc, return nullptr, chars)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, Release, void, return, id_abc)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, Render, void, return, id_abc, float, float, uint32)
+
+    id_abc AddOn::Abc::Create(chars abcpath)
+    {return Core_AddOn_Abc_Create()(abcpath);}
+
+    void AddOn::Abc::Release(id_abc abc)
+    {Core_AddOn_Abc_Release()(abc);}
+
+    void AddOn::Abc::Render(id_abc abc, float x, float y, uint32 fbo)
+    {Core_AddOn_Abc_Render()(abc, x, y, fbo);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Alpr_Error() {BOSS_ASSERT("Alpr애드온이 준비되지 않았습니다", false);}

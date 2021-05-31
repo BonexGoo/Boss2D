@@ -1,5 +1,5 @@
 ﻿#include <boss.h>
-#if BOSS_NEED_ADDON_ALEMBIC
+#if BOSS_NEED_ADDON_ABC
 
 #include "boss_integration_alembic-1.8.1.h"
 

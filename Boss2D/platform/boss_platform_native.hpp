@@ -9,11 +9,11 @@
 
     #if BOSS_NEED_NATIVE_OPENGL
     # if BOSS_WINDOWS
-    #  include <platform/win32/glew.h>
+    #  include <platform/win32/glew-2.2.0/include/GL/glew.h>
     # if BOSS_X64
-    #  pragma comment(lib, "../../Boss2D/platform/win32/lib/Release/x64/glew32.lib")
+    #  pragma comment(lib, "../../Boss2D/platform/win32/glew-2.2.0/bin/Release/x64/glew32.lib")
     # else
-    #  pragma comment(lib, "../../Boss2D/platform/win32/lib/Release/Win32/glew32.lib")
+    #  pragma comment(lib, "../../Boss2D/platform/win32/glew-2.2.0/bin/Release/Win32/glew32.lib")
     # endif
     #  pragma comment(lib, "opengl32.lib")
     #  pragma comment(lib, "glu32.lib")

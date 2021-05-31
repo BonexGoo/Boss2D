@@ -4,6 +4,7 @@
 namespace BOSS
 {
     BOSS_DECLARE_ID(id_acc);
+    BOSS_DECLARE_ID(id_abc);
     BOSS_DECLARE_ID(id_alpr);
     BOSS_DECLARE_ID(id_curl);
     BOSS_DECLARE_ID(id_dlib);
@@ -33,6 +34,15 @@ namespace BOSS
             static void Release(id_acc acc);
             static void EncodeTo(id_acc acc, bytes pcm, sint32 length, id_flash flash, uint64 timems);
             static void SilenceTo(id_acc acc, id_flash flash, uint64 timems);
+        };
+
+        /// @brief ABC연동
+        class Abc
+        {
+        public:
+            static id_abc Create(chars abcpath);
+            static void Release(id_abc abc);
+            static void Render(id_abc abc, float x, float y, uint32 fbo = 0);
         };
 
         /// @brief ALPR연동

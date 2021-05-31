@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\addon\boss_addon_aac.cpp" />
+    <ClCompile Include="..\addon\boss_addon_abc.cpp" />
     <ClCompile Include="..\addon\boss_addon_alpr.cpp" />
     <ClCompile Include="..\addon\boss_addon_curl.cpp" />
     <ClCompile Include="..\addon\boss_addon_dlib.cpp" />
@@ -38,11 +39,13 @@
     <ClCompile Include="..\addon\boss_addon_zip.cpp" />
     <ClCompile Include="..\addon\boss_addon_zipa.cpp" />
     <ClCompile Include="..\addon\boss_fakewin.cpp" />
+    <ClCompile Include="..\addon\boss_integration_abcview-1.1.0.cpp" />
     <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp" />
     <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp" />
     <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
     <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp" />
     <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
+    <ClCompile Include="..\addon\boss_integration_freeglut-3.2.1.c" />
     <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp" />
     <ClCompile Include="..\addon\boss_integration_libgit2-0.22.2.c" />
     <ClCompile Include="..\addon\boss_integration_libogg-1.3.3.c" />
@@ -110,35 +113,35 @@
     <ClCompile Include="..\platform\boss_platform_impl.cpp" />
     <ClCompile Include="..\platform\boss_platform_native.cpp" />
     <ClCompile Include="..\platform\boss_platform_qt5.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\beziereasing.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbase.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbasictransform.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmellipse.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfill.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfilleffect.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfreeformshape.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgfill.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgroup.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimage.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimagelayer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmlayer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmpathtrimmer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrect.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeater.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeatertransform.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmround.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshape.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapelayer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapetransform.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmstroke.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmtrimpath.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\lottierenderer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\trimpath.cpp" />
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\bmconstants_p.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\fake_QQuick.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\lottieanimation.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.cpp" />
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\beziereasing.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmbase.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmbasictransform.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmellipse.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfill.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfilleffect.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfreeformshape.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmgfill.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmgroup.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmimage.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmimagelayer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmlayer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmpathtrimmer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrect.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeater.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeatertransform.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmround.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshape.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapelayer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapetransform.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmstroke.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmtrimpath.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\lottierenderer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\trimpath.cpp" />
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\bmconstants_p.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.cpp" />
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.cpp" />
     <ClCompile Include="..\service\boss_asyncfilemanager.cpp" />
     <ClCompile Include="..\service\boss_backey.cpp" />
     <ClCompile Include="..\service\boss_batchbuilder.cpp" />
@@ -160,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\addon\boss_addon_aac.hpp" />
+    <ClInclude Include="..\addon\boss_addon_abc.hpp" />
     <ClInclude Include="..\addon\boss_addon_alpr.hpp" />
     <ClInclude Include="..\addon\boss_addon_curl.hpp" />
     <ClInclude Include="..\addon\boss_addon_dlib.hpp" />
@@ -178,11 +182,13 @@
     <ClInclude Include="..\addon\boss_addon_zip.hpp" />
     <ClInclude Include="..\addon\boss_addon_zipa.hpp" />
     <ClInclude Include="..\addon\boss_fakewin.h" />
+    <ClInclude Include="..\addon\boss_integration_abcview-1.1.0.h" />
     <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h" />
     <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h" />
     <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
     <ClInclude Include="..\addon\boss_integration_dlib-19.17.h" />
     <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />
+    <ClInclude Include="..\addon\boss_integration_freeglut-3.2.1.h" />
     <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h" />
     <ClInclude Include="..\addon\boss_integration_libgit2-0.22.2.h" />
     <ClInclude Include="..\addon\boss_integration_libogg-1.3.3.h" />
@@ -253,10 +259,10 @@
     <ClInclude Include="..\platform\boss_platform_cocos2dx.hpp" />
     <ClInclude Include="..\platform\boss_platform_impl.hpp" />
     <ClInclude Include="..\platform\boss_platform_native.hpp" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\beziereasing_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbase_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbasictransform_p.h" />
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmconstants_p.h">
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\beziereasing_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmbase_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmbasictransform_p.h" />
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\bodymovin\bmconstants_p.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
@@ -274,31 +280,31 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D%(PreprocessorDefinitions) "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I$(QTDIR)\include\QtWebSockets" "-I$(QTDIR)\include\QtBluetooth" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)"</Command>
     </CustomBuild>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmellipse_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfilleffect_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfill_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfreeformshape_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgfill_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmglobal.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgroup_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimagelayer_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimage_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmlayer_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmpathtrimmer_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmproperty_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrect_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeatertransform_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeater_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmround_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapelayer_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapetransform_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshape_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmspatialproperty_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmstroke_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmtrimpath_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\lottierenderer_p.h" />
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\trimpath_p.h" />
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmellipse_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfilleffect_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfill_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfreeformshape_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmgfill_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmglobal.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmgroup_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmimagelayer_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmimage_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmlayer_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmpathtrimmer_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmproperty_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrect_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeatertransform_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeater_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmround_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapelayer_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapetransform_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshape_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmspatialproperty_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmstroke_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmtrimpath_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\lottierenderer_p.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\trimpath_p.h" />
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
@@ -316,7 +322,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D%(PreprocessorDefinitions) "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I$(QTDIR)\include\QtWebSockets" "-I$(QTDIR)\include\QtBluetooth" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)"</Command>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\lottieanimation.h">
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
@@ -334,7 +340,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D%(PreprocessorDefinitions) "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I$(QTDIR)\include\QtWebSockets" "-I$(QTDIR)\include\QtBluetooth" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)"</Command>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\fake_QQuick.h">
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
@@ -352,7 +358,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(Configuration)$(PlatformArchitecture)\moc_%(Filename).cpp"  -DWIN32 -DNDEBUG -D%(PreprocessorDefinitions) "-I$(SolutionDir)..\source" "-I$(SolutionDir)..\source-gen" "-I.\..\..\Boss2D\core" "-I.\..\..\Boss2D" "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtNetwork" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtMultimedia" "-I$(QTDIR)\include\QtPurchasing" "-I$(QTDIR)\include\QtSerialPort" "-I$(QTDIR)\include\QtWebEngine" "-I$(QTDIR)\include\QtWebEngineWidgets" "-I$(QTDIR)\include\QtWebSockets" "-I$(QTDIR)\include\QtBluetooth" "-I$(QTDIR)\include\QtCore\5.15.2" "-I$(QTDIR)\include\QtCore\5.15.2\QtCore" "-I$(QTDIR)\include\QtGui\5.15.2" "-I$(QTDIR)\include\QtGui\5.15.2\QtGui" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)"</Command>
     </CustomBuild>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h" />
+    <ClInclude Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h" />
     <ClInclude Include="..\service\boss_asyncfilemanager.hpp" />
     <ClInclude Include="..\service\boss_backey.hpp" />
     <ClInclude Include="..\service\boss_batchbuilder.hpp" />

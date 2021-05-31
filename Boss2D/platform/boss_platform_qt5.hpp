@@ -6085,19 +6085,6 @@
                     mFd = -1;
                 }
             }
-            bool waitForReadyRead(int msecs)
-            {
-                if(mFd != -1)
-                {
-                    fd_set readfds;
-                    FD_ZERO(&readfds);
-                    FD_SET(mFd, &readfds);
-                    timespec timeout_ts(timespec_from_ms(msecs));
-                    if(0 < pselect(mFd + 1, &readfds, nullptr, nullptr, &timeout_ts, nullptr))
-                        return (FD_ISSET(mFd, &readfds) != 0);
-                }
-                return false;
-            }
             QByteArray readAll()
             {
                 QByteArray Result;
@@ -6290,6 +6277,249 @@
             }
         };
         typedef SerialPortForAndroid SerialPortClass;
+    #elif BOSS_WINDOWS & defined(QT_HAVE_SERIALPORT)
+        typedef QSerialPortInfo SerialPortInfoClass;
+        class SerialPortForWindows
+        {
+        public:
+            enum BaudRate {
+                Baud1200 = QSerialPort::Baud1200,
+                Baud2400 = QSerialPort::Baud2400,
+                Baud4800 = QSerialPort::Baud4800,
+                Baud9600 = QSerialPort::Baud9600,
+                Baud19200 = QSerialPort::Baud19200,
+                Baud38400 = QSerialPort::Baud38400,
+                Baud57600 = QSerialPort::Baud57600,
+                Baud115200 = QSerialPort::Baud115200,
+                UnknownBaud = QSerialPort::UnknownBaud};
+            enum DataBits {
+                Data5 = QSerialPort::Data5,
+                Data6 = QSerialPort::Data6,
+                Data7 = QSerialPort::Data7,
+                Data8 = QSerialPort::Data8,
+                UnknownDataBits = QSerialPort::UnknownDataBits};
+            enum Parity {
+                NoParity = QSerialPort::NoParity,
+                EvenParity = QSerialPort::EvenParity,
+                OddParity = QSerialPort::OddParity,
+                SpaceParity = QSerialPort::SpaceParity,
+                MarkParity = QSerialPort::MarkParity,
+                UnknownParity = QSerialPort::UnknownParity};
+            enum StopBits {
+                OneStop = QSerialPort::OneStop,
+                OneAndHalfStop = QSerialPort::OneAndHalfStop,
+                TwoStop = QSerialPort::TwoStop,
+                UnknownStopBits = QSerialPort::UnknownStopBits};
+            enum FlowControl {
+                NoFlowControl = QSerialPort::NoFlowControl,
+                HardwareControl = QSerialPort::HardwareControl,
+                SoftwareControl = QSerialPort::SoftwareControl,
+                UnknownFlowControl = QSerialPort::UnknownFlowControl};
+            enum SerialPortError {
+                NoError = QSerialPort::NoError,
+                DeviceNotFoundError = QSerialPort::DeviceNotFoundError,
+                PermissionError = QSerialPort::PermissionError,
+                OpenError = QSerialPort::OpenError,
+                ParityError = QSerialPort::ParityError,
+                FramingError = QSerialPort::FramingError,
+                BreakConditionError = QSerialPort::BreakConditionError,
+                WriteError = QSerialPort::WriteError,
+                ReadError = QSerialPort::ReadError,
+                ResourceError = QSerialPort::ResourceError,
+                UnsupportedOperationError = QSerialPort::UnsupportedOperationError,
+                UnknownError = QSerialPort::UnknownError,
+                TimeoutError = QSerialPort::TimeoutError,
+                NotOpenError = QSerialPort::NotOpenError};
+        public:
+            SerialPortForWindows(const SerialPortInfoClass& info)
+            {
+                mPortName = info.portName().toUtf8().constData();
+                mBaudRate = UnknownBaud;
+                mDataBits = UnknownDataBits;
+                mParity = UnknownParity;
+                mStopBits = UnknownStopBits;
+                mFlowControl = UnknownFlowControl;
+                mFd = INVALID_HANDLE_VALUE;
+            }
+            ~SerialPortForWindows()
+            {
+                close();
+            }
+
+        public:
+            bool open(QIODevice::OpenModeFlag flag)
+            {
+                close();
+                DWORD mode = 0;
+                switch(flag)
+                {
+                case QIODevice::ReadOnly: mode = GENERIC_READ; break;
+                case QIODevice::WriteOnly: mode = GENERIC_WRITE; break;
+                case QIODevice::ReadWrite: mode = GENERIC_READ | GENERIC_WRITE; break;
+                default: BOSS_ASSERT("알 수 없는 flag값입니다", false); return false;
+                }
+                HANDLE NewFd = CreateFileA(mPortName, mode, 0, 0, OPEN_EXISTING, 0, 0);
+                BOSS_TRACE("SerialPortForWindows::open::CreateFileA(%s, %d) fd = %d", (chars) mPortName, mode, NewFd);
+                if(NewFd == INVALID_HANDLE_VALUE)
+                    return false;
+                mFd = reconfigurePort(NewFd);
+                return (mFd != INVALID_HANDLE_VALUE);
+            }
+            void close()
+            {
+                if(mFd != INVALID_HANDLE_VALUE)
+                {
+                    CloseHandle(mFd);
+                    mFd = INVALID_HANDLE_VALUE;
+                }
+            }
+            QByteArray readAll()
+            {
+                QByteArray Result;
+                if(mFd != INVALID_HANDLE_VALUE)
+                {
+                    DWORD ReadBytes = 1024;
+                    while(ReadBytes == 1024)
+                    {
+                        char TempBuf[1024];
+                        if(ReadFile(mFd, TempBuf, 1024, &ReadBytes, NULL))
+                            Result.append(TempBuf, ReadBytes);
+                        else
+                        {
+                            BOSS_TRACE("SerialPortForWindows::readAll() error");
+                            close();
+                            break;
+                        }
+                    }
+                }
+                return Result;
+            }
+            qint64 write(const char* data, qint64 len)
+            {
+                if(mFd != INVALID_HANDLE_VALUE)
+                {
+                    DWORD RemainingBytes = len;
+                    while(0 < RemainingBytes)
+                    {
+                        DWORD WrittenBytes = 0;
+                        if(WriteFile(mFd, data, RemainingBytes, &WrittenBytes, NULL))
+                        {
+                            data += WrittenBytes;
+                            RemainingBytes -= WrittenBytes;
+                        }
+                        else
+                        {
+                            BOSS_TRACE("SerialPortForWindows::write() error");
+                            close();
+                            break;
+                        }
+                    }
+                    return len - RemainingBytes;
+                }
+                return 0;
+            }
+            bool flush()
+            {
+                return (mFd != INVALID_HANDLE_VALUE);
+            }
+
+        public: // setter
+            void setBaudRate(BaudRate baudrate) {mBaudRate = baudrate;}
+            void setDataBits(DataBits databits) {mDataBits = databits;}
+            void setParity(Parity parity) {mParity = parity;}
+            void setStopBits(StopBits stopbits) {mStopBits = stopbits;}
+            void setFlowControl(FlowControl flowcontrol) {mFlowControl = flowcontrol;}
+
+        public: // getter
+            QString portName() {return (chars) mPortName;}
+            QString errorString() {return "NoError";}
+            SerialPortError error() {return NoError;}
+
+        private:
+            String mPortName;
+            String mLocation;
+            BaudRate mBaudRate;
+            DataBits mDataBits;
+            Parity mParity;
+            StopBits mStopBits;
+            FlowControl mFlowControl;
+            HANDLE mFd;
+
+        private:
+            HANDLE reconfigurePort(const HANDLE fd)
+            {
+                SetupComm(fd, 8192, 8192);
+                PurgeComm(fd, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
+
+                DCB Dcb;
+                if(!GetCommState(fd, &Dcb))
+                {
+                    BOSS_TRACE("SerialPortForWindows::reconfigurePort::GetCommState() error");
+                    close();
+                    return INVALID_HANDLE_VALUE;
+                }
+
+                Dcb.BaudRate = (DWORD) mBaudRate;
+                Dcb.ByteSize = (BYTE) mDataBits;
+                Dcb.Parity = (BYTE) mParity;
+                Dcb.StopBits = mStopBits;
+                Dcb.fParity = (mParity != NoParity);
+
+                Dcb.fOutxCtsFlow = false;
+                Dcb.fOutxDsrFlow = false;
+                Dcb.fDtrControl = DTR_CONTROL_ENABLE;
+                Dcb.fRtsControl = RTS_CONTROL_ENABLE;
+                Dcb.fOutX = false;
+                Dcb.fInX = false;
+
+                Dcb.fDsrSensitivity = false;
+                switch(mFlowControl)
+                {
+                case SoftwareControl:
+                    Dcb.fOutX = true;
+                    Dcb.fInX = true;
+                    Dcb.XonChar = 0x11;
+                    Dcb.XoffChar = 0x13;
+                    Dcb.XoffLim = 100;
+                    Dcb.XonLim = 100;
+                    break;
+                case HardwareControl:
+                    Dcb.fOutxCtsFlow = true; 
+                    Dcb.fOutxDsrFlow = true; 
+                    Dcb.fDtrControl = DTR_CONTROL_HANDSHAKE; 
+                    Dcb.fRtsControl = RTS_CONTROL_HANDSHAKE; 
+                    break;
+                }
+
+                Dcb.fBinary = true;
+                Dcb.fNull = false;
+                Dcb.fAbortOnError = false;
+                Dcb.fDsrSensitivity = false;
+                Dcb.fTXContinueOnXoff = true;
+                Dcb.fErrorChar = false;
+                Dcb.ErrorChar = 0;
+                Dcb.EofChar = 0;
+                Dcb.EvtChar = 0;
+
+                if(!SetCommState(fd, &Dcb))
+                {
+                    BOSS_TRACE("SerialPortForWindows::reconfigurePort::SetCommState() error");
+                    close();
+                    return INVALID_HANDLE_VALUE;
+                }
+
+                COMMTIMEOUTS commTimeout;
+                GetCommTimeouts(fd, &commTimeout);
+                commTimeout.ReadIntervalTimeout = 1;
+                commTimeout.ReadTotalTimeoutMultiplier = 0;
+                commTimeout.ReadTotalTimeoutConstant = 25;
+                commTimeout.WriteTotalTimeoutMultiplier = 0;
+                commTimeout.WriteTotalTimeoutConstant = 25;
+                SetCommTimeouts(fd, &commTimeout);
+                return fd;
+            }
+        };
+        typedef SerialPortForWindows SerialPortClass;
     #elif defined(QT_HAVE_SERIALPORT)
         typedef QSerialPortInfo SerialPortInfoClass;
         typedef QSerialPort SerialPortClass;
@@ -6336,7 +6566,6 @@
         public:
             bool open(QIODevice::OpenModeFlag flag) {return false;}
             void close() {}
-            bool waitForReadyRead(int msecs) {return false;}
             QByteArray readAll() {return QByteArray();}
             qint64 write(const char* data, qint64 len) {return 0;}
             bool flush() {return false;}
@@ -6477,7 +6706,8 @@
                             (sint32) mSerial->error());
                         delete mSerial;
                         mSerial = nullptr;
-                        if(*name == '\0') continue;
+                        if(*name == '\0')
+                            continue;
                     }
                     break;
                 }
@@ -6504,11 +6734,9 @@
         bool ReadReady(sint32* gettype)
         {
             // 데이터수신시 읽기스트림에 추가연결
-            if(sint32 WaitBytes = mSerial->bytesAvailable())
-            {
-                QByteArray NewArray = mSerial->readAll();
+            QByteArray& NewArray = mSerial->readAll();
+            if(0 < NewArray.length())
                 Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
-            }
 
             // 읽기스트림의 처리
             if(0 < mReadStream.Count())

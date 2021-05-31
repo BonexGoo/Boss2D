@@ -28,22 +28,22 @@
     <Filter Include="Boss2D\platform\win32">
       <UniqueIdentifier>{807cfafa-cf2c-4557-8be9-304ca1d55fe6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5">
+    <Filter Include="Boss2D\platform\qt5">
       <UniqueIdentifier>{a49c7851-22f4-4de6-bd14-e03f1e6f96a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5\qtlottie">
+    <Filter Include="Boss2D\platform\qt5\qtlottie">
       <UniqueIdentifier>{e83d5845-f0c9-4a31-86c9-3c33af6bfeed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5\qtlottie\src">
+    <Filter Include="Boss2D\platform\qt5\qtlottie\src">
       <UniqueIdentifier>{105a1e1d-1ab4-407b-94cf-d59adfe1fdaf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin">
+    <Filter Include="Boss2D\platform\qt5\qtlottie\src\bodymovin">
       <UniqueIdentifier>{d81192e8-e1b2-41ca-b95e-73a9a4ef8863}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5\qtlottie\src\imports">
+    <Filter Include="Boss2D\platform\qt5\qtlottie\src\imports">
       <UniqueIdentifier>{49501e99-47f3-4a12-ab12-6cc68ff0c0bf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer">
+    <Filter Include="Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer">
       <UniqueIdentifier>{bb810626-70ac-4d3e-958c-ae782589a672}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -369,94 +369,103 @@
     <ClCompile Include="..\service\boss_zaywidget.cpp">
       <Filter>Boss2D\service</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\beziereasing.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\beziereasing.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbase.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmbase.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbasictransform.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmbasictransform.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmellipse.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmellipse.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfill.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfill.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfilleffect.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfilleffect.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfreeformshape.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmfreeformshape.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgfill.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmgfill.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgroup.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmgroup.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimage.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmimage.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimagelayer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmimagelayer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmlayer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmlayer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmpathtrimmer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmpathtrimmer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrect.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrect.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeater.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeater.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeatertransform.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeatertransform.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmround.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmround.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshape.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshape.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapelayer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapelayer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapetransform.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapetransform.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmstroke.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmstroke.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmtrimpath.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\bmtrimpath.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\lottierenderer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\lottierenderer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\trimpath.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\bodymovin\trimpath.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\lottieanimation.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\plugin_qt5\qtlottie\src\imports\fake_QQuick.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
+    <ClCompile Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_abcview-1.1.0.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_freeglut-3.2.1.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_addon_abc.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -794,89 +803,89 @@
     <ClInclude Include="..\service\boss_zaywidget.hpp">
       <Filter>Boss2D\service</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\beziereasing_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\beziereasing_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbase_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmbase_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmbasictransform_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmbasictransform_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmellipse_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmellipse_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfill_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfill_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfilleffect_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfilleffect_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmfreeformshape_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmfreeformshape_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgfill_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmgfill_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmglobal.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmglobal.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmgroup_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmgroup_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimage_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmimage_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmimagelayer_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmimagelayer_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmlayer_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmlayer_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmpathtrimmer_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmpathtrimmer_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmproperty_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmproperty_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrect_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrect_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeater_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeater_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmrepeatertransform_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmrepeatertransform_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmround_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmround_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshape_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshape_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapelayer_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapelayer_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmshapetransform_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmshapetransform_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmspatialproperty_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmspatialproperty_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmstroke_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmstroke_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmtrimpath_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\bmtrimpath_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\lottierenderer_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\lottierenderer_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\trimpath_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\bodymovin\trimpath_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer</Filter>
+    <ClInclude Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h">
       <Filter>Boss2D\addon</Filter>
@@ -884,25 +893,34 @@
     <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_abcview-1.1.0.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_freeglut-3.2.1.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_addon_abc.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\platform\boss_platform_qt5.hpp">
       <Filter>Boss2D\platform</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\bodymovin\bmconstants_p.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\bodymovin</Filter>
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\bodymovin\bmconstants_p.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports\rasterrenderer</Filter>
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\lottieanimation.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\fake_QQuick.h">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.h">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\platform\plugin_qt5\qtlottie\src\imports\bmconstants_p.cpp">
-      <Filter>Boss2D\platform\plugin_qt5\qtlottie\src\imports</Filter>
+    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\bmconstants_p.cpp">
+      <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

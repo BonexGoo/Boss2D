@@ -39,19 +39,19 @@
 
 #define ABCOPENGL_VERSION_NS v1
 
-#include <Alembic/Abc/All.h>
-#include <Alembic/AbcGeom/All.h>
-#include <Alembic/AbcCoreFactory/All.h>
-#include <Alembic/Util/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Abc__All_h //original-code:<Alembic/Abc/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcGeom__All_h //original-code:<Alembic/AbcGeom/All.h>
+#include BOSS_ALEMBIC_V_Alembic__AbcCoreFactory__All_h //original-code:<Alembic/AbcCoreFactory/All.h>
+#include BOSS_ALEMBIC_V_Alembic__Util__All_h //original-code:<Alembic/Util/All.h>
 
-#include <ImathMath.h>
-#include <ImathVec.h>
-#include <ImathMatrix.h>
-#include <ImathBox.h>
-#include <ImathQuat.h>
-#include <ImathColor.h>
-#include <ImathFun.h>
-#include <ImathBoxAlgo.h>
+#include BOSS_OPENCV_V_ImathMath_h //original-code:<ImathMath.h>
+#include BOSS_OPENCV_V_ImathVec_h //original-code:<ImathVec.h>
+#include BOSS_OPENCV_V_ImathMatrix_h //original-code:<ImathMatrix.h>
+#include BOSS_OPENCV_V_ImathBox_h //original-code:<ImathBox.h>
+#include BOSS_OPENCV_V_ImathQuat_h //original-code:<ImathQuat.h>
+#include BOSS_OPENCV_V_ImathColor_h //original-code:<ImathColor.h>
+#include BOSS_OPENCV_V_ImathFun_h //original-code:<ImathFun.h>
+#include BOSS_OPENCV_V_ImathBoxAlgo_h //original-code:<ImathBoxAlgo.h>
 
 #include <iostream>
 #include <algorithm>
@@ -98,26 +98,26 @@
 #ifdef ABCVIEW_GLEW_MX
 
 #define GLEW_MX
-#include <GL/glew.h>
+#include BOSS_FREEGLUT_V_GL__glew_h //original-code:<GL/glew.h>
 extern "C" GLEWContext *glewGetContext();
 
 #else
 
-#include <GL/glew.h>
+#include BOSS_FREEGLUT_V_GL__glew_h //original-code:<GL/glew.h>
 
 #endif // ifdef ABCVIEW_GLEW_MX
 
 #include <GL/gl.h>
 
 #ifdef PLATFORM_WINDOWS
-#include <GL/wglew.h>
-#include <GL/glut.h>
+#include BOSS_FREEGLUT_V_GL__wglew_h //original-code:<GL/wglew.h>
+#include BOSS_FREEGLUT_V_GL__glut_h //original-code:<GL/glut.h>
 #else
-#include <GL/glxew.h>
+#include BOSS_FREEGLUT_V_GL__glxew_h //original-code:<GL/glxew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glext.h>
-#include <GL/glut.h>
+#include BOSS_FREEGLUT_V_GL__glut_h //original-code:<GL/glut.h>
 
 #endif // ifdef WIN64
 

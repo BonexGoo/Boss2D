@@ -62,7 +62,7 @@
 
 #else
 // http://stackoverflow.com/questions/8580675/error-gl-h-included-before-glew-h
-#include <GL/glew.h>
+#include BOSS_ABCVIEW_V_GL__glew_h //original-code:<GL/glew.h>
 
 #endif // ifdef PLATFORM_DARWIN
 

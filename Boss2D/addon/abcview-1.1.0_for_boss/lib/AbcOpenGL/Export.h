@@ -45,9 +45,9 @@
     #endif
     #define ABC_OPENGL_EXPORT_CONST
 #else
-    #define ABC_OPENGL_EXPORT __attribute__ ((visibility ("default")))
+    //removed by BOSS: #define ABC_OPENGL_EXPORT __attribute__ ((visibility ("default")))
+    #define ABC_OPENGL_EXPORT //added by BOSS
     #define ABC_OPENGL_EXPORT_CONST const
 #endif
 
 #endif /* _AbcOpenGL_Export_h_ */
-
