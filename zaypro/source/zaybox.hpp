@@ -37,7 +37,7 @@ public:
     virtual chars GetComment() const;
 
 public:
-    void Init(sint32 id, chars type, Color color, bool expand, sint32 x, sint32 y);
+    void Init(sint32 id, chars type, Color color, chars colorres, bool expand, sint32 x, sint32 y);
     void InitCompID();
     void AddChild(ZEZayBox& child);
     void SubChild(ZEZayBox& child);
@@ -83,6 +83,7 @@ protected: // 데이터
 
 protected: // UI정보
     Color mColor;
+    String mColorRes;
     bool mExpanded;
     double mPosX;
     double mPosY;
@@ -96,7 +97,7 @@ protected: // UI정보
     sint32 mRemovingCount;
 
 public:
-    static const sint32 TitleBarHeight = 20;
+    static const sint32 TitleBarHeight = 30;
     static const sint32 BodyWidth = 220;
     static const sint32 EditorHeight = 28;
     static const sint32 ParamHeight = 20;

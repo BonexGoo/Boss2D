@@ -13,8 +13,8 @@ bool PlatformInit()
         if(Asset::RebuildForEmbedded())
             return false;
 
-        String DataPath = Platform::File::RootForData();
-        Platform::File::ResetAssetsRemRoot(DataPath);
+        //String DataPath = Platform::File::RootForData();
+        //Platform::File::ResetAssetsRemRoot(DataPath);
     #endif
 
     Platform::SetViewCreator(ZayView::Creator);

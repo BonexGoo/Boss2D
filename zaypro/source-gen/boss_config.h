@@ -11,6 +11,7 @@
 // AddOn
 ////////////////////////////////////////
 #define BOSS_NEED_ADDON_AAC        0
+#define BOSS_NEED_ADDON_ABC        0
 #define BOSS_NEED_ADDON_ALPR       0
 #define BOSS_NEED_ADDON_CURL       (!BOSS_WASM)
 #define BOSS_NEED_ADDON_DLIB       0

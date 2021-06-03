@@ -2,6 +2,7 @@
 #include "zaybox.hpp"
 
 #include <service/boss_zayson.hpp>
+#include <resource.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBox
@@ -135,11 +136,12 @@ chars ZEZayBox::GetComment() const
     return "error";
 }
 
-void ZEZayBox::Init(sint32 id, chars type, Color color, bool expand, sint32 x, sint32 y)
+void ZEZayBox::Init(sint32 id, chars type, Color color, chars colorres, bool expand, sint32 x, sint32 y)
 {
     mID = id;
     mCompType = type;
     mColor = color;
+    mColorRes = colorres;
     mExpanded = expand;
     mPosX = x;
     mPosY = y;
@@ -204,11 +206,12 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
     const String UIHookRemove = String::Format("%d-hookremove", mID);
     const String UIHook = String::Format("%d-hook", mID);
     const String UIBall = String::Format("%d-ball", mID);
-    const sint32 ButtonWidth = TitleBarHeight;
-    const bool HasFocusing = !!(panel.state(UITitle) & (PS_Focused | PS_Dragging));
+    const sint32 ButtonWidth = 20;
+    const bool IsFocusing = !!(panel.state(UITitle) & (PS_Focused | PS_Dragging));
+    const bool IsDropping = !!(panel.state(UITitle) & PS_Dropping);
 
     // 타이틀
-    ZAY_XYWH_UI(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight, UITitle,
+    ZAY_XYWH_UI(panel, 0, 0, panel.w(), TitleBarHeight, UITitle,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             if(t == GT_Moving)
@@ -234,42 +237,13 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
         if(ball)
             RenderBall(panel, UIBall);
 
-        ZAY_INNER_SCISSOR(panel, 0)
+        ZAY_LTRB(panel, 6, 4, panel.w() - 4, panel.h() - 4)
         {
-            // 로프가림막
-            ZAY_COLOR(panel, mColor)
-            {
-                // L로프쪽
-                ZAY_LTRB(panel, 0, 0, 10, panel.h())
-                ZAY_RGB(panel, 128, 128, 128)
-                    panel.fill();
-                ZAY_LTRB(panel, 10, 0, 13, panel.h())
-                ZAY_RGBA(panel, 128, 128, 128, 96)
-                    panel.fill();
-                ZAY_LTRB(panel, 13, 0, 14, panel.h())
-                ZAY_RGBA(panel, 128, 128, 128, 32)
-                    panel.fill();
-                // R로프쪽
-                ZAY_LTRB(panel, panel.w() - 10, 0, panel.w(), panel.h())
-                ZAY_RGB(panel, 128, 128, 128)
-                    panel.fill();
-            }
+            // 타이틀배경
+            ZAY_RGB_IF(panel, 160, 160, 160, IsFocusing && !IsDropping)
+                panel.ninepatch(R(mColorRes));
 
-            // 타이틀보드 강조
-            ZAY_COLOR(panel, mColor)
-            ZAY_RGB_IF(panel, 160, 160, 160, HasFocusing)
-                panel.fill();
-
-            sint32 TitleBeginX = 3;
-            // 후크제거버튼
-            if(mHooked)
-            {
-                ZAY_XYWH(panel, 0, 0, ButtonWidth, panel.h())
-                    RenderHookRemoveButton(panel, UIHookRemove);
-                TitleBeginX = ButtonWidth;
-            }
-
-            sint32 TitleEndX = panel.w();
+            sint32 TitleEndX = panel.w() - 2;
             // 제거버튼
             if(remove)
             {
@@ -281,17 +255,8 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             {
                 TitleEndX -= ButtonWidth;
                 ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
-                ZAY_INNER_UI(panel, 0, UIRemove)
-                ZAY_INNER(panel, 3)
-                {
-                    ZAY_RGB(panel, 160, 160, 160)
-                        panel.fill();
-                    ZAY_RGB(panel, 0, 0, 0)
-                    {
-                        panel.text("×", UIFA_CenterMiddle);
-                        panel.rect(1);
-                    }
-                }
+                ZAY_RGBA(panel, 128, 128, 128, 20)
+                    panel.icon(R("wid_x_n"), UIA_CenterMiddle);
             }
             // 그룹복사버튼
             if(copy)
@@ -323,9 +288,9 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             }
 
             // 타이틀
-            ZAY_LTRB(panel, TitleBeginX, 0, TitleEndX + 3, panel.h())
+            ZAY_LTRB(panel, 5 + 3, 0, TitleEndX + 3, panel.h())
             {
-                String TitleText((HasFocusing && mOrder != -1)?
+                String TitleText((IsFocusing && mOrder != -1)?
                     (chars) String::Format("[%d] %s", mOrder, title) : title);
 
                 // 디버그용 자기ID 표시
@@ -333,24 +298,25 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
                     TitleText += String::Format(" <%d>", mID);
                 #endif
 
-                ZAY_MOVE(panel, 1, 1)
-                ZAY_RGBA(panel, 255, 255, 255, 96)
-                    panel.text(TitleText, UIFA_LeftMiddle, UIFE_Right);
-                ZAY_RGB(panel, 0, 0, 0)
+                ZAY_RGB(panel, 255, 255, 255)
                     panel.text(TitleText, UIFA_LeftMiddle, UIFE_Right);
             }
         }
-        ZAY_RGB(panel, 0, 0, 0)
-            panel.rect(1);
+
+        // 후크제거버튼
+        if(mHooked)
+        ZAY_XYWH(panel, -ButtonWidth - 6, 3, ButtonWidth, panel.h())
+            RenderHookRemoveButton(panel, UIHookRemove);
     }
 }
 
 void ZEZayBox::RenderHook(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocusing = !!(panel.state(uiname) & (PS_Focused | PS_Dragging));
     ZAY_COLOR_IF(panel, mColor, mHooked)
     ZAY_RGB_IF(panel, 80, 80, 80, mHooked)
     ZAY_RGB_IF(panel, 255, 64, 0, !mHooked)
-    ZAY_RGB_IF(panel, 96, 96, 96, !mHooked && !(panel.state(uiname) & (PS_Focused | PS_Dragging)))
+    ZAY_RGB_IF(panel, 96, 96, 96, !mHooked && !IsFocusing)
     {
         ZAY_MOVE(panel, 0, panel.h() / 2)
         {
@@ -429,10 +395,10 @@ void ZEZayBox::RenderHook(ZayPanel& panel, chars uiname)
 void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
 {
     const bool IsDropping = !!(panel.state(uiname) & PS_Dropping);
-
+    const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
     ZAY_RGB_IF(panel, 0, 0, 0, !IsDropping)
     ZAY_RGB_IF(panel, 255, 64, 0, IsDropping)
-    ZAY_RGB_IF(panel, 192, 192, 192, !IsDropping && (panel.state(uiname) & PS_Focused))
+    ZAY_RGB_IF(panel, 192, 192, 192, !IsDropping && IsFocused)
     {
         panel.line(Point(panel.w() - 5, panel.h() / 2), Point(panel.w() + BallX, panel.h() / 2), 2);
         ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, uiname,
@@ -461,6 +427,7 @@ void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
 
 void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocusing = !!(panel.state(uiname) & (PS_Focused | PS_Dragging));
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
@@ -474,20 +441,16 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
             else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
                 Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(mParent));
         })
-    ZAY_INNER(panel, 3)
     {
-        ZAY_RGBA(panel, 0, 0, 0, 32)
-        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
-            panel.fill();
-        ZAY_RGB(panel, 0, 0, 0)
-            panel.text("∈", UIFA_CenterMiddle);
-        ZAY_RGBA(panel, 0, 0, 0, 64)
-            panel.rect(1);
+        if(IsFocusing)
+            panel.icon(R("wid_move_o"), UIA_CenterMiddle);
+        else panel.icon(R("wid_move_n"), UIA_CenterMiddle);
     }
 }
 
 void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocusing = !!(panel.state(uiname) & (PS_Focused | PS_Dragging));
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
@@ -515,20 +478,16 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
                 }
             }
         })
-    ZAY_INNER(panel, 3)
     {
-        ZAY_RGBA(panel, 0, 0, 0, 64)
-        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
-            panel.fill();
-        ZAY_RGB(panel, 0, 0, 0)
-            panel.text("+", UIFA_CenterMiddle);
-        ZAY_RGBA(panel, 0, 0, 0, 96)
-            panel.rect(1);
+        if(IsFocusing)
+            panel.icon(R("wid_copy_o"), UIA_CenterMiddle);
+        else panel.icon(R("wid_copy_n"), UIA_CenterMiddle);
     }
 }
 
 void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_T(t, this)
         {
@@ -538,7 +497,7 @@ void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
     ZAY_INNER(panel, 3)
     {
         ZAY_RGBA(panel, 0, 0, 0, 32)
-        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
+        ZAY_RGBA_IF(panel, 128, 128, 128, 144, IsFocused)
             panel.fill();
         ZAY_RGB(panel, 0, 0, 0)
             panel.text((mExpanded)? "∧" : "∨", UIFA_CenterMiddle);
@@ -549,6 +508,7 @@ void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
 
 void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
@@ -565,7 +525,7 @@ void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
     ZAY_INNER(panel, 3)
     {
         ZAY_RGBA(panel, 0, 0, 0, 32)
-        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
+        ZAY_RGBA_IF(panel, 128, 128, 128, 144, IsFocused)
             panel.fill();
         ZAY_RGB(panel, 0, 0, 0)
             panel.text("⇔", UIFA_CenterMiddle);
@@ -583,6 +543,8 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
     if(Removing && 0 < mRemovingCount)
         mRemovingCount--;
 
+    const bool IsFocused = ((panel.state(uiname) & (PS_Focused | PS_Dropping)) == PS_Focused);
+    const bool IsPressed = ((panel.state(uiname) & (PS_Pressed | PS_Dragging)) != 0);
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNT(v, n, t, this, group, AniCount)
         {
@@ -631,24 +593,24 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                 }
             }
         })
-    ZAY_INNER(panel, 3 + 4 * AniValue)
     {
-        ZAY_RGB_IF(panel, 255, 0, 0, Enable && !group)
-        ZAY_RGB_IF(panel, 255, 0, 255, Enable && group)
-        ZAY_RGB_IF(panel, 160, 160, 160, !Enable)
-        ZAY_RGB_IF(panel, 192, 192, 192, panel.state(uiname) & PS_Focused)
-            panel.fill();
-        ZAY_RGB(panel, 0, 0, 0)
+        if(!Enable)
         {
-            if(Enable)
-                panel.text("×", UIFA_CenterMiddle);
-            panel.rect(1);
+            ZAY_RGBA(panel, 192, 64, 64, 128)
+                panel.icon(R("wid_x_n"), UIA_CenterMiddle);
         }
+        else if(IsPressed)
+            panel.icon(R("wid_x_p"), UIA_CenterMiddle);
+        else if(IsFocused)
+            panel.icon(R("wid_x_o"), UIA_CenterMiddle);
+        else panel.icon(R("wid_x_n"), UIA_CenterMiddle);
     }
 }
 
 void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
 {
+    const bool IsFocused = ((panel.state(uiname) & (PS_Focused | PS_Dropping)) == PS_Focused);
+    const bool IsPressed = ((panel.state(uiname) & (PS_Pressed | PS_Dragging)) != 0);
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNT(v, n, t, this)
         {
@@ -660,15 +622,13 @@ void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
                     Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(OldParent));
             }
         })
-    ZAY_INNER(panel, 3)
     {
-        ZAY_RGBA(panel, 0, 0, 0, 32)
-        ZAY_RGBA_IF(panel, 128, 128, 128, 144, panel.state(uiname) & PS_Focused)
-            panel.fill();
-        ZAY_RGB(panel, 0, 0, 0)
-            panel.text("×", UIFA_CenterMiddle);
-        ZAY_RGBA(panel, 0, 0, 0, 64)
-            panel.rect(1);
+        if(IsPressed)
+            panel.icon(R("cut_o"), UIA_CenterMiddle);
+        else if(IsFocused)
+            panel.icon(R("cut_n"), UIA_CenterMiddle);
+        else ZAY_RGBA(panel, 128, 128, 128, 20)
+            panel.icon(R("cut_n"), UIA_CenterMiddle);
     }
 }
 
@@ -1835,26 +1795,28 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UIComment = String::Format("%d-comment", mID);
-
-    // 타이틀
-    RenderTitle(panel, mCompType, false, true, false, false, false, false);
-
-    // 바디
-    if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w + mAddW, mBodySize.h, UIBody)
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
     {
-        ZAY_RGBA(panel, 64, 64, 64, 128)
-            panel.fill();
-        ZAY_INNER(panel, 4)
-        {
-            // 주석에디터
-            ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
-            ZAY_INNER(panel, 4)
-                mComment.RenderCommentEditor(panel, UIComment);
+        panel.ninepatch(R("box_bg"));
 
-            // 인풋그룹
-            ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
-                mInputGroup.RenderValueGroup(panel, "OnCreate");
+        // 타이틀
+        RenderTitle(panel, mCompType, false, true, false, false, false, false);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
+        {
+            ZAY_INNER(panel, 4)
+            {
+                // 주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mComment.RenderCommentEditor(panel, UIComment);
+
+                // 인풋그룹
+                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
+                    mInputGroup.RenderValueGroup(panel, "OnCreate");
+            }
         }
     }
 }
@@ -1926,27 +1888,29 @@ void ZEZayBoxContent::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UIComment = String::Format("%d-comment", mID);
-
-    // 타이틀
-    RenderTitle(panel, mCompType, true, mHasChild, true, true, true, true);
-
-    // 바디
-    if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w + mAddW, mBodySize.h, UIBody)
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
     {
-        ZAY_RGBA(panel, 64, 64, 64, 128)
-            panel.fill();
-        ZAY_INNER(panel, 4)
-        {
-            // 주석에디터
-            ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
-            ZAY_INNER(panel, 4)
-                mComment.RenderCommentEditor(panel, UIComment);
+        panel.ninepatch(R("box_bg"));
 
-            // 파라미터그룹
-            if(mHasParam)
-            ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
-                mParamGroup.RenderParamGroup(panel);
+        // 타이틀
+        RenderTitle(panel, mCompType, true, mHasChild, true, true, true, true);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
+        {
+            ZAY_INNER(panel, 4)
+            {
+                // 주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mComment.RenderCommentEditor(panel, UIComment);
+
+                // 파라미터그룹
+                if(mHasParam)
+                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
+                    mParamGroup.RenderParamGroup(panel);
+            }
         }
     }
 }
@@ -2018,31 +1982,33 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UINameComment = String::Format("%d-namecomment", mID);
-
-    // 타이틀
-    RenderTitle(panel, mCompType, true, true, true, true, true, true);
-
-    // 바디
-    if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w + mAddW, mBodySize.h, UIBody)
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
     {
-        ZAY_RGBA(panel, 64, 64, 64, 128)
-            panel.fill();
-        ZAY_INNER(panel, 4)
+        panel.ninepatch(R("box_bg"));
+
+        // 타이틀
+        RenderTitle(panel, mCompType, true, true, true, true, true, true);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
         {
-            // UI명칭주석에디터
-            ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
             ZAY_INNER(panel, 4)
-                mNameComment.RenderNameCommentEditor(panel, UINameComment);
+            {
+                // UI명칭주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
 
-            // 파라미터그룹
-            const sint32 ParamGroupHeight = (ParamHeight + 4) * (mParamGroup.mParams.Count() + 1) + 9;
-            ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + ParamGroupHeight)
-                mParamGroup.RenderParamGroup(panel);
+                // 파라미터그룹
+                const sint32 ParamGroupHeight = (ParamHeight + 4) * (mParamGroup.mParams.Count() + 1) + 9;
+                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + ParamGroupHeight)
+                    mParamGroup.RenderParamGroup(panel);
 
-            // 인풋그룹
-            ZAY_LTRB(panel, 0, EditorHeight + ParamGroupHeight, panel.w(), panel.h())
-                mInputGroup.RenderValueGroup(panel, "OnClick");
+                // 인풋그룹
+                ZAY_LTRB(panel, 0, EditorHeight + ParamGroupHeight, panel.w(), panel.h())
+                    mInputGroup.RenderValueGroup(panel, "OnClick");
+            }
         }
     }
 }
@@ -2112,27 +2078,29 @@ void ZEZayBoxLoop::Render(ZayPanel& panel)
     const String UIBody = String::Format("%d-body", mID);
     const String UINameComment = String::Format("%d-namecomment", mID);
     const String UIOperation = String::Format("%d-operation", mID);
-
-    // 타이틀
-    RenderTitle(panel, mCompType, true, true, true, true, false, true);
-
-    // 바디
-    if(mExpanded)
-    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w + mAddW, mBodySize.h, UIBody)
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
     {
-        ZAY_RGBA(panel, 64, 64, 64, 128)
-            panel.fill();
-        ZAY_INNER(panel, 4)
-        {
-            // UI명칭주석에디터
-            ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
-            ZAY_INNER(panel, 4)
-                mNameComment.RenderNameCommentEditor(panel, UINameComment);
+        panel.ninepatch(R("box_bg"));
 
-            // 연산에디터
-            ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + EditorHeight)
+        // 타이틀
+        RenderTitle(panel, mCompType, true, true, true, true, false, true);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
+        {
             ZAY_INNER(panel, 4)
-                mOperation.RenderOperationEditor(panel, UIOperation, mNameComment.mName);
+            {
+                // UI명칭주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
+
+                // 연산에디터
+                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mOperation.RenderOperationEditor(panel, UIOperation, mNameComment.mName);
+            }
         }
     }
 }
@@ -2190,24 +2158,26 @@ void ZEZayBoxCondition::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UIOperation = String::Format("%d-operation", mID);
-
-    // 타이틀
-    if(mOperation.mWithElse)
-        RenderTitle(panel, "el" + mCompType, true, false, true, mHasElseAndOperation, false, true);
-    else RenderTitle(panel, mCompType, true, false, true, mHasElseAndOperation, false, true);
-
-    // 바디
-    if(mExpanded && mHasElseAndOperation)
-    ZAY_XYWH_UI_SCISSOR(panel, sint32(mPosX), sint32(mPosY) + TitleBarHeight, mBodySize.w + mAddW, mBodySize.h, UIBody)
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded && mHasElseAndOperation)? mBodySize.h : 0))
     {
-        ZAY_RGBA(panel, 64, 64, 64, 128)
-            panel.fill();
-        ZAY_INNER(panel, 4)
+        panel.ninepatch(R("box_bg"));
+
+        // 타이틀
+        if(mOperation.mWithElse)
+            RenderTitle(panel, "el" + mCompType, true, false, true, mHasElseAndOperation, false, true);
+        else RenderTitle(panel, mCompType, true, false, true, mHasElseAndOperation, false, true);
+
+        // 바디
+        if(mExpanded && mHasElseAndOperation)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
         {
-            // 연산에디터
-            ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
             ZAY_INNER(panel, 4)
-                mOperation.RenderOperationEditor(panel, UIOperation);
+            {
+                // 연산에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mOperation.RenderOperationEditor(panel, UIOperation);
+            }
         }
     }
 }
@@ -2264,9 +2234,13 @@ void ZEZayBoxError::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UIOperation = String::Format("%d-operation", mID);
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight)
+    {
+        panel.ninepatch(R("box_bg"));
 
-    // 타이틀
-    RenderTitle(panel, mCompType, true, true, true, false, true, true);
+        // 타이틀
+        RenderTitle(panel, mCompType, true, true, true, false, true, true);
+    }
 }
 
 void ZEZayBoxError::RecalcSize()

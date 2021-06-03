@@ -18,6 +18,7 @@ public:
         ZayExtend::ComponentType mType;
         String mName;
         Color mColor;
+        String mColorRes;
         String mParamComment;
     };
 
@@ -26,7 +27,7 @@ public:
     ~ZEFakeZaySon();
 
 public:
-    static Color GetComponentColor(ZayExtend::ComponentType type);
+    static Color GetComponentColor(ZayExtend::ComponentType type, String& colorres);
 
 public:
     void ResetBoxInfo();
