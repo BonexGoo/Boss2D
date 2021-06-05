@@ -49,25 +49,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         jump(KeyCode == 0x01000015) // Down
             m->mWorkViewDrag = Point(0, -300);
         jump(KeyCode == 0x01000034) // F5: 간단세이브
-        {
-            if(0 < m->mPipe.jsonpath().Length())
-            {
-                // 기존파일은 f5로 보관
-                if(Platform::File::Exist(m->mPipe.jsonpath()))
-                {
-                    String OldPath = m->mPipe.jsonpath() + ".f5";
-                    Platform::File::Remove(WString::FromChars(OldPath));
-                    Platform::File::Rename(WString::FromChars(m->mPipe.jsonpath()), WString::FromChars(OldPath));
-                }
-                Context Json;
-                m->mBoxMap[0]->WriteJson(Json);
-                m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
-                Json.SaveJson().ToFile(m->mPipe.jsonpath(), true);
-                // 애니효과
-                m->mEasySaveEffect.Reset(1);
-                m->mEasySaveEffect.MoveTo(0, 1.0);
-            }
-        }
+            m->FastSave();
     }
     else if(type == NT_FileContent)
     {
@@ -292,7 +274,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             {
                 const sint32 Border = 20 * (100 - EasySaveAni) / 100;
                 ZAY_INNER(panel, Border)
-                ZAY_RGBA(panel, 0, 128, 255, 192 * EasySaveAni / 100)
+                ZAY_RGBA(panel, 31, 198, 253, 192 * EasySaveAni / 100)
                     panel.rect(Border);
             }
         }
@@ -301,69 +283,124 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         ZAY_XYWH_UI(panel, panel.w() - 240, 0, 240, panel.h(), "apispace")
         {
             // 버튼 구역
-            ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), 50)
+            ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), 12 + 34 + 6 + 34 + 8)
             {
                 // 버튼 배경
                 ZAY_RGB(panel, 35, 44, 53)
                     panel.fill();
 
+                // 새프로젝트 버튼
+                ZAY_LTRB_UI(panel, 14, 12, 14 + 100, 12 + 34, "NEW",
+                    ZAY_GESTURE_T(t)
+                    {
+                        if(t == GT_InReleased)
+                            m->NewProject();
+                    })
+                {
+                    const bool IsFocused = ((panel.state("NEW") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                    const bool IsPressed = ((panel.state("NEW") & (PS_Pressed | PS_Dragging)) != 0);
+                    if(IsPressed) panel.ninepatch(R("btn_new_p"));
+                    else if(IsFocused) panel.ninepatch(R("btn_new_o"));
+                    else panel.ninepatch(R("btn_new_n"));
+                }
+
+                // 빠른저장 버튼
+                ZAY_LTRB_UI(panel, 14 + 100 + 12, 12, 14 + 100 + 12 + 100, 12 + 34, "FSAVE",
+                    ZAY_GESTURE_T(t)
+                    {
+                        if(t == GT_InReleased)
+                            m->FastSave();
+                    })
+                {
+                    if(const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value()))
+                    {
+                        panel.ninepatch(R("btn_fsave_n"));
+                        ZAY_RGBA(panel, 128, 128, 128, 128 * EasySaveAni / 100)
+                            panel.ninepatch(R("btn_fsave_o"));
+                    }
+                    else
+                    {
+                        const bool IsFocused = ((panel.state("FSAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                        const bool IsPressed = ((panel.state("FSAVE") & (PS_Pressed | PS_Dragging)) != 0);
+                        if(IsPressed) panel.ninepatch(R("btn_fsave_p"));
+                        else if(IsFocused) panel.ninepatch(R("btn_fsave_o"));
+                        else panel.ninepatch(R("btn_fsave_n"));
+                    }
+                }
+
                 // 불러오기 버튼
-                ZAY_LTRB(panel, 10, 10, panel.w() / 2 - 5, 10 + 30)
-                    m->RenderButton(panel, "LOAD", Color(192, 224, 255, 192),
+                auto LoadGestureCB =
+                    #if BOSS_WASM
                         ZAY_GESTURE_T(t)
                         {
                             if(t == GT_InReleased)
-                            {
-                                #if BOSS_NEED_EMBEDDED_ASSET
-                                    Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
-                                #else
-                                    String JsonPath;
-                                    if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
-                                    {
-                                        m->mPipe.ResetJsonPath(JsonPath);
-                                        m->ResetBoxes();
-                                        ZEZayBox::ResetLastID(); // ID발급기 초기화
-
-                                        const String JsonText = String::FromFile(JsonPath);
-                                        const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-                                        m->mBoxMap[0]->ReadJson(Json);
-                                        m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
-                                    }
-                                #endif
-                            }
-                        });
-
-                // 저장 버튼
-                const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value());
-                ZAY_LTRB(panel, panel.w() / 2 + 5, 10, panel.w() - 10, 10 + 30)
-                    m->RenderButton(panel, "SAVE", Color(255, 224 - EasySaveAni / 2, 192, 192 + EasySaveAni / 2),
+                                Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
+                        };
+                    #else
                         ZAY_GESTURE_T(t)
                         {
                             if(t == GT_InReleased)
                             {
                                 String JsonPath;
-                                if(Platform::Popup::FileDialog(DST_FileSave, JsonPath, nullptr, "Save json"))
+                                if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
                                 {
                                     m->mPipe.ResetJsonPath(JsonPath);
-                                    // 기존파일은 old로 보관
-                                    if(Platform::File::Exist(JsonPath))
-                                    {
-                                        String OldPath = JsonPath + ".old";
-                                        for(sint32 i = 2; Platform::File::Exist(OldPath); ++i)
-                                            OldPath = JsonPath + ".old" + String::FromInteger(i);
-                                        Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
-                                    }
-                                    Context Json;
-                                    m->mBoxMap[0]->WriteJson(Json);
-                                    m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
-                                    Json.SaveJson().ToFile(JsonPath, true);
+                                    m->ResetBoxes();
+                                    ZEZayBox::ResetLastID(); // ID발급기 초기화
+
+                                    const String JsonText = String::FromFile(JsonPath);
+                                    const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
+                                    m->mBoxMap[0]->ReadJson(Json);
+                                    m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
                                 }
                             }
-                        });
+                        };
+                    #endif
+                ZAY_LTRB_UI(panel, 14, 12 + 34 + 6, 14 + 100, 12 + 34 + 6 + 34, "LOAD", LoadGestureCB)
+                {
+                    const bool IsFocused = ((panel.state("LOAD") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                    const bool IsPressed = ((panel.state("LOAD") & (PS_Pressed | PS_Dragging)) != 0);
+                    if(IsPressed) panel.ninepatch(R("btn_load_p"));
+                    else if(IsFocused) panel.ninepatch(R("btn_load_o"));
+                    else panel.ninepatch(R("btn_load_n"));
+                }
+
+                // 저장 버튼
+                ZAY_LTRB_UI(panel, 14 + 100 + 12, 12 + 34 + 6, 14 + 100 + 12 + 100, 12 + 34 + 6 + 34, "SAVE",
+                    ZAY_GESTURE_T(t)
+                    {
+                        if(t == GT_InReleased)
+                        {
+                            String JsonPath;
+                            if(Platform::Popup::FileDialog(DST_FileSave, JsonPath, nullptr, "Save json"))
+                            {
+                                m->mPipe.ResetJsonPath(JsonPath);
+                                // 기존파일은 old로 보관
+                                if(Platform::File::Exist(JsonPath))
+                                {
+                                    String OldPath = JsonPath + ".old";
+                                    for(sint32 i = 2; Platform::File::Exist(OldPath); ++i)
+                                        OldPath = JsonPath + ".old" + String::FromInteger(i);
+                                    Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
+                                }
+                                Context Json;
+                                m->mBoxMap[0]->WriteJson(Json);
+                                m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
+                                Json.SaveJson().ToFile(JsonPath, true);
+                            }
+                        }
+                    })
+                {
+                    const bool IsFocused = ((panel.state("SAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                    const bool IsPressed = ((panel.state("SAVE") & (PS_Pressed | PS_Dragging)) != 0);
+                    if(IsPressed) panel.ninepatch(R("btn_save_p"));
+                    else if(IsFocused) panel.ninepatch(R("btn_save_o"));
+                    else panel.ninepatch(R("btn_save_n"));
+                }
             }
 
             // 컴포넌트 구역
-            ZAY_LTRB_SCISSOR(panel, 0, 50, panel.w(), panel.h())
+            ZAY_LTRB_SCISSOR(panel, 0, 12 + 34 + 6 + 34 + 8, panel.w(), panel.h())
             {
                 // 컴포넌트 배경
                 ZAY_RGBA(panel, 35, 44, 53, 192)
@@ -478,11 +515,11 @@ Color ZEFakeZaySon::GetComponentColor(ZayExtend::ComponentType type, String& col
         colorres = "box_title_d";
         return Color(0, 181, 240, 192);
     case ZayExtend::ComponentType::Option:
-        colorres = "box_title_b";
-        return Color(34, 173, 166, 192);
-    case ZayExtend::ComponentType::Layout:
         colorres = "box_title_c";
         return Color(252, 181, 11, 192);
+    case ZayExtend::ComponentType::Layout:
+        colorres = "box_title_b";
+        return Color(34, 173, 166, 192);
     case ZayExtend::ComponentType::Loop:
         colorres = "box_title_a";
         return Color(178, 134, 195, 192);
@@ -617,12 +654,17 @@ bool ZEWidgetPipe::TickOnce()
     if(mJsonPathUpdated || NewConnected != mConnected)
     {
         mJsonPathUpdated = false;
-        #if BOSS_NEED_EMBEDDED_ASSET
-            Platform::SetWindowName("[" + mLastJsonPath + ((NewConnected)? "] + HUCLOUD ZAYPRO" : "] - HUCLOUD ZAYPRO"));
-        #else
-            Platform::SetWindowName("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath))) +
-                ((NewConnected)? "] + HUCLOUD ZAYPRO" : "] - HUCLOUD ZAYPRO"));
-        #endif
+        if(mLastJsonPath.Length() == 0)
+            Platform::SetWindowName("ZAYPRO");
+        else
+        {
+            #if BOSS_WASM
+                Platform::SetWindowName("[" + mLastJsonPath + ((NewConnected)? "] + ZAYPRO" : "] - HUCLOUD ZAYPRO"));
+            #else
+                Platform::SetWindowName("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath))) +
+                    ((NewConnected)? "] + ZAYPRO" : "] - ZAYPRO"));
+            #endif
+        }
     }
 
     // 수신내용 처리
@@ -870,6 +912,34 @@ void zayeditorData::ResetBoxes()
     mDraggingHook = -1;
     mShowCommentTagMsec = 0;
     mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
+}
+
+void zayeditorData::NewProject()
+{
+    mPipe.ResetJsonPath("");
+    ResetBoxes();
+    ZEZayBox::ResetLastID(); // ID발급기 초기화
+}
+
+void zayeditorData::FastSave()
+{
+    if(0 < mPipe.jsonpath().Length())
+    {
+        // 기존파일은 .f5로 보관
+        if(Platform::File::Exist(mPipe.jsonpath()))
+        {
+            String OldPath = mPipe.jsonpath() + ".f5";
+            Platform::File::Remove(WString::FromChars(OldPath));
+            Platform::File::Rename(WString::FromChars(mPipe.jsonpath()), WString::FromChars(OldPath));
+        }
+        Context Json;
+        mBoxMap[0]->WriteJson(Json);
+        mBoxMap[0]->SaveChildren(Json.At("ui"), mBoxMap);
+        Json.SaveJson().ToFile(mPipe.jsonpath(), true);
+        // 애니효과
+        mEasySaveEffect.Reset(1);
+        mEasySaveEffect.MoveTo(0, 1.0);
+    }
 }
 
 void zayeditorData::RenderButton(ZayPanel& panel, chars name, Color color, ZayPanel::SubGestureCB cb)

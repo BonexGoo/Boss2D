@@ -232,6 +232,8 @@ public:
 
 public:
     void ResetBoxes();
+    void NewProject();
+    void FastSave();
 
 public:
     void RenderButton(ZayPanel& panel, chars name, Color color, ZayPanel::SubGestureCB cb);
