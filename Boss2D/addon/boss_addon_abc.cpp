@@ -30,31 +30,78 @@ namespace BOSS
 
 #include <platform/win32/glew-2.2.0/include/GL/glew.h>
 
+#include <addon/alembic-1.8.1_for_boss/lib/Alembic/Abc/All.h>//////////////////////
+#include <addon/alembic-1.8.1_for_boss/lib/Alembic/AbcCoreOgawa/All.h>//////////////////////
+#include <addon/alembic-1.8.1_for_boss/lib/Alembic/AbcCollection/All.h>//////////////////////
+
 // 구현부
 namespace BOSS
 {
-    //AbcOpenGL::GLCamera* gCamera;
-    AbcOpenGL::SceneWrapper* gObject;
+    class AbcClass
+    {
+    public:
+        AbcClass()
+        {
+            mObject = nullptr;
+            mCamera = nullptr;
+        }
+        ~AbcClass()
+        {
+            delete mObject;
+            delete mCamera;
+        }
+
+    public:
+        AbcOpenGL::SceneWrapper* mObject;
+        AbcOpenGL::GLCamera* mCamera;
+    };
+    //AbcOpenGL::GLCamera* gCamera = nullptr;
+    //AbcOpenGL::SceneWrapper* gObject = nullptr;
 
     id_abc Customized_AddOn_Abc_Create(chars abcpath)
     {
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        /*Alembic::AbcCoreFactory::IFactory factory;
+        m_archive = factory.getArchive( fileName );*/
+        //Alembic::Abc::IArchive archive(Alembic::AbcCoreOgawa::ReadArchive(), abcpath);
+        //Alembic::Abc::IObject test(archive.getTop(), "test");
+        //Alembic::AbcCollection::ICollections group(test, "Group1");
+        //Alembic::AbcCollection::ICollections group2(test, "Group2");
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+
         //gCamera = new AbcOpenGL::GLCamera();
         //gCamera->setFovy(45.0);
         //gCamera->setClippingPlanes(0.1, 100000);
         //gCamera->setCenterOfInterest(0.1);
         //gCamera->setSize(2000, 2000);
 
-        gObject = new AbcOpenGL::SceneWrapper(std::string(abcpath));
-        //gObject->selection(0, 0, *gCamera);
-        //gCamera->frame(gObject->bounds());
-        return nullptr;
+        auto NewAbc = (AbcClass*) Buffer::Alloc<AbcClass>(BOSS_DBG 1);
+        NewAbc->mObject = new AbcOpenGL::SceneWrapper(std::string(abcpath));
+        NewAbc->mCamera = new AbcOpenGL::GLCamera();
+        NewAbc->mCamera->setRotation(Alembic::Abc::V3d(0, 0, 0));
+        NewAbc->mCamera->setScale(Alembic::Abc::V3d(1000, 1000, 1000));
+        NewAbc->mCamera->setTranslation(Alembic::Abc::V3d(1000, 1000, 1000));
+        NewAbc->mCamera->setFovy(45.0);
+        NewAbc->mCamera->setClippingPlanes(0.1, 100000);
+        NewAbc->mCamera->setCenterOfInterest(0.1);
+        NewAbc->mCamera->setSize(2000, 2000);
+
+        NewAbc->mObject->selection(0, 0, *NewAbc->mCamera);
+        NewAbc->mCamera->frame(NewAbc->mObject->bounds());
+
+        // 카메라조절
+        NewAbc->mCamera->dolly(Imath::V2d(200, 0));
+        NewAbc->mCamera->track(Imath::V2d(0, 0));
+        NewAbc->mCamera->rotate(Imath::V2d(0, 100));
+        return (id_abc) NewAbc;
     }
 
     void Customized_AddOn_Abc_Release(id_abc abc)
     {
-        //delete gCamera;
-        delete gObject;
-
         Buffer::Free((buffer) abc);
     }
 
@@ -98,10 +145,8 @@ namespace BOSS
 
     void Customized_AddOn_Abc_Render(id_abc abc, float x, float y, uint32 fbo)
     {
-        // 카메라조절
-        //gCamera->dolly(Imath::V2d(1, 1));
-        //gCamera->track(Imath::V2d(1, 1));
-        //gCamera->rotate(Imath::V2d(1, 1));
+        auto CurAbc = (AbcClass*) abc;
+        if(!CurAbc) return;
 
         ////////////////////////////////////////////////////////////////////////////////
         glPointSize(1.0);
@@ -118,7 +163,7 @@ namespace BOSS
 
         ////////////////////////////////////////////////////////////////////////////////
         // 애니메이션
-        gObject->playForward(60);
+        CurAbc->mObject->playForward(60);
 
         ////////////////////////////////////////////////////////////////////////////////
         glClearColor(1.0, 1.0, 0.8, 0.0);
@@ -128,7 +173,11 @@ namespace BOSS
         glLoadIdentity();
 
         // 카메라워크
-        //gCamera->apply();
+        CurAbc->mCamera->apply();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        CurAbc->mObject->draw(true, false);
+
         if(false) // Gen_Car.abc
         {
             glMatrixMode(GL_PROJECTION);
@@ -144,7 +193,7 @@ namespace BOSS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             ////////////////////////////////////////////////////////////////////////////////
-            gObject->draw(true, false);
+            CurAbc->mObject->draw(true, false);
         }
         else if(false) // particle_v01_test.abc
         {
@@ -156,7 +205,7 @@ namespace BOSS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             ////////////////////////////////////////////////////////////////////////////////
-            gObject->draw(false, true);
+            CurAbc->mObject->draw(false, true);
         }
         else if(false) // Aston_Martin_DBS_ABC.abc
         {
@@ -174,9 +223,9 @@ namespace BOSS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             ////////////////////////////////////////////////////////////////////////////////
-            gObject->draw(true, false);
+            CurAbc->mObject->draw(true, false);
         }
-        else if(true) // Pagani Huayra BC.abc
+        else if(false) // Pagani Huayra BC.abc
         {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
@@ -192,8 +241,10 @@ namespace BOSS
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             ////////////////////////////////////////////////////////////////////////////////
-            gObject->draw(true, false);
+            CurAbc->mObject->draw(true, false);
         }
+
+        glDisable(GL_DEPTH_TEST);
     }
 }
 

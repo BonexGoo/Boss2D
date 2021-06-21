@@ -848,22 +848,31 @@ namespace BOSS
 
     bool ZayPanel::textbox(chars string, sint32 linegap, UIAlign align) const
     {
-        String MultiText(string);
-        MultiText.Replace("\\\\", "\\");
-        MultiText.Replace("\\n", "\n");
-        WString MultiTextW = WString::FromChars(MultiText);
-
-        // 라인텍스트 사전조사
         const Clip& LastClip = m_stack_clip[-1];
         struct LineText {wchars TextPtr; sint32 TextLength;};
         Array<LineText, datatype_pod_canmemcpy> LineTexts;
-        for(wchars TextW = MultiTextW; *TextW;)
+        WStrings MultiTextsW;
+
+        // 라인텍스트 사전조사
+        if(string && *string)
         {
-            const sint32 CurLength = Platform::Graphics::GetLengthOfStringW(true, LastClip.Width(), TextW);
-            auto& NewLineText = LineTexts.AtAdding();
-            NewLineText.TextPtr = TextW;
-            NewLineText.TextLength = CurLength;
-            TextW += CurLength + (TextW[CurLength] == L' ');
+            String MultiText(string);
+            MultiText.Replace("\\\\", "\\");
+            MultiText.Replace("\\n", "\n");
+            Strings MultiTexts = String::Split(MultiText, '\n');
+            for(sint32 i = 0, iend = MultiTexts.Count(); i < iend; ++i)
+            {
+                auto& CurMultiTextW = MultiTextsW.AtAdding();
+                CurMultiTextW = WString::FromChars(MultiTexts[i]);
+                for(wchars TextW = CurMultiTextW; *TextW;)
+                {
+                    const sint32 CurLength = Platform::Graphics::GetLengthOfStringW(true, LastClip.Width(), TextW);
+                    auto& NewLineText = LineTexts.AtAdding();
+                    NewLineText.TextPtr = TextW;
+                    NewLineText.TextLength = CurLength;
+                    TextW += CurLength + (TextW[CurLength] == L' ');
+                }
+            }
         }
 
         // 라인텍스트 출력
