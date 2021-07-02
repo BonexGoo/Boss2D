@@ -306,7 +306,8 @@ namespace BOSS
     chars Customized_AddOn_Curl_GetString(id_curl curl, chars url, chars headerdata, AddOn::Curl::SendType sendtype, chars senddata, sint32 datalen)
     {
         if(!curl) return nullptr;
-        uint08s RequestResult = BOSS::_Request(curl, url, headerdata, sendtype, senddata, datalen, nullptr, 0, ((CurlStruct*) curl)->mTimeOut);
+        uint08s RequestResult = BOSS::_Request(curl, url,
+            headerdata, sendtype, senddata, datalen, nullptr, 0, ((CurlStruct*) curl)->mTimeOut);
         if(RequestResult.Count() == 0) return "";
 
         ((CurlStruct*) curl)->mRequestCacheString = String((chars) RequestResult.AtDumping(0, 1), RequestResult.Count());
@@ -317,7 +318,8 @@ namespace BOSS
     bytes Customized_AddOn_Curl_GetBytes(id_curl curl, chars url, sint32* getsize, chars headerdata, AddOn::Curl::SendType sendtype, chars senddata, sint32 datalen)
     {
         if(!curl) return nullptr;
-        ((CurlStruct*) curl)->mRequestCacheBytes = BOSS::_Request(curl, url, headerdata, sendtype, senddata, datalen, nullptr, 0, ((CurlStruct*) curl)->mTimeOut);
+        ((CurlStruct*) curl)->mRequestCacheBytes = BOSS::_Request(curl, url,
+            headerdata, sendtype, senddata, datalen, nullptr, 0, ((CurlStruct*) curl)->mTimeOut);
         if(getsize) *getsize = ((CurlStruct*) curl)->mRequestCacheBytes.Count();
         return ((CurlStruct*) curl)->mRequestCacheBytes.AtDumping(0, 1);
     }
@@ -327,7 +329,8 @@ namespace BOSS
     {
         if(!curl) return nullptr;
         ((CurlStruct*) curl)->mRequestCacheString.Empty();
-        BOSS::_Request(curl, url, headerdata, sendtype, senddata, datalen, &((CurlStruct*) curl)->mRequestCacheString, successcode, ((CurlStruct*) curl)->mTimeOut);
+        BOSS::_Request(curl, url,
+            headerdata, sendtype, senddata, datalen, &((CurlStruct*) curl)->mRequestCacheString, successcode, ((CurlStruct*) curl)->mTimeOut);
         return ((CurlStruct*) curl)->mRequestCacheString;
     }
 

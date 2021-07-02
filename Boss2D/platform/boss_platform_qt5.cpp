@@ -3787,8 +3787,20 @@
                 {
                     const String UrlText = String::Format("ws://%s:%d", domain, (sint32) port);
                     CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
-                    BOSS_TRACE("Connect-WS(%s:%d)", domain, (sint32) port);
-                    return true;
+                    // 지정된 시간동안 결과를 기다림
+                    bool Result = true;
+                    const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
+                    while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
+                    {
+                        Platform::Utility::Sleep(1, false, true);
+                        if(WaitForMsec < Platform::Utility::CurrentTimeMsec())
+                        {
+                            Result = false;
+                            break;
+                        }
+                    }
+                    BOSS_TRACE("Connect-WS(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
+                    return Result;
                 }
                 break;
             }

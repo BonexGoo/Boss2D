@@ -108,6 +108,7 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Curl, Release, void, return, id_curl)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetString, chars, return "", id_curl, chars, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetBytes, bytes, return nullptr, id_curl, chars, sint32*, chars, AddOn::Curl::SendType, chars, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Curl, SecureSend, void, return, id_curl, chars, chars, chars, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetRedirectUrl, chars, return "", id_curl, chars, sint32, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, SendStream, void, return, id_curl, chars, AddOn::Curl::CurlReadCB, payload)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, FtpUpload, bool, return false, id_curl, chars, chars, buffer)
@@ -483,16 +484,28 @@ namespace BOSS
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Zipa_Error() {BOSS_ASSERT("Zipa애드온이 준비되지 않았습니다", false);}
-    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Create, id_zipa, return nullptr, wchars, sint32*)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Create, id_zipa, return nullptr, wchars, sint32*, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Zipa, Release, void, return, id_zipa)
     BOSS_DEFINE_ADDON_FUNCTION(Zipa, Extract, bool, return false, id_zipa, sint32, wchars)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, ToFile, buffer, return nullptr, id_zipa, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, GetFileInfo, chars, return "", id_zipa, sint32,
+        bool*, uint64*, uint64*, uint64*, bool*, bool*, bool*, bool*)
 
-    id_zipa AddOn::Zipa::Create(wchars zippath, sint32* filecount)
-    {return Core_AddOn_Zipa_Create()(zippath, filecount);}
+    id_zipa AddOn::Zipa::Create(wchars zippath, sint32* filecount, chars extension)
+    {return Core_AddOn_Zipa_Create()(zippath, filecount, extension);}
 
     void AddOn::Zipa::Release(id_zipa zipa)
     {Core_AddOn_Zipa_Release()(zipa);}
 
     bool AddOn::Zipa::Extract(id_zipa zipa, sint32 fileindex, wchars newzippath)
     {return Core_AddOn_Zipa_Extract()(zipa, fileindex, newzippath);}
+
+    buffer AddOn::Zipa::ToFile(id_zipa zipa, sint32 fileindex)
+    {return Core_AddOn_Zipa_ToFile()(zipa, fileindex);}
+
+    chars AddOn::Zipa::GetFileInfo(id_zipa zipa, sint32 fileindex,
+        bool* isdir, uint64* ctime, uint64* mtime, uint64* atime,
+        bool* archive, bool* hidden, bool* readonly, bool* system)
+    {return Core_AddOn_Zipa_GetFileInfo()(zipa, fileindex,
+        isdir, ctime, mtime, atime, archive, hidden, readonly, system);}
 }

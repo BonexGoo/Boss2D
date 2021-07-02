@@ -198,7 +198,7 @@ namespace BOSS
     protected:
         void ReloadPicture(chars url)
         {
-            if(url)
+            if(url && *url)
             {
                 sint32 GetSize = 0;
                 bytes Result = AddOn::Curl::GetBytes(data().mCurl, url, &GetSize);
@@ -211,10 +211,11 @@ namespace BOSS
                 }
                 else data().mPicture.Clear();
             }
+            else data().mPicture.Clear();
         }
         void ReloadBackground(chars url)
         {
-            if(url)
+            if(url && *url)
             {
                 sint32 GetSize = 0;
                 bytes Result = AddOn::Curl::GetBytes(data().mCurl, url, &GetSize);
@@ -225,6 +226,7 @@ namespace BOSS
                 }
                 else data().mBackground.Clear();
             }
+            else data().mBackground.Clear();
         }
 
     private:
