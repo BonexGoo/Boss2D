@@ -50,6 +50,11 @@ namespace BOSS
         return fmodf(a, b);
     }
 
+    float Math::Pow(const float x, const float y)
+    {
+        return powf(x, y);
+    }
+
     float Math::Sqrt(const float v)
     {
         return sqrtf(v);

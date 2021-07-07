@@ -160,6 +160,7 @@ namespace BOSS
             case SolverOperatorType::Function_Min:   collector += " [min] "; break;
             case SolverOperatorType::Function_Max:   collector += " [max] "; break;
             case SolverOperatorType::Function_Abs:   collector += " [abs] "; break;
+            case SolverOperatorType::Function_Pow:   collector += " [pow] "; break;
             }
             PrintOperand(mOperandR, collector);
         }
@@ -204,6 +205,7 @@ namespace BOSS
             case SolverOperatorType::Function_Min:   return mOperandL->result(Zero).Function_Min(mOperandR->result(One));
             case SolverOperatorType::Function_Max:   return mOperandL->result(Zero).Function_Max(mOperandR->result(One));
             case SolverOperatorType::Function_Abs:   return mOperandL->result(Zero).Function_Abs(mOperandR->result(One));
+            case SolverOperatorType::Function_Pow:   return mOperandL->result(Zero).Function_Pow(mOperandR->result(One));
             }
             return zero;
         }
@@ -673,7 +675,18 @@ namespace BOSS
         {
         case SolverValueType::Integer: return MakeByInteger(ToInteger() + Math::Abs(rhs.ToInteger()));
         case SolverValueType::Float: return MakeByFloat(ToFloat() + Math::AbsF(rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByText(ToText() + rhs.ToText());
+        case SolverValueType::Text: return MakeByText("Abs_Error");
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Pow(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(Math::Pow(ToInteger(), rhs.ToInteger()));
+        case SolverValueType::Float: return MakeByFloat(Math::Pow(ToFloat(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeByText("Pow_Error");
         }
         return SolverValue();
     }
@@ -857,6 +870,11 @@ namespace BOSS
                     jump(!String::Compare("[abs]", formula, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Abs, deep);
+                        formula += 4;
+                    }
+                    jump(!String::Compare("[pow]", formula, 5))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Pow, deep);
                         formula += 4;
                     }
                     else

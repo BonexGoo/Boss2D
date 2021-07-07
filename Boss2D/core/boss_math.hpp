@@ -107,6 +107,12 @@ namespace BOSS
         inline static float Pow(const float v)
         {return v * v;}
 
+        /// @brief 제곱 구하기
+        /// @param x : 원소값
+        /// @param y : 제곱값
+        /// @return 제곱
+        static float Pow(const float x, const float y);
+
         /// @brief 제곱근 구하기
         /// @param v : 인수
         /// @return 제곱근
