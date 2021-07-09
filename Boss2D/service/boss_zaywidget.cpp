@@ -377,8 +377,8 @@ namespace BOSS
             {
                 ZAY_INNER(panel, 1)
                     panel.rect(1);
-                panel.line(Point(0, 0), Point(panel.w(), panel.h()), 1);
-                panel.line(Point(panel.w(), 0), Point(0, panel.h()), 1);
+                panel.line(Point(0.5, 0.5), Point(panel.w() - 0.5, panel.h() - 0.5), 1);
+                panel.line(Point(panel.w() - 0.5, 0.5), Point(0.5, panel.h() - 0.5), 1);
             }
         };
 
