@@ -325,6 +325,7 @@ namespace BOSS
                                 Self->mPipeModifyTime = ModifyTime;
                                 Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe"));
                                 const String PipeName = Json("pipe").GetText();
+                                ZayWidgetDOM::UnbindPipe(Self->mPipe);
                                 Platform::Pipe::Close(Self->mPipe);
                                 Self->mPipe = Platform::Pipe::Open(PipeName);
                                 ZayWidgetDOM::BindPipe(Self->mPipe);
@@ -862,8 +863,11 @@ namespace BOSS
 
     void ZayWidgetDOM::UnbindPipe(id_pipe pipe)
     {
-        auto& Self = ST();
-        Self.mPipeMap.Remove(PtrToUint64(pipe));
+        if(pipe)
+        {
+            auto& Self = ST();
+            Self.mPipeMap.Remove(PtrToUint64(pipe));
+        }
     }
 
     void ZayWidgetDOM::SendFlush()
