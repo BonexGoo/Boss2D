@@ -1037,6 +1037,7 @@
         chars Platform::Utility::GetArgument(sint32 i, sint32* getcount)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window && g_argv);
+            if(getcount) *getcount = g_argc;
             if(i < g_argc)
                 return g_argv[i];
             return "";
