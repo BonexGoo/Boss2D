@@ -178,7 +178,7 @@ void BaseEncoderAac::EncodeTo(bytes pcm, sint32 length, id_flash flash, uint64 t
             const sint32 CurChunkSize = (((CurAacPtr[4] & 0xFF) << 4) | ((CurAacPtr[5] & 0xF0) >> 4)) / 2;
             const sint32 CurContentSize = CurChunkSize - AacHeadSize;
             Memory::Copy(Chunk.AtDumpingAdded(CurContentSize), &CurAacPtr[AacHeadSize], CurContentSize);
-            Flv::AddChunk(flash, 0x08, &Chunk[0], Chunk.Count(), timems); // audio
+            Flv::WriteChunk(flash, 0x08, &Chunk[0], Chunk.Count(), timems); // audio
             CurAacPtr += CurChunkSize;
             CurAacSize -= CurChunkSize;
         }
