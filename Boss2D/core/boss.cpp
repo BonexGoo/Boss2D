@@ -421,7 +421,11 @@ public:
             {
                 #if BOSS_WINDOWS
                     fseek((FILE*) mFilePointer, 0, SEEK_END);
-                    mFileSize = ftell((FILE*) mFilePointer);
+                    #if BOSS_X64
+                        mFileSize = _ftelli64((FILE*) mFilePointer);
+                    #else
+                        mFileSize = ftell((FILE*) mFilePointer);
+                    #endif
                     fseek((FILE*) mFilePointer, 0, SEEK_SET);
                 #elif BOSS_LINUX || BOSS_WASM
                     fseek((FILE*) mFilePointer, 0, SEEK_END);
@@ -440,7 +444,11 @@ public:
             else
             {
                 fseek((FILE*) mFilePointer, 0, SEEK_END);
-                mFileSize = ftell((FILE*) mFilePointer);
+                #if BOSS_X64
+                    mFileSize = _ftelli64((FILE*) mFilePointer);
+                #else
+                    mFileSize = ftell((FILE*) mFilePointer);
+                #endif
                 fseek((FILE*) mFilePointer, 0, SEEK_SET);
             }
         }
@@ -486,8 +494,8 @@ public:
     void* mFilePointer;
     bool mNeedSave;
     uint08s* mContent;
-    long int mFileSize;
-    long int mFileOffset;
+    boss_ssize_t mFileSize;
+    boss_ssize_t mFileOffset;
 };
 static Map<FileClass> gAllFiles;
 static sint32 gLastFileID = -1;
@@ -744,7 +752,7 @@ extern "C" int boss_feof(boss_file file)
     return EOF;
 }
 
-extern "C" int boss_fseek(boss_file file, long int offset, int origin)
+extern "C" int boss_fseek(boss_file file, boss_ssize_t offset, int origin)
 {
     FileClass* CurFile = (FileClass*) file;
     if(CurFile)
@@ -762,7 +770,9 @@ extern "C" int boss_fseek(boss_file file, long int offset, int origin)
             CurFile->mFileOffset = CurFile->mFileSize + offset;
             break;
         }
-        if(CurFile->mFileSize < CurFile->mFileOffset)
+        if(CurFile->mFileOffset < 0)
+            CurFile->mFileOffset = 0;
+        else if(CurFile->mFileSize < CurFile->mFileOffset)
         {
             uint08* CurDst = CurFile->mContent->AtDumping(CurFile->mFileSize, CurFile->mFileOffset - CurFile->mFileSize);
             Memory::Set(CurDst, 0, CurFile->mFileOffset - CurFile->mFileSize);
@@ -773,7 +783,7 @@ extern "C" int boss_fseek(boss_file file, long int offset, int origin)
     return EOF;
 }
 
-extern "C" long int boss_ftell(boss_file file)
+extern "C" boss_ssize_t boss_ftell(boss_file file)
 {
     FileClass* CurFile = (FileClass*) file;
     if(CurFile)

@@ -251,10 +251,11 @@ namespace BOSS
         class Zip
         {
         public:
-            static id_zip Create(bytes zip, sint32 length, sint32* filecount = nullptr, chars password = nullptr);
-            static void Release(id_zip zip);
-            static buffer ToFile(id_zip zip, sint32 fileindex);
-            static chars GetFileInfo(id_zip zip, sint32 fileindex,
+            static id_zip OpenForBuffer(bytes buf, uint64 length, sint32* filecount = nullptr, chars password = nullptr);
+            static id_zip OpenForFD(sint32 fd, sint32* filecount = nullptr, chars password = nullptr);
+            static void Close(id_zip zip);
+            static buffer ToBuffer(id_zip zip, sint32 fileindex);
+            static chars GetFileInfo(id_zip zip, sint32 fileindex, uint64* filesize = nullptr,
                 bool* isdir = nullptr, uint64* ctime = nullptr, uint64* mtime = nullptr, uint64* atime = nullptr,
                 bool* archive = nullptr, bool* hidden = nullptr, bool* readonly = nullptr, bool* system = nullptr);
         };
@@ -265,11 +266,11 @@ namespace BOSS
         public:
             // 단일 ZIP파일인 경우엔 L"*.zip"을 zippath로 전달
             // 분할 ZIP파일인 경우엔 L"*.zip.001"에서 L"*.zip.010"까지 존재하는 경우 L"*.zip.010"을 zippath로 전달
-            static id_zipa Create(wchars zippath, sint32* filecount = nullptr, chars extension = ".zip");
-            static void Release(id_zipa zipa);
-            static bool Extract(id_zipa zipa, sint32 fileindex, wchars newzippath = nullptr);
-            static buffer ToFile(id_zipa zipa, sint32 fileindex);
-            static chars GetFileInfo(id_zipa zipa, sint32 fileindex,
+            static id_zipa Open(wchars zippath, sint32* filecount = nullptr, chars extension = ".zip");
+            static void Close(id_zipa zipa);
+            static bool ExtractFile(id_zipa zipa, sint32 fileindex, wchars newzippath = nullptr);
+            static buffer ToBuffer(id_zipa zipa, sint32 fileindex);
+            static chars GetFileInfo(id_zipa zipa, sint32 fileindex, uint64* filesize = nullptr,
                 bool* isdir = nullptr, uint64* ctime = nullptr, uint64* mtime = nullptr, uint64* atime = nullptr,
                 bool* archive = nullptr, bool* hidden = nullptr, bool* readonly = nullptr, bool* system = nullptr);
         };

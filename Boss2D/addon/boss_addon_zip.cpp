@@ -31,21 +31,24 @@ extern "C"
 #include "boss_addon_zip.hpp"
 
 #include <boss.hpp>
+#include <platform/boss_platform.hpp>
 
 // 등록과정
 namespace BOSS
 {
-    BOSS_DECLARE_ADDON_FUNCTION(Zip, Create, id_zip, bytes, sint32, sint32*, chars)
-    BOSS_DECLARE_ADDON_FUNCTION(Zip, Release, void, id_zip)
-    BOSS_DECLARE_ADDON_FUNCTION(Zip, ToFile, buffer, id_zip, sint32)
-    BOSS_DECLARE_ADDON_FUNCTION(Zip, GetFileInfo, chars, id_zip, sint32,
+    BOSS_DECLARE_ADDON_FUNCTION(Zip, OpenForBuffer, id_zip, bytes, uint64, sint32*, chars)
+    BOSS_DECLARE_ADDON_FUNCTION(Zip, OpenForFD, id_zip, sint32, sint32*, chars)
+    BOSS_DECLARE_ADDON_FUNCTION(Zip, Close, void, id_zip)
+    BOSS_DECLARE_ADDON_FUNCTION(Zip, ToBuffer, buffer, id_zip, sint32)
+    BOSS_DECLARE_ADDON_FUNCTION(Zip, GetFileInfo, chars, id_zip, sint32, uint64*,
         bool*, uint64*, uint64*, uint64*, bool*, bool*, bool*, bool*)
 
     static autorun Bind_AddOn_Zip()
     {
-        Core_AddOn_Zip_Create() = Customized_AddOn_Zip_Create;
-        Core_AddOn_Zip_Release() = Customized_AddOn_Zip_Release;
-        Core_AddOn_Zip_ToFile() = Customized_AddOn_Zip_ToFile;
+        Core_AddOn_Zip_OpenForBuffer() = Customized_AddOn_Zip_OpenForBuffer;
+        Core_AddOn_Zip_OpenForFD() = Customized_AddOn_Zip_OpenForFD;
+        Core_AddOn_Zip_Close() = Customized_AddOn_Zip_Close;
+        Core_AddOn_Zip_ToBuffer() = Customized_AddOn_Zip_ToBuffer;
         Core_AddOn_Zip_GetFileInfo() = Customized_AddOn_Zip_GetFileInfo;
         return true;
     }
@@ -176,7 +179,7 @@ typedef struct
     long unc_size;             // may be -1 if not yet known (e.g. being streamed in)
 } ZIPENTRY;
 
-HZIP OpenZip(void *z, unsigned int len, const char *password);
+HZIP OpenZip(void* z, long long len, const char* password);
 // OpenZip - opens a zip file and returns a handle with which you can
 // subsequently examine its contents. You can open a zip file from:
 // from a pipe:             OpenZipHandle(hpipe_read,0);
@@ -192,6 +195,9 @@ HZIP OpenZip(void *z, unsigned int len, const char *password);
 // Note: for windows-ce, you cannot close the handle until after CloseZip.
 // but for real windows, the zip makes its own copy of your handle, so you
 // can close yours anytime.
+
+//bx20210730
+HZIP OpenZipByFD(sint32 fd, const char* password);
 
 ZRESULT GetZipItem(HZIP hz, int index, ZIPENTRY *ze);
 // GetZipItem - call this to get information about an item in the zip.
@@ -276,9 +282,9 @@ bool IsZipHandle(HZIP hz);
 // 구현부
 namespace BOSS
 {
-    id_zip Customized_AddOn_Zip_Create(bytes zip, sint32 length, sint32* filecount, chars password)
+    id_zip Customized_AddOn_Zip_OpenForBuffer(bytes buf, uint64 length, sint32* filecount, chars password)
     {
-        id_zip Result = (id_zip) OpenZip((void*) zip, length, password);
+        id_zip Result = (id_zip) OpenZip((void*) buf, length, password);
 
         ZIPENTRY ZipEntry;
         GetZipItem((HZIP) Result, -1, &ZipEntry);
@@ -286,13 +292,23 @@ namespace BOSS
         return Result;
     }
 
-    void Customized_AddOn_Zip_Release(id_zip zip)
+    id_zip Customized_AddOn_Zip_OpenForFD(sint32 fd, sint32* filecount, chars password)
+    {
+        id_zip Result = (id_zip) OpenZipByFD(fd, password);
+
+        ZIPENTRY ZipEntry;
+        GetZipItem((HZIP) Result, -1, &ZipEntry);
+        if(filecount) *filecount = ZipEntry.index;
+        return Result;
+    }
+
+    void Customized_AddOn_Zip_Close(id_zip zip)
     {
         if(zip && IsZipHandle((HZIP) zip))
             CloseZip((HZIP) zip);
     }
 
-    buffer Customized_AddOn_Zip_ToFile(id_zip zip, sint32 fileindex)
+    buffer Customized_AddOn_Zip_ToBuffer(id_zip zip, sint32 fileindex)
     {
         if(!zip || !IsZipHandle((HZIP) zip))
             return nullptr;
@@ -306,7 +322,7 @@ namespace BOSS
         return Result;
     }
 
-    chars Customized_AddOn_Zip_GetFileInfo(id_zip zip, sint32 fileindex,
+    chars Customized_AddOn_Zip_GetFileInfo(id_zip zip, sint32 fileindex, uint64* filesize,
         bool* isdir, uint64* ctime, uint64* mtime, uint64* atime,
         bool* archive, bool* hidden, bool* readonly, bool* system)
     {
@@ -315,6 +331,7 @@ namespace BOSS
 
         static ZIPENTRY ZipEntry;
         GetZipItem((HZIP) zip, fileindex, &ZipEntry);
+        if(filesize) *filesize = ZipEntry.unc_size;
         if(isdir) *isdir = ZipEntry.attr_isdir;
         if(ctime) Memory::Copy(ctime, &ZipEntry.ctime, sizeof(uint64));
         if(mtime) Memory::Copy(mtime, &ZipEntry.mtime, sizeof(uint64));
@@ -426,6 +443,7 @@ typedef struct unz_file_info_s
 typedef unsigned char  Byte;  // 8 bits
 typedef unsigned int   uInt;  // 16 bits or more
 typedef unsigned long  uLong; // 32 bits or more
+typedef unsigned long long  uLongLong; // 64 bits or more
 typedef void *voidpf;
 typedef void     *voidp;
 typedef long z_off_t;
@@ -2674,29 +2692,53 @@ typedef struct unz_file_info_internal_s
 typedef struct
 {
   bool canseek;
-  // for handles:
-  HANDLE h; bool herr; unsigned long initial_offset; bool mustclosehandle;
+  // for fd:
+  sint32 fd; long long initial_offset; bool mustclosefd; //bx20210730
   // for memory:
-  void *buf; unsigned int len,pos; // if it's a memory block
+  void* buf; long long len; long long pos; // if it's a memory block
 } LUFILE;
 
 // modified 2013.12.12
-LUFILE *lufopen(void *z,unsigned int len,ZRESULT *err)
+LUFILE *lufopen(void *z, long long len, ZRESULT *err)
 {
-    HANDLE h=0; bool canseek=false; *err=ZR_OK;
-    bool mustclosehandle=false;
     LUFILE *lf = new LUFILE;
-    lf->canseek=true;
-    lf->mustclosehandle=false;
-    lf->buf=z; lf->len=len; lf->pos=0; lf->initial_offset=0;
-    *err=ZR_OK;
+    lf->canseek = true;
+    lf->fd = -1;
+    lf->initial_offset = 0;
+    lf->mustclosefd = false;
+    lf->buf = z;
+    lf->len = len;
+    lf->pos = 0;
+    *err = ZR_OK;
+    return lf;
+}
+
+//bx20210730
+LUFILE* lufopen_fd(sint32 fd, ZRESULT *err)
+{
+    uint64 FileSize = 0;
+    Platform::File::FDAttributes(fd, &FileSize);
+
+    LUFILE *lf = new LUFILE;
+    lf->canseek = true;
+    lf->fd = fd;
+    lf->initial_offset = 0;
+    lf->mustclosefd = true;
+    lf->buf = nullptr;
+    lf->len = FileSize;
+    lf->pos = 0;
+    *err = ZR_OK;
     return lf;
 }
 
 // modified 2013.12.12
 int lufclose(LUFILE *stream)
 {
-    if (stream==NULL) return EOF;
+    if(stream == NULL)
+        return EOF;
+
+    if(stream->mustclosefd)
+        Platform::File::FDClose(stream->fd);
     delete stream;
     return 0;
 }
@@ -2708,13 +2750,13 @@ int luferror(LUFILE *stream)
 }
 
 // modified 2013.12.12
-long int luftell(LUFILE *stream)
+long long luftell(LUFILE *stream)
 {
     return stream->pos;
 }
 
 // modified 2013.12.12
-int lufseek(LUFILE *stream, long offset, int whence)
+int lufseek(LUFILE *stream, long long offset, int whence)
 {
     if (whence==SEEK_SET) stream->pos=offset;
     else if (whence==SEEK_CUR) stream->pos+=offset;
@@ -2723,13 +2765,21 @@ int lufseek(LUFILE *stream, long offset, int whence)
 }
 
 // modified 2013.12.12
-size_t lufread(void *ptr,size_t size,size_t n,LUFILE *stream)
+size_t lufread(void *ptr, size_t size, size_t n, LUFILE *stream)
 {
-    unsigned int toread = (unsigned int)(size*n);
-    if (stream->pos+toread > stream->len) toread = stream->len-stream->pos;
-    memcpy(ptr, (char*)stream->buf + stream->pos, toread); DWORD red = toread;
-    stream->pos += red;
-    return red/size;
+    long long toread = (long long) (size * n);
+    if(stream->len < stream->pos + toread)
+        toread = stream->len - stream->pos;
+
+    if(stream->mustclosefd)
+    {
+        Platform::File::FDSeek(stream->fd, stream->pos, 0);
+        Platform::File::FDRead(stream->fd, ptr, toread);
+    }
+    else memcpy(ptr, (char*) stream->buf + stream->pos, toread);
+
+    stream->pos += toread;
+    return toread / size;
 }
 
 // file_in_zip_read_info_s contain internal information about a file in zipfile,
@@ -2903,22 +2953,24 @@ int unzStringFileNameCompare (const char*fileName1,const char*fileName2,int iCas
 
 
 //  Locate the Central directory of a zipfile (at the end, just before
-// the global comment). Lu bugfix 2005.07.26 - returns 0xFFFFFFFF if not found,
+// the global comment). Lu bugfix 2005.07.26 - returns oxFFFFFFFFFFFFFFFF if not found,
 // rather than 0, since 0 is a valid central-dir-location for an empty zipfile.
-uLong unzlocal_SearchCentralDir(LUFILE *fin)
-{ if (lufseek(fin,0,SEEK_END) != 0) return 0xFFFFFFFF;
-  uLong uSizeFile = luftell(fin);
+uLongLong unzlocal_SearchCentralDir(LUFILE *fin)
+{
+  if (lufseek(fin,0,SEEK_END) != 0) return oxFFFFFFFFFFFFFFFF;
+  uLongLong uSizeFile = luftell(fin);
 
-  uLong uMaxBack=0xffff; // maximum size of global comment
+  uLongLong uMaxBack = 0xFFFF; // maximum size of global comment
   if (uMaxBack>uSizeFile) uMaxBack = uSizeFile;
 
   unsigned char *buf = (unsigned char*)zmalloc(BUFREADCOMMENT+4);
-  if (buf==NULL) return 0xFFFFFFFF;
-  uLong uPosFound=0xFFFFFFFF;
+  if (buf==NULL) return oxFFFFFFFFFFFFFFFF;
+  uLongLong uPosFound = oxFFFFFFFFFFFFFFFF;
 
-  uLong uBackRead = 4;
+  uLongLong uBackRead = 4;
   while (uBackRead<uMaxBack)
-  { uLong uReadSize,uReadPos ;
+  {
+    uLongLong uReadSize,uReadPos ;
     int i;
     if (uBackRead+BUFREADCOMMENT>uMaxBack) uBackRead = uMaxBack;
     else uBackRead+=BUFREADCOMMENT;
@@ -2927,11 +2979,15 @@ uLong unzlocal_SearchCentralDir(LUFILE *fin)
     if (lufseek(fin,uReadPos,SEEK_SET)!=0) break;
     if (lufread(buf,(uInt)uReadSize,1,fin)!=1) break;
     for (i=(int)uReadSize-3; (i--)>=0;)
-    { if (((*(buf+i))==0x50) && ((*(buf+i+1))==0x4b) &&    ((*(buf+i+2))==0x05) && ((*(buf+i+3))==0x06))
-      { uPosFound = uReadPos+i;    break;
+    {
+      if (buf[i]==0x50 && buf[i+1]==0x4b && buf[i+2]==0x05 && buf[i+3]==0x06)
+      {
+        uPosFound = uReadPos+i;
+        break;
       }
     }
-    if (uPosFound!=0) break;
+    if (uPosFound!=0)
+        break;
   }
   if (buf) zfree(buf);
   return uPosFound;
@@ -2949,9 +3005,10 @@ unzFile unzOpenInternal(LUFILE *fin)
 
   int err=UNZ_OK;
   unz_s us;
-  uLong central_pos,uL;
+  uLongLong central_pos;
+  uLong uL;
   central_pos = unzlocal_SearchCentralDir(fin);
-  if (central_pos==0xFFFFFFFF) err=UNZ_ERRNO;
+  if (central_pos==oxFFFFFFFFFFFFFFFF) err=UNZ_ERRNO;
   if (lufseek(fin,central_pos,SEEK_SET)!=0) err=UNZ_ERRNO;
   // the signature, already checked
   if (unzlocal_getLong(fin,&uL)!=UNZ_OK) err=UNZ_ERRNO;
@@ -3741,7 +3798,8 @@ public:
     unzFile uf; int currentfile; ZIPENTRY cze; int czei;
     char *password;
 
-    ZRESULT Open(void *z,unsigned int len);
+    ZRESULT Open(void* z, long long len);
+    ZRESULT OpenByFD(sint32 fd); //bx20210730
     ZRESULT Get(int index,ZIPENTRY *ze);
     ZRESULT Find(const TCHAR *name,bool ic,int *index,ZIPENTRY *ze);
     ZRESULT Unzip(int index,void *dst,unsigned int len);
@@ -3749,11 +3807,23 @@ public:
 };
 
 // modified 2013.12.12
-ZRESULT TUnzip::Open(void *z,unsigned int len)
+ZRESULT TUnzip::Open(void* z, long long len)
 {
-    if (uf!=0 || currentfile!=-1) return ZR_NOTINITED;
-    //
-    ZRESULT e; LUFILE *f = lufopen(z,len,&e);
+    if (uf!=0 || currentfile!=-1)
+        return ZR_NOTINITED;
+    ZRESULT e; LUFILE *f = lufopen(z, len, &e);
+    if (f==NULL) return e;
+    uf = unzOpenInternal(f);
+    if (uf==0) return ZR_NOFILE;
+    return ZR_OK;
+}
+
+//bx20210730
+ZRESULT TUnzip::OpenByFD(sint32 fd)
+{
+    if (uf!=0 || currentfile!=-1)
+        return ZR_NOTINITED;
+    ZRESULT e; LUFILE *f = lufopen_fd(fd, &e);
     if (f==NULL) return e;
     uf = unzOpenInternal(f);
     if (uf==0) return ZR_NOFILE;
@@ -4005,17 +4075,23 @@ typedef struct
     TUnzip *unz;
 } TUnzipHandleData;
 
-// modified 2013.12.12
-HZIP OpenZipInternal(void *z,unsigned int len, const char *password)
+HZIP OpenZip(void* z, long long len, const char* password)
 {
     TUnzip *unz = new TUnzip(password);
-    lasterrorU = unz->Open(z,len);
+    lasterrorU = unz->Open(z, len);
     if (lasterrorU!=ZR_OK) {delete unz; return 0;}
     TUnzipHandleData *han = new TUnzipHandleData;
     han->flag=1; han->unz=unz; return (HZIP)han;
 }
 
-HZIP OpenZip(void *z,unsigned int len, const char *password) {return OpenZipInternal(z,len,password);}
+HZIP OpenZipByFD(sint32 fd, const char* password)
+{
+    TUnzip *unz = new TUnzip(password);
+    lasterrorU = unz->OpenByFD(fd);
+    if (lasterrorU!=ZR_OK) {delete unz; return 0;}
+    TUnzipHandleData *han = new TUnzipHandleData;
+    han->flag=1; han->unz=unz; return (HZIP)han;
+}
 
 ZRESULT GetZipItem(HZIP hz, int index, ZIPENTRY *ze)
 { ze->index=0; *ze->name=0; ze->unc_size=0;

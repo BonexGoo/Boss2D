@@ -14,19 +14,19 @@ bool __LINK_ADDON_ZIPA__() {return true;} // 링크옵션 /OPT:NOREF가 안되�
 // 등록과정
 namespace BOSS
 {
-    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Create, id_zipa, wchars, sint32*, chars)
-    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Release, void, id_zipa)
-    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Extract, bool, id_zipa, sint32, wchars)
-    BOSS_DECLARE_ADDON_FUNCTION(Zipa, ToFile, buffer, id_zipa, sint32)
-    BOSS_DECLARE_ADDON_FUNCTION(Zipa, GetFileInfo, chars, id_zipa, sint32,
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Open, id_zipa, wchars, sint32*, chars)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Close, void, id_zipa)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, ExtractFile, bool, id_zipa, sint32, wchars)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, ToBuffer, buffer, id_zipa, sint32)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, GetFileInfo, chars, id_zipa, sint32, uint64*,
         bool*, uint64*, uint64*, uint64*, bool*, bool*, bool*, bool*)
 
     static autorun Bind_AddOn_Zipa()
     {
-        Core_AddOn_Zipa_Create() = Customized_AddOn_Zipa_Create;
-        Core_AddOn_Zipa_Release() = Customized_AddOn_Zipa_Release;
-        Core_AddOn_Zipa_Extract() = Customized_AddOn_Zipa_Extract;
-        Core_AddOn_Zipa_ToFile() = Customized_AddOn_Zipa_ToFile;
+        Core_AddOn_Zipa_Open() = Customized_AddOn_Zipa_Open;
+        Core_AddOn_Zipa_Close() = Customized_AddOn_Zipa_Close;
+        Core_AddOn_Zipa_ExtractFile() = Customized_AddOn_Zipa_ExtractFile;
+        Core_AddOn_Zipa_ToBuffer() = Customized_AddOn_Zipa_ToBuffer;
         Core_AddOn_Zipa_GetFileInfo() = Customized_AddOn_Zipa_GetFileInfo;
         return true;
     }
@@ -71,7 +71,7 @@ namespace BOSS
         }
 
     public:
-        bool Extract(sint32 fileindex, wchars newzippath)
+        bool ExtractFile(sint32 fileindex, wchars newzippath)
         {
             bool Result = false;
             if(newzippath)
@@ -112,7 +112,7 @@ namespace BOSS
             return Result;
         }
 
-        buffer ToFile(sint32 fileindex)
+        buffer ToBuffer(sint32 fileindex)
         {
             buffer Result = nullptr;
             try
@@ -147,7 +147,7 @@ namespace BOSS
             return Result;
         }
 
-        chars GetFileInfo(sint32 fileindex,
+        chars GetFileInfo(sint32 fileindex, uint64* filesize,
             bool* isdir, uint64* ctime, uint64* mtime, uint64* atime,
             bool* archive, bool* hidden, bool* readonly, bool* system)
         {
@@ -156,6 +156,7 @@ namespace BOSS
                 if(const auto FileInfo = mZip.GetFileInfo(fileindex))
                 {
                     const DWORD SystemAttr = FileInfo->GetSystemAttr();
+                    if(filesize) *filesize = FileInfo->m_uUncomprSize;
                     if(isdir) *isdir = ((SystemAttr & FILE_ATTRIBUTE_DIRECTORY) != 0);
                     if(ctime) *ctime = (uint64) FileInfo->GetCreationTime();
                     if(mtime) *mtime = (uint64) FileInfo->GetModificationTime();
@@ -185,38 +186,38 @@ namespace BOSS
         CZipArchive mZip;
     };
 
-    id_zipa Customized_AddOn_Zipa_Create(wchars zippath, sint32* filecount, chars extension)
+    id_zipa Customized_AddOn_Zipa_Open(wchars zippath, sint32* filecount, chars extension)
     {
         buffer NewBuffer = Buffer::AllocNoConstructorOnce<ZipaClass>(BOSS_DBG 1);
         BOSS_CONSTRUCTOR(NewBuffer, 0, ZipaClass, zippath, filecount, extension);
         return (id_zipa) NewBuffer;
     }
 
-    void Customized_AddOn_Zipa_Release(id_zipa zipa)
+    void Customized_AddOn_Zipa_Close(id_zipa zipa)
     {
         Buffer::Free((buffer) zipa);
     }
 
-    bool Customized_AddOn_Zipa_Extract(id_zipa zipa, sint32 fileindex, wchars newzippath)
+    bool Customized_AddOn_Zipa_ExtractFile(id_zipa zipa, sint32 fileindex, wchars newzippath)
     {
         if(auto CurZipa = (ZipaClass*) zipa)
-            return CurZipa->Extract(fileindex, newzippath);
+            return CurZipa->ExtractFile(fileindex, newzippath);
         return false;
     }
 
-    buffer Customized_AddOn_Zipa_ToFile(id_zipa zipa, sint32 fileindex)
+    buffer Customized_AddOn_Zipa_ToBuffer(id_zipa zipa, sint32 fileindex)
     {
         if(auto CurZipa = (ZipaClass*) zipa)
-            return CurZipa->ToFile(fileindex);
+            return CurZipa->ToBuffer(fileindex);
         return nullptr;
     }
 
-    chars Customized_AddOn_Zipa_GetFileInfo(id_zipa zipa, sint32 fileindex,
+    chars Customized_AddOn_Zipa_GetFileInfo(id_zipa zipa, sint32 fileindex, uint64* filesize,
         bool* isdir, uint64* ctime, uint64* mtime, uint64* atime,
         bool* archive, bool* hidden, bool* readonly, bool* system)
     {
         if(auto CurZipa = (ZipaClass*) zipa)
-            return CurZipa->GetFileInfo(fileindex,
+            return CurZipa->GetFileInfo(fileindex, filesize,
                 isdir, ctime, mtime, atime, archive, hidden, readonly, system);
         return nullptr;
     }

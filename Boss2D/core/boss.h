@@ -293,8 +293,8 @@
     boss_file boss_fopen(const char* filename, const char* mode);
     int boss_fclose(boss_file file);
     int boss_feof(boss_file file);
-    int boss_fseek(boss_file file, long int offset, int origin);
-    long int boss_ftell(boss_file file);
+    int boss_fseek(boss_file file, boss_ssize_t offset, int origin);
+    boss_ssize_t boss_ftell(boss_file file);
     boss_size_t boss_fread(void* ptr, boss_size_t size, boss_size_t count, boss_file file);
     boss_size_t boss_fwrite(const void* ptr, boss_size_t size, boss_size_t count, boss_file file);
     int boss_fgetc(boss_file file);
