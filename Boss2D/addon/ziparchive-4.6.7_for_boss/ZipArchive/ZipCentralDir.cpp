@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////
 // This source file is part of the ZipArchive Library Open Source distribution 
 // and is Copyrighted 2000 - 2019 by Artpol Software - Tadeusz Dracz
 //
@@ -128,14 +128,17 @@ void CZipCentralDir::Read()
 	m_pStorage->Read(buf, CENTRAL_DIR_END_SIZE - 4, true);
 
 	WORD uCommentSize;
-	CBytesWriter::ReadBytes(m_pInfo->m_uLastVolume,		buf, 2);
-	CBytesWriter::ReadBytes(m_pInfo->m_uVolumeWithCD,	buf + 2, 2);
-	CBytesWriter::ReadBytes(m_pInfo->m_uVolumeEntriesNo,buf + 4, 2);
-	CBytesWriter::ReadBytes(m_pInfo->m_uEntriesNumber,buf + 6, 2);
-	CBytesWriter::ReadBytes(m_pInfo->m_uSize,			buf + 8, 4);
-	CBytesWriter::ReadBytes(m_pInfo->m_uOffset,		buf + 12, 4);
-	CBytesWriter::ReadBytes(uCommentSize,			buf + 16);
-	buf.Release();		
+	CBytesWriter::ReadBytes(m_pInfo->m_uLastVolume,      buf, 2);
+	CBytesWriter::ReadBytes(m_pInfo->m_uVolumeWithCD,    buf + 2, 2);
+	CBytesWriter::ReadBytes(m_pInfo->m_uVolumeEntriesNo, buf + 4, 2);
+	CBytesWriter::ReadBytes(m_pInfo->m_uEntriesNumber,   buf + 6, 2);
+	CBytesWriter::ReadBytes(m_pInfo->m_uSize,            buf + 8, 4);
+	CBytesWriter::ReadBytes(m_pInfo->m_uOffset,          buf + 12, 4);
+	CBytesWriter::ReadBytes(uCommentSize,                buf + 16);
+	buf.Release();
+
+	if(m_pInfo->m_uOffset >= UINT_MAX) //added by BOSS
+		m_pInfo->m_uSize += 76;
 
 	if (uCommentSize)
 	{
@@ -152,12 +155,12 @@ void CZipCentralDir::Read()
 				m_pStorage->m_pFile->SafeSeek((ZIP_FILE_USIZE)(m_pInfo->m_uEndOffset) - CENTRAL_DIR_END64_LOCATOR_SIZE);
 			char buffer[4];
 			m_pStorage->Read(buffer, 4, true);
-			if (memcmp(buffer, m_gszSignature64Locator, 4) == 0)
+			if (memcmp(buffer, m_gszSignature64Locator, 4) != 0) //modified by BOSS: '== 0' → '!= 0'
 				ThrowError(CZipException::noZip64);
 		}
 		// when the zip64 locator is not found, try to treat this archive as normal
 	}
-	
+
 	// if m_uLastVolume is not zero, it is enough to say that it is a multi-volume archive unless it is a binary split archive
 	if (IsConsistencyCheckOn(CZipArchive::checkVolumeEntries))
 		if (!((!m_pInfo->m_uLastVolume && (m_pInfo->m_uEntriesNumber == m_pInfo->m_uVolumeEntriesNo) && !m_pInfo->m_uVolumeWithCD) 
@@ -189,6 +192,8 @@ void CZipCentralDir::Read()
 		return;
 
 	ReadHeaders();
+
+	m_pStorage->m_uBytesBeforeZip = 0; //added by BOSS
 }
 
 
@@ -253,7 +258,7 @@ void CZipCentralDir::ReadHeaders()
 			CZipFileHeader* current = m_pHeaders->GetAt(i);
 			if (previous->m_uVolumeStart == current->m_uVolumeStart && previous->m_uOffset == current->m_uOffset)
 			{
-				CZipException::Throw(CZipException::badZipFile);
+				//removed by BOSS: CZipException::Throw(CZipException::badZipFile);
 			}
 			previous = current;
 		}

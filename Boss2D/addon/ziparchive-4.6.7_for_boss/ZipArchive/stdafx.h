@@ -61,8 +61,13 @@
 		#define ZIP_VOLUME_TYPE int
 	#endif	
 
-	#define ZIP_SIZE_TYPE DWORD
-	#define ZIP_ZLIB_TYPE int
+	#ifdef _ZIP_ZIP64 //added by BOSS
+		#define ZIP_SIZE_TYPE ULONGLONG
+		#define ZIP_ZLIB_TYPE LONGLONG
+	#else
+		#define ZIP_SIZE_TYPE DWORD
+		#define ZIP_ZLIB_TYPE int
+	#endif
 
 #ifdef __GNUC__
 	#include <unistd.h>

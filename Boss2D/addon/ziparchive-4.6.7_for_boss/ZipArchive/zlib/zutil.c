@@ -1,4 +1,4 @@
-/* zutil.c -- target dependent utility functions for the compression library
+ï»¿/* zutil.c -- target dependent utility functions for the compression library
  * Copyright (C) 1995-2017 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -142,7 +142,7 @@ const char * ZEXPORT zError(err)
      * errno.  We define it as a global variable to simplify porting.
      * Its value is always 0 and should not be used.
      */
-    int _errno_ = 0; //modified by BOSS: errno ¡æ _errno_
+    int _errno_ = 0; //modified by BOSS: errno â†’ _errno_
 #endif
 
 #ifndef HAVE_MEMCPY

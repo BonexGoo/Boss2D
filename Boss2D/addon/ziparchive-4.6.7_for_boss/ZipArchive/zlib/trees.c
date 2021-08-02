@@ -1,4 +1,4 @@
-/* trees.c -- output deflated data using Huffman coding
+ï»¿/* trees.c -- output deflated data using Huffman coding
  * Copyright (C) 1995-2017 Jean-loup Gailly
  * detect_data_type() function provided freely by Cosmin Truta, 2006
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -1157,14 +1157,14 @@ local int detect_data_type(s)
  * method would use a table)
  * IN assertion: 1 <= len <= 15
  */
-local unsigned bi_reverse(_code, len) //modified by BOSS: code ¡æ _code
-    unsigned _code; /* the value to invert */ //modified by BOSS: code ¡æ _code
+local unsigned bi_reverse(_code, len) //modified by BOSS: code â†’ _code
+    unsigned _code; /* the value to invert */ //modified by BOSS: code â†’ _code
     int len;       /* its bit length */
 {
     register unsigned res = 0;
     do {
-        res |= _code & 1; //modified by BOSS: code ¡æ _code
-        _code >>= 1, res <<= 1; //modified by BOSS: code ¡æ _code
+        res |= _code & 1; //modified by BOSS: code â†’ _code
+        _code >>= 1, res <<= 1; //modified by BOSS: code â†’ _code
     } while (--len > 0);
     return res >> 1;
 }

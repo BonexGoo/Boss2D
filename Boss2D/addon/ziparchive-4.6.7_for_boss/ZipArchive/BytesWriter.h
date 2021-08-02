@@ -62,6 +62,11 @@ namespace ZipArchiveLib
 			memcpy(&uDestination, pSource, iCount);
 		}
 
+		static void ReadBytes(ULONGLONG& uDestination, const char* pSource, int iCount = 8) //added by BOSS
+		{
+			uDestination = 0;
+			memcpy(&uDestination, pSource, iCount);
+		}
 
 		#ifndef _ZIP_STRICT_U16
 		static void ReadBytes(int& iDestination, const char* pSource, int iCount)
@@ -71,7 +76,6 @@ namespace ZipArchiveLib
 		}
 		#endif
 
-		
 		static void WriteBytes(char* pDestination, WORD uSource)
 		{
 			memcpy(pDestination, &uSource, 2);
@@ -90,6 +94,11 @@ namespace ZipArchiveLib
 				The number of bytes to write.
 		*/
 		static void WriteBytes(char* pDestination, DWORD uSource, int iCount = 4)
+		{
+			memcpy(pDestination, &uSource, iCount);
+		}
+
+		static void WriteBytes(char* pDestination, ULONGLONG uSource, int iCount = 8) //added by BOSS
 		{
 			memcpy(pDestination, &uSource, iCount);
 		}
