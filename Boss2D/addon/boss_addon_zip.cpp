@@ -2761,6 +2761,8 @@ int lufseek(LUFILE *stream, long long offset, int whence)
     if (whence==SEEK_SET) stream->pos=offset;
     else if (whence==SEEK_CUR) stream->pos+=offset;
     else if (whence==SEEK_END) stream->pos=stream->len+offset;
+	if(stream->mustclosefd)
+        Platform::File::FDSeek(stream->fd, stream->pos, 0);
     return 0;
 }
 
@@ -2772,10 +2774,7 @@ size_t lufread(void *ptr, size_t size, size_t n, LUFILE *stream)
         toread = stream->len - stream->pos;
 
     if(stream->mustclosefd)
-    {
-        Platform::File::FDSeek(stream->fd, stream->pos, 0);
         Platform::File::FDRead(stream->fd, ptr, toread);
-    }
     else memcpy(ptr, (char*) stream->buf + stream->pos, toread);
 
     stream->pos += toread;
