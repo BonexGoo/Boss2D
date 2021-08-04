@@ -474,9 +474,9 @@
             return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
         }
 
-        void Platform::Popup::ProgramDialog(chars exepath, chars args, bool admin)
+        void Platform::Popup::ProgramDialog(chars exepath, chars args, bool admin, chars dirpath)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin);
+            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath);
         }
 
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)

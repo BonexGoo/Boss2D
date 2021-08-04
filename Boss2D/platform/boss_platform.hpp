@@ -307,7 +307,8 @@ public:
         /// @param exepath : 실행파일의 경로
         /// @param args : 전달할 스트링
         /// @param admin : 관리자권한
-        static void ProgramDialog(chars exepath, chars args = nullptr, bool admin = false);
+        /// @param dirpath : 실행위치
+        static void ProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr);
 
         /// @brief 텍스트편집 트래커 열기
         /// @param text : 입력(초기값 필요) 및 결과

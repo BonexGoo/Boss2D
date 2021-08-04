@@ -650,11 +650,12 @@ namespace BOSS
                 #endif
             }
 
-            void Popup_ProgramDialog(chars exepath, chars args, bool admin)
+            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath)
             {
                 #if BOSS_WINDOWS
                     WString ExePathW = WString::FromChars(exepath);
                     WString ArgsW = WString::FromChars(args);
+                    WString DirPathW = WString::FromChars(dirpath);
 
                     SHELLEXECUTEINFOW ExecuteInfo;
                     Memory::Set(&ExecuteInfo, 0, sizeof(ExecuteInfo));
@@ -662,9 +663,9 @@ namespace BOSS
                     ExecuteInfo.fMask = 0;
                     ExecuteInfo.hwnd = NULL;
                     ExecuteInfo.lpVerb = (!admin)? NULL : L"runas";
-                    ExecuteInfo.lpFile = ExePathW;
-                    ExecuteInfo.lpParameters = ArgsW;
-                    ExecuteInfo.lpDirectory = NULL;
+                    ExecuteInfo.lpFile = (wchars) ExePathW;
+                    ExecuteInfo.lpParameters = (wchars) ArgsW;
+                    ExecuteInfo.lpDirectory = (dirpath)? (wchars) DirPathW : NULL;
                     ExecuteInfo.nShow = SW_SHOWNORMAL;
                     ShellExecuteExW(&ExecuteInfo);
                 #endif
