@@ -520,9 +520,14 @@
             return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
         }
 
-        void Platform::Popup::ProgramDialog(chars exepath, chars args, bool admin, chars dirpath)
+        void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, chars dirpath, uint32* getpid)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath);
+            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
+        }
+
+        void Platform::Popup::CloseProgramDialog(uint32 pid)
+        {
+            PlatformImpl::Wrap::Kill_ProgramDialog(pid);
         }
 
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)

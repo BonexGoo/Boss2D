@@ -650,7 +650,7 @@ namespace BOSS
                 #endif
             }
 
-            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath)
+            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath, uint32* getpid)
             {
                 #if BOSS_WINDOWS
                     WString ExePathW = WString::FromChars(exepath);
@@ -660,7 +660,7 @@ namespace BOSS
                     SHELLEXECUTEINFOW ExecuteInfo;
                     Memory::Set(&ExecuteInfo, 0, sizeof(ExecuteInfo));
                     ExecuteInfo.cbSize = sizeof(ExecuteInfo);
-                    ExecuteInfo.fMask = 0;
+                    ExecuteInfo.fMask = (getpid)? SEE_MASK_NOCLOSEPROCESS : 0;
                     ExecuteInfo.hwnd = NULL;
                     ExecuteInfo.lpVerb = (!admin)? NULL : L"runas";
                     ExecuteInfo.lpFile = (wchars) ExePathW;
@@ -668,6 +668,16 @@ namespace BOSS
                     ExecuteInfo.lpDirectory = (dirpath)? (wchars) DirPathW : NULL;
                     ExecuteInfo.nShow = SW_SHOWNORMAL;
                     ShellExecuteExW(&ExecuteInfo);
+
+                    if(getpid)
+                        *getpid = (uint32) ExecuteInfo.hProcess;
+                #endif
+            }
+
+            void Kill_ProgramDialog(uint32 pid)
+            {
+                #if BOSS_WINDOWS
+                    TerminateProcess((HANDLE) pid, 1);
                 #endif
             }
 

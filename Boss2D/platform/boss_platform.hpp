@@ -303,12 +303,17 @@ public:
         /// @param url : 접속할 URL
         static void WebBrowserDialog(chars url);
 
-        /// @brief 응용프로그램 다이얄로그
+        /// @brief 응용프로그램 다이얄로그 열기
         /// @param exepath : 실행파일의 경로
         /// @param args : 전달할 스트링
         /// @param admin : 관리자권한
         /// @param dirpath : 실행위치
-        static void ProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr);
+        /// @param getpid : 프로세스ID를 받는 변수
+        static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr, uint32* getpid = nullptr);
+
+        /// @brief 응용프로그램 다이얄로그 닫기
+        /// @param pid : 프로세스ID
+        static void CloseProgramDialog(uint32 pid);
 
         /// @brief 텍스트편집 트래커 열기
         /// @param text : 입력(초기값 필요) 및 결과
