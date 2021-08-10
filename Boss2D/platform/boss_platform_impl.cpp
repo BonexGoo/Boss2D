@@ -650,7 +650,7 @@ namespace BOSS
                 #endif
             }
 
-            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath, uint32* getpid)
+            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath, ublock* getpid)
             {
                 #if BOSS_WINDOWS
                     WString ExePathW = WString::FromChars(exepath);
@@ -670,11 +670,11 @@ namespace BOSS
                     ShellExecuteExW(&ExecuteInfo);
 
                     if(getpid)
-                        *getpid = (uint32) ExecuteInfo.hProcess;
+                        *getpid = (ublock) ExecuteInfo.hProcess;
                 #endif
             }
 
-            void Kill_ProgramDialog(uint32 pid)
+            void Kill_ProgramDialog(ublock pid)
             {
                 #if BOSS_WINDOWS
                     TerminateProcess((HANDLE) pid, 1);

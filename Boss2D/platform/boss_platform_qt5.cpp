@@ -836,12 +836,12 @@
             #endif
         }
 
-        void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, chars dirpath, uint32* getpid)
+        void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, chars dirpath, ublock* getpid)
         {
             return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
         }
 
-        void Platform::Popup::CloseProgramDialog(uint32 pid)
+        void Platform::Popup::CloseProgramDialog(ublock pid)
         {
             PlatformImpl::Wrap::Kill_ProgramDialog(pid);
         }

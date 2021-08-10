@@ -309,11 +309,11 @@ public:
         /// @param admin : 관리자권한
         /// @param dirpath : 실행위치
         /// @param getpid : 프로세스ID를 받는 변수
-        static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr, uint32* getpid = nullptr);
+        static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr, ublock* getpid = nullptr);
 
         /// @brief 응용프로그램 다이얄로그 닫기
         /// @param pid : 프로세스ID
-        static void CloseProgramDialog(uint32 pid);
+        static void CloseProgramDialog(ublock pid);
 
         /// @brief 텍스트편집 트래커 열기
         /// @param text : 입력(초기값 필요) 및 결과

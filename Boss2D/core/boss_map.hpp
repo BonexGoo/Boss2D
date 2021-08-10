@@ -34,7 +34,7 @@ namespace BOSS
         static sint64 ToInt(const chararray& path)
         {
             sint64 Result = 0;
-            for(sint32 i = 0; path[i] != '\0'; ++i)
+            for(sint32 i = 0, iend = path.Count(); i < iend && path[i] != '\0'; ++i)
                 Result = (Result << 8) | (path[i] & 0xFF);
             return Result;
         }
