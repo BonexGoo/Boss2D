@@ -30,6 +30,7 @@ namespace BOSS
             chars Utility_GetOSName();
             chars Utility_GetDeviceID();
             sint64 Utility_CurrentAvailableMemory(sint64* totalbytes);
+            double Utility_CurrentTrafficCPU();
 
             void Option_SetOptionFlag(chars name, bool flag);
             bool Option_GetOptionFlag(chars name);

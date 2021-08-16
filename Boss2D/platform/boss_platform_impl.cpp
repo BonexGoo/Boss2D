@@ -8,6 +8,8 @@
     #pragma comment(lib, "ole32.lib")
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "advapi32.lib")
+    #include <pdh.h>
+    #pragma comment(lib, "pdh.lib")
 #elif BOSS_LINUX
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         #include <gtk/gtk.h>
@@ -301,6 +303,30 @@ namespace BOSS
                     }
                 #endif
                 return -1;
+            }
+
+            double Utility_CurrentTrafficCPU()
+            {
+                #if BOSS_WINDOWS
+                    static struct CPUStateClass
+                    {
+                        CPUStateClass()
+                        {
+                            PdhOpenQuery(NULL, NULL, &mCpuQuery);
+                            PdhAddCounterW(mCpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &mCpuTotal);
+                            PdhCollectQueryData(mCpuQuery);
+                        }
+                        ~CPUStateClass() {}
+                        PDH_HQUERY mCpuQuery;
+                        PDH_HCOUNTER mCpuTotal;
+                    } CPUState;
+
+                    PDH_FMT_COUNTERVALUE CounterVal;
+                    PdhCollectQueryData(CPUState.mCpuQuery);
+                    PdhGetFormattedCounterValue(CPUState.mCpuTotal, PDH_FMT_DOUBLE, NULL, &CounterVal);
+                    return CounterVal.doubleValue * 0.01;
+                #endif
+                return 0;
             }
 
             class StaticalMutexClass

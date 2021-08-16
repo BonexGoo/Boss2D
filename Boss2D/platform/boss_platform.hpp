@@ -156,8 +156,9 @@ public:
     /// @param height : 세로길이(px)
     /// @param policy : 사이즈정책핸들
     /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _defaultview_)
+    /// @param gl : GL모드
     /// @return 뷰핸들
-    static h_view CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass = nullptr);
+    static h_view CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass = nullptr, bool gl = false);
 
     /// @brief 해당 뷰에 변경할 뷰클래스를 지정
     /// @param view : 뷰핸들
@@ -376,7 +377,8 @@ public:
         static void SetMinimize();
 
         /// @brief 프로그램의 전체화면화
-        static void SetFullScreen();
+        /// @param available_only : 시작표시줄등을 제외한 유효영역만으로 제한
+        static void SetFullScreen(bool available_only = true);
 
         /// @brief 프로그램의 전체화면화 여부
         static bool IsFullScreen();
@@ -519,6 +521,10 @@ public:
         /// @param totalbytes : 전체 디스크양(바이트단위)
         /// @return 사용 가능한 디스크양(바이트단위)
         static sint64 CurrentAvailableDisk(sint32 drivecode, sint64* totalbytes = nullptr);
+
+        /// @brief CPU의 트래픽현황
+        /// @return CPU의 실시간 사용률
+        static float CurrentTrafficCPU();
 
         /// @brief 마지막 핫키를 반환(비워짐)
         /// @return 키값(저장된 키값이 없으면 -1)

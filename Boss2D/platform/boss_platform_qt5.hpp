@@ -1465,7 +1465,7 @@
         Q_OBJECT
 
     public:
-        enum ParentType {PT_Null, PT_GenericView, PT_MainViewGL, PT_MainViewMDI};
+        enum ParentType {PT_Null, PT_GenericView, PT_GenericViewGL, PT_MainViewGL, PT_MainViewMDI};
         enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2};
 
     public:
@@ -2110,6 +2110,245 @@
         h_window m_window;
     };
 
+    class GenericViewGL : public GLWidgetPrivate
+    {
+        Q_OBJECT
+
+    public:
+        GenericViewGL(WidgetPrivate* parent = nullptr) : GLWidgetPrivate(parent)
+        {
+            m_api = nullptr;
+
+            m_fbo_update = true;
+            m_fbo = 0;
+            m_fbo_render = 0;
+            m_fbo_width = 0;
+            m_fbo_height = 0;
+
+            setMouseTracking(true);
+            setFocusPolicy(Qt::ClickFocus);
+            setAutoFillBackground(false);
+        }
+
+        GenericViewGL(View* manager, QString name, sint32 width, sint32 height, SizePolicy* policy)
+        {
+            BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
+            buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewAPI, 0, ViewAPI, ViewAPI::PT_GenericViewGL, (buffer) this, manager, updater, this, nullptr);
+            m_api = (ViewAPI*) NewAPI;
+
+            m_fbo_update = true;
+            m_fbo = 0;
+            m_fbo_render = 0;
+            m_fbo_width = 0;
+            m_fbo_height = 0;
+
+            m_name = name;
+            m_firstwidth = width;
+            m_firstheight = height;
+            m_closing = false;
+            setMinimumSize(policy->m_minwidth, policy->m_minheight);
+            setMaximumSize(policy->m_maxwidth, policy->m_maxheight);
+
+            setMouseTracking(true);
+            setFocusPolicy(Qt::ClickFocus);
+            setAutoFillBackground(false);
+        }
+
+        GenericViewGL(h_view view)
+        {
+            takeView(view);
+
+            setMouseTracking(true);
+            setFocusPolicy(Qt::ClickFocus);
+            setAutoFillBackground(false);
+        }
+
+        virtual ~GenericViewGL()
+        {
+            if(m_api && m_api->parentIsPtr())
+                Buffer::Free((buffer) m_api);
+            m_window.set_buf(nullptr);
+
+            if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
+            {
+                QOpenGLFunctions* f = ctx->functions();
+                f->glDeleteFramebuffers(1, &m_fbo);
+                f->glDeleteRenderbuffers(1, &m_fbo_render);
+            }
+        }
+
+        GenericViewGL(const GenericViewGL* rhs) {BOSS_ASSERT("사용금지", false);}
+        GenericViewGL& operator=(const GenericViewGL& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
+
+    protected:
+        void initializeGL() Q_DECL_OVERRIDE
+        {
+        }
+
+        void resizeGL(int width, int height) Q_DECL_OVERRIDE
+        {
+            m_fbo_update = true;
+            m_fbo_width = geometry().width();
+            m_fbo_height = geometry().height();
+            m_api->resize(m_fbo_width, m_fbo_height);
+        }
+
+        void paintGL() Q_DECL_OVERRIDE
+        {
+            if(m_api->hasViewManager())
+            {
+                if(m_fbo_update)
+                {
+                    m_fbo_update = false;
+                    if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
+                    {
+                        QOpenGLFunctions* f = ctx->functions();
+                        if(m_fbo) f->glDeleteFramebuffers(1, &m_fbo);
+                        if(m_fbo_render) f->glDeleteRenderbuffers(1, &m_fbo_render);
+
+                        f->glGenRenderbuffers(1, &m_fbo_render);
+                        f->glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_render);
+                        f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_fbo_width, m_fbo_height);
+                        f->glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+                        f->glGenFramebuffers(1, &m_fbo);
+                        f->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+                        f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_fbo_render);
+                        GLenum status = f->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+                        BOSS_ASSERT("프레임버퍼의 생성에 실패하였습니다", status == GL_FRAMEBUFFER_COMPLETE);
+                        f->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    }
+                }
+                m_api->paint();
+                swapBuffers();
+            }
+            else GLWidgetPrivate::paintGL();
+            m_api->nextPaint();
+        }
+
+    protected:
+        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE
+        {
+            if(m_api->closeEvent(event))
+            {
+                m_closing = true;
+                m_window.set_buf(nullptr);
+                setAttribute(Qt::WA_DeleteOnClose);
+            }
+        }
+        void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
+        void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
+        void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
+        void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
+        void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
+        static void updater(void* data, sint32 count)
+        {((GenericViewGL*) data)->m_api->update(count);}
+
+    protected:
+        void takeView(h_view view)
+        {
+            GenericViewGL* OldGenericViewGL = cast(view);
+            m_api = OldGenericViewGL->m_api;
+            OldGenericViewGL->m_api = nullptr;
+
+            m_fbo_update = OldGenericViewGL->m_fbo_update;
+            m_fbo = OldGenericViewGL->m_fbo;
+            m_fbo_render = OldGenericViewGL->m_fbo_render;
+            m_fbo_width = OldGenericViewGL->m_fbo_width;
+            m_fbo_height = OldGenericViewGL->m_fbo_height;
+            OldGenericViewGL->m_fbo = 0;
+            OldGenericViewGL->m_fbo_render = 0;
+
+            m_name = OldGenericViewGL->m_name;
+            m_firstwidth = OldGenericViewGL->m_firstwidth;
+            m_firstheight = OldGenericViewGL->m_firstheight;
+            m_closing = false;
+            setMinimumSize(OldGenericViewGL->minimumWidth(), OldGenericViewGL->minimumHeight());
+            setMaximumSize(OldGenericViewGL->maximumWidth(), OldGenericViewGL->maximumHeight());
+            Buffer::Free((buffer) OldGenericViewGL);
+
+            m_api->renewParent(this);
+            m_api->changeViewData(this);
+            view.clear_buf();
+            view.set_ptr(m_api); // 삭제책임은 GenericViewGL에 이관하였기에
+        }
+
+    public:
+        inline const QString getName() const
+        {
+            return m_name;
+        }
+
+        inline const QSize getFirstSize() const
+        {
+            return QSize(m_firstwidth, m_firstheight);
+        }
+
+        inline bool closing() const
+        {
+            return m_closing;
+        }
+
+        inline void attachWindow(h_window window)
+        {
+            m_closing = false;
+            m_window = window;
+        }
+
+    public:
+        static GenericViewGL* cast(h_view view)
+        {
+            ViewAPI* CurViewAPI = (ViewAPI*) view.get();
+            BOSS_ASSERT("타입정보가 일치하지 않습니다", CurViewAPI->getParentType() == ViewAPI::PT_GenericViewGL);
+            return (GenericViewGL*) CurViewAPI->getParent();
+        }
+
+    public:
+        static bool CloseAllWindows()
+        {
+            WindowListPrivate processedWindows;
+            while(auto w = ApplicationPrivate::activeModalWidget())
+            {
+                if(WindowPrivate* window = w->windowHandle())
+                {
+                    if(!window->close()) return false;
+                    processedWindows.append(window);
+                }
+            }
+            for(auto w : ApplicationPrivate::topLevelWidgets())
+            {
+                if(w->windowType() == Qt::Desktop)
+                    continue;
+                if(WindowPrivate* window = w->windowHandle())
+                {
+                    if(!window->close()) return false;
+                    processedWindows.append(window);
+                }
+            }
+            return true;
+        }
+
+    public:
+        ViewAPI* m_api;
+
+    private:
+        bool m_fbo_update;
+        GLuint m_fbo;
+        GLuint m_fbo_render;
+        sint32 m_fbo_width;
+        sint32 m_fbo_height;
+
+    private:
+        QString m_name;
+        sint32 m_firstwidth;
+        sint32 m_firstheight;
+        bool m_closing;
+        h_window m_window;
+    };
+
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         class MainViewGL : public GLWidgetPrivate
         {
@@ -2464,7 +2703,6 @@
     public:
         TrayBox()
         {
-            m_ref_view = nullptr;
             m_tray = nullptr;
         }
         ~TrayBox()
@@ -2474,16 +2712,23 @@
 
         void setWidget(GenericView* view, IconPrivate* icon)
         {
-            m_ref_view = view;
-            WidgetPrivate* OldWidget = m_ref_view->m_api->getWidget();
-            OldWidget->resize(m_ref_view->getFirstSize());
+            WidgetPrivate* OldWidget = view->m_api->getWidget();
+            OldWidget->resize(view->getFirstSize());
+            m_tray = new TrayIcon(OldWidget);
+            if(icon) m_tray->setIcon(*icon);
+            m_tray->show();
+        }
+
+        void setWidgetGL(GenericViewGL* view, IconPrivate* icon)
+        {
+            WidgetPrivate* OldWidget = view->m_api->getWidget();
+            OldWidget->resize(view->getFirstSize());
             m_tray = new TrayIcon(OldWidget);
             if(icon) m_tray->setIcon(*icon);
             m_tray->show();
         }
 
     private:
-        GenericView* m_ref_view;
         TrayIcon* m_tray;
     };
 
@@ -5294,15 +5539,22 @@
             void SendTouchEvent(TouchType type, sint32 x, sint32 y)
             {
                 MouseEventPrivate::Type CurType = MouseEventPrivate::None;
+                sint32 ButtonType = 0;
                 switch(type)
                 {
                 case TT_Moving: CurType = MouseEventPrivate::MouseMove; break;
-                case TT_Press: CurType = MouseEventPrivate::MouseButtonPress; break;
-                case TT_Dragging: CurType = MouseEventPrivate::MouseMove; break;
-                case TT_Release: CurType = MouseEventPrivate::MouseButtonRelease; break;
+                case TT_Press: CurType = MouseEventPrivate::MouseButtonPress; ButtonType = 1; break;
+                case TT_Dragging: CurType = MouseEventPrivate::MouseMove; ButtonType = 1; break;
+                case TT_Release: CurType = MouseEventPrivate::MouseButtonRelease; ButtonType = 1; break;
+                case TT_ExtendPress: CurType = MouseEventPrivate::MouseButtonPress; ButtonType = 2; break;
+                case TT_ExtendDragging: CurType = MouseEventPrivate::MouseMove; ButtonType = 2; break;
+                case TT_ExtendRelease: CurType = MouseEventPrivate::MouseButtonRelease; ButtonType = 2; break;
                 default: BOSS_ASSERT("해당 case가 준비되지 않았습니다", false);
                 }
-                MouseEventPrivate NewEvent(CurType, QPoint(x, y), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+                MouseEventPrivate NewEvent(CurType, QPoint(x, y),
+                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                    Qt::NoModifier);
                 Q_FOREACH(QObject* obj, mView.page()->view()->children())
                 {
                     if(qobject_cast<WidgetPrivate*>(obj))
@@ -8048,6 +8300,7 @@
 
     class ViewAPI : public QObject {Q_OBJECT};
     class GenericView : public QFrame {Q_OBJECT};
+    class GenericViewGL : public QGLWidget {Q_OBJECT};
     class MainViewGL : public QGLWidget {Q_OBJECT};
     class MainViewMDI : public QMdiArea {Q_OBJECT};
     class TrayIcon : public QSystemTrayIcon {Q_OBJECT};

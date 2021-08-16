@@ -490,15 +490,25 @@
             return h_policy::create_by_buf(BOSS_DBG NewPolicy);
         }
 
-        h_view Platform::CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass)
+        h_view Platform::CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass, bool gl)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             auto NewViewManager = PlatformImpl::Core::g_Creator(viewclass);
-            buffer NewGenericView = Buffer::AllocNoConstructorOnce<GenericView>(BOSS_DBG 1);
-            BOSS_CONSTRUCTOR(NewGenericView, 0, GenericView, NewViewManager,
-                QString::fromUtf8(name), width, height, (SizePolicy*) policy.get());
-
-            h_view NewViewHandle = h_view::create_by_buf(BOSS_DBG (buffer) ((GenericView*) NewGenericView)->m_api);
+            h_view NewViewHandle;
+            if(gl)
+            {
+                buffer NewGenericView = Buffer::AllocNoConstructorOnce<GenericViewGL>(BOSS_DBG 1);
+                BOSS_CONSTRUCTOR(NewGenericView, 0, GenericViewGL, NewViewManager,
+                    QString::fromUtf8(name), width, height, (SizePolicy*) policy.get());
+                NewViewHandle = h_view::create_by_buf(BOSS_DBG (buffer) ((GenericViewGL*) NewGenericView)->m_api);
+            }
+            else
+            {
+                buffer NewGenericView = Buffer::AllocNoConstructorOnce<GenericView>(BOSS_DBG 1);
+                BOSS_CONSTRUCTOR(NewGenericView, 0, GenericView, NewViewManager,
+                    QString::fromUtf8(name), width, height, (SizePolicy*) policy.get());
+                NewViewHandle = h_view::create_by_buf(BOSS_DBG (buffer) ((GenericView*) NewGenericView)->m_api);
+            }
             NewViewManager->SetView(NewViewHandle);
             return NewViewHandle;
         }
@@ -621,13 +631,30 @@
         h_window Platform::OpenTrayWindow(h_view view, h_icon icon)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            GenericView* RenewedView = new GenericView(view);
-            RenewedView->m_api->getWidget()->setParent(g_window);
-
-            buffer NewBox = Buffer::Alloc<TrayBox>(BOSS_DBG 1);
-            ((TrayBox*) NewBox)->setWidget(RenewedView, (IconPrivate*) icon.get());
-            h_window NewWindowHandle = h_window::create_by_buf(BOSS_DBG NewBox);
-            RenewedView->attachWindow(NewWindowHandle);
+            h_window NewWindowHandle;
+            switch(((ViewAPI*) view.get())->getParentType())
+            {
+            case ViewAPI::PT_GenericView:
+                {
+                    GenericView* RenewedView = new GenericView(view);
+                    RenewedView->m_api->getWidget()->setParent(g_window);
+                    buffer NewBox = Buffer::Alloc<TrayBox>(BOSS_DBG 1);
+                    ((TrayBox*) NewBox)->setWidget(RenewedView, (IconPrivate*) icon.get());
+                    NewWindowHandle = h_window::create_by_buf(BOSS_DBG NewBox);
+                    RenewedView->attachWindow(NewWindowHandle);
+                }
+                break;
+            case ViewAPI::PT_GenericViewGL:
+                {
+                    GenericViewGL* RenewedView = new GenericViewGL(view);
+                    RenewedView->m_api->getWidget()->setParent(g_window);
+                    buffer NewBox = Buffer::Alloc<TrayBox>(BOSS_DBG 1);
+                    ((TrayBox*) NewBox)->setWidgetGL(RenewedView, (IconPrivate*) icon.get());
+                    NewWindowHandle = h_window::create_by_buf(BOSS_DBG NewBox);
+                    RenewedView->attachWindow(NewWindowHandle);
+                }
+                break;
+            }
             return NewWindowHandle;
         }
 
@@ -964,7 +991,7 @@
             g_window->showMinimized();
         }
 
-        void Platform::Utility::SetFullScreen()
+        void Platform::Utility::SetFullScreen(bool available_only)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Maximize)
@@ -974,7 +1001,7 @@
             Platform::Utility::GetCursorPos(CursorPos);
             sint32 ScreenID = Platform::Utility::GetScreenID(CursorPos);
             rect128 FullScreenRect;
-            Platform::Utility::GetScreenRect(FullScreenRect, ScreenID);
+            Platform::Utility::GetScreenRect(FullScreenRect, ScreenID, available_only);
 
             if(g_data->m_lastWindowType == MainData::WindowType::Normal)
                 g_data->m_lastWindowNormalRect = Platform::GetWindowRect();
@@ -1314,6 +1341,11 @@
             QStorageInfo StorageInfo(DrivePath);
             if(totalbytes) *totalbytes = StorageInfo.bytesTotal();
             return StorageInfo.bytesAvailable();
+        }
+
+        float Platform::Utility::CurrentTrafficCPU()
+        {
+            return (float) PlatformImpl::Wrap::Utility_CurrentTrafficCPU();
         }
 
         static sint32 gHotKeyCode = -1;
@@ -2469,6 +2501,7 @@
                         if(0 < ClipSize)
                         {
                             const sint32 ClipCount = Platform::Graphics::GetLengthOfStringW(false, ClipSize, Text);
+                            // 현재 UIFE_Right로만 가능
                             Text = WString(Text, ClipCount) + L"...";
                         }
                         else Text.Empty();

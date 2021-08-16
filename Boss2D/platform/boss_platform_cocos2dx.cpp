@@ -336,7 +336,7 @@
             return h_policy::null();
         }
 
-        h_view Platform::CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass)
+        h_view Platform::CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass, bool gl)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             auto NewViewManager = PlatformImpl::Core::g_Creator(viewclass);
@@ -615,7 +615,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Utility::SetFullScreen()
+        void Platform::Utility::SetFullScreen(bool available_only)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
@@ -782,6 +782,11 @@
         {
             BOSS_ASSERT("Further development is needed.", false);
             return 0;
+        }
+
+        float Platform::Utility::CurrentTrafficCPU()
+        {
+            return (float) PlatformImpl::Wrap::Utility_CurrentTrafficCPU();
         }
 
         sint32 Platform::Utility::LastHotKey()

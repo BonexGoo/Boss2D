@@ -123,7 +123,8 @@ namespace BOSS
 #define hook(INSTANCE)   for(auto &_hook_ = (INSTANCE), *_fish_ = &_hook_; _fish_; _fish_ = nullptr)
 #define fish             (*_fish_)
 #define codeid(NAME)     (((NAME)[0] & 0xFF) | (((NAME)[1] & 0xFF) << 8) | (((NAME)[2] & 0xFF) << 16) | (((NAME)[3] & 0xFF) << 24))
-#define strpair(NAME)    ("" NAME), (sizeof("" NAME) - 1)
+#define strpair(NAME)    ("" NAME), strsize(NAME)
+#define strsize(NAME)    (sizeof("" NAME) - 1)
 
 // About allocator
 inline void* operator new(boss_size_t, sblock ptr) {return (void*) ptr;}
