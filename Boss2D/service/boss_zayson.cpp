@@ -657,6 +657,14 @@ namespace BOSS
                 }
             }
         }
+        void InitForInput()
+        {
+            if(mRequestType == ZaySonInterface::RequestType::Variable)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName());
+            }
+        }
         void InitForClick(Map<String>& collector)
         {
             if(mRequestType == ZaySonInterface::RequestType::Variable)
@@ -738,6 +746,17 @@ namespace BOSS
                 mCompValues.AtAdding() = (id_share) NewParam;
             }
 
+            hook(context("compinputs"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mCompCodes, fish[i]))
+                    continue;
+                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
+                NewRequest->Load(root, fish[i]);
+                NewRequest->InitForInput();
+                mCompCodes.AtAdding() = (id_share) NewRequest;
+            }
+
             Map<String> CaptureCollector;
             hook(context("onclick"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -782,7 +801,32 @@ namespace BOSS
                 const String UIName((mUINameSolver.is_blank())? "" : (chars) mUINameSolver.ExecuteVariableName());
                 if(mCompValues.Count() == 0)
                 {
-                    if(mUILoopSolver.is_blank())
+                    if(0 < mCompCodes.Count()) // 코드문
+                    {
+                        sint32s CollectedCompCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mCompCodes);
+                        for(sint32 i = 0, iend = CollectedCompCodes.Count(); i < iend; ++i)
+                        {
+                            auto CurCompCode = (ZayRequestElement*) mCompCodes.At(CollectedCompCodes[i]).Ptr();
+                            CurCompCode->Transaction();
+                        }
+                        RenderChildren(panel, nullptr, defaultname, logs);
+                    }
+                    else if(!mUILoopSolver.is_blank()) // 반복문
+                    {
+                        const sint32 LoopCount = Math::Max(0, (sint32) mUILoopSolver.ExecuteOnly().ToInteger());
+                        for(sint32 i = 0; i < LoopCount; ++i)
+                        {
+                            // 지역변수 수집
+                            Solvers LocalSolvers;
+                            if(0 < UIName.Length())
+                            {
+                                LocalSolvers.AtAdding().Link(ViewName, UIName + "V").Parse(String::FromInteger(i)).Execute();
+                                LocalSolvers.AtAdding().Link(ViewName, UIName + "N").Parse(String::FromInteger(LoopCount)).Execute();
+                            }
+                            RenderChildren(panel, nullptr, defaultname + String::Format("_%d", i), logs);
+                        }
+                    }
+                    else
                     {
                         String UINameTemp;
                         chars ComponentName = nullptr;
@@ -796,21 +840,6 @@ namespace BOSS
                             if(mCompID == mRefRoot->debugFocusedCompID())
                                 AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
                             RenderChildren(panel, ComponentName, defaultname, logs);
-                        }
-                    }
-                    else // 반복문
-                    {
-                        const sint32 LoopCount = Math::Max(0, (sint32) mUILoopSolver.ExecuteOnly().ToInteger());
-                        for(sint32 i = 0; i < LoopCount; ++i)
-                        {
-                            // 지역변수 수집
-                            Solvers LocalSolvers;
-                            if(0 < UIName.Length())
-                            {
-                                LocalSolvers.AtAdding().Link(ViewName, UIName + "V").Parse(String::FromInteger(i)).Execute();
-                                LocalSolvers.AtAdding().Link(ViewName, UIName + "N").Parse(String::FromInteger(LoopCount)).Execute();
-                            }
-                            RenderChildren(panel, nullptr, defaultname + String::Format("_%d", i), logs);
                         }
                     }
                 }
@@ -921,6 +950,7 @@ namespace BOSS
         String mCompName;
         sint32 mCompID;
         ZayUIs mCompValues;
+        mutable ZayUIs mCompCodes;
         ZayUIs mClickCodes;
         Strings mClickCodeCaptures;
         typedef Map<String> CaptureValue;

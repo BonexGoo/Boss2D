@@ -148,7 +148,7 @@ namespace BOSS
             case SolverOperatorType::Multiply:       collector += " * "; break;
             case SolverOperatorType::Divide:         collector += " / "; break;
             case SolverOperatorType::Remainder:      collector += " % "; break;
-            case SolverOperatorType::Variabler:      collector += " # "; break;
+            case SolverOperatorType::Variabler:      collector += " @ "; break;
             case SolverOperatorType::RangeTarget:    collector += " ~ "; break;
             case SolverOperatorType::RangeTimer:     collector += " : "; break;
             case SolverOperatorType::Greater:        collector += " < "; break;
@@ -565,10 +565,9 @@ namespace BOSS
 
     SolverValue SolverValue::Variabler(const SolverValue& rhs, const SolverChain* chain) const
     {
-        const String Name = ToText() + rhs.ToText();
-        if(auto CurSolver = SolverVariable::FindTarget(chain, Name))
+        if(auto CurSolver = SolverVariable::FindTarget(chain, rhs.ToText()))
             return CurSolver->result();
-        return MakeByInteger(0);
+        return *this;
     }
 
     SolverValue SolverValue::RangeTarget(const SolverValue& rhs) const
@@ -771,7 +770,33 @@ namespace BOSS
         auto AddOperator = [](SolverOperandObject*& focus, SolverOperatorType type, sint32 deep)->void
         {
             BOSS_ASSERT("잘못된 시나리오입니다", focus);
-            const sint32 NewPriority = deep * 2 + (SolverOperatorType::Multiply <= type);
+            sint32 NewPriority = deep * 7;
+            switch(type)
+            {
+            case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
+                NewPriority += 5;
+                break;
+            case SolverOperatorType::Multiply: case SolverOperatorType::Divide: case SolverOperatorType::Remainder: // 1순위> *, /, %
+                NewPriority += 6;
+                break;
+            case SolverOperatorType::Variabler: // 5순위> @
+                NewPriority += 2;
+                break;
+            case SolverOperatorType::RangeTarget: // 3순위> ~
+                NewPriority += 4;
+                break;
+            case SolverOperatorType::RangeTimer: // 4순위> :
+                NewPriority += 3;
+                break;
+            case SolverOperatorType::Greater: case SolverOperatorType::GreaterOrEqual: case SolverOperatorType::Less: // 7순위> <, <=, >, >=, ==, !=
+            case SolverOperatorType::LessOrEqual: case SolverOperatorType::Equal: case SolverOperatorType::Different:
+                NewPriority += 0;
+                break;
+            case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 6순위> [min], [max], [abs], [pow]
+            case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
+                NewPriority += 1;
+                break;
+            }
 
             SolverFormula NewFormula(type, NewPriority);
             if(focus->ConstPtr()->type() != SolverOperandType::Formula) // 최초의 계산항이거나
@@ -823,7 +848,7 @@ namespace BOSS
                 jump(*formula == '*') AddOperator(OperandFocus, SolverOperatorType::Multiply, deep);
                 jump(*formula == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
                 jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
-                jump(*formula == '#') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
+                jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
                 jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
                 jump(*formula == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
                 jump(*formula == '<')

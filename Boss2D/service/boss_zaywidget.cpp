@@ -383,6 +383,13 @@ namespace BOSS
             }
         };
 
+        interface.AddComponent(ZayExtend::ComponentType::Code, "code → Input",
+            ZAY_DECLARE_COMPONENT(panel, params)
+            {
+                BOSS_ASSERT("No conditional expression for 'code'", false);
+                return panel._push_pass();
+            });
+
         interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
             ZAY_DECLARE_COMPONENT(panel, params)
             {

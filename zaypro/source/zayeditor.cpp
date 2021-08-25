@@ -473,6 +473,9 @@ ZEFakeZaySon::ZEFakeZaySon()
             case ZayExtend::ComponentType::Layout:
                 NewZayBox = ZEZayBoxLayout::Create(CurComponent->mParamComment);
                 break;
+            case ZayExtend::ComponentType::Code:
+                NewZayBox = ZEZayBoxCode::Create();
+                break;
             case ZayExtend::ComponentType::Loop:
                 NewZayBox = ZEZayBoxLoop::Create();
                 break;
@@ -1200,12 +1203,14 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                                     Variable = path->GetPath();
 
                                 const String VariableText = &Variable[0];
-                                String FormulaText;
-                                if(!doc->mResult.Compare(doc->mFormula) || !doc->mResult.Compare('\'' + doc->mFormula + '\''))
-                                    FormulaText = String::Format("%s = %s", (chars) VariableText, (chars) doc->mResult);
-                                else FormulaText = String::Format("%s = %s ← %s", (chars) VariableText, (chars) doc->mResult, (chars) doc->mFormula);
-                                const String FullText = " ● " + FormulaText;
-                                const bool NeedToolTop = (Data.panel->w() < Platform::Graphics::GetStringWidth(FullText));
+                                const String FormulaTextFront = String::Format("%s = %s", (chars) VariableText, (chars) doc->mResult);
+                                const String FormulaTextRear = (doc->mResult.Compare(doc->mFormula) && doc->mResult.Compare('\'' + doc->mFormula + '\''))?
+                                    " ← " + doc->mFormula : "";
+                                const sint32 FormulaTextRearSize = Platform::Graphics::GetStringWidth(FormulaTextRear);
+                                const String FormulaText = FormulaTextFront + FormulaTextRear;
+                                const String FullTextFront = " ● " + FormulaTextFront;
+                                const sint32 FullTextFrontSize = Platform::Graphics::GetStringWidth(FullTextFront);
+                                const bool NeedToolTop = (Data.panel->w() < FullTextFrontSize + FormulaTextRearSize);
 
                                 const String UIName = String::Format("dom-body-scroll.%d", Data.i);
                                 ZAY_INNER_UI(*Data.panel, 0, UIName,
@@ -1245,8 +1250,18 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                                             Data.panel->fill();
                                     // 스트링
                                     ZAY_MOVE_IF(*Data.panel, 1, 1, Data.panel->state(UIName) & PS_Pressed)
-                                    ZAY_RGB(*Data.panel, 255, CurAni, CurAni)
-                                        Data.panel->text(FullText, UIFA_LeftMiddle, UIFE_Right);
+                                    {
+                                        // 계산결과
+                                        ZAY_RGB(*Data.panel, 255, CurAni, CurAni)
+                                            Data.panel->text(FullTextFront, UIFA_LeftMiddle, UIFE_Right);
+                                        // 계산식
+                                        if(0 < FormulaTextRearSize && FullTextFrontSize < Data.panel->w())
+                                        {
+                                            ZAY_LTRB(*Data.panel, FullTextFrontSize, 0, Data.panel->w(), Data.panel->h())
+                                            ZAY_RGB(*Data.panel, 128, CurAni, CurAni)
+                                                Data.panel->text(FormulaTextRear, UIFA_LeftMiddle, UIFE_Right);
+                                        }
+                                    }
                                 }
                             }
                             Data.i++;

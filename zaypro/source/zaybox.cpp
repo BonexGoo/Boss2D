@@ -1389,6 +1389,7 @@ void ZEZayBox::BodyInputGroup::SubValue(sint32 i)
 
 void ZEZayBox::BodyInputGroup::ReadJson(const Context& json)
 {
+    mInputs.Clear();
     for(sint32 i = 0, iend = json.LengthOfIndexable(); i< iend; ++i)
     {
         hook(json[i])
@@ -1399,7 +1400,7 @@ void ZEZayBox::BodyInputGroup::ReadJson(const Context& json)
                 chararray OneKey;
                 hook(fish(0, &OneKey))
                 {
-                    NewInput.mKey = OneKey;
+                    NewInput.mKey = &OneKey[0];
                     NewInput.mValue = fish.GetText();
                 }
             }
@@ -1416,6 +1417,8 @@ void ZEZayBox::BodyInputGroup::WriteJson(Context& json) const
         if(ZaySonUtility::ToCondition(mInputs[i].mValue) != ZaySonInterface::ConditionType::Unknown)
             json.At(i).Set(mInputs[i].mValue);
         else if(ZaySonUtility::IsFunctionCall(mInputs[i].mValue))
+            json.At(i).Set(mInputs[i].mValue);
+        else if(mInputs[i].mKey.Length() == 0)
             json.At(i).Set(mInputs[i].mValue);
         else json.At(i).At(mInputs[i].mKey).Set(mInputs[i].mValue);
     }
@@ -1780,12 +1783,18 @@ ZEZayBoxObject ZEZayBoxStarter::Create()
 
 void ZEZayBoxStarter::ReadJson(const Context& json)
 {
+    mExpanded = (json("expanded").GetInt(1) != 0);
+    mAddW = json("addw").GetInt(0);
+
     mComment.ReadJson(json);
     mInputGroup.ReadJson(json("oncreate"));
 }
 
 void ZEZayBoxStarter::WriteJson(Context& json) const
 {
+    json.At("expanded").Set(String::FromInteger((mExpanded)? 1 : 0));
+    json.At("addw").Set(String::FromInteger(mAddW));
+
     mComment.WriteJson(json);
     if(0 < mInputGroup.mInputs.Count())
         mInputGroup.WriteJson(json.At("oncreate"));
@@ -1800,7 +1809,7 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, false, true, false, false, false, false);
+        RenderTitle(panel, mCompType, false, true, false, true, true, false);
 
         // 바디
         if(mExpanded)
@@ -2034,6 +2043,93 @@ chars ZEZayBoxLayout::GetComment() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ZEZayBoxCode
+////////////////////////////////////////////////////////////////////////////////
+ZEZayBoxCode::ZEZayBoxCode() : mComment(*this), mInputGroup(*this)
+{
+}
+
+ZEZayBoxCode::~ZEZayBoxCode()
+{
+}
+
+ZEZayBoxObject ZEZayBoxCode::Create()
+{
+    buffer NewZayBox = Buffer::Alloc<ZEZayBoxCode>(BOSS_DBG 1);
+    ((ZEZayBoxCode*) NewZayBox)->mInputGroup.AddValue("", "");
+    return ZEZayBoxObject(NewZayBox);
+}
+
+void ZEZayBoxCode::ReadJson(const Context& json)
+{
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
+
+    mComment.ReadJson(json);
+    mInputGroup.ReadJson(json("compinputs"));
+}
+
+void ZEZayBoxCode::WriteJson(Context& json) const
+{
+    String OneType = mCompType;
+    const sint32 Pos = OneType.Find(0, ' ');
+    if(Pos != -1) OneType = OneType.Left(Pos);
+    json.At("compname").Set(OneType);
+
+    if(mCompID < 0) mCompID = MakeLastID();
+    json.At("compid").Set(String::FromInteger(mCompID));
+
+    mComment.WriteJson(json);
+    if(0 < mInputGroup.mInputs.Count())
+        mInputGroup.WriteJson(json.At("compinputs"));
+}
+
+void ZEZayBoxCode::Render(ZayPanel& panel)
+{
+    const String UIBody = String::Format("%d-body", mID);
+    const String UIComment = String::Format("%d-comment", mID);
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
+    {
+        panel.ninepatch(R("box_bg"));
+
+        // 타이틀
+        RenderTitle(panel, mCompType, true, true, true, true, true, true);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
+        {
+            ZAY_INNER(panel, 4)
+            {
+                // 주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mComment.RenderCommentEditor(panel, UIComment);
+
+                // 인풋그룹
+                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
+                    mInputGroup.RenderValueGroup(panel, "");
+            }
+        }
+    }
+}
+
+void ZEZayBoxCode::RecalcSize()
+{
+    mBodySize.h = 8 + mComment.GetCalcedSize() + mInputGroup.GetCalcedSize();
+}
+
+void ZEZayBoxCode::SubInput(sint32 i)
+{
+    mInputGroup.SubValue(i);
+}
+
+chars ZEZayBoxCode::GetComment() const
+{
+    return mComment.mComment;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxLoop
 ////////////////////////////////////////////////////////////////////////////////
 ZEZayBoxLoop::ZEZayBoxLoop() : mNameComment(*this), mOperation(*this)
@@ -2083,7 +2179,7 @@ void ZEZayBoxLoop::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, true, true, true, true, false, true);
+        RenderTitle(panel, mCompType, true, true, true, true, true, true);
 
         // 바디
         if(mExpanded)
@@ -2164,8 +2260,8 @@ void ZEZayBoxCondition::Render(ZayPanel& panel)
 
         // 타이틀
         if(mOperation.mWithElse)
-            RenderTitle(panel, "el" + mCompType, true, false, true, mHasElseAndOperation, false, true);
-        else RenderTitle(panel, mCompType, true, false, true, mHasElseAndOperation, false, true);
+            RenderTitle(panel, "el" + mCompType, true, false, true, mHasElseAndOperation, true, true);
+        else RenderTitle(panel, mCompType, true, false, true, mHasElseAndOperation, true, true);
 
         // 바디
         if(mExpanded && mHasElseAndOperation)
