@@ -856,6 +856,12 @@ namespace BOSS
         Self.SendFlush();
     }
 
+    SolverValue ZayWidgetDOM::GetValue(chars variable)
+    {
+        auto& Self = ST();
+        return Self.mDocument->GetValue(variable);
+    }
+
     void ZayWidgetDOM::BindPipe(id_pipe pipe)
     {
         auto& Self = ST();

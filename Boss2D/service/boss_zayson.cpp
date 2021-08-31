@@ -152,6 +152,13 @@ namespace BOSS
                 cb(&mSolvers[i]);
     }
 
+    SolverValue ZaySonDocument::GetValue(chars variable) const
+    {
+        if(auto CurSolver = Solver::Find(mChain, variable))
+            return CurSolver->result();
+        return SolverValue();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // ZaySonUtility
     ////////////////////////////////////////////////////////////////////////////////

@@ -24,6 +24,7 @@ namespace BOSS
         void Update(chars variable, chars formula);
         void UpdateJson(const Context& json, const String nameheader = "");
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
+        SolverValue GetValue(chars variable) const;
 
     protected:
         virtual void PostProcess(const String key, const String value) {}
