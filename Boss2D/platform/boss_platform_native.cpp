@@ -641,10 +641,15 @@
             return -1;
         }
 
-        sint32 Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        sint32 Platform::Utility::GetScreenCount()
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return 0
+        }
+
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
         }
 
         bool Platform::Utility::IsScreenConnected()

@@ -423,12 +423,15 @@ public:
         /// @return 스크린ID(위치가 어떤 스크린에도 속해있지 않다면 -1)
         static sint32 GetScreenID(const point64& pos);
 
+        /// @brief 스크린수량 얻기
+        /// @return 스크린수량
+        static sint32 GetScreenCount();
+
         /// @brief 스크린영역 얻기
         /// @param rect : 스크린영역(px)
         /// @param screenid : 스크린ID(-1일 경우 모든 스크린)
         /// @param available_only : 시작표시줄등을 제외한 유효영역만으로 제한
-        /// @return 스크린수량
-        static sint32 GetScreenRect(rect128& rect, sint32 screenid = -1, bool available_only = true);
+        static void GetScreenRect(rect128& rect, sint32 screenid = -1, bool available_only = true);
 
         /// @brief 물리적인 모니터 연결여부
         /// @return 연결여부

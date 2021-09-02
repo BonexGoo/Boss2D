@@ -1140,9 +1140,14 @@
             return ApplicationPrivate::desktop()->screenNumber(GeometryPoint);
         }
 
-        sint32 Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        sint32 Platform::Utility::GetScreenCount()
         {
-            sint32 NumScreens = ApplicationPrivate::desktop()->numScreens();
+            return ApplicationPrivate::desktop()->numScreens();
+        }
+
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        {
+            const sint32 NumScreens = GetScreenCount();
             if(NumScreens == 0)
                 rect.l = rect.t = rect.r = rect.b = 0;
             else if(screenid < NumScreens)
@@ -1176,7 +1181,6 @@
                     rect.b = GeometryRect.bottom() + 1;
                 }
             }
-            return NumScreens;
         }
 
         bool Platform::Utility::IsScreenConnected()
