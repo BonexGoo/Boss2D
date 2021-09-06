@@ -682,13 +682,15 @@ bool ZEWidgetPipe::TickOnce()
     else while(auto NewJson = Platform::Pipe::RecvJson(mPipe))
     {
         chars Type = (*NewJson)("type").GetText();
-        if(!String::Compare(Type, "dom"))
+        if(!String::Compare(Type, "dom_updated"))
         {
             auto& CurDOM = mDOM((*NewJson)("variable").GetText());
             CurDOM.mResult = (*NewJson)("result").GetText();
             CurDOM.mFormula = (*NewJson)("formula").GetText();
             CurDOM.mUpdateMsec = Platform::Utility::CurrentTimeMsec();
         }
+        else if(!String::Compare(Type, "dom_removed"))
+            mDOM.Remove((*NewJson)("variable").GetText());
         else AddLog(Type, (*NewJson)("title").GetText(), (*NewJson)("detail").GetText());
         NeedUpdate = true;
     }

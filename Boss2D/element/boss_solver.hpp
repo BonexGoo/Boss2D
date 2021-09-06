@@ -158,6 +158,8 @@ namespace BOSS
         public: Solver& Link(chars chain, chars variable = nullptr, bool updateobservers = false);
         public: void Unlink(bool updateobservers = false);
         public: static Solver* Find(chars chain, chars variable);
+        public: static Strings MatchedVariables(chars chain, chars keyword);
+        public: static void Remove(chars chain, chars variable);
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;

@@ -765,6 +765,29 @@ namespace BOSS
         return nullptr;
     }
 
+    Strings Solver::MatchedVariables(chars chain, chars keyword)
+    {
+        Strings Collector;
+        if(auto FindedChain = &gSolverChains(chain))
+        {
+            const sint32 KeywordLength = boss_strlen(keyword);
+            for(sint32 i = 0, iend = FindedChain->Count(); i < iend; ++i)
+            {
+                chararray GetName;
+                FindedChain->AccessByOrder(i, &GetName);
+                if(!String::Compare(&GetName[0], keyword, KeywordLength))
+                    Collector.AtAdding() = &GetName[0];
+            }
+        }
+        return Collector;
+    }
+
+    void Solver::Remove(chars chain, chars variable)
+    {
+        if(auto FindedChain = &gSolverChains(chain))
+            FindedChain->Remove(variable);
+    }
+
     Solver& Solver::Parse(chars formula)
     {
         auto AddOperator = [](SolverOperandObject*& focus, SolverOperatorType type, sint32 deep)->void

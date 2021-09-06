@@ -833,7 +833,7 @@ namespace BOSS
     {
         auto& Self = ST();
         Self.mDocument->AddFlush();
-        Self.SendFlush();
+        Self.UpdateFlush();
     }
 
     void ZayWidgetDOM::ReserverFlush()
@@ -846,14 +846,25 @@ namespace BOSS
     {
         auto& Self = ST();
         Self.mDocument->Update(variable, formula);
-        Self.SendFlush();
+        Self.UpdateFlush();
     }
 
     void ZayWidgetDOM::UpdateJson(const Context& json)
     {
         auto& Self = ST();
         Self.mDocument->UpdateJson(json);
-        Self.SendFlush();
+        Self.UpdateFlush();
+    }
+
+    void ZayWidgetDOM::RemoveAll(chars keyword)
+    {
+        auto& Self = ST();
+        const Strings OldVariables = Self.mDocument->MatchedVariables(keyword);
+        for(sint32 i = 0, iend = OldVariables.Count(); i < iend; ++i)
+        {
+            Self.mDocument->Remove(OldVariables[i]);
+            Self.RemoveFlush(OldVariables[i]);
+        }
     }
 
     SolverValue ZayWidgetDOM::GetValue(chars variable)
@@ -871,7 +882,7 @@ namespace BOSS
 
         // 최초 전달
         Self.mDocument->CheckUpdatedSolvers(0, [pipe](const Solver* solver)->void
-        {SendToPipe(pipe, solver);});
+        {UpdateToPipe(pipe, solver);});
     }
 
     void ZayWidgetDOM::UnbindPipe(id_pipe pipe)
@@ -883,7 +894,7 @@ namespace BOSS
         }
     }
 
-    void ZayWidgetDOM::SendFlush()
+    void ZayWidgetDOM::UpdateFlush()
     {
         const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
         for(sint32 i = 0, iend = mPipeMap.Count(); i < iend; ++i)
@@ -894,18 +905,36 @@ namespace BOSS
                 CurPipe.mMsec = CurMsec;
                 id_pipe PipeID = CurPipe.mRefPipe;
                 mDocument->CheckUpdatedSolvers(CurMsec, [PipeID](const Solver* solver)->void
-                {SendToPipe(PipeID, solver);});
+                {UpdateToPipe(PipeID, solver);});
             }
         }
     }
 
-    void ZayWidgetDOM::SendToPipe(id_pipe pipe, const Solver* solver)
+    void ZayWidgetDOM::UpdateToPipe(id_pipe pipe, const Solver* solver)
     {
         Context Json;
-        Json.At("type").Set("dom");
+        Json.At("type").Set("dom_updated");
         Json.At("variable").Set(solver->linked_variable());
         Json.At("result").Set(solver->result().ToText(true));
         Json.At("formula").Set(solver->parsed_formula());
+        Platform::Pipe::SendJson(pipe, Json.SaveJson());
+    }
+
+    void ZayWidgetDOM::RemoveFlush(chars variable)
+    {
+        for(sint32 i = 0, iend = mPipeMap.Count(); i < iend; ++i)
+        {
+            auto CurPipe = *mPipeMap.AccessByOrder(i);
+            id_pipe PipeID = CurPipe.mRefPipe;
+            RemoveToPipe(PipeID, variable);
+        }
+    }
+
+    void ZayWidgetDOM::RemoveToPipe(id_pipe pipe, chars variable)
+    {
+        Context Json;
+        Json.At("type").Set("dom_removed");
+        Json.At("variable").Set(variable);
         Platform::Pipe::SendJson(pipe, Json.SaveJson());
     }
 }

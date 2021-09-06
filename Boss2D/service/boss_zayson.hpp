@@ -23,6 +23,8 @@ namespace BOSS
         void AddFlush();
         void Update(chars variable, chars formula);
         void UpdateJson(const Context& json, const String nameheader = "");
+        Strings MatchedVariables(chars keyword);
+        void Remove(chars variable);
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
         SolverValue GetValue(chars variable) const;
 

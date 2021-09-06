@@ -145,6 +145,16 @@ namespace BOSS
         }
     }
 
+    Strings ZaySonDocument::MatchedVariables(chars keyword)
+    {
+        return Solver::MatchedVariables(mChain, keyword);
+    }
+
+    void ZaySonDocument::Remove(chars variable)
+    {
+        Solver::Remove(mChain, variable);
+    }
+
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
     {
         for(sint32 i = 0; i < mExecutedCount; ++i)
