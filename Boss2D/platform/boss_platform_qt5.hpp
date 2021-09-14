@@ -1427,6 +1427,7 @@
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
+        inline float zoom() const {return mSavedZoom;}
         inline const QRect& scissor() const {return mScissor;}
         inline const ColorPrivate& color() const {return mColor;}
         // Setter
@@ -3526,12 +3527,13 @@
                 f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
                 f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
                 f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
+                const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
                 const QRect& CurScissor = CanvasClass::get()->scissor();
-                const int ScreenHeight = CanvasClass::get()->painter().window().height();
-                f->glScissor(CurScissor.x() * DeviceRatio,
-                    (ScreenHeight - (CurScissor.y() + CurScissor.height())) * DeviceRatio,
-                    CurScissor.width() * DeviceRatio,
-                    CurScissor.height() * DeviceRatio);
+                const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
+                f->glScissor(CurScissor.x() * Zoom,
+                    (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
+                    CurScissor.width() * Zoom,
+                    CurScissor.height() * Zoom);
 
                 mAttrib[0].vertices[0] = NewRect.l;
                 mAttrib[0].vertices[1] = NewRect.t;
