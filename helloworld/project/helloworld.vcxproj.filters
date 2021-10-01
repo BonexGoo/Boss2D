@@ -7,6 +7,9 @@
     <Filter Include="resource">
       <UniqueIdentifier>{63ca831b-57ca-44d0-b144-7784b657e4da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source-gen">
+      <UniqueIdentifier>{b80cfe59-a590-458c-8c35-0ed03d509d96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\common\windows\main.aps">
@@ -24,17 +27,20 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\boss_config.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\helloworld.hpp">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source\resource.hpp">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\boss_gen_assets.hpp">
-      <Filter>source</Filter>
+    <ClInclude Include="..\source-gen\boss_assets.hpp">
+      <Filter>source-gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source-gen\boss_buildtag.hpp">
+      <Filter>source-gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source-gen\boss_config.h">
+      <Filter>source-gen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

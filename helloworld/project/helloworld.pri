@@ -9,8 +9,16 @@ QT_PACKAGE_RPATH = no #ok #no
     error("Couldn't find the boss2d.pri file...")
 }
 
+wasm{
+    QMAKE_LFLAGS += -s TOTAL_MEMORY=26214400
+}
+
+INCLUDEPATH += ../source-gen
+HEADERS += ../source-gen/boss_config.h
+HEADERS += ../source-gen/boss_assets.hpp
+HEADERS += ../source-gen/boss_buildtag.hpp
+
 INCLUDEPATH += ../source
-HEADERS += ../source/boss_config.h
 SOURCES += ../source/helloworld.cpp
 HEADERS += ../source/helloworld.hpp
 SOURCES += ../source/main.cpp
