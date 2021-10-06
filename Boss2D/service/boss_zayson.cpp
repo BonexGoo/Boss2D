@@ -820,7 +820,15 @@ namespace BOSS
                 {
                     if(0 < mCompCodes.Count()) // 코드문
                     {
-                        sint32s CollectedCompCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mCompCodes);
+                        // 지역변수 수집
+                        Solvers LocalSolvers;
+                        const Point ViewPos = panel.toview(0, 0);
+                        LocalSolvers.AtAdding().Link(ViewName, "pX").Parse(String::FromFloat(ViewPos.x)).Execute();
+                        LocalSolvers.AtAdding().Link(ViewName, "pY").Parse(String::FromFloat(ViewPos.y)).Execute();
+                        LocalSolvers.AtAdding().Link(ViewName, "pW").Parse(String::FromFloat(panel.w())).Execute();
+                        LocalSolvers.AtAdding().Link(ViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
+
+                        sint32s CollectedCompCodes = ZayConditionElement::Collect(ViewName, mCompCodes);
                         for(sint32 i = 0, iend = CollectedCompCodes.Count(); i < iend; ++i)
                         {
                             auto CurCompCode = (ZayRequestElement*) mCompCodes.At(CollectedCompCodes[i]).Ptr();

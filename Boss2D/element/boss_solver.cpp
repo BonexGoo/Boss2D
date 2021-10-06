@@ -973,8 +973,9 @@ namespace BOSS
                     {
                         switch(*End)
                         {
-                        case ' ': case '\t': case '\r': case '\n': case '(': case ')':
-                        case '+': case '-': case '*': case '/': case '%': break;
+                        case ' ': case '\t': case '\r': case '\n':
+                        case '+': case '-': case '*': case '/': case '%': case '@': case '~': case ':':
+                        case '!': case '=': case '<': case '>': case '[': case ']': case '(': case ')': break;
                         default: continue;
                         }
                         break;
