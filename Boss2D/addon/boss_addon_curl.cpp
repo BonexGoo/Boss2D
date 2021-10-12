@@ -467,7 +467,7 @@ namespace BOSS
         curl_easy_setopt(CurCurl, CURLOPT_WRITEDATA, nullptr);
         curl_easy_setopt(CurCurl, CURLOPT_WRITEFUNCTION, OnFtpResult);
 
-        // 디렉터리 만들기
+        // 디렉토리 만들기
         curl_slist* cheader = nullptr;
         const String DELE = String::Format("MKD /%s", dirname);
         cheader = curl_slist_append(cheader, (chars) DELE);
@@ -493,7 +493,7 @@ namespace BOSS
         curl_easy_setopt(CurCurl, CURLOPT_WRITEDATA, nullptr);
         curl_easy_setopt(CurCurl, CURLOPT_WRITEFUNCTION, OnFtpResult);
 
-        // 디렉터리 제거
+        // 디렉토리 제거
         curl_slist* cheader = nullptr;
         const String DELE = String::Format("RMD /%s", dirname);
         cheader = curl_slist_append(cheader, (chars) DELE);

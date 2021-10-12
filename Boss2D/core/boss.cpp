@@ -628,7 +628,7 @@ extern "C" const char* boss_normalpath(const char* itemname, boss_drive* result)
             }
             else
             {
-                NormalPath += String(DirFocus, item - DirFocus); // 디렉터리명을 붙임
+                NormalPath += String(DirFocus, item - DirFocus); // 디렉토리명을 붙임
                 NormalPath += '/';
             }
             DirFocus = item + 1;
