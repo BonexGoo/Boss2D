@@ -5812,10 +5812,24 @@
 
                 // 디바이스타겟 등록
                 if(deviceaddress)
-                if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, false))
                 {
-                    Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
-                    delete NewDevice;
+                    if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, false))
+                    {
+                        Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
+                        delete NewDevice;
+                    }
+                    else
+                    {
+                        const String DeviceAndAddress = deviceaddress;
+                        const sint32 SlashPos = DeviceAndAddress.Find(0, "/");
+                        if(SlashPos != -1)
+                        if(auto NewDevice = BluetoothSearchPrivate::CreateDevice(
+                            DeviceAndAddress.Left(SlashPos), DeviceAndAddress.Offset(SlashPos + 1)))
+                        {
+                            Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
+                            delete NewDevice;
+                        }
+                    }
                 }
 
                 // UUID필터 등록
@@ -5890,6 +5904,12 @@
             }
             if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return nullptr;
+        }
+        static const QBluetoothDeviceInfo* CreateDevice(chars devicename, chars address)
+        {
+            const QBluetoothAddress NewAddress(QString::fromUtf8(address));
+            const QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
+            return NewDeviceInfo;
         }
         static const QBluetoothServiceInfo* GetClonedSearchedService(chars uuid, bool locking)
         {

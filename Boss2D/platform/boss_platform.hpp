@@ -1780,7 +1780,7 @@ public:
         static void SearchingDeviceEnd();
 
         /// @brief 블루투스서비스 탐색시작
-        /// @param deviceaddress : 장치주소(nullptr로 생략가능)
+        /// @param deviceaddress : 장치주소(nullptr로 생략가능, Device를 아는 경우 "DESKTOP-A/00:1A:7D:DA:71:0A"도 가능)
         /// @param uuidfilters : UUID필터들(생략가능)
         static void SearchingServiceBegin(chars deviceaddress = nullptr,
             Strings uuidfilters = Strings());
