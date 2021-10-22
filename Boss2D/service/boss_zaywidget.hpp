@@ -61,7 +61,7 @@ namespace BOSS
         static void ReserverFlush();
         static void Update(chars variable, chars formula);
         static void UpdateJson(const Context& json);
-        static void RemoveAll(chars keyword);
+        static void RemoveAll(chars keyword = nullptr);
         static SolverValue GetValue(chars variable);
         static void BindPipe(id_pipe pipe);
         static void UnbindPipe(id_pipe pipe);
