@@ -4593,7 +4593,7 @@
             if(!mUsingSizeField) connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
             else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
             connect(Peer, SIGNAL(disconnected()), this, SLOT(disconnected()));
-            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive, nullptr, true);
         }
 
         void readyPeer()
@@ -4608,7 +4608,7 @@
                 Peer->read((char*) NewPacket->Buffer, PacketSize);
                 mPacketQueue.Enqueue(NewPacket);
             }
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
 
         void readyPeerWithSizeField()
@@ -4643,7 +4643,7 @@
                     else break;
                 }
             }
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
 
         void disconnected()
@@ -4752,7 +4752,7 @@
             connect(Peer, &QWebSocket::textFrameReceived, this, &WSServerClass::textReceived);
             connect(Peer, &QWebSocket::binaryFrameReceived, this, &WSServerClass::binaryReceived);
             connect(Peer, &QWebSocket::disconnected, this, &WSServerClass::disconnected);
-            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive, nullptr, true);
         }
 
         void textReceived(const QString& frame, bool isLastFrame)
@@ -4772,7 +4772,7 @@
                 Memory::Copy((void*) NewPacket->Buffer, frame.constData(), PacketSize);
                 mPacketQueue.Enqueue(NewPacket);
             }
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
 
         void disconnected()
@@ -4925,23 +4925,23 @@
     private slots:
         void OnConnected()
         {
-            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive, nullptr, true);
         }
         void OnDisconnected()
         {
-            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, true);
         }
         void OnReadyRead()
         {
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
         void OnWebConnected()
         {
-            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive, nullptr, true);
         }
         void OnWebDisconnected()
         {
-            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, true);
         }
         void OnWebTextReceived(const QString& frame, bool isLastFrame)
         {
@@ -4950,7 +4950,7 @@
         void OnWebBinaryReceived(const QByteArray& frame, bool isLastFrame)
         {
             m_wbytes += frame;
-            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
 
     public:
