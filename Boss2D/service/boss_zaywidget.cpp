@@ -513,6 +513,37 @@ namespace BOSS
             "[SenseBorder:0]"
             "[LoopingSize:0]");
 
+        interface.AddComponent(ZayExtend::ComponentType::Option, "vscroll",
+            ZAY_DECLARE_COMPONENT(panel, params, ViewName)
+            {
+                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
+                    return panel._push_pass();
+                auto UIName = ViewName + '.' + params.Param(0).ToText();
+                auto ContentSize = params.Param(1).ToInteger();
+                auto Sensitive = (params.ParamCount() < 3)? 0 : params.Param(2).ToInteger();
+                auto SenseBorder = (params.ParamCount() < 4)? 0 : params.Param(3).ToInteger();
+                auto LoopingSize = (params.ParamCount() < 5)? 0 : params.Param(4).ToInteger();
+                return panel._push_scroll_ui(0, ContentSize, UIName,
+                    ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                    {
+                        static sint32 FirstY = 0;
+                        if(t == GT_Pressed)
+                            FirstY = v->scrollpos(n).y - y;
+                        else if(t == GT_InDragging || t == GT_OutDragging)
+                        {
+                            if(v->isScrollSensing(n))
+                                FirstY = v->scrollpos(n).y - y;
+                            const sint32 VectorY = (y - v->oldxy(n).y) * 20;
+                            v->moveScroll(n, 0, FirstY + y, 0, FirstY + y + VectorY, 2.0, true);
+                        }
+                    }, Sensitive, SenseBorder, 0 < LoopingSize, LoopingSize, 0);
+            },
+            "[UIName]"
+            "[ContentSize:0]#"
+            "[Sensitive:0]"
+            "[SenseBorder:0]"
+            "[LoopingSize:0]");
+
         interface.AddComponent(ZayExtend::ComponentType::Option, "color",
             ZAY_DECLARE_COMPONENT(panel, params)
             {

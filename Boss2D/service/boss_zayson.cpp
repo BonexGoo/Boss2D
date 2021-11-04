@@ -810,6 +810,7 @@ namespace BOSS
                 {
                     auto& NewLog = logs.AtAdding();
                     NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h()));
+                    NewLog.mRect *= panel.zoom();
                     NewLog.mFill = fill;
                     NewLog.mUIName = uiname;
                 };
