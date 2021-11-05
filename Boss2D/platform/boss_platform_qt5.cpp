@@ -1770,7 +1770,8 @@
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
                 if(texture == nullptr) return;
 
-                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
+                const auto LastMatrix = CanvasClass::get()->painter().matrix();
+                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h) * LastMatrix.m11(),
                     texture, Rect(tx, ty, tx + tw, ty + th), color, ori, antialiasing);
             #endif
         }
