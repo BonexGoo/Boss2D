@@ -1770,8 +1770,7 @@
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
                 if(texture == nullptr) return;
 
-                const auto LastMatrix = CanvasClass::get()->painter().matrix();
-                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h) * LastMatrix.m11(),
+                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
                     texture, Rect(tx, ty, tx + tw, ty + th), color, ori, antialiasing);
             #endif
         }
@@ -2417,7 +2416,7 @@
                         {
                             Platform::Graphics::DrawTextureToFBO((id_texture_read) CurCodeData->mRefTexture,
                                 CurCodeData->mUVPos.x, CurCodeData->mUVPos.y, CurCodeData->mUVSize.w, CurCodeData->mUVSize.h, orientationtype_normal0,
-                                true, x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
+                                false, x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
                             x += CurCodeData->mSavedWidth * justifyrate;
                         }
                     }
@@ -2494,7 +2493,12 @@
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
                 if(CanvasClass::get()->is_font_ft())
                 {
-                    FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height());
+                    const float Zoom = CanvasClass::get()->painter().matrix().m11();
+                    FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height() * Zoom);
+                    x *= Zoom;
+                    y *= Zoom;
+                    w *= Zoom;
+                    h *= Zoom;
 
                     WString Text = (sizeof(TYPE) == 1)?
                         WString::FromChars((chars) string, count) : WString((wchars) string, count);
