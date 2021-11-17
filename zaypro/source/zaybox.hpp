@@ -34,6 +34,7 @@ public:
     virtual void RecalcSize();
     virtual void SubParam(sint32 i);
     virtual void SubInput(sint32 i);
+    virtual void SubExtInput(sint32 i);
     virtual chars GetComment() const;
 
 public:
@@ -136,7 +137,7 @@ protected:
     public:
         virtual void ReadJson(const Context& json) = 0;
         virtual void WriteJson(Context& json) const = 0;
-        virtual sint32 GetCalcedSize() = 0;
+        virtual sint32 GetCalcedSize(const BodyElement* sub = nullptr) const = 0;
     protected:
         ZEZayBox& mBox;
     };
@@ -152,7 +153,7 @@ protected:
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderCommentEditor(ZayPanel& panel, chars uiname);
     public:
         String mComment;
@@ -169,7 +170,7 @@ protected:
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderNameCommentEditor(ZayPanel& panel, chars uiname);
     public:
         String mName;
@@ -189,7 +190,7 @@ protected:
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderParamGroup(ZayPanel& panel);
         void RenderParamEditor(ZayPanel& panel, chars uiname, sint32 i);
         void RenderParamComment(ZayPanel& panel, chars uiname, chars comment);
@@ -213,9 +214,9 @@ protected:
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
-        void RenderValueGroup(ZayPanel& panel, chars name);
-        void RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i);
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
+        void RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub = nullptr);
+        void RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i, sint32 extmode);
     public:
         class Input
         {
@@ -238,7 +239,7 @@ protected:
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname, chars itname);
     public:
         String mOperation;
@@ -256,7 +257,7 @@ protected:
         void Init(chars operation, bool withelse, bool eventflag);
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json) const override;
-        sint32 GetCalcedSize() override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname);
     public:
         bool mWithElse;
@@ -287,7 +288,7 @@ public:
 
 protected: // 데이터
     BodyComment mComment;
-    BodyInputGroup mInputGroup;
+    BodyInputGroup mCreateGroup;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,12 +337,14 @@ public:
     void RecalcSize() override;
     void SubParam(sint32 i) override;
     void SubInput(sint32 i) override;
+    void SubExtInput(sint32 i) override;
     chars GetComment() const override;
 
 protected: // 데이터
     BodyNameComment mNameComment;
     BodyParamGroup mParamGroup;
-    BodyInputGroup mInputGroup;
+    BodyInputGroup mTouchGroup;
+    BodyInputGroup mClickGroup;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,7 +369,7 @@ public:
 
 protected: // 데이터
     BodyComment mComment;
-    BodyInputGroup mInputGroup;
+    BodyInputGroup mCodeGroup;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,5 +441,6 @@ public:
 protected: // 데이터보전
     BodyNameComment mNameComment;
     BodyParamGroup mParamGroup;
-    BodyInputGroup mInputGroup;
+    BodyInputGroup mTouchGroup;
+    BodyInputGroup mClickGroup;
 };

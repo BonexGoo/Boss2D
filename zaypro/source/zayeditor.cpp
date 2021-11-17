@@ -162,15 +162,22 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         {
             sint32s Args(in);
             const sint32 CurZayBoxID = Args[0];
-            const sint32 CurZayBoxParamID = Args[1];
-            m->mBoxMap[CurZayBoxID]->SubParam(CurZayBoxParamID);
+            const sint32 CurParamID = Args[1];
+            m->mBoxMap[CurZayBoxID]->SubParam(CurParamID);
         }
         jump(!String::Compare(topic, "ZayBoxValueRemove")) // 제이박스 밸류 삭제(0-value-0-remove)
         {
             sint32s Args(in);
             const sint32 CurZayBoxID = Args[0];
-            const sint32 CurZayBoxValueID = Args[1];
-            m->mBoxMap[CurZayBoxID]->SubInput(CurZayBoxValueID);
+            const sint32 CurValueID = Args[1];
+            m->mBoxMap[CurZayBoxID]->SubInput(CurValueID);
+        }
+        jump(!String::Compare(topic, "ZayBoxExtValueRemove")) // 제이박스 확장밸류 삭제(0-extvalue-0-remove)
+        {
+            sint32s Args(in);
+            const sint32 CurZayBoxID = Args[0];
+            const sint32 CurExtValueID = Args[1];
+            m->mBoxMap[CurZayBoxID]->SubExtInput(CurExtValueID);
         }
         jump(!String::Compare(topic, "Pipe:", 5))
         {

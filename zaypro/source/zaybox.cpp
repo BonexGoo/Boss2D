@@ -130,6 +130,11 @@ void ZEZayBox::SubInput(sint32 i)
     BOSS_ASSERT("잘못된 시나리오입니다", false);
 }
 
+void ZEZayBox::SubExtInput(sint32 i)
+{
+    BOSS_ASSERT("잘못된 시나리오입니다", false);
+}
+
 chars ZEZayBox::GetComment() const
 {
     BOSS_ASSERT("잘못된 시나리오입니다", false);
@@ -561,26 +566,37 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                     const String UIName(n);
                     const sint32 ParamPos = UIName.Find(0, "-param-");
                     const sint32 ValuePos = UIName.Find(0, "-value-");
+                    const sint32 ExtValuePos = UIName.Find(0, "-extvalue-");
                     const sint32 BoxID = Parser::GetInt(UIName);
 
                     // 파라미터 삭제(0-param-0-remove)
                     if(ParamPos != -1)
                     {
-                        const sint32 BoxParamID = Parser::GetInt(((chars) UIName) + ParamPos + 7);
+                        const sint32 ParamID = Parser::GetInt(((chars) UIName) + ParamPos + 7); // "-param-"
                         sint32s Args;
                         Args.AtAdding() = BoxID;
-                        Args.AtAdding() = BoxParamID;
+                        Args.AtAdding() = ParamID;
                         Platform::SendNotify(v->view(), "ZayBoxParamRemove", Args);
                         mRemovingUIName.Empty();
                     }
                     // 밸류 삭제(0-value-0-remove)
                     else if(ValuePos != -1)
                     {
-                        const sint32 BoxValueID = Parser::GetInt(((chars) UIName) + ValuePos + 7);
+                        const sint32 ValueID = Parser::GetInt(((chars) UIName) + ValuePos + 7); // "-value-"
                         sint32s Args;
                         Args.AtAdding() = BoxID;
-                        Args.AtAdding() = BoxValueID;
+                        Args.AtAdding() = ValueID;
                         Platform::SendNotify(v->view(), "ZayBoxValueRemove", Args);
+                        mRemovingUIName.Empty();
+                    }
+                    // 확장밸류 삭제(0-extvalue-0-remove)
+                    else if(ExtValuePos != -1)
+                    {
+                        const sint32 ExtValueID = Parser::GetInt(((chars) UIName) + ExtValuePos + 10); // "-extvalue-"
+                        sint32s Args;
+                        Args.AtAdding() = BoxID;
+                        Args.AtAdding() = ExtValueID;
+                        Platform::SendNotify(v->view(), "ZayBoxExtValueRemove", Args);
                         mRemovingUIName.Empty();
                     }
                     // 제이박스 삭제(0-remove)
@@ -962,7 +978,7 @@ void ZEZayBox::BodyComment::WriteJson(Context& json) const
         json.At("comment").Set(mComment);
 }
 
-sint32 ZEZayBox::BodyComment::GetCalcedSize()
+sint32 ZEZayBox::BodyComment::GetCalcedSize(const BodyElement* sub) const
 {
     return EditorHeight;
 }
@@ -1029,7 +1045,7 @@ void ZEZayBox::BodyNameComment::WriteJson(Context& json) const
         json.At("uiname").Set(mName);
 }
 
-sint32 ZEZayBox::BodyNameComment::GetCalcedSize()
+sint32 ZEZayBox::BodyNameComment::GetCalcedSize(const BodyElement* sub) const
 {
     return EditorHeight;
 }
@@ -1150,7 +1166,7 @@ void ZEZayBox::BodyParamGroup::WriteJson(Context& json) const
     }
 }
 
-sint32 ZEZayBox::BodyParamGroup::GetCalcedSize()
+sint32 ZEZayBox::BodyParamGroup::GetCalcedSize(const BodyElement* sub) const
 {
     return (ParamHeight + 4) * (mParams.Count() + 1) + 9;
 }
@@ -1424,12 +1440,12 @@ void ZEZayBox::BodyInputGroup::WriteJson(Context& json) const
     }
 }
 
-sint32 ZEZayBox::BodyInputGroup::GetCalcedSize()
+sint32 ZEZayBox::BodyInputGroup::GetCalcedSize(const BodyElement* sub) const
 {
-    return (ValueHeight + 4) * (mInputs.Count() + 1) + 9;
+    return (ValueHeight + 4) * (mInputs.Count() + 1 + ((sub)? ((const BodyInputGroup*) sub)->mInputs.Count() : 0)) + 9;
 }
 
-void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
+void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub)
 {
     ZAY_INNER_SCISSOR(panel, 3)
     ZAY_INNER(panel, 1)
@@ -1438,7 +1454,7 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
             panel.fill();
         ZAY_INNER(panel, 3)
         {
-            for(sint32 i = 0, iend = mInputs.Count(); i <= iend; ++i)
+            for(sint32 i = 0, iend = ((sub)? sub->mInputs.Count() : 0) + mInputs.Count(); i <= iend; ++i)
             {
                 ZAY_XYWH(panel, 0, (ValueHeight + 4) * i, panel.w(), ValueHeight)
                 {
@@ -1447,7 +1463,7 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
                         ZAY_RGB(panel, 0, 0, 0)
                             panel.text(name, UIFA_LeftBottom);
 
-                        // 추가버튼
+                        // 밸류 추가버튼
                         const String UIValueAdd = String::Format("%d-value-add", mBox.mID);
                         const sint32 PressMove = (panel.state(UIValueAdd) & PS_Pressed)? 1 : 0;
                         ZAY_XYWH_UI(panel, (panel.w() - ValueAddWidth) / 2, (panel.h() - ValueHeight) / 2, ValueAddWidth - 1, ValueHeight - 1, UIValueAdd,
@@ -1472,11 +1488,53 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
                                 }
                             }
                         }
+
+                        // 확장밸류 추가버튼
+                        if(sub)
+                        {
+                            const String UIValueAddExt = String::Format("%d-extvalue-add", mBox.mID);
+                            const sint32 PressMoveExt = (panel.state(UIValueAddExt) & PS_Pressed)? 1 : 0;
+                            ZAY_XYWH_UI(panel, panel.w() - ValueAddWidth + 1, (panel.h() - ValueHeight) / 2, ValueAddWidth - 1, ValueHeight - 1, UIValueAddExt,
+                                ZAY_GESTURE_T(t, this, sub)
+                                {
+                                    if(t == GT_InReleased)
+                                        sub->AddValue("", "");
+                                })
+                            {
+                                ZAY_MOVE(panel, 2, 2)
+                                ZAY_RGBA(panel, 0, 0, 0, 64)
+                                    panel.fill();
+                                ZAY_MOVE(panel, PressMoveExt, PressMoveExt)
+                                {
+                                    ZAY_RGBA(panel, 128, 192, 255, 120)
+                                    ZAY_RGB_IF(panel, 160, 160, 160, panel.state(UIValueAddExt) & (PS_Focused | PS_Dragging))
+                                        panel.fill();
+                                    ZAY_RGB(panel, 0, 0, 0)
+                                    {
+                                        panel.text(panel.w() / 2, panel.h() / 2, "T", UIFA_CenterMiddle);
+                                        panel.rect(1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if(sub && 0 < sub->mInputs.Count())
+                    {
+                        if(i < sub->mInputs.Count())
+                        {
+                            const String UIValue = String::Format("%d-extvalue-%d", mBox.mID, i);
+                            sub->RenderValueEditor(panel, UIValue, i, 1);
+                        }
+                        else
+                        {
+                            const String UIValue = String::Format("%d-value-%d", mBox.mID, i - sub->mInputs.Count());
+                            RenderValueEditor(panel, UIValue, i - sub->mInputs.Count(), 2);
+                        }
                     }
                     else
                     {
                         const String UIValue = String::Format("%d-value-%d", mBox.mID, i);
-                        RenderValueEditor(panel, UIValue, i);
+                        RenderValueEditor(panel, UIValue, i, 0);
                     }
                 }
             }
@@ -1486,7 +1544,7 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name)
     }
 }
 
-void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i)
+void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i, sint32 extmode)
 {
     const String UIKey = String::Format("%s-key", uiname);
     const String UIValue = String::Format("%s-value", uiname);
@@ -1496,8 +1554,11 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
     // 키에디터
     ZAY_LTRB(panel, 0, 0, panel.w() * 0.4 - 2, panel.h())
     {
-        ZAY_RGB(panel, 255, 255, 255)
+        ZAY_RGB_IF(panel, 255, 255, 255, extmode == 0)
+        ZAY_RGB_IF(panel, 224, 240, 255, extmode == 1)
+        ZAY_RGB_IF(panel, 255, 224, 240, extmode == 2)
             panel.fill();
+
         ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), UIKey,
             ZAY_GESTURE_VNT(v, n, t, this, i)
             {
@@ -1530,8 +1591,11 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
     // 밸류에디터
     ZAY_LTRB(panel, panel.w() * 0.4 + 2, 0, panel.w(), panel.h())
     {
-        ZAY_RGB(panel, 255, 255, 255)
+        ZAY_RGB_IF(panel, 255, 255, 255, extmode == 0)
+        ZAY_RGB_IF(panel, 224, 240, 255, extmode == 1)
+        ZAY_RGB_IF(panel, 255, 224, 240, extmode == 2)
             panel.fill();
+
         ZAY_LTRB_UI(panel, 3, 0, panel.w() - ButtonWidth, panel.h(), UIValue,
             ZAY_GESTURE_VNT(v, n, t, this, i)
             {
@@ -1590,7 +1654,7 @@ void ZEZayBox::BodyLoopOperation::WriteJson(Context& json) const
         json.At("uiloop").Set(mOperation);
 }
 
-sint32 ZEZayBox::BodyLoopOperation::GetCalcedSize()
+sint32 ZEZayBox::BodyLoopOperation::GetCalcedSize(const BodyElement* sub) const
 {
     return EditorHeight;
 }
@@ -1690,7 +1754,7 @@ void ZEZayBox::BodyConditionOperation::WriteJson(Context& json) const
 {
 }
 
-sint32 ZEZayBox::BodyConditionOperation::GetCalcedSize()
+sint32 ZEZayBox::BodyConditionOperation::GetCalcedSize(const BodyElement* sub) const
 {
     return EditorHeight;
 }
@@ -1767,7 +1831,7 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxStarter
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxStarter::ZEZayBoxStarter() : mComment(*this), mInputGroup(*this)
+ZEZayBoxStarter::ZEZayBoxStarter() : mComment(*this), mCreateGroup(*this)
 {
 }
 
@@ -1787,7 +1851,7 @@ void ZEZayBoxStarter::ReadJson(const Context& json)
     mAddW = json("addw").GetInt(0);
 
     mComment.ReadJson(json);
-    mInputGroup.ReadJson(json("oncreate"));
+    mCreateGroup.ReadJson(json("oncreate"));
 }
 
 void ZEZayBoxStarter::WriteJson(Context& json) const
@@ -1796,8 +1860,8 @@ void ZEZayBoxStarter::WriteJson(Context& json) const
     json.At("addw").Set(String::FromInteger(mAddW));
 
     mComment.WriteJson(json);
-    if(0 < mInputGroup.mInputs.Count())
-        mInputGroup.WriteJson(json.At("oncreate"));
+    if(0 < mCreateGroup.mInputs.Count())
+        mCreateGroup.WriteJson(json.At("oncreate"));
 }
 
 void ZEZayBoxStarter::Render(ZayPanel& panel)
@@ -1824,7 +1888,7 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
 
                 // 인풋그룹
                 ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
-                    mInputGroup.RenderValueGroup(panel, "OnCreate");
+                    mCreateGroup.RenderValueGroup(panel, "OnCreate");
             }
         }
     }
@@ -1832,12 +1896,12 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
 
 void ZEZayBoxStarter::RecalcSize()
 {
-    mBodySize.h = 8 + mComment.GetCalcedSize() + mInputGroup.GetCalcedSize();
+    mBodySize.h = 8 + mComment.GetCalcedSize() + mCreateGroup.GetCalcedSize();
 }
 
 void ZEZayBoxStarter::SubInput(sint32 i)
 {
-    mInputGroup.SubValue(i);
+    mCreateGroup.SubValue(i);
 }
 
 chars ZEZayBoxStarter::GetComment() const
@@ -1944,7 +2008,7 @@ chars ZEZayBoxContent::GetComment() const
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxLayout
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxLayout::ZEZayBoxLayout() : mNameComment(*this), mParamGroup(*this), mInputGroup(*this)
+ZEZayBoxLayout::ZEZayBoxLayout() : mNameComment(*this), mParamGroup(*this), mTouchGroup(*this), mClickGroup(*this)
 {
 }
 
@@ -1967,7 +2031,8 @@ void ZEZayBoxLayout::ReadJson(const Context& json)
 
     mNameComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
-    mInputGroup.ReadJson(json("onclick"));
+    mTouchGroup.ReadJson(json("ontouch"));
+    mClickGroup.ReadJson(json("onclick"));
 }
 
 void ZEZayBoxLayout::WriteJson(Context& json) const
@@ -1983,8 +2048,10 @@ void ZEZayBoxLayout::WriteJson(Context& json) const
     mNameComment.WriteJson(json);
     if(0 < mParamGroup.mParams.Count())
         mParamGroup.WriteJson(json.At("compvalues"));
-    if(0 < mInputGroup.mInputs.Count())
-        mInputGroup.WriteJson(json.At("onclick"));
+    if(0 < mTouchGroup.mInputs.Count())
+        mTouchGroup.WriteJson(json.At("ontouch"));
+    if(0 < mClickGroup.mInputs.Count())
+        mClickGroup.WriteJson(json.At("onclick"));
 }
 
 void ZEZayBoxLayout::Render(ZayPanel& panel)
@@ -2016,7 +2083,7 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 
                 // 인풋그룹
                 ZAY_LTRB(panel, 0, EditorHeight + ParamGroupHeight, panel.w(), panel.h())
-                    mInputGroup.RenderValueGroup(panel, "OnClick");
+                    mClickGroup.RenderValueGroup(panel, "OnClick", &mTouchGroup);
             }
         }
     }
@@ -2024,7 +2091,7 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 
 void ZEZayBoxLayout::RecalcSize()
 {
-    mBodySize.h = 8 + mNameComment.GetCalcedSize() + mParamGroup.GetCalcedSize() + mInputGroup.GetCalcedSize();
+    mBodySize.h = 8 + mNameComment.GetCalcedSize() + mParamGroup.GetCalcedSize() + mClickGroup.GetCalcedSize(&mTouchGroup);
 }
 
 void ZEZayBoxLayout::SubParam(sint32 i)
@@ -2034,7 +2101,12 @@ void ZEZayBoxLayout::SubParam(sint32 i)
 
 void ZEZayBoxLayout::SubInput(sint32 i)
 {
-    mInputGroup.SubValue(i);
+    mClickGroup.SubValue(i);
+}
+
+void ZEZayBoxLayout::SubExtInput(sint32 i)
+{
+    mTouchGroup.SubValue(i);
 }
 
 chars ZEZayBoxLayout::GetComment() const
@@ -2045,7 +2117,7 @@ chars ZEZayBoxLayout::GetComment() const
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxCode
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxCode::ZEZayBoxCode() : mComment(*this), mInputGroup(*this)
+ZEZayBoxCode::ZEZayBoxCode() : mComment(*this), mCodeGroup(*this)
 {
 }
 
@@ -2056,7 +2128,7 @@ ZEZayBoxCode::~ZEZayBoxCode()
 ZEZayBoxObject ZEZayBoxCode::Create()
 {
     buffer NewZayBox = Buffer::Alloc<ZEZayBoxCode>(BOSS_DBG 1);
-    ((ZEZayBoxCode*) NewZayBox)->mInputGroup.AddValue("", "");
+    ((ZEZayBoxCode*) NewZayBox)->mCodeGroup.AddValue("", "");
     return ZEZayBoxObject(NewZayBox);
 }
 
@@ -2066,7 +2138,7 @@ void ZEZayBoxCode::ReadJson(const Context& json)
         mCompID = ValidLastID(json("compid").GetInt());
 
     mComment.ReadJson(json);
-    mInputGroup.ReadJson(json("compinputs"));
+    mCodeGroup.ReadJson(json("compinputs"));
 }
 
 void ZEZayBoxCode::WriteJson(Context& json) const
@@ -2080,8 +2152,8 @@ void ZEZayBoxCode::WriteJson(Context& json) const
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mComment.WriteJson(json);
-    if(0 < mInputGroup.mInputs.Count())
-        mInputGroup.WriteJson(json.At("compinputs"));
+    if(0 < mCodeGroup.mInputs.Count())
+        mCodeGroup.WriteJson(json.At("compinputs"));
 }
 
 void ZEZayBoxCode::Render(ZayPanel& panel)
@@ -2108,7 +2180,7 @@ void ZEZayBoxCode::Render(ZayPanel& panel)
 
                 // 인풋그룹
                 ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
-                    mInputGroup.RenderValueGroup(panel, "");
+                    mCodeGroup.RenderValueGroup(panel, "");
             }
         }
     }
@@ -2116,12 +2188,12 @@ void ZEZayBoxCode::Render(ZayPanel& panel)
 
 void ZEZayBoxCode::RecalcSize()
 {
-    mBodySize.h = 8 + mComment.GetCalcedSize() + mInputGroup.GetCalcedSize();
+    mBodySize.h = 8 + mComment.GetCalcedSize() + mCodeGroup.GetCalcedSize();
 }
 
 void ZEZayBoxCode::SubInput(sint32 i)
 {
-    mInputGroup.SubValue(i);
+    mCodeGroup.SubValue(i);
 }
 
 chars ZEZayBoxCode::GetComment() const
@@ -2288,7 +2360,7 @@ void ZEZayBoxCondition::RecalcSize()
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxError
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxError::ZEZayBoxError() : mNameComment(*this), mParamGroup(*this), mInputGroup(*this)
+ZEZayBoxError::ZEZayBoxError() : mNameComment(*this), mParamGroup(*this), mTouchGroup(*this), mClickGroup(*this)
 {
 }
 
@@ -2309,7 +2381,8 @@ void ZEZayBoxError::ReadJson(const Context& json)
 
     mNameComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
-    mInputGroup.ReadJson(json("onclick"));
+    mTouchGroup.ReadJson(json("ontouch"));
+    mClickGroup.ReadJson(json("onclick"));
 }
 
 void ZEZayBoxError::WriteJson(Context& json) const
@@ -2322,8 +2395,10 @@ void ZEZayBoxError::WriteJson(Context& json) const
     mNameComment.WriteJson(json);
     if(0 < mParamGroup.mParams.Count())
         mParamGroup.WriteJson(json.At("compvalues"));
-    if(0 < mInputGroup.mInputs.Count())
-        mInputGroup.WriteJson(json.At("onclick"));
+    if(0 < mTouchGroup.mInputs.Count())
+        mTouchGroup.WriteJson(json.At("ontouch"));
+    if(0 < mClickGroup.mInputs.Count())
+        mClickGroup.WriteJson(json.At("onclick"));
 }
 
 void ZEZayBoxError::Render(ZayPanel& panel)
