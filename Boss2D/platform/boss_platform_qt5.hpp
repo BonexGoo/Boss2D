@@ -60,6 +60,7 @@
     #include <QWebSocket>
     #include <QWebSocketServer>
     #include <QtBluetooth>
+    #include <QLowEnergyController>
 
     #ifdef QT_HAVE_SERIALPORT
         #include <QtSerialPort>
@@ -5755,7 +5756,7 @@
             Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mDiscoveryDeviceAgent = new QBluetoothDeviceDiscoveryAgent();
-
+                Self.mDiscoveryDeviceAgent->setLowEnergyDiscoveryTimeout(5000);
                 Self.mDiscoveryDeviceAgent->start();
             }
             Mutex::Unlock(Self.mDiscoverMutex);
@@ -5801,61 +5802,106 @@
     public:
         static void ServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
-            QBluetoothLocalDevice LocalDevice;
-            QBluetoothAddress LocalAdapter = LocalDevice.address();
             ServiceEnd();
 
             auto& Self = ST();
             Mutex::Lock(Self.mDiscoverMutex);
             {
-                Self.mDiscoveryServiceAgent = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
-
                 // 디바이스타겟 등록
                 if(deviceaddress)
                 {
                     if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, false))
                     {
-                        Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
+                        if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+                        {
+                            Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice);
+                            Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
+                        }
+                        else
+                        {
+                            QBluetoothLocalDevice LocalDevice;
+                            QBluetoothAddress LocalAdapter = LocalDevice.address();
+                            Self.mDiscoveryServiceAgent_BT = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
+                            Self.mDiscoveryServiceAgent_BT->setRemoteAddress(NewDevice->address());
+                        }
                         delete NewDevice;
                     }
                     else
                     {
-                        const String DeviceAndAddress = deviceaddress;
-                        const sint32 SlashPos = DeviceAndAddress.Find(0, "/");
+                        const String DeviceNameAndAddress = deviceaddress;
+                        sint32 SlashPos = -1;
+                        sint32 NextSlashPos = 0;
+                        while(NextSlashPos != -1)
+                        {
+                            NextSlashPos = DeviceNameAndAddress.Find(SlashPos + 1, "/");
+                            if(NextSlashPos != -1)
+                                SlashPos = NextSlashPos;
+                        }
+
                         if(SlashPos != -1)
                         if(auto NewDevice = BluetoothSearchPrivate::CreateDevice(
-                            DeviceAndAddress.Left(SlashPos), DeviceAndAddress.Offset(SlashPos + 1)))
+                            DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1)))
                         {
-                            Self.mDiscoveryServiceAgent->setRemoteAddress(NewDevice->address());
+                            if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+                            {
+                                Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice);
+                                Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
+                            }
+                            else
+                            {
+                                QBluetoothLocalDevice LocalDevice;
+                                QBluetoothAddress LocalAdapter = LocalDevice.address();
+                                Self.mDiscoveryServiceAgent_BT = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
+                                Self.mDiscoveryServiceAgent_BT->setRemoteAddress(NewDevice->address());
+                            }
                             delete NewDevice;
                         }
                     }
                 }
 
-                // UUID필터 등록
-                if(uuidfilters.Count() == 1)
+                if(Self.mDiscoveryServiceAgent_BT)
                 {
-                    const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
-                    Self.mDiscoveryServiceAgent->setUuidFilter(NewUUID);
+                    // UUID필터 등록
+                    if(uuidfilters.Count() == 1)
+                    {
+                        const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
+                        Self.mDiscoveryServiceAgent_BT->setUuidFilter(NewUUID);
+                    }
+                    else if(1 < uuidfilters.Count())
+                    {
+                        QList<QBluetoothUuid> NewUUIDs;
+                        for(sint32 i = 0, iend = uuidfilters.Count(); i < iend; ++i)
+                            NewUUIDs += QBluetoothUuid(QString::fromUtf8((chars) uuidfilters[i]));
+                        Self.mDiscoveryServiceAgent_BT->setUuidFilter(NewUUIDs);
+                    }
                 }
-                else if(1 < uuidfilters.Count())
-                {
-                    QList<QBluetoothUuid> NewUUIDs;
-                    for(sint32 i = 0, iend = uuidfilters.Count(); i < iend; ++i)
-                        NewUUIDs += QBluetoothUuid(QString::fromUtf8((chars) uuidfilters[i]));
-                    Self.mDiscoveryServiceAgent->setUuidFilter(NewUUIDs);
-                }
-
-                Self.mDiscoveryServiceAgent->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
             }
             Mutex::Unlock(Self.mDiscoverMutex);
 
-            connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
-                &Self, &BluetoothSearchPrivate::serviceDiscovered);
-            connect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::finished,
-                &Self, &BluetoothSearchPrivate::scanServiceFinished);
-            connect(Self.mDiscoveryServiceAgent, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
-                &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred);
+            if(Self.mDiscoveryServiceAgent_BT)
+            {
+                connect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
+                    &Self, &BluetoothSearchPrivate::serviceDiscovered_BT);
+                connect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::finished,
+                    &Self, &BluetoothSearchPrivate::scanServiceFinished_BT);
+                connect(Self.mDiscoveryServiceAgent_BT, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
+                    &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BT);
+                Self.mDiscoveryServiceAgent_BT->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
+            }
+            else if(Self.mDiscoveryServiceAgent_BLE)
+            {
+                connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
+                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
+                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                connect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
+                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
+                    &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
+                connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
+                    &Self, &BluetoothSearchPrivate::deviceDisconnected_BLE);
+                Self.mDiscoveryServiceAgent_BLE->connectToDevice();
+            }
 
             Platform::BroadcastNotify("ScanServiceStarted", nullptr, NT_BluetoothSearch);
         }
@@ -5864,25 +5910,48 @@
             auto& Self = ST();
             Mutex::Lock(Self.mDiscoverMutex);
             {
-                Self.mDiscoveredServices.empty();
+                Self.mDiscoveredServices_BT.empty();
+                Self.mDiscoveredServices_BLE.empty();
 
-                if(Self.mDiscoveryServiceAgent)
+                if(Self.mDiscoveryServiceAgent_BT)
                 {
-                    if(Self.mDiscoveryServiceAgent->isActive())
+                    if(Self.mDiscoveryServiceAgent_BT->isActive())
                     {
-                        Self.mDiscoveryServiceAgent->stop();
-                        Self.scanServiceFinished();
+                        Self.mDiscoveryServiceAgent_BT->stop();
+                        Self.scanServiceFinished_BT();
                     }
 
-                    disconnect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
-                        &Self, &BluetoothSearchPrivate::serviceDiscovered);
-                    disconnect(Self.mDiscoveryServiceAgent, &QBluetoothServiceDiscoveryAgent::finished,
-                        &Self, &BluetoothSearchPrivate::scanServiceFinished);
-                    disconnect(Self.mDiscoveryServiceAgent, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
-                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred);
+                    disconnect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
+                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BT);
+                    disconnect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::finished,
+                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BT);
+                    disconnect(Self.mDiscoveryServiceAgent_BT, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
+                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BT);
 
-                    delete Self.mDiscoveryServiceAgent;
-                    Self.mDiscoveryServiceAgent = nullptr;
+                    delete Self.mDiscoveryServiceAgent_BT;
+                    Self.mDiscoveryServiceAgent_BT = nullptr;
+                }
+                else if(Self.mDiscoveryServiceAgent_BLE)
+                {
+                    if(Self.mDiscoveryServiceAgent_BLE->state() != QLowEnergyController::UnconnectedState)
+                    {
+                        Self.mDiscoveryServiceAgent_BLE->disconnectFromDevice();
+                        Self.scanServiceFinished_BLE();
+                    }
+
+                    disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
+                            &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                    disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
+                            &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                    disconnect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
+                            &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                    disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
+                        &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
+                    disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
+                        &Self, &BluetoothSearchPrivate::deviceDisconnected_BLE);
+
+                    delete Self.mDiscoveryServiceAgent_BLE;
+                    Self.mDiscoveryServiceAgent_BLE = nullptr;
                 }
             }
             Mutex::Unlock(Self.mDiscoverMutex);
@@ -5911,17 +5980,32 @@
             const QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
             return NewDeviceInfo;
         }
-        static const QBluetoothServiceInfo* GetClonedSearchedService(chars uuid, bool locking)
+        static const QBluetoothServiceInfo* GetClonedSearchedService_BT(chars uuid, bool locking)
         {
             auto& Self = ST();
             if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
-                auto Result = Self.mDiscoveredServices.find(QString::fromUtf8(uuid));
-                if(Result != Self.mDiscoveredServices.end())
+                auto Result = Self.mDiscoveredServices_BT.find(QString::fromUtf8(uuid));
+                if(Result != Self.mDiscoveredServices_BT.end())
                 {
                     const QBluetoothServiceInfo* NewServiceInfo = new QBluetoothServiceInfo(Result.value());
                     Mutex::Unlock(Self.mDiscoverMutex);
                     return NewServiceInfo;
+                }
+            }
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
+            return nullptr;
+        }
+        static QLowEnergyService* GetSearchedService_BLE(chars uuid, bool locking)
+        {
+            auto& Self = ST();
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
+            {
+                auto Result = Self.mDiscoveredServices_BLE.find(QString::fromUtf8(uuid));
+                if(Result != Self.mDiscoveredServices_BLE.end())
+                {
+                    Mutex::Unlock(Self.mDiscoverMutex);
+                    return Result.value();
                 }
             }
             if(locking) Mutex::Unlock(Self.mDiscoverMutex);
@@ -5937,7 +6021,10 @@
                 mDiscoveredDevices.insert(device.address().toString(), device);
             }
             Mutex::Unlock(mDiscoverMutex);
-            const String DeviceName = device.name().toUtf8().constData();
+
+            String DeviceName = device.name().toUtf8().constData();
+            if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+                DeviceName += " (BLE)";
             Platform::BroadcastNotify(DeviceName, NewAddress, NT_BluetoothDevice);
         }
         void scanDeviceFinished()
@@ -5948,26 +6035,59 @@
         {
             Platform::BroadcastNotify("ScanDeviceError", String::Format("code:%d", (sint32) error), NT_BluetoothSearch);
         }
-        void serviceDiscovered(const QBluetoothServiceInfo& service)
+
+        void serviceDiscovered_BT(const QBluetoothServiceInfo& service)
         {
+            const String ServiceName = service.serviceName().toUtf8().constData();
             Strings UuidCollector;
             for(const auto& CurUuid : service.serviceClassUuids())
             {
+                UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
                 Mutex::Lock(mDiscoverMutex);
                 {
-                    mDiscoveredServices.insert(CurUuid.toString(), service);
+                    mDiscoveredServices_BT.insert(CurUuid.toString(), service);
                 }
                 Mutex::Unlock(mDiscoverMutex);
-                UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
             }
-            const String ServiceName = service.serviceName().toUtf8().constData();
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
-        void scanServiceFinished()
+        void scanServiceFinished_BT()
         {
             Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
         }
-        void scanServiceErrorOccurred(QBluetoothServiceDiscoveryAgent::Error error)
+        void scanServiceErrorOccurred_BT(QBluetoothServiceDiscoveryAgent::Error error)
+        {
+            Platform::BroadcastNotify("ScanServiceError", String::Format("code:%d", (sint32) error), NT_BluetoothSearch);
+        }
+
+        void deviceConnected_BLE()
+        {
+            mDiscoveryServiceAgent_BLE->discoverServices();
+        }
+        void deviceDisconnected_BLE()
+        {
+        }
+        void serviceDiscovered_BLE(const QBluetoothUuid& serviceUuid)
+        {
+            String ServiceName;
+            Strings UuidCollector;
+            if(QLowEnergyService* NewService = mDiscoveryServiceAgent_BLE->createServiceObject(serviceUuid))
+            {
+                ServiceName = NewService->serviceName().toUtf8().constData();
+                UuidCollector.AtAdding() = serviceUuid.toString().toUtf8().constData();
+                Mutex::Lock(mDiscoverMutex);
+                {
+                    mDiscoveredServices_BLE.insert(serviceUuid.toString(), NewService);
+                }
+                Mutex::Unlock(mDiscoverMutex);
+            }
+            Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
+        }
+        void scanServiceFinished_BLE()
+        {
+            Platform::BroadcastNotify("ScanServiceFinished", nullptr, NT_BluetoothSearch);
+        }
+        void scanServiceErrorOccurred_BLE(QLowEnergyController::Error error)
         {
             Platform::BroadcastNotify("ScanServiceError", String::Format("code:%d", (sint32) error), NT_BluetoothSearch);
         }
@@ -5977,12 +6097,14 @@
         {
             mDiscoverMutex = Mutex::Open();
             mDiscoveryDeviceAgent = nullptr;
-            mDiscoveryServiceAgent = nullptr;
+            mDiscoveryServiceAgent_BT = nullptr;
+            mDiscoveryServiceAgent_BLE = nullptr;
         }
         ~BluetoothSearchPrivate()
         {
             delete mDiscoveryDeviceAgent;
-            delete mDiscoveryServiceAgent;
+            delete mDiscoveryServiceAgent_BT;
+            delete mDiscoveryServiceAgent_BLE;
             Mutex::Close(mDiscoverMutex);
         }
 
@@ -5994,8 +6116,10 @@
         id_mutex mDiscoverMutex;
         QBluetoothDeviceDiscoveryAgent* mDiscoveryDeviceAgent;
         QMap<QString, QBluetoothDeviceInfo> mDiscoveredDevices;
-        QBluetoothServiceDiscoveryAgent* mDiscoveryServiceAgent;
-        QMap<QString, QBluetoothServiceInfo> mDiscoveredServices;
+        QBluetoothServiceDiscoveryAgent* mDiscoveryServiceAgent_BT;
+        QMap<QString, QBluetoothServiceInfo> mDiscoveredServices_BT;
+        QLowEnergyController* mDiscoveryServiceAgent_BLE;
+        QMap<QString, QLowEnergyService*> mDiscoveredServices_BLE;
     };
 
     class BluetoothPrivate : public QObject
@@ -6157,7 +6281,7 @@
     public:
         bool Init(chars uuid)
         {
-            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService(uuid, true))
+            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid, true))
             {
                 mSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
                 mConnected = false;
@@ -6171,6 +6295,19 @@
                     this, &BluetoothClientPrivate::OnErrorOccurred);
                 mSocket->connectToService(*NewService);
                 delete NewService;
+                return true;
+            }
+            else if(auto CurService = BluetoothSearchPrivate::GetSearchedService_BLE(uuid, true))
+            {
+                mRefSocket_BLE = CurService;
+                mConnected = false;
+                mPeerName.clear();
+                mRecvData.clear();
+
+                connect(mRefSocket_BLE, &QLowEnergyService::stateChanged, this, &BluetoothClientPrivate::serviceStateChanged_BLE);
+                connect(mRefSocket_BLE, &QLowEnergyService::characteristicChanged, this, &BluetoothClientPrivate::characteristicChanged_BLE);
+                connect(mRefSocket_BLE, &QLowEnergyService::descriptorWritten, this, &BluetoothClientPrivate::descriptorWritten_BLE);
+                mRefSocket_BLE->discoverDetails();
                 return true;
             }
             return false;
@@ -6202,6 +6339,19 @@
             {
                 mSocket->write((chars) data, size);
                 return mSocket->waitForBytesWritten(3000);
+            }
+            else if(mRefSocket_BLE)
+            {
+                auto HrChar = mRefSocket_BLE->characteristic(QBluetoothUuid(QBluetoothUuid::HeartRateMeasurement));
+                if(!HrChar.isValid())
+                    return false;
+
+                auto Desc = HrChar.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
+                if(!Desc.isValid())
+                    return false;
+
+                mRefSocket_BLE->writeDescriptor(Desc, QByteArray((chars) data, size));
+                return true;
             }
             return false;
         }
@@ -6240,10 +6390,36 @@
             Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
         }
 
+        void serviceStateChanged_BLE(QLowEnergyService::ServiceState state)
+        {
+            if(state == QLowEnergyService::ServiceDiscovered)
+            {
+                mConnected = true;
+                mPeerName = "BLE";
+                Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
+            }
+            else if(state == QLowEnergyService::InvalidService)
+            {
+                mConnected = false;
+                Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
+            }
+        }
+        void characteristicChanged_BLE(const QLowEnergyCharacteristic& ch, const QByteArray &value)
+        {
+            int a;
+            a = 10;
+        }
+        void descriptorWritten_BLE(const QLowEnergyDescriptor& desc, const QByteArray &value)
+        {
+            int a;
+            a = 10;
+        }
+
     public:
         BluetoothClientPrivate()
         {
             mSocket = nullptr;
+            mRefSocket_BLE = nullptr;
             mConnected = false;
         }
         ~BluetoothClientPrivate() override
@@ -6253,6 +6429,7 @@
 
     private:
         QBluetoothSocket* mSocket;
+        QLowEnergyService* mRefSocket_BLE;
         bool mConnected;
         QString mPeerName;
         QByteArray mRecvData;
