@@ -1796,9 +1796,10 @@ public:
 
         /// @brief 클라이언트역할로 블루투스ID 생성
         /// @param uuid : 연결할 서버의 블루투스Uuid
+        /// @param uuid_for_ble : BLE통신을 위한 Uuid
         /// @return 블루투스ID(nullptr은 실패)
         /// @see Release
-        static id_bluetooth CreateClient(chars uuid);
+        static id_bluetooth CreateClient(chars uuid, chars uuid_for_ble = nullptr);
 
         /// @brief 블루투스ID 반환
         /// @param bluetooth : 블루투스ID

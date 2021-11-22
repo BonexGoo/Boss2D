@@ -2219,7 +2219,7 @@
             return nullptr;
         }
 
-        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid, chars uuid_for_ble)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

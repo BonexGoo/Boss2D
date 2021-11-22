@@ -1513,8 +1513,7 @@
         void Platform::Graphics::SetScissor(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            const MatrixPrivate& LastMatrix = CanvasClass::get()->painter().matrix();
-            const float LastZoom = (float) LastMatrix.m11();
+            const float LastZoom = CanvasClass::get()->zoom();
             CanvasClass::get()->SetScissor(
                 Math::Floor(x * LastZoom) / LastZoom,
                 Math::Floor(y * LastZoom) / LastZoom,
@@ -2278,10 +2277,10 @@
                     // 비트맵할당
                     auto NewBitmap = AddOn::FreeType::ToBmp(CurFreeType, mFontHeight, code);
                     const sint32 BitmapWidth = Bmp::GetWidth(NewBitmap);
-				    const sint32 BitmapHeight = Bmp::GetHeight(NewBitmap);
-				    const sint32 RenderPosX = Bmp::GetParam1(NewBitmap);
-				    const sint32 RenderPosY = Bmp::GetParam2(NewBitmap);
-				    auto BitmapBits = (Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
+                    const sint32 BitmapHeight = Bmp::GetHeight(NewBitmap);
+                    const sint32 RenderPosX = Bmp::GetParam1(NewBitmap);
+                    const sint32 RenderPosY = Bmp::GetParam2(NewBitmap);
+                    auto BitmapBits = (Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
 
                     // 공간확보
                     const sint32 SpaceGap = 1;
@@ -2309,8 +2308,8 @@
                     #if !BOSS_NDEBUG
                         id_bitmap Test = mLastCell->mTexture.CreateBitmapByGL();
                         const sint32 TestWidth = Bmp::GetWidth(Test);
-				        const sint32 TestHeight = Bmp::GetHeight(Test);
-				        auto TestBits = (Bmp::bitmappixel*) Bmp::GetBits(Test);
+                        const sint32 TestHeight = Bmp::GetHeight(Test);
+                        auto TestBits = (Bmp::bitmappixel*) Bmp::GetBits(Test);
                         for(sint32 i = 0, iend = TestWidth * TestHeight; i < iend; ++i)
                         {
                             TestBits[i].r = TestBits[i].a;
@@ -2493,7 +2492,7 @@
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
                 if(CanvasClass::get()->is_font_ft())
                 {
-                    const float Zoom = CanvasClass::get()->painter().matrix().m11();
+                    const float Zoom = CanvasClass::get()->zoom();
                     FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height() * Zoom);
                     x *= Zoom;
                     y *= Zoom;
@@ -4475,10 +4474,10 @@
             return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
         }
 
-        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid, chars uuid_for_ble)
         {
             auto NewBluetooth = new BluetoothClientPrivate();
-            if(!NewBluetooth->Init(uuid))
+            if(!NewBluetooth->Init(uuid, uuid_for_ble))
             {
                 delete NewBluetooth;
                 return nullptr;

@@ -1428,7 +1428,7 @@
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
-        inline float zoom() const {return mSavedZoom;}
+        inline float zoom() const {return mPainter.matrix().m11();}
         inline const QRect& scissor() const {return mScissor;}
         inline const ColorPrivate& color() const {return mColor;}
         // Setter
@@ -6279,7 +6279,7 @@
         Q_OBJECT
 
     public:
-        bool Init(chars uuid)
+        bool Init(chars uuid, chars uuid_for_ble)
         {
             if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid, true))
             {
@@ -6287,6 +6287,7 @@
                 mConnected = false;
                 mPeerName.clear();
                 mRecvData.clear();
+                mUuidForBLE.clear();
 
                 connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientPrivate::OnConnected);
                 connect(mSocket, &QBluetoothSocket::disconnected, this, &BluetoothClientPrivate::OnDisconnected);
@@ -6303,6 +6304,7 @@
                 mConnected = false;
                 mPeerName.clear();
                 mRecvData.clear();
+                mUuidForBLE = QString((uuid_for_ble)? uuid_for_ble : "");
 
                 connect(mRefSocket_BLE, &QLowEnergyService::stateChanged, this, &BluetoothClientPrivate::serviceStateChanged_BLE);
                 connect(mRefSocket_BLE, &QLowEnergyService::characteristicChanged, this, &BluetoothClientPrivate::characteristicChanged_BLE);
@@ -6331,6 +6333,10 @@
                 mRecvData.remove(0, MinSize);
                 return MinSize;
             }
+            else if(mRefSocket_BLE && 0 < mUuidForBLE.length())
+            {
+                //////////////////////////////////////////////////////////
+            }
             return -1;
         }
         bool Write(const uint08* data, const sint32 size) override
@@ -6340,17 +6346,12 @@
                 mSocket->write((chars) data, size);
                 return mSocket->waitForBytesWritten(3000);
             }
-            else if(mRefSocket_BLE)
+            else if(mRefSocket_BLE && 0 < mUuidForBLE.length())
             {
-                auto HrChar = mRefSocket_BLE->characteristic(QBluetoothUuid(QBluetoothUuid::HeartRateMeasurement));
-                if(!HrChar.isValid())
-                    return false;
-
-                auto Desc = HrChar.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
-                if(!Desc.isValid())
-                    return false;
-
-                mRefSocket_BLE->writeDescriptor(Desc, QByteArray((chars) data, size));
+                QBluetoothUuid::HeartRateMeasurement;
+                auto HrChar = mRefSocket_BLE->characteristic(QBluetoothUuid(mUuidForBLE));
+                if(!HrChar.isValid()) return false;
+                mRefSocket_BLE->writeCharacteristic(HrChar, QByteArray((chars) data, size), QLowEnergyService::WriteWithoutResponse);
                 return true;
             }
             return false;
@@ -6406,13 +6407,9 @@
         }
         void characteristicChanged_BLE(const QLowEnergyCharacteristic& ch, const QByteArray &value)
         {
-            int a;
-            a = 10;
         }
         void descriptorWritten_BLE(const QLowEnergyDescriptor& desc, const QByteArray &value)
         {
-            int a;
-            a = 10;
         }
 
     public:
@@ -6433,6 +6430,7 @@
         bool mConnected;
         QString mPeerName;
         QByteArray mRecvData;
+        QString mUuidForBLE;
     };
 
     #if BOSS_ANDROID & defined(QT_HAVE_SERIALPORT)

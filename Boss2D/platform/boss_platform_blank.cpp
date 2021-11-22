@@ -2154,7 +2154,7 @@
             return nullptr;
         }
 
-        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid, chars uuid_for_ble)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
