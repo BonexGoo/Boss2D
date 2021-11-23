@@ -2394,7 +2394,7 @@
             return nullptr;
         }
 
-        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid, chars uuid_for_ble)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -2423,7 +2423,7 @@
             return -1;
         }
 
-        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return false;

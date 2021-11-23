@@ -5810,11 +5810,11 @@
                 // 디바이스타겟 등록
                 if(deviceaddress)
                 {
-                    if(auto NewDevice = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, false))
+                    if(auto NewDevice = CloneOrCreateDevice(deviceaddress, false))
                     {
                         if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                         {
-                            Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice);
+                            Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice, &Self);
                             Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
                         }
                         else
@@ -5825,37 +5825,6 @@
                             Self.mDiscoveryServiceAgent_BT->setRemoteAddress(NewDevice->address());
                         }
                         delete NewDevice;
-                    }
-                    else
-                    {
-                        const String DeviceNameAndAddress = deviceaddress;
-                        sint32 SlashPos = -1;
-                        sint32 NextSlashPos = 0;
-                        while(NextSlashPos != -1)
-                        {
-                            NextSlashPos = DeviceNameAndAddress.Find(SlashPos + 1, "/");
-                            if(NextSlashPos != -1)
-                                SlashPos = NextSlashPos;
-                        }
-
-                        if(SlashPos != -1)
-                        if(auto NewDevice = BluetoothSearchPrivate::CreateDevice(
-                            DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1)))
-                        {
-                            if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
-                            {
-                                Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice);
-                                Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
-                            }
-                            else
-                            {
-                                QBluetoothLocalDevice LocalDevice;
-                                QBluetoothAddress LocalAdapter = LocalDevice.address();
-                                Self.mDiscoveryServiceAgent_BT = new QBluetoothServiceDiscoveryAgent(LocalAdapter);
-                                Self.mDiscoveryServiceAgent_BT->setRemoteAddress(NewDevice->address());
-                            }
-                            delete NewDevice;
-                        }
                     }
                 }
 
@@ -5891,11 +5860,11 @@
             else if(Self.mDiscoveryServiceAgent_BLE)
             {
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
-                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                    &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
-                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                    &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                    &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
                     &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
@@ -5911,7 +5880,6 @@
             Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mDiscoveredServices_BT.empty();
-                Self.mDiscoveredServices_BLE.empty();
 
                 if(Self.mDiscoveryServiceAgent_BT)
                 {
@@ -5940,11 +5908,11 @@
                     }
 
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
-                            &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
-                            &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                            &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
                         &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
@@ -5967,7 +5935,7 @@
                 if(Result != Self.mDiscoveredDevices.end())
                 {
                     const QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(Result.value());
-                    Mutex::Unlock(Self.mDiscoverMutex);
+                    if(locking) Mutex::Unlock(Self.mDiscoverMutex);
                     return NewDeviceInfo;
                 }
             }
@@ -5980,6 +5948,26 @@
             const QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
             return NewDeviceInfo;
         }
+        static const QBluetoothDeviceInfo* CloneOrCreateDevice(chars deviceaddress, bool locking)
+        {
+            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, locking))
+                return Result;
+            
+            const String DeviceNameAndAddress = deviceaddress;
+            sint32 SlashPos = -1;
+            sint32 NextSlashPos = 0;
+            while(NextSlashPos != -1)
+            {
+                NextSlashPos = DeviceNameAndAddress.Find(SlashPos + 1, "/");
+                if(NextSlashPos != -1)
+                    SlashPos = NextSlashPos;
+            }
+
+            if(SlashPos != -1)
+                return BluetoothSearchPrivate::CreateDevice(
+                    DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1));
+            return nullptr;
+        }
         static const QBluetoothServiceInfo* GetClonedSearchedService_BT(chars uuid, bool locking)
         {
             auto& Self = ST();
@@ -5989,27 +5977,17 @@
                 if(Result != Self.mDiscoveredServices_BT.end())
                 {
                     const QBluetoothServiceInfo* NewServiceInfo = new QBluetoothServiceInfo(Result.value());
-                    Mutex::Unlock(Self.mDiscoverMutex);
+                    if(locking) Mutex::Unlock(Self.mDiscoverMutex);
                     return NewServiceInfo;
                 }
             }
             if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return nullptr;
         }
-        static QLowEnergyService* GetSearchedService_BLE(chars uuid, bool locking)
+        static QLowEnergyService* CreateService_BLE(const QBluetoothUuid& uuid, QObject* parent)
         {
             auto& Self = ST();
-            if(locking) Mutex::Lock(Self.mDiscoverMutex);
-            {
-                auto Result = Self.mDiscoveredServices_BLE.find(QString::fromUtf8(uuid));
-                if(Result != Self.mDiscoveredServices_BLE.end())
-                {
-                    Mutex::Unlock(Self.mDiscoverMutex);
-                    return Result.value();
-                }
-            }
-            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
-            return nullptr;
+            return Self.mDiscoveryServiceAgent_BLE->createServiceObject(uuid, parent);
         }
 
     private slots:
@@ -6060,13 +6038,6 @@
             Platform::BroadcastNotify("ScanServiceError", String::Format("code:%d", (sint32) error), NT_BluetoothSearch);
         }
 
-        void deviceConnected_BLE()
-        {
-            mDiscoveryServiceAgent_BLE->discoverServices();
-        }
-        void deviceDisconnected_BLE()
-        {
-        }
         void serviceDiscovered_BLE(const QBluetoothUuid& serviceUuid)
         {
             String ServiceName;
@@ -6075,11 +6046,7 @@
             {
                 ServiceName = NewService->serviceName().toUtf8().constData();
                 UuidCollector.AtAdding() = serviceUuid.toString().toUtf8().constData();
-                Mutex::Lock(mDiscoverMutex);
-                {
-                    mDiscoveredServices_BLE.insert(serviceUuid.toString(), NewService);
-                }
-                Mutex::Unlock(mDiscoverMutex);
+                delete NewService;
             }
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
@@ -6090,6 +6057,13 @@
         void scanServiceErrorOccurred_BLE(QLowEnergyController::Error error)
         {
             Platform::BroadcastNotify("ScanServiceError", String::Format("code:%d", (sint32) error), NT_BluetoothSearch);
+        }
+        void deviceConnected_BLE()
+        {
+            mDiscoveryServiceAgent_BLE->discoverServices();
+        }
+        void deviceDisconnected_BLE()
+        {
         }
 
     private:
@@ -6119,7 +6093,6 @@
         QBluetoothServiceDiscoveryAgent* mDiscoveryServiceAgent_BT;
         QMap<QString, QBluetoothServiceInfo> mDiscoveredServices_BT;
         QLowEnergyController* mDiscoveryServiceAgent_BLE;
-        QMap<QString, QLowEnergyService*> mDiscoveredServices_BLE;
     };
 
     class BluetoothPrivate : public QObject
@@ -6130,7 +6103,7 @@
         virtual bool Connected() = 0;
         virtual sint32 ReadAvailable() = 0;
         virtual sint32 Read(uint08* data, const sint32 size) = 0;
-        virtual bool Write(const uint08* data, const sint32 size) = 0;
+        virtual bool Write(const uint08* data, const sint32 size, chars uuid_for_ble) = 0;
 
     public:
         BluetoothPrivate()
@@ -6181,7 +6154,7 @@
             }
             return -1;
         }
-        bool Write(const uint08* data, const sint32 size) override
+        bool Write(const uint08* data, const sint32 size, chars uuid_for_ble) override
         {
             if(mClient)
             {
@@ -6279,7 +6252,7 @@
         Q_OBJECT
 
     public:
-        bool Init(chars uuid, chars uuid_for_ble)
+        bool Init(chars uuid)
         {
             if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid, true))
             {
@@ -6287,7 +6260,6 @@
                 mConnected = false;
                 mPeerName.clear();
                 mRecvData.clear();
-                mUuidForBLE.clear();
 
                 connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientPrivate::OnConnected);
                 connect(mSocket, &QBluetoothSocket::disconnected, this, &BluetoothClientPrivate::OnDisconnected);
@@ -6296,20 +6268,6 @@
                     this, &BluetoothClientPrivate::OnErrorOccurred);
                 mSocket->connectToService(*NewService);
                 delete NewService;
-                return true;
-            }
-            else if(auto CurService = BluetoothSearchPrivate::GetSearchedService_BLE(uuid, true))
-            {
-                mRefSocket_BLE = CurService;
-                mConnected = false;
-                mPeerName.clear();
-                mRecvData.clear();
-                mUuidForBLE = QString((uuid_for_ble)? uuid_for_ble : "");
-
-                connect(mRefSocket_BLE, &QLowEnergyService::stateChanged, this, &BluetoothClientPrivate::serviceStateChanged_BLE);
-                connect(mRefSocket_BLE, &QLowEnergyService::characteristicChanged, this, &BluetoothClientPrivate::characteristicChanged_BLE);
-                connect(mRefSocket_BLE, &QLowEnergyService::descriptorWritten, this, &BluetoothClientPrivate::descriptorWritten_BLE);
-                mRefSocket_BLE->discoverDetails();
                 return true;
             }
             return false;
@@ -6333,26 +6291,14 @@
                 mRecvData.remove(0, MinSize);
                 return MinSize;
             }
-            else if(mRefSocket_BLE && 0 < mUuidForBLE.length())
-            {
-                //////////////////////////////////////////////////////////
-            }
             return -1;
         }
-        bool Write(const uint08* data, const sint32 size) override
+        bool Write(const uint08* data, const sint32 size, chars uuid_for_ble) override
         {
             if(mSocket)
             {
                 mSocket->write((chars) data, size);
                 return mSocket->waitForBytesWritten(3000);
-            }
-            else if(mRefSocket_BLE && 0 < mUuidForBLE.length())
-            {
-                QBluetoothUuid::HeartRateMeasurement;
-                auto HrChar = mRefSocket_BLE->characteristic(QBluetoothUuid(mUuidForBLE));
-                if(!HrChar.isValid()) return false;
-                mRefSocket_BLE->writeCharacteristic(HrChar, QByteArray((chars) data, size), QLowEnergyService::WriteWithoutResponse);
-                return true;
             }
             return false;
         }
@@ -6391,32 +6337,10 @@
             Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
         }
 
-        void serviceStateChanged_BLE(QLowEnergyService::ServiceState state)
-        {
-            if(state == QLowEnergyService::ServiceDiscovered)
-            {
-                mConnected = true;
-                mPeerName = "BLE";
-                Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
-            }
-            else if(state == QLowEnergyService::InvalidService)
-            {
-                mConnected = false;
-                Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
-            }
-        }
-        void characteristicChanged_BLE(const QLowEnergyCharacteristic& ch, const QByteArray &value)
-        {
-        }
-        void descriptorWritten_BLE(const QLowEnergyDescriptor& desc, const QByteArray &value)
-        {
-        }
-
     public:
         BluetoothClientPrivate()
         {
             mSocket = nullptr;
-            mRefSocket_BLE = nullptr;
             mConnected = false;
         }
         ~BluetoothClientPrivate() override
@@ -6426,11 +6350,127 @@
 
     private:
         QBluetoothSocket* mSocket;
-        QLowEnergyService* mRefSocket_BLE;
         bool mConnected;
         QString mPeerName;
         QByteArray mRecvData;
-        QString mUuidForBLE;
+    };
+
+    class BluetoothLowEnergyClientPrivate : public BluetoothPrivate
+    {
+        Q_OBJECT
+
+    public:
+        struct DataPayload
+        {
+            QBluetoothUuid mUuid;
+            QByteArray mBytes;
+        };
+
+    public:
+        bool Init(chars service_uuid)
+        {
+            mServiceUuid = QBluetoothUuid(QString(service_uuid));
+            mConnected = true;
+            Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
+            return true;
+        }
+
+    public:
+        bool Connected() override
+        {
+            return mConnected;
+        }
+        sint32 ReadAvailable() override
+        {
+            return false;
+        }
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            return -1;
+        }
+        bool Write(const uint08* data, const sint32 size, chars uuid_for_ble) override
+        {
+            mLastDataQueue.enqueue({QBluetoothUuid(QString(uuid_for_ble)), QByteArray((chars) data, size)});
+
+            if(mLastService)
+            {
+                auto CurState = mLastService->state();
+                if(CurState == QLowEnergyService::ServiceDiscovered)
+                {
+                    while(!mLastDataQueue.isEmpty())
+                    {
+                        auto& LastData = mLastDataQueue.dequeue();
+                        auto OneChar = mLastService->characteristic(LastData.mUuid);
+                        if(OneChar.isValid())
+                            mLastService->writeCharacteristic(OneChar, LastData.mBytes);
+                    }
+                }
+            }
+            else if(auto NewService = BluetoothSearchPrivate::CreateService_BLE(mServiceUuid, this))
+            {
+                mLastService = NewService;
+                connect(mLastService, &QLowEnergyService::stateChanged, this, &BluetoothLowEnergyClientPrivate::OnServiceStateChanged);
+                connect(mLastService, &QLowEnergyService::characteristicChanged, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicChanged);
+                connect(mLastService, &QLowEnergyService::characteristicRead, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicRead);
+                connect(mLastService, &QLowEnergyService::characteristicWritten, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicWritten);
+                connect(mLastService, QOverload<QLowEnergyService::ServiceError>::of(&QLowEnergyService::error),
+                    this, &BluetoothLowEnergyClientPrivate::OnErrorOccurred);
+                mLastService->discoverDetails();
+            }
+            return true;
+        }
+
+    private slots:
+        void OnServiceStateChanged(QLowEnergyService::ServiceState state)
+        {
+            if(state == QLowEnergyService::ServiceDiscovered)
+            {
+                if(mLastService)
+                while(!mLastDataQueue.isEmpty())
+                {
+                    auto& LastData = mLastDataQueue.dequeue();
+                    auto OneChar = mLastService->characteristic(LastData.mUuid);
+                    if(OneChar.isValid())
+                        mLastService->writeCharacteristic(OneChar, LastData.mBytes);
+                }
+            }
+            else if(state == QLowEnergyService::InvalidService)
+            {
+                mConnected = false;
+                Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
+            }
+        }
+        void OnCharacteristicChanged(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
+        }
+        void OnCharacteristicRead(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
+        }
+        void OnCharacteristicWritten(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
+        }
+        void OnErrorOccurred(QLowEnergyService::ServiceError error)
+        {
+            mConnected = false;
+            Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
+        }
+
+    public:
+        BluetoothLowEnergyClientPrivate()
+        {
+            mConnected = false;
+            mLastService = nullptr;
+        }
+        ~BluetoothLowEnergyClientPrivate() override
+        {
+            delete mLastService;
+        }
+
+    private:
+        QBluetoothUuid mServiceUuid;
+        bool mConnected;
+        QQueue<DataPayload> mLastDataQueue;
+        QLowEnergyService* mLastService;
     };
 
     #if BOSS_ANDROID & defined(QT_HAVE_SERIALPORT)
@@ -8518,6 +8558,7 @@
     class BluetoothPrivate : public QObject {Q_OBJECT};
     class BluetoothServerPrivate : public BluetoothPrivate {Q_OBJECT};
     class BluetoothClientPrivate : public BluetoothPrivate {Q_OBJECT};
+    class BluetoothLowEnergyClientPrivate : public BluetoothPrivate {Q_OBJECT};
     class CameraSurface : public QAbstractVideoSurface {Q_OBJECT};
     class MicrophoneClass : public QAudioProbe {Q_OBJECT};
 

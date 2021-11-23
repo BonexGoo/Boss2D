@@ -1796,10 +1796,9 @@ public:
 
         /// @brief 클라이언트역할로 블루투스ID 생성
         /// @param uuid : 연결할 서버의 블루투스Uuid
-        /// @param uuid_for_ble : BLE통신을 위한 Uuid
         /// @return 블루투스ID(nullptr은 실패)
         /// @see Release
-        static id_bluetooth CreateClient(chars uuid, chars uuid_for_ble = nullptr);
+        static id_bluetooth CreateClient(chars uuid);
 
         /// @brief 블루투스ID 반환
         /// @param bluetooth : 블루투스ID
@@ -1827,8 +1826,9 @@ public:
         /// @param bluetooth : 블루투스ID
         /// @param data : 보낼 데이터
         /// @param size : data의 크기(바이트단위)
+        /// @param uuid_for_ble : BLE통신을 위한 Uuid
         /// @return 에러여부
-        static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size);
+        static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble = nullptr);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

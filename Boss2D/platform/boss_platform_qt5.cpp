@@ -4474,13 +4474,18 @@
             return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
         }
 
-        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid, chars uuid_for_ble)
+        id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
         {
-            auto NewBluetooth = new BluetoothClientPrivate();
-            if(!NewBluetooth->Init(uuid, uuid_for_ble))
+            BluetoothPrivate* NewBluetooth = new BluetoothClientPrivate();
+            if(!((BluetoothClientPrivate*) NewBluetooth)->Init(uuid))
             {
                 delete NewBluetooth;
-                return nullptr;
+                NewBluetooth = new BluetoothLowEnergyClientPrivate();
+                if(!((BluetoothLowEnergyClientPrivate*) NewBluetooth)->Init(uuid))
+                {
+                    delete NewBluetooth;
+                    return nullptr;
+                }
             }
             return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
         }
@@ -4512,10 +4517,10 @@
             return -1;
         }
 
-        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble)
         {
             if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
-                return CurBluetooth->Write(data, size);
+                return CurBluetooth->Write(data, size, uuid_for_ble);
             return false;
         }
 
