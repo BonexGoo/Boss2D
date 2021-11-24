@@ -5362,14 +5362,14 @@ QT_MOC_LITERAL(11, 199, 7), // "service"
 QT_MOC_LITERAL(12, 207, 22), // "scanServiceFinished_BT"
 QT_MOC_LITERAL(13, 230, 27), // "scanServiceErrorOccurred_BT"
 QT_MOC_LITERAL(14, 258, 38), // "QBluetoothServiceDiscoveryAge..."
-QT_MOC_LITERAL(15, 297, 19), // "deviceConnected_BLE"
-QT_MOC_LITERAL(16, 317, 22), // "deviceDisconnected_BLE"
-QT_MOC_LITERAL(17, 340, 21), // "serviceDiscovered_BLE"
-QT_MOC_LITERAL(18, 362, 14), // "QBluetoothUuid"
-QT_MOC_LITERAL(19, 377, 11), // "serviceUuid"
-QT_MOC_LITERAL(20, 389, 23), // "scanServiceFinished_BLE"
-QT_MOC_LITERAL(21, 413, 28), // "scanServiceErrorOccurred_BLE"
-QT_MOC_LITERAL(22, 442, 27) // "QLowEnergyController::Error"
+QT_MOC_LITERAL(15, 297, 21), // "serviceDiscovered_BLE"
+QT_MOC_LITERAL(16, 319, 14), // "QBluetoothUuid"
+QT_MOC_LITERAL(17, 334, 11), // "serviceUuid"
+QT_MOC_LITERAL(18, 346, 23), // "scanServiceFinished_BLE"
+QT_MOC_LITERAL(19, 370, 28), // "scanServiceErrorOccurred_BLE"
+QT_MOC_LITERAL(20, 399, 27), // "QLowEnergyController::Error"
+QT_MOC_LITERAL(21, 427, 19), // "deviceConnected_BLE"
+QT_MOC_LITERAL(22, 447, 22) // "deviceDisconnected_BLE"
 
     },
     "BluetoothSearchPrivate\0deviceDiscovered\0"
@@ -5381,11 +5381,11 @@ QT_MOC_LITERAL(22, 442, 27) // "QLowEnergyController::Error"
     "scanServiceFinished_BT\0"
     "scanServiceErrorOccurred_BT\0"
     "QBluetoothServiceDiscoveryAgent::Error\0"
-    "deviceConnected_BLE\0deviceDisconnected_BLE\0"
     "serviceDiscovered_BLE\0QBluetoothUuid\0"
     "serviceUuid\0scanServiceFinished_BLE\0"
     "scanServiceErrorOccurred_BLE\0"
-    "QLowEnergyController::Error"
+    "QLowEnergyController::Error\0"
+    "deviceConnected_BLE\0deviceDisconnected_BLE"
 };
 #undef QT_MOC_LITERAL
 
@@ -5409,11 +5409,11 @@ static const uint qt_meta_data_BluetoothSearchPrivate[] = {
        9,    1,   76,    2, 0x08 /* Private */,
       12,    0,   79,    2, 0x08 /* Private */,
       13,    1,   80,    2, 0x08 /* Private */,
-      15,    0,   83,    2, 0x08 /* Private */,
-      16,    0,   84,    2, 0x08 /* Private */,
-      17,    1,   85,    2, 0x08 /* Private */,
-      20,    0,   88,    2, 0x08 /* Private */,
-      21,    1,   89,    2, 0x08 /* Private */,
+      15,    1,   83,    2, 0x08 /* Private */,
+      18,    0,   86,    2, 0x08 /* Private */,
+      19,    1,   87,    2, 0x08 /* Private */,
+      21,    0,   90,    2, 0x08 /* Private */,
+      22,    0,   91,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
@@ -5422,11 +5422,11 @@ static const uint qt_meta_data_BluetoothSearchPrivate[] = {
     QMetaType::Void, 0x80000000 | 10,   11,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 14,    8,
+    QMetaType::Void, 0x80000000 | 16,   17,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 20,    8,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 18,   19,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 22,    8,
 
        0        // eod
 };
@@ -5443,11 +5443,11 @@ void BluetoothSearchPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _
         case 3: _t->serviceDiscovered_BT((*reinterpret_cast< const QBluetoothServiceInfo(*)>(_a[1]))); break;
         case 4: _t->scanServiceFinished_BT(); break;
         case 5: _t->scanServiceErrorOccurred_BT((*reinterpret_cast< QBluetoothServiceDiscoveryAgent::Error(*)>(_a[1]))); break;
-        case 6: _t->deviceConnected_BLE(); break;
-        case 7: _t->deviceDisconnected_BLE(); break;
-        case 8: _t->serviceDiscovered_BLE((*reinterpret_cast< const QBluetoothUuid(*)>(_a[1]))); break;
-        case 9: _t->scanServiceFinished_BLE(); break;
-        case 10: _t->scanServiceErrorOccurred_BLE((*reinterpret_cast< QLowEnergyController::Error(*)>(_a[1]))); break;
+        case 6: _t->serviceDiscovered_BLE((*reinterpret_cast< const QBluetoothUuid(*)>(_a[1]))); break;
+        case 7: _t->scanServiceFinished_BLE(); break;
+        case 8: _t->scanServiceErrorOccurred_BLE((*reinterpret_cast< QLowEnergyController::Error(*)>(_a[1]))); break;
+        case 9: _t->deviceConnected_BLE(); break;
+        case 10: _t->deviceDisconnected_BLE(); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
@@ -5467,14 +5467,14 @@ void BluetoothSearchPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QBluetoothServiceInfo >(); break;
             }
             break;
-        case 8:
+        case 6:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QBluetoothUuid >(); break;
             }
             break;
-        case 10:
+        case 8:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -5522,76 +5522,6 @@ int BluetoothSearchPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a
             qt_static_metacall(this, _c, _id, _a);
         _id -= 11;
     }
-    return _id;
-}
-struct qt_meta_stringdata_BluetoothPrivate_t {
-    QByteArrayData data[1];
-    char stringdata0[17];
-};
-#define QT_MOC_LITERAL(idx, ofs, len) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_BluetoothPrivate_t, stringdata0) + ofs \
-        - idx * sizeof(QByteArrayData)) \
-    )
-static const qt_meta_stringdata_BluetoothPrivate_t qt_meta_stringdata_BluetoothPrivate = {
-    {
-QT_MOC_LITERAL(0, 0, 16) // "BluetoothPrivate"
-
-    },
-    "BluetoothPrivate"
-};
-#undef QT_MOC_LITERAL
-
-static const uint qt_meta_data_BluetoothPrivate[] = {
-
- // content:
-       8,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       0,    0, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
-
-       0        // eod
-};
-
-void BluetoothPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-{
-    Q_UNUSED(_o);
-    Q_UNUSED(_id);
-    Q_UNUSED(_c);
-    Q_UNUSED(_a);
-}
-
-QT_INIT_METAOBJECT const QMetaObject BluetoothPrivate::staticMetaObject = { {
-    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
-    qt_meta_stringdata_BluetoothPrivate.data,
-    qt_meta_data_BluetoothPrivate,
-    qt_static_metacall,
-    nullptr,
-    nullptr
-} };
-
-
-const QMetaObject *BluetoothPrivate::metaObject() const
-{
-    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-}
-
-void *BluetoothPrivate::qt_metacast(const char *_clname)
-{
-    if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_BluetoothPrivate.stringdata0))
-        return static_cast<void*>(this);
-    return QObject::qt_metacast(_clname);
-}
-
-int BluetoothPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
-{
-    _id = QObject::qt_metacall(_c, _id, _a);
     return _id;
 }
 struct qt_meta_stringdata_BluetoothServerPrivate_t {
@@ -5659,7 +5589,7 @@ void BluetoothServerPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _
 }
 
 QT_INIT_METAOBJECT const QMetaObject BluetoothServerPrivate::staticMetaObject = { {
-    QMetaObject::SuperData::link<BluetoothPrivate::staticMetaObject>(),
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
     qt_meta_stringdata_BluetoothServerPrivate.data,
     qt_meta_data_BluetoothServerPrivate,
     qt_static_metacall,
@@ -5678,12 +5608,12 @@ void *BluetoothServerPrivate::qt_metacast(const char *_clname)
     if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_meta_stringdata_BluetoothServerPrivate.stringdata0))
         return static_cast<void*>(this);
-    return BluetoothPrivate::qt_metacast(_clname);
+    return QObject::qt_metacast(_clname);
 }
 
 int BluetoothServerPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = BluetoothPrivate::qt_metacall(_c, _id, _a);
+    _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
@@ -5698,8 +5628,8 @@ int BluetoothServerPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a
     return _id;
 }
 struct qt_meta_stringdata_BluetoothClientPrivate_t {
-    QByteArrayData data[18];
-    char stringdata0[285];
+    QByteArrayData data[8];
+    char stringdata0[115];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -5715,28 +5645,12 @@ QT_MOC_LITERAL(3, 36, 14), // "OnDisconnected"
 QT_MOC_LITERAL(4, 51, 11), // "OnReadyRead"
 QT_MOC_LITERAL(5, 63, 15), // "OnErrorOccurred"
 QT_MOC_LITERAL(6, 79, 29), // "QBluetoothSocket::SocketError"
-QT_MOC_LITERAL(7, 109, 5), // "error"
-QT_MOC_LITERAL(8, 115, 23), // "serviceStateChanged_BLE"
-QT_MOC_LITERAL(9, 139, 31), // "QLowEnergyService::ServiceState"
-QT_MOC_LITERAL(10, 171, 5), // "state"
-QT_MOC_LITERAL(11, 177, 25), // "characteristicChanged_BLE"
-QT_MOC_LITERAL(12, 203, 24), // "QLowEnergyCharacteristic"
-QT_MOC_LITERAL(13, 228, 2), // "ch"
-QT_MOC_LITERAL(14, 231, 5), // "value"
-QT_MOC_LITERAL(15, 237, 21), // "descriptorWritten_BLE"
-QT_MOC_LITERAL(16, 259, 20), // "QLowEnergyDescriptor"
-QT_MOC_LITERAL(17, 280, 4) // "desc"
+QT_MOC_LITERAL(7, 109, 5) // "error"
 
     },
     "BluetoothClientPrivate\0OnConnected\0\0"
     "OnDisconnected\0OnReadyRead\0OnErrorOccurred\0"
-    "QBluetoothSocket::SocketError\0error\0"
-    "serviceStateChanged_BLE\0"
-    "QLowEnergyService::ServiceState\0state\0"
-    "characteristicChanged_BLE\0"
-    "QLowEnergyCharacteristic\0ch\0value\0"
-    "descriptorWritten_BLE\0QLowEnergyDescriptor\0"
-    "desc"
+    "QBluetoothSocket::SocketError\0error"
 };
 #undef QT_MOC_LITERAL
 
@@ -5746,7 +5660,7 @@ static const uint qt_meta_data_BluetoothClientPrivate[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       4,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -5754,22 +5668,16 @@ static const uint qt_meta_data_BluetoothClientPrivate[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   49,    2, 0x08 /* Private */,
-       3,    0,   50,    2, 0x08 /* Private */,
-       4,    0,   51,    2, 0x08 /* Private */,
-       5,    1,   52,    2, 0x08 /* Private */,
-       8,    1,   55,    2, 0x08 /* Private */,
-      11,    2,   58,    2, 0x08 /* Private */,
-      15,    2,   63,    2, 0x08 /* Private */,
+       1,    0,   34,    2, 0x08 /* Private */,
+       3,    0,   35,    2, 0x08 /* Private */,
+       4,    0,   36,    2, 0x08 /* Private */,
+       5,    1,   37,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 6,    7,
-    QMetaType::Void, 0x80000000 | 9,   10,
-    QMetaType::Void, 0x80000000 | 12, QMetaType::QByteArray,   13,   14,
-    QMetaType::Void, 0x80000000 | 16, QMetaType::QByteArray,   17,   14,
 
        0        // eod
 };
@@ -5784,41 +5692,13 @@ void BluetoothClientPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _
         case 1: _t->OnDisconnected(); break;
         case 2: _t->OnReadyRead(); break;
         case 3: _t->OnErrorOccurred((*reinterpret_cast< QBluetoothSocket::SocketError(*)>(_a[1]))); break;
-        case 4: _t->serviceStateChanged_BLE((*reinterpret_cast< QLowEnergyService::ServiceState(*)>(_a[1]))); break;
-        case 5: _t->characteristicChanged_BLE((*reinterpret_cast< const QLowEnergyCharacteristic(*)>(_a[1])),(*reinterpret_cast< const QByteArray(*)>(_a[2]))); break;
-        case 6: _t->descriptorWritten_BLE((*reinterpret_cast< const QLowEnergyDescriptor(*)>(_a[1])),(*reinterpret_cast< const QByteArray(*)>(_a[2]))); break;
         default: ;
-        }
-    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        switch (_id) {
-        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 4:
-            switch (*reinterpret_cast<int*>(_a[1])) {
-            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-            case 0:
-                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyService::ServiceState >(); break;
-            }
-            break;
-        case 5:
-            switch (*reinterpret_cast<int*>(_a[1])) {
-            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-            case 0:
-                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyCharacteristic >(); break;
-            }
-            break;
-        case 6:
-            switch (*reinterpret_cast<int*>(_a[1])) {
-            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-            case 0:
-                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyDescriptor >(); break;
-            }
-            break;
         }
     }
 }
 
 QT_INIT_METAOBJECT const QMetaObject BluetoothClientPrivate::staticMetaObject = { {
-    QMetaObject::SuperData::link<BluetoothPrivate::staticMetaObject>(),
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
     qt_meta_stringdata_BluetoothClientPrivate.data,
     qt_meta_data_BluetoothClientPrivate,
     qt_static_metacall,
@@ -5837,22 +5717,188 @@ void *BluetoothClientPrivate::qt_metacast(const char *_clname)
     if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_meta_stringdata_BluetoothClientPrivate.stringdata0))
         return static_cast<void*>(this);
-    return BluetoothPrivate::qt_metacast(_clname);
+    return QObject::qt_metacast(_clname);
 }
 
 int BluetoothClientPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = BluetoothPrivate::qt_metacall(_c, _id, _a);
+    _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 4;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 4)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 4;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_BluetoothLowEnergyClientPrivate_t {
+    QByteArrayData data[15];
+    char stringdata0[259];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_BluetoothLowEnergyClientPrivate_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_BluetoothLowEnergyClientPrivate_t qt_meta_stringdata_BluetoothLowEnergyClientPrivate = {
+    {
+QT_MOC_LITERAL(0, 0, 31), // "BluetoothLowEnergyClientPrivate"
+QT_MOC_LITERAL(1, 32, 21), // "OnServiceStateChanged"
+QT_MOC_LITERAL(2, 54, 0), // ""
+QT_MOC_LITERAL(3, 55, 31), // "QLowEnergyService::ServiceState"
+QT_MOC_LITERAL(4, 87, 5), // "state"
+QT_MOC_LITERAL(5, 93, 23), // "OnCharacteristicChanged"
+QT_MOC_LITERAL(6, 117, 24), // "QLowEnergyCharacteristic"
+QT_MOC_LITERAL(7, 142, 4), // "info"
+QT_MOC_LITERAL(8, 147, 5), // "value"
+QT_MOC_LITERAL(9, 153, 20), // "OnCharacteristicRead"
+QT_MOC_LITERAL(10, 174, 23), // "OnCharacteristicWritten"
+QT_MOC_LITERAL(11, 198, 15), // "OnErrorOccurred"
+QT_MOC_LITERAL(12, 214, 31), // "QLowEnergyService::ServiceError"
+QT_MOC_LITERAL(13, 246, 5), // "error"
+QT_MOC_LITERAL(14, 252, 6) // "OnRead"
+
+    },
+    "BluetoothLowEnergyClientPrivate\0"
+    "OnServiceStateChanged\0\0"
+    "QLowEnergyService::ServiceState\0state\0"
+    "OnCharacteristicChanged\0"
+    "QLowEnergyCharacteristic\0info\0value\0"
+    "OnCharacteristicRead\0OnCharacteristicWritten\0"
+    "OnErrorOccurred\0QLowEnergyService::ServiceError\0"
+    "error\0OnRead"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_BluetoothLowEnergyClientPrivate[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       6,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    1,   44,    2, 0x08 /* Private */,
+       5,    2,   47,    2, 0x08 /* Private */,
+       9,    2,   52,    2, 0x08 /* Private */,
+      10,    2,   57,    2, 0x08 /* Private */,
+      11,    1,   62,    2, 0x08 /* Private */,
+      14,    0,   65,    2, 0x08 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void, 0x80000000 | 3,    4,
+    QMetaType::Void, 0x80000000 | 6, QMetaType::QByteArray,    7,    8,
+    QMetaType::Void, 0x80000000 | 6, QMetaType::QByteArray,    7,    8,
+    QMetaType::Void, 0x80000000 | 6, QMetaType::QByteArray,    7,    8,
+    QMetaType::Void, 0x80000000 | 12,   13,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void BluetoothLowEnergyClientPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<BluetoothLowEnergyClientPrivate *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->OnServiceStateChanged((*reinterpret_cast< QLowEnergyService::ServiceState(*)>(_a[1]))); break;
+        case 1: _t->OnCharacteristicChanged((*reinterpret_cast< const QLowEnergyCharacteristic(*)>(_a[1])),(*reinterpret_cast< const QByteArray(*)>(_a[2]))); break;
+        case 2: _t->OnCharacteristicRead((*reinterpret_cast< const QLowEnergyCharacteristic(*)>(_a[1])),(*reinterpret_cast< const QByteArray(*)>(_a[2]))); break;
+        case 3: _t->OnCharacteristicWritten((*reinterpret_cast< const QLowEnergyCharacteristic(*)>(_a[1])),(*reinterpret_cast< const QByteArray(*)>(_a[2]))); break;
+        case 4: _t->OnErrorOccurred((*reinterpret_cast< QLowEnergyService::ServiceError(*)>(_a[1]))); break;
+        case 5: _t->OnRead(); break;
+        default: ;
+        }
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+        case 0:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyService::ServiceState >(); break;
+            }
+            break;
+        case 1:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyCharacteristic >(); break;
+            }
+            break;
+        case 2:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyCharacteristic >(); break;
+            }
+            break;
+        case 3:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyCharacteristic >(); break;
+            }
+            break;
+        case 4:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QLowEnergyService::ServiceError >(); break;
+            }
+            break;
+        }
+    }
+}
+
+QT_INIT_METAOBJECT const QMetaObject BluetoothLowEnergyClientPrivate::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_BluetoothLowEnergyClientPrivate.data,
+    qt_meta_data_BluetoothLowEnergyClientPrivate,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *BluetoothLowEnergyClientPrivate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *BluetoothLowEnergyClientPrivate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_BluetoothLowEnergyClientPrivate.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int BluetoothLowEnergyClientPrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 6)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 6;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 6)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 6;
     }
     return _id;
 }

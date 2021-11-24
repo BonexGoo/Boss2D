@@ -1826,9 +1826,8 @@ public:
         /// @param bluetooth : 블루투스ID
         /// @param data : 보낼 데이터
         /// @param size : data의 크기(바이트단위)
-        /// @param uuid_for_ble : BLE통신을 위한 Uuid
         /// @return 에러여부
-        static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble = nullptr);
+        static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size);
     };
 
     ////////////////////////////////////////////////////////////////////////////////
