@@ -4468,7 +4468,7 @@
         {
             auto NewBluetooth = new BluetoothServerPrivate();
             if(NewBluetooth->Init(service, uuid))
-                return (id_bluetooth) NewBluetooth;
+                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
             else delete NewBluetooth;
 
             return nullptr;
@@ -4478,12 +4478,12 @@
         {
             auto NewBluetooth1 = new BluetoothClientPrivate();
             if(NewBluetooth1->Init(uuid))
-                return (id_bluetooth) NewBluetooth1;
+                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth1;
             else delete NewBluetooth1;
 
             auto NewBluetooth2 = new BluetoothLowEnergyClientPrivate();
             if(NewBluetooth2->Init(uuid))
-                return (id_bluetooth) NewBluetooth2;
+                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth2;
             else delete NewBluetooth2;
 
             return nullptr;
@@ -4491,55 +4491,35 @@
 
         void Platform::Bluetooth::Release(id_bluetooth bluetooth)
         {
-            if(auto Server = dynamic_cast<BluetoothServerPrivate*>((QObject*) bluetooth))
-                delete Server;
-            else if(auto Client = dynamic_cast<BluetoothClientPrivate*>((QObject*) bluetooth))
-                delete Client;
-            else if(auto ClientBLE = dynamic_cast<BluetoothLowEnergyClientPrivate*>((QObject*) bluetooth))
-                delete ClientBLE;
+            if(auto OldBluetooth = (BluetoothPrivate*) bluetooth)
+                delete OldBluetooth;
         }
 
         bool Platform::Bluetooth::Connected(id_bluetooth bluetooth)
         {
-            if(auto Server = dynamic_cast<BluetoothServerPrivate*>((QObject*) bluetooth))
-                return Server->Connected();
-            else if(auto Client = dynamic_cast<BluetoothClientPrivate*>((QObject*) bluetooth))
-                return Client->Connected();
-            else if(auto ClientBLE = dynamic_cast<BluetoothLowEnergyClientPrivate*>((QObject*) bluetooth))
-                return ClientBLE->Connected();
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Connected();
             return false;
         }
 
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
-            if(auto Server = dynamic_cast<BluetoothServerPrivate*>((QObject*) bluetooth))
-                return Server->ReadAvailable();
-            else if(auto Client = dynamic_cast<BluetoothClientPrivate*>((QObject*) bluetooth))
-                return Client->ReadAvailable();
-            else if(auto ClientBLE = dynamic_cast<BluetoothLowEnergyClientPrivate*>((QObject*) bluetooth))
-                return ClientBLE->ReadAvailable();
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->ReadAvailable();
             return 0;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)
         {
-            if(auto Server = dynamic_cast<BluetoothServerPrivate*>((QObject*) bluetooth))
-                return Server->Read(data, size);
-            else if(auto Client = dynamic_cast<BluetoothClientPrivate*>((QObject*) bluetooth))
-                return Client->Read(data, size);
-            else if(auto ClientBLE = dynamic_cast<BluetoothLowEnergyClientPrivate*>((QObject*) bluetooth))
-                return ClientBLE->Read(data, size);
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Read(data, size);
             return -1;
         }
 
         bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
-            if(auto Server = dynamic_cast<BluetoothServerPrivate*>((QObject*) bluetooth))
-                return Server->Write(data, size);
-            else if(auto Client = dynamic_cast<BluetoothClientPrivate*>((QObject*) bluetooth))
-                return Client->Write(data, size);
-            else if(auto ClientBLE = dynamic_cast<BluetoothLowEnergyClientPrivate*>((QObject*) bluetooth))
-                return ClientBLE->Write(data, size);
+            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+                return CurBluetooth->Write(data, size);
             return false;
         }
 
