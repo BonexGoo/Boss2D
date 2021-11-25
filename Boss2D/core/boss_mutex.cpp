@@ -69,6 +69,7 @@ namespace BOSS
 
     void Mutex::Lock(id_mutex mutex)
     {
+        BOSS_ASSERT("Mutex에 의해 스레드가 중지됩니다", !MUTEX_HAS_LOCK((MutexData*) mutex));
         MUTEX_LOCK((MutexData*) mutex);
     }
 
@@ -112,7 +113,10 @@ namespace BOSS
     void Mutex::LocalLock(id_mutex mutex)
     {
         if(LocalCounter(mutex, true) == 1)
+        {
+            BOSS_ASSERT("Mutex에 의해 스레드가 중지됩니다", !MUTEX_HAS_LOCK((MutexData*) mutex));
             MUTEX_LOCK((MutexData*) mutex);
+        }
     }
 
     void Mutex::LocalUnlock(id_mutex mutex)

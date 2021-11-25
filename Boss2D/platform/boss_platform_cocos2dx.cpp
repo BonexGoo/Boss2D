@@ -57,6 +57,7 @@
     MainData* g_data = nullptr;
     MainWindow* g_window = nullptr;
     cocos2d::Node* g_view = nullptr;
+    static bool g_isPopupAssert = false;
 
     #if BOSS_ANDROID
         static JavaVM* g_jvm = nullptr;
@@ -117,7 +118,7 @@
             UNREFERENCED_PARAMETER(lpCmdLine);
 
             int result = 0;
-            Platform::Option::SetFlag("AssertPopup", true);
+            g_isPopupAssert = true;
             {
                 MainWindow mainWindow;
                 g_window = &mainWindow;
@@ -129,7 +130,7 @@
                 }
                 g_window = nullptr;
             }
-            Platform::Option::SetFlag("AssertPopup", false);
+            g_isPopupAssert = false;
 
             // 스토리지(TLS) 영구제거
             Storage::ClearAll(CL_SystemAndUser);
@@ -169,7 +170,7 @@
             OutputDebugStringW(L"************************************************************\n");
         #endif
 
-        if(Platform::Option::GetFlag("AssertPopup"))
+        if(g_isPopupAssert)
         {
             #if BOSS_WINDOWS
                 WString AssertMessage = WString::Format(

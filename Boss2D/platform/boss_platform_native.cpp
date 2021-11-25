@@ -29,6 +29,7 @@
     dependency* g_data = nullptr;
     dependency* g_window = nullptr;
     ViewAPI* g_view = nullptr;
+    static bool g_isPopupAssert = false;
 
     #if BOSS_ANDROID
         static JavaVM* g_jvm = nullptr;
@@ -130,7 +131,7 @@
             syslog(LOG_INFO, "************************************************************\n");
         #endif
 
-        if(Platform::Option::GetFlag("AssertPopup"))
+        if(g_isPopupAssert)
         {
             #if BOSS_WINDOWS
                 WString AssertMessage = WString::Format(

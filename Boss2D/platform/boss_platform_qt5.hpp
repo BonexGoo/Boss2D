@@ -6342,26 +6342,13 @@
             if(auto NewService = BluetoothSearchPrivate::CreateService_BLE(QBluetoothUuid(QString(uuid)), this))
             {
                 mService = NewService;
-                //if(mService->state() == QLowEnergyService::DiscoveryRequired)
-                    mService->discoverDetails();
-                //else if(InitCharacteristic())
-                //{
-                //    mConnected = true;
-                //    Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
-                //}
-                //else
-                //{
-                //    mConnected = false;
-                //    Platform::BroadcastNotify("error", nullptr, NT_BluetoothReceive);
-                //    return false;
-                //}
-
                 connect(mService, &QLowEnergyService::stateChanged, this, &BluetoothLowEnergyClientPrivate::OnServiceStateChanged);
                 connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicChanged);
                 connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicRead);
                 connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicWritten);
                 connect(mService, QOverload<QLowEnergyService::ServiceError>::of(&QLowEnergyService::error),
                     this, &BluetoothLowEnergyClientPrivate::OnErrorOccurred);
+                mService->discoverDetails();
                 return true;
             }
             return false;
@@ -6411,9 +6398,9 @@
             {
                 if(InitCharacteristic())
                 {
-                    WriteFlush();
                     mConnected = true;
                     Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
+                    WriteFlush();
                 }
                 else
                 {

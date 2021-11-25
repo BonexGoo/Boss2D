@@ -11,6 +11,7 @@
     sint32 g_argc = 0;
     char** g_argv = nullptr;
     static bool g_isBeginGL = false;
+    static bool g_isPopupAssert = false;
 
     // 외부지원
     QGLFunctions* g_currentGLFunctions()
@@ -143,7 +144,7 @@
         int main(int argc, char* argv[])
         {
             int result = 0;
-            Platform::Option::SetFlag("AssertPopup", true);
+            g_isPopupAssert = true;
             {
                 //#if BOSS_WINDOWS
                 //    SetProcessDPIAware(); // 화면DPI에 따른 좌표계문제를 해결
@@ -173,7 +174,7 @@
                 g_window = nullptr;
                 Platform::Popup::HideSplash();
             }
-            Platform::Option::SetFlag("AssertPopup", false);
+            g_isPopupAssert = false;
 
             PlatformFree();
             // 스토리지(TLS) 영구제거
@@ -216,7 +217,7 @@
         #endif
 
         static bool IsRunning = false;
-        if(!IsRunning && Platform::Option::GetFlag("AssertPopup"))
+        if(!IsRunning && g_isPopupAssert)
         {
             IsRunning = true;
             #if BOSS_WINDOWS
