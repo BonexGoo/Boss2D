@@ -1358,7 +1358,8 @@ namespace BOSS
     // ZayExtend
     ////////////////////////////////////////////////////////////////////////////////
     extern void ZayExtendCursor(CursorRole role, sint32 elementid);
-    extern void ZayExtendTouch(chars uiname, sint32 elementid);
+    extern bool ZayExtendPress(chars uiname, sint32 elementid);
+    extern bool ZayExtendClick(chars uiname, sint32 elementid);
 
     ZayExtend::ZayExtend(ComponentType type, ComponentCB ccb, GlueCB gcb)
     {
@@ -1439,14 +1440,24 @@ namespace BOSS
         auto ElementID = mElementID;
         return ZAY_GESTURE_NT(n, t, ElementID)
             {
+                static bool PressMode = false;
                 if(t == GT_Moving || t == GT_MovingIdle)
                     ZayExtendCursor(CR_PointingHand, ElementID);
                 else if(t == GT_MovingLosed)
                     ZayExtendCursor(CR_Arrow, ElementID);
-                else if(t == GT_InReleased)
+                else if(t == GT_Pressed)
                 {
-                    ZayExtendTouch(n, ElementID);
-                    ZayExtendCursor(CR_Busy, ElementID);
+                    if(ZayExtendPress(n, ElementID))
+                    {
+                        PressMode = true;
+                        ZayExtendCursor(CR_Busy, ElementID);
+                    }
+                }
+                else if(t == GT_InReleased || (t == GT_OutReleased && PressMode))
+                {
+                    if(ZayExtendClick(n, ElementID))
+                        ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                    PressMode = false;
                 }
             };
     }

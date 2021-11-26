@@ -384,7 +384,7 @@ namespace BOSS
     public:
         virtual void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const {}
         virtual void OnCursor(CursorRole role) {}
-        virtual void OnTouch(chars uiname) {}
+        virtual bool OnTouch(chars uiname, sint32 id) {return false;}
 
     public:
         Type mType;
@@ -407,12 +407,23 @@ namespace BOSS
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendTouch
+    // ZayExtendPress
     ////////////////////////////////////////////////////////////////////////////////
-    void ZayExtendTouch(chars uiname, sint32 elementid)
+    bool ZayExtendPress(chars uiname, sint32 elementid)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
-            CurUIElement->OnTouch(uiname);
+            return CurUIElement->OnTouch(uiname, 0);
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayExtendClick
+    ////////////////////////////////////////////////////////////////////////////////
+    bool ZayExtendClick(chars uiname, sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnTouch(uiname, 1);
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -774,20 +785,11 @@ namespace BOSS
                 mCompCodes.AtAdding() = (id_share) NewRequest;
             }
 
-            Map<String> CaptureCollector;
+            hook(context("ontouch"))
+                LoadCode(root, fish, 0);
+
             hook(context("onclick"))
-            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
-            {
-                if(ZayConditionElement::Test(root, mClickCodes, fish[i]))
-                    continue;
-                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
-                NewRequest->Load(root, fish[i]);
-                NewRequest->InitForClick(CaptureCollector);
-                mClickCodes.AtAdding() = (id_share) NewRequest;
-            }
-            // 캡쳐목록 정리
-            for(sint32 i = 0, iend = CaptureCollector.Count(); i < iend; ++i)
-                mClickCodeCaptures.AtAdding() = *CaptureCollector.AccessByOrder(i);
+                LoadCode(root, fish, 1);
 
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -798,6 +800,24 @@ namespace BOSS
                 NewRenderer->Load(root, fish[i]);
                 mChildren.AtAdding() = (id_share) NewRenderer;
             }
+        }
+
+    private:
+        void LoadCode(const ZaySon& root, const Context& json, sint32 id)
+        {
+            Map<String> CaptureCollector;
+            for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mTouchCodes[id], json[i]))
+                    continue;
+                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
+                NewRequest->Load(root, json[i]);
+                NewRequest->InitForClick(CaptureCollector);
+                mTouchCodes[id].AtAdding() = (id_share) NewRequest;
+            }
+            // 캡쳐목록 정리
+            for(sint32 i = 0, iend = CaptureCollector.Count(); i < iend; ++i)
+                mTouchCodeCaptures[id].AtAdding() = *CaptureCollector.AccessByOrder(i);
         }
 
     private:
@@ -856,8 +876,10 @@ namespace BOSS
                     {
                         String UINameTemp;
                         chars ComponentName = nullptr;
-                        if(0 < UIName.Length()) ComponentName = UINameTemp = ViewName + ('.' + UIName);
-                        else if(0 < mClickCodes.Count()) ComponentName = defaultname;
+                        if(0 < UIName.Length())
+                            ComponentName = UINameTemp = ViewName + ('.' + UIName);
+                        else if(0 < mTouchCodes[0].Count() + mTouchCodes[1].Count())
+                            ComponentName = defaultname;
 
                         // 파라미터 없음
                         ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID);
@@ -880,7 +902,8 @@ namespace BOSS
                         chars ComponentName = nullptr;
                         if(0 < UIName.Length())
                             ComponentName = UINameTemp = ViewName + ('.' + UIName) + ((1 < iend)? (chars) String::FromInteger(i) : "");
-                        else if(0 < mClickCodes.Count()) ComponentName = DefaultName;
+                        else if(0 < mTouchCodes[0].Count() + mTouchCodes[1].Count())
+                            ComponentName = DefaultName;
 
                         // 지역변수 수집
                         Solvers LocalSolvers;
@@ -916,13 +939,14 @@ namespace BOSS
         void RenderChildren(ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
         {
             // 클릭코드를 위한 변수를 사전 캡쳐
-            if(uiname != nullptr && 0 < mClickCodeCaptures.Count())
+            for(sint32 i = 0; i < 2; ++i)
+            if(uiname != nullptr && 0 < mTouchCodeCaptures[i].Count())
             {
                 const Point ViewPos = panel.toview(0, 0);
-                hook(mClickCodeCaptureValues(uiname))
-                for(sint32 i = 0, iend = mClickCodeCaptures.Count(); i < iend; ++i)
+                hook(mTouchCodeCaptureValues[i](uiname))
+                for(sint32 j = 0, jend = mTouchCodeCaptures[i].Count(); j < jend; ++j)
                 {
-                    chars CurVariable = mClickCodeCaptures[i];
+                    chars CurVariable = mTouchCodeCaptures[i][j];
                     branch;
                     jump(!String::Compare(CurVariable, "pX")) fish(CurVariable) = String::FromFloat(ViewPos.x);
                     jump(!String::Compare(CurVariable, "pY")) fish(CurVariable) = String::FromFloat(ViewPos.y);
@@ -945,16 +969,15 @@ namespace BOSS
         }
         void OnCursor(CursorRole role) override
         {
-            if(0 < mClickCodes.Count())
-                mRefRoot->SendCursor(role);
+            mRefRoot->SendCursor(role);
         }
-        void OnTouch(chars uiname) override
+        bool OnTouch(chars uiname, sint32 id) override
         {
-            if(0 < mClickCodes.Count())
+            if(0 < mTouchCodes[id].Count())
             {
                 // 사전 캡쳐된 변수를 지역변수화
                 Solvers LocalSolvers;
-                hook(mClickCodeCaptureValues(uiname))
+                hook(mTouchCodeCaptureValues[id](uiname))
                 for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
                 {
                     chararray Variable;
@@ -963,13 +986,15 @@ namespace BOSS
                 }
 
                 // 클릭코드의 실행
-                sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mClickCodes);
+                sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mTouchCodes[id]);
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
-                    auto CurClickCode = (ZayRequestElement*) mClickCodes.At(CollectedClickCodes[i]).Ptr();
+                    auto CurClickCode = (ZayRequestElement*) mTouchCodes[id].At(CollectedClickCodes[i]).Ptr();
                     CurClickCode->Transaction();
                 }
+                return true;
             }
+            return false;
         }
 
     public:
@@ -977,10 +1002,10 @@ namespace BOSS
         sint32 mCompID;
         ZayUIs mCompValues;
         mutable ZayUIs mCompCodes;
-        ZayUIs mClickCodes;
-        Strings mClickCodeCaptures;
+        ZayUIs mTouchCodes[2];
+        Strings mTouchCodeCaptures[2];
         typedef Map<String> CaptureValue;
-        mutable Map<CaptureValue> mClickCodeCaptureValues;
+        mutable Map<CaptureValue> mTouchCodeCaptureValues[2];
         ZayUIs mChildren;
     };
 
