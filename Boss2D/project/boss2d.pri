@@ -110,6 +110,7 @@ DEFINES += BOSS_QTCREATOR=1
 # ADDON
 ###########################################################
 HEADERS += $$TOPPATH/addon/boss_addon_aac.hpp
+HEADERS += $$TOPPATH/addon/boss_addon_abc.hpp
 HEADERS += $$TOPPATH/addon/boss_addon_alpr.hpp
 HEADERS += $$TOPPATH/addon/boss_addon_curl.hpp
 HEADERS += $$TOPPATH/addon/boss_addon_dlib.hpp
@@ -128,7 +129,9 @@ HEADERS += $$TOPPATH/addon/boss_addon_websocket.hpp
 HEADERS += $$TOPPATH/addon/boss_addon_zip.hpp
 HEADERS += $$TOPPATH/addon/boss_addon_zipa.hpp
 HEADERS += $$TOPPATH/addon/boss_fakewin.h
+HEADERS += $$TOPPATH/addon/boss_integration_abcview-1.1.0.h
 HEADERS += $$TOPPATH/addon/boss_integration_abseil-cpp-20180600.h
+HEADERS += $$TOPPATH/addon/boss_integration_alembic-1.8.1.h
 HEADERS += $$TOPPATH/addon/boss_integration_curl-7.51.0.h
 HEADERS += $$TOPPATH/addon/boss_integration_dlib-19.17.h
 HEADERS += $$TOPPATH/addon/boss_integration_fdk-aac-0.1.4.h
@@ -154,6 +157,7 @@ HEADERS += $$TOPPATH/addon/boss_integration_webrtc-jumpingyang001.h
 HEADERS += $$TOPPATH/addon/boss_integration_websocketpp-0.8.1.hpp
 HEADERS += $$TOPPATH/addon/boss_integration_ziparchive-4.6.7.h
 SOURCES += $$TOPPATH/addon/boss_addon_aac.cpp
+SOURCES += $$TOPPATH/addon/boss_addon_abc.cpp
 SOURCES += $$TOPPATH/addon/boss_addon_alpr.cpp
 SOURCES += $$TOPPATH/addon/boss_addon_curl.cpp
 SOURCES += $$TOPPATH/addon/boss_addon_dlib.cpp
@@ -172,7 +176,9 @@ SOURCES += $$TOPPATH/addon/boss_addon_websocket.cpp
 SOURCES += $$TOPPATH/addon/boss_addon_zip.cpp
 SOURCES += $$TOPPATH/addon/boss_addon_zipa.cpp
 SOURCES += $$TOPPATH/addon/boss_fakewin.cpp
+SOURCES += $$TOPPATH/addon/boss_integration_abcview-1.1.0.cpp
 SOURCES += $$TOPPATH/addon/boss_integration_abseil-cpp-20180600.cpp
+SOURCES += $$TOPPATH/addon/boss_integration_alembic-1.8.1.cpp
 SOURCES += $$TOPPATH/addon/boss_integration_curl-7.51.0.c
 SOURCES += $$TOPPATH/addon/boss_integration_dlib-19.17.cpp
 SOURCES += $$TOPPATH/addon/boss_integration_fdk-aac-0.1.4.cpp

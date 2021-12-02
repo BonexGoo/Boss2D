@@ -5135,7 +5135,7 @@ int WebPagePrivate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 struct qt_meta_stringdata_WebViewPrivate_t {
     QByteArrayData data[18];
-    char stringdata0[262];
+    char stringdata0[270];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -5155,23 +5155,23 @@ QT_MOC_LITERAL(7, 68, 14), // "onLoadProgress"
 QT_MOC_LITERAL(8, 83, 8), // "progress"
 QT_MOC_LITERAL(9, 92, 14), // "onLoadFinished"
 QT_MOC_LITERAL(10, 107, 23), // "renderProcessTerminated"
-QT_MOC_LITERAL(11, 131, 46), // "QWebEnginePage::RenderProcess..."
-QT_MOC_LITERAL(12, 178, 17), // "terminationStatus"
-QT_MOC_LITERAL(13, 196, 8), // "exitCode"
-QT_MOC_LITERAL(14, 205, 28), // "onFeaturePermissionRequested"
-QT_MOC_LITERAL(15, 234, 1), // "q"
-QT_MOC_LITERAL(16, 236, 23), // "QWebEnginePage::Feature"
-QT_MOC_LITERAL(17, 260, 1) // "f"
+QT_MOC_LITERAL(11, 131, 50), // "WebEnginePageClass::RenderPro..."
+QT_MOC_LITERAL(12, 182, 17), // "terminationStatus"
+QT_MOC_LITERAL(13, 200, 8), // "exitCode"
+QT_MOC_LITERAL(14, 209, 28), // "onFeaturePermissionRequested"
+QT_MOC_LITERAL(15, 238, 1), // "q"
+QT_MOC_LITERAL(16, 240, 27), // "WebEnginePageClass::Feature"
+QT_MOC_LITERAL(17, 268, 1) // "f"
 
     },
     "WebViewPrivate\0onTitleChanged\0\0title\0"
     "onUrlChanged\0url\0onLoadStarted\0"
     "onLoadProgress\0progress\0onLoadFinished\0"
     "renderProcessTerminated\0"
-    "QWebEnginePage::RenderProcessTerminationStatus\0"
+    "WebEnginePageClass::RenderProcessTerminationStatus\0"
     "terminationStatus\0exitCode\0"
     "onFeaturePermissionRequested\0q\0"
-    "QWebEnginePage::Feature\0f"
+    "WebEnginePageClass::Feature\0f"
 };
 #undef QT_MOC_LITERAL
 
@@ -5220,8 +5220,8 @@ void WebViewPrivate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 2: _t->onLoadStarted(); break;
         case 3: _t->onLoadProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->onLoadFinished((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 5: _t->renderProcessTerminated((*reinterpret_cast< QWebEnginePage::RenderProcessTerminationStatus(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
-        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< QUrl(*)>(_a[1])),(*reinterpret_cast< QWebEnginePage::Feature(*)>(_a[2]))); break;
+        case 5: _t->renderProcessTerminated((*reinterpret_cast< WebEnginePageClass::RenderProcessTerminationStatus(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< QUrl(*)>(_a[1])),(*reinterpret_cast< WebEnginePageClass::Feature(*)>(_a[2]))); break;
         default: ;
         }
     }

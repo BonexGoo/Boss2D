@@ -5284,6 +5284,29 @@
         Q_OBJECT
 
     public:
+        enum RenderProcessTerminationStatus {
+            NormalTerminationStatus = 0,
+            AbnormalTerminationStatus,
+            CrashedTerminationStatus,
+            KilledTerminationStatus
+        };
+        enum PermissionPolicy {
+            PermissionUnknown,
+            PermissionGrantedByUser,
+            PermissionDeniedByUser
+        };
+        enum Feature {
+            Notifications = 0,
+            Geolocation = 1,
+            MediaAudioCapture = 2,
+            MediaVideoCapture,
+            MediaAudioVideoCapture,
+            MouseLock,
+            DesktopVideoCapture,
+            DesktopAudioVideoCapture
+        };
+
+    public:
         WebEnginePageForExtraDesktop(QObject* parent = nullptr) {}
         virtual ~WebEnginePageForExtraDesktop() {}
 
@@ -5292,6 +5315,7 @@
         typedef std::function<void(const QVariant&)> WebEngineCallbackForExtraDesktop;
 
     public:
+        void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy) {}
         void runJavaScript(const QString& scriptSource, const WebEngineCallbackForExtraDesktop& resultCallback) {}
         virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) {}
     };
@@ -5352,10 +5376,13 @@
         }
 
     private:
-        bool certificateError(const QWebEngineCertificateError& error) override
-        {
-            return true;
-        }
+        #if defined(QT_HAVE_WEBENGINEWIDGETS)
+            bool certificateError(const QWebEngineCertificateError& error) override
+            {
+                return true;
+            }
+        #endif
+
         void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
         {
             if(mCb)
@@ -5459,22 +5486,22 @@
             if(mCb)
                 mCb(mData, "LoadFinished", "");
         }
-        void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+        void renderProcessTerminated(WebEnginePageClass::RenderProcessTerminationStatus terminationStatus, int exitCode)
         {
             if(mCb)
             {
                 switch(terminationStatus)
                 {
-                case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
-                case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
-                case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
-                case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
+                case WebEnginePageClass::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
+                case WebEnginePageClass::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
+                case WebEnginePageClass::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
+                case WebEnginePageClass::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
                 }
             }
         }
-        void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
+        void onFeaturePermissionRequested(QUrl q, WebEnginePageClass::Feature f)
         {
-            page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
+            page()->setFeaturePermission(q, f, WebEnginePageClass::PermissionGrantedByUser);
         }
 
     public:
@@ -5839,7 +5866,7 @@
                     // UUID필터 등록
                     if(uuidfilters.Count() == 1)
                     {
-                        const QBluetoothUuid NewUUID = QString::fromUtf8((chars) uuidfilters[0]);
+                        const QBluetoothUuid NewUUID(QString::fromUtf8((chars) uuidfilters[0]));
                         Self.mDiscoveryServiceAgent_BT->setUuidFilter(NewUUID);
                     }
                     else if(1 < uuidfilters.Count())
@@ -7367,7 +7394,7 @@
         bool ReadReady(sint32* gettype)
         {
             // 데이터수신시 읽기스트림에 추가연결
-            QByteArray& NewArray = mSerial->readAll();
+            QByteArray NewArray = mSerial->readAll();
             if(0 < NewArray.length())
                 Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
 

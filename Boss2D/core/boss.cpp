@@ -24,6 +24,7 @@
     #include <CoreFoundation/CoreFoundation.h>
 #elif BOSS_ANDROID
     #include <dirent.h>
+    #include <errno.h>
     #include <android/asset_manager_jni.h>
 #elif BOSS_WASM
     #include <sys/stat.h>

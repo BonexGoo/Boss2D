@@ -144,11 +144,12 @@
         int main(int argc, char* argv[])
         {
             int result = 0;
-            g_isPopupAssert = true;
+            #if BOSS_ANDROID
+                g_isPopupAssert = false;
+            #else
+                g_isPopupAssert = true;
+            #endif
             {
-                //#if BOSS_WINDOWS
-                //    SetProcessDPIAware(); // 화면DPI에 따른 좌표계문제를 해결
-                //#endif
                 QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
                 ApplicationPrivate app(argc, argv);
 
