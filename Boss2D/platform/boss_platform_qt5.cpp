@@ -14,9 +14,9 @@
     static bool g_isPopupAssert = false;
 
     // 외부지원
-    QGLFunctions* g_currentGLFunctions()
+    QOpenGLFunctions* g_currentGLFunctions()
     {
-        static QGLFunctions func(g_data->getGLWidget()->context());
+        static QOpenGLFunctions func(g_data->getGLWidget()->context());
         return &func;
     }
 
@@ -150,7 +150,7 @@
                 g_isPopupAssert = true;
             #endif
             {
-                QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+                QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
                 ApplicationPrivate app(argc, argv);
 
                 MainWindow mainWindow;

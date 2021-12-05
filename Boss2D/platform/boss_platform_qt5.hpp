@@ -45,10 +45,15 @@
         #include <QWheelEvent>
         #include <QKeyEvent>
         #include <QDesktopServices>
+        #include <QOpenGLWidget>
+        #include <QOpenGLFunctions>
+        #include <QOpenGLShaderProgram>
+        #include <QOpenGLFramebufferObject>
+
+        // QPixmap을 GLuint타입 Texture로 바꾸기 위한 기능이 필요하여 include
+        // auto CurContext = QGLContext::fromOpenGLContext(ctx);
+        // GLuint CurTexture = CurContext->bindTexture(pixmap);
         #include <QGLWidget>
-        #include <QGLFunctions>
-        #include <QGLShaderProgram>
-        #include <QGLFramebufferObject>
     #endif
 
     #include <QBuffer>
@@ -168,7 +173,7 @@
         typedef QListWidget ListWidgetPrivate;
         typedef QInputDialog InputDialogPrivate;
         typedef QColorDialog ColorDialogPrivate;
-        typedef QGLWidget GLWidgetPrivate;
+        typedef QOpenGLWidget GLWidgetPrivate;
     #else
         class WIdForEmpty;
         typedef WIdForEmpty WIdPrivate;
@@ -1428,7 +1433,7 @@
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
-        inline float zoom() const {return mPainter.matrix().m11();}
+        inline float zoom() const {return mPainter.transform().m11();}
         inline const QRect& scissor() const {return mScissor;}
         inline const ColorPrivate& color() const {return mColor;}
         // Setter
@@ -1836,16 +1841,16 @@
                 return;
             }
 
-            float WheelValue = event->delta() / 120.0f;
+            float WheelValue = event->angleDelta().y() / 120.0f;
             while (0 < WheelValue)
             {
                 WheelValue = Math::MaxF(0, WheelValue - 1);
-                touch(TT_WheelUp, 0, event->x(), event->y());
+                touch(TT_WheelUp, 0, event->position().x(), event->position().y());
             }
             while (WheelValue < 0)
             {
                 WheelValue = Math::MinF(WheelValue + 1, 0);
-                touch(TT_WheelDown, 0, event->x(), event->y());
+                touch(TT_WheelDown, 0, event->position().x(), event->position().y());
             }
         }
 
@@ -2112,7 +2117,7 @@
         h_window m_window;
     };
 
-    class GenericViewGL : public GLWidgetPrivate
+    class GenericViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
     {
         Q_OBJECT
 
@@ -2186,6 +2191,7 @@
     protected:
         void initializeGL() Q_DECL_OVERRIDE
         {
+            initializeOpenGLFunctions();
         }
 
         void resizeGL(int width, int height) Q_DECL_OVERRIDE
@@ -2214,16 +2220,17 @@
                         f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_fbo_width, m_fbo_height);
                         f->glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+                        GLuint prevFbo = 0;
                         f->glGenFramebuffers(1, &m_fbo);
+                        f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
                         f->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
                         f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_fbo_render);
                         GLenum status = f->glCheckFramebufferStatus(GL_FRAMEBUFFER);
                         BOSS_ASSERT("프레임버퍼의 생성에 실패하였습니다", status == GL_FRAMEBUFFER_COMPLETE);
-                        f->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                        f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
                     }
                 }
                 m_api->paint();
-                swapBuffers();
             }
             else GLWidgetPrivate::paintGL();
             m_api->nextPaint();
@@ -2352,7 +2359,7 @@
     };
 
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-        class MainViewGL : public GLWidgetPrivate
+        class MainViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
         {
             Q_OBJECT
 
@@ -2370,12 +2377,11 @@
                 m_fbo_width = 0;
                 m_fbo_height = 0;
 
-                setAttribute(Qt::WA_PaintOnScreen);
+                // setAttribute(Qt::WA_PaintOnScreen); 이 항목이 있으면 update()가 안먹힘
                 setAttribute(Qt::WA_NoSystemBackground);
                 setAttribute(Qt::WA_AcceptTouchEvents);
                 setMouseTracking(true);
                 setFocusPolicy(Qt::ClickFocus);
-                setAutoBufferSwap(false);
                 setAutoFillBackground(false);
             }
 
@@ -2405,6 +2411,7 @@
         protected:
             void initializeGL() Q_DECL_OVERRIDE
             {
+                initializeOpenGLFunctions();
             }
 
             void resizeGL(int width, int height) Q_DECL_OVERRIDE
@@ -2433,16 +2440,17 @@
                             f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_fbo_width, m_fbo_height);
                             f->glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+                            GLuint prevFbo = 0;
                             f->glGenFramebuffers(1, &m_fbo);
+                            f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
                             f->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
                             f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_fbo_render);
                             GLenum status = f->glCheckFramebufferStatus(GL_FRAMEBUFFER);
                             BOSS_ASSERT("프레임버퍼의 생성에 실패하였습니다", status == GL_FRAMEBUFFER_COMPLETE);
-                            f->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                            f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
                         }
                     }
                     m_api->paint();
-                    swapBuffers();
                 }
                 else GLWidgetPrivate::paintGL();
                 m_api->nextPaint();
@@ -2471,7 +2479,7 @@
             sint32 m_fbo_height;
         };
     #else
-        class MainViewGL : public GLWidgetPrivate
+        class MainViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
         {
             Q_OBJECT
 
@@ -2501,6 +2509,7 @@
         protected:
             void initializeGL() Q_DECL_OVERRIDE
             {
+                initializeOpenGLFunctions();
             }
 
             void resizeGL(int width, int height) Q_DECL_OVERRIDE
@@ -3339,7 +3348,14 @@
                 QOpenGLFunctions* f = ctx->functions();
                 const float DeviceRatio = Platform::Utility::GetPixelRatio();
 
-                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo); TestGL(BOSS_DBG 0);
+                GLuint prevFbo = 0;
+                if(fbo != 0)
+                {
+                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                    TestGL(BOSS_DBG 0);
+                }
+
                 GLint ViewPortValues[4] = {0};
                 f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
                 const GLint Width = ViewPortValues[2];
@@ -3398,6 +3414,12 @@
                 mAttrib[3].texcoords[0] = 1;
                 mAttrib[3].texcoords[1] = 1;
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
+
+                if(fbo != 0)
+                {
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                    TestGL(BOSS_DBG 0);
+                }
             }
             void DrawPixmap(uint32 fbo, float x, float y, const BOSS::Point (&ps)[3],
                 const PixmapPrivate& pixmap, const BOSS::Point (&ips)[3], const BOSS::Color (&colors)[3])
@@ -3406,7 +3428,14 @@
                 QOpenGLFunctions* f = ctx->functions();
                 const float DeviceRatio = (fbo == 0)? Platform::Utility::GetPixelRatio() : 1;
 
-                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo); TestGL(BOSS_DBG 0);
+                GLuint prevFbo = 0;
+                if(fbo != 0)
+                {
+                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                    TestGL(BOSS_DBG 0);
+                }
+
                 GLint ViewPortValues[4] = {0};
                 f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
                 #if BOSS_ANDROID
@@ -3461,6 +3490,12 @@
                     mAttrib[i].texcoords[1] = (NeedReverse)? 1 - ips[i].y : ips[i].y;
                 }
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); TestGL(BOSS_DBG 0);
+
+                if(fbo != 0)
+                {
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                    TestGL(BOSS_DBG 0);
+                }
             }
             void DrawTexture(uint32 fbo, const BOSS::Rect& rect, id_texture_read tex, const BOSS::Rect& texrect, const BOSS::Color& color, orientationtype ori, bool antialiasing)
             {
@@ -3468,7 +3503,14 @@
                 QOpenGLFunctions* f = ctx->functions();
                 const float DeviceRatio = Platform::Utility::GetPixelRatio();
 
-                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo); TestGL(BOSS_DBG 0);
+                GLuint prevFbo = 0;
+                if(fbo != 0)
+                {
+                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                    TestGL(BOSS_DBG 0);
+                }
+
                 GLint ViewPortValues[4] = {0};
                 f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
                 #if BOSS_ANDROID
@@ -3576,6 +3618,12 @@
                 mAttrib[UV[3]].texcoords[0] = texrect.l / SrcWidth; // 좌측하단
                 mAttrib[UV[3]].texcoords[1] = (SrcHeight - texrect.t) / SrcHeight;
                 f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
+
+                if(fbo != 0)
+                {
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                    TestGL(BOSS_DBG 0);
+                }
             }
 
         private:
@@ -6056,17 +6104,23 @@
 
         void serviceDiscovered_BT(const QBluetoothServiceInfo& service)
         {
-            const String ServiceName = service.serviceName().toUtf8().constData();
+            String ServiceName = service.serviceName().toUtf8().constData();
+            if(ServiceName.Length() == 0) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
+                ServiceName = "Unknown Service";
+
             Strings UuidCollector;
             for(const auto& CurUuid : service.serviceClassUuids())
-            {
                 UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
-                Mutex::Lock(mDiscoverMutex);
-                {
-                    mDiscoveredServices_BT.insert(CurUuid.toString(), service);
-                }
-                Mutex::Unlock(mDiscoverMutex);
+            if(UuidCollector.Count() == 0) // 안드로이드의 경우
+                UuidCollector.AtAdding() = "00000000-0000-0000-0000-000000000000";
+
+            Mutex::Lock(mDiscoverMutex);
+            {
+                for(sint32 i = 0, iend = UuidCollector.Count(); i < iend; ++i)
+                    mDiscoveredServices_BT.insert(QString((chars) UuidCollector[i]), service);
             }
+            Mutex::Unlock(mDiscoverMutex);
+
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
         void scanServiceFinished_BT()
@@ -6080,14 +6134,18 @@
 
         void serviceDiscovered_BLE(const QBluetoothUuid& serviceUuid)
         {
-            String ServiceName;
+            String ServiceName = "Unknown Service";
             Strings UuidCollector;
             if(QLowEnergyService* NewService = mDiscoveryServiceAgent_BLE->createServiceObject(serviceUuid))
             {
                 ServiceName = NewService->serviceName().toUtf8().constData();
+                if(ServiceName.Length() == 0) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
+                    ServiceName = "Unknown Service";
+
                 UuidCollector.AtAdding() = serviceUuid.toString().toUtf8().constData();
                 delete NewService;
             }
+
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
         void scanServiceFinished_BLE()
