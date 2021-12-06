@@ -2492,6 +2492,33 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
+
+                ////////////////////
+                #if BOSS_ANDROID
+                    if(CanvasClass::get()->is_font_ft())
+                    {
+                        CanvasClass::get()->SetFont("Arial", (sint32) (CanvasClass::get()->font_ft_height() * 0.4));
+                        CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
+                        CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+                        CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+
+                        const QString Text = (sizeof(TYPE) == 1)?
+                            QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
+                        if(elide != UIFE_None)
+                        {
+                            const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
+                            if(ElidedText != Text)
+                            {
+                                CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
+                                return true;
+                            }
+                        }
+                        CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
+                    }
+                    else
+                #endif
+                ////////////////////
+
                 if(CanvasClass::get()->is_font_ft())
                 {
                     const float Zoom = CanvasClass::get()->zoom();
