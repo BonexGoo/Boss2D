@@ -6025,12 +6025,9 @@
             QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
             return NewDeviceInfo;
         }
-        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars deviceaddress, bool locking)
+        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address, bool locking)
         {
-            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(deviceaddress, locking))
-                return Result;
-            
-            const String DeviceNameAndAddress = deviceaddress;
+            const String DeviceNameAndAddress = devicename_and_address;
             sint32 SlashPos = -1;
             sint32 NextSlashPos = 0;
             while(NextSlashPos != -1)
@@ -6039,6 +6036,9 @@
                 if(NextSlashPos != -1)
                     SlashPos = NextSlashPos;
             }
+
+            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(DeviceNameAndAddress.Offset(SlashPos + 1), locking))
+                return Result;
 
             if(SlashPos != -1)
                 return BluetoothSearchPrivate::CreateDevice(
@@ -6089,6 +6089,8 @@
             Mutex::Unlock(mDiscoverMutex);
 
             String DeviceName = device.name().toUtf8().constData();
+            if(DeviceName.Length() == 0)
+                DeviceName += "Unknown Device";
             if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                 DeviceName += " (BLE)";
             Platform::BroadcastNotify(DeviceName, NewAddress, NT_BluetoothDevice);
