@@ -141,19 +141,24 @@ namespace BOSS
 
             if(source[Offset] == '0'
                 && (source[Offset + 1] == 'x' || source[Offset + 1] == 'X'))
+            {
                 Offset += 2;
+                length -= 2;
+            }
 
             TYPE Value = 0;
             bool IsNumeric = false, IsHexLower = false, IsHexUpper = false;
             char OneChar = source[Offset];
-            while((IsNumeric = ('0' <= OneChar && OneChar <= '9'))
-                || (IsHexLower = ('a' <= OneChar && OneChar <= 'f'))
-                || (IsHexUpper = ('A' <= OneChar && OneChar <= 'F')))
+            while(0 < length && (
+                (IsNumeric = ('0' <= OneChar && OneChar <= '9')) ||
+                (IsHexLower = ('a' <= OneChar && OneChar <= 'f')) ||
+                (IsHexUpper = ('A' <= OneChar && OneChar <= 'F'))))
             {
                 if(IsNumeric) Value = (Value << 4) + OneChar - '0';
                 else if(IsHexLower) Value = (Value << 4) + 10 + OneChar - 'a';
                 else if(IsHexUpper) Value = (Value << 4) + 10 + OneChar - 'A';
                 OneChar = source[++Offset];
+                length--;
             }
 
             if(offset) *offset = Offset;
