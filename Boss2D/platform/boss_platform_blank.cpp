@@ -2148,7 +2148,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid, bool ble)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;

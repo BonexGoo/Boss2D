@@ -4492,13 +4492,22 @@
             BluetoothSearchPrivate::ServiceEnd();
         }
 
-        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid, bool ble)
         {
-            auto NewBluetooth = new BluetoothServerPrivate();
-            if(NewBluetooth->Init(service, uuid))
-                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
-            else delete NewBluetooth;
-
+            if(!ble)
+            {
+                auto NewBluetooth = new BluetoothServerPrivate();
+                if(NewBluetooth->Init(service, uuid))
+                    return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+                else delete NewBluetooth;
+            }
+            else
+            {
+                auto NewBluetooth = new BluetoothLEServerPrivate();
+                if(NewBluetooth->Init(service, uuid))
+                    return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+                else delete NewBluetooth;
+            }
             return nullptr;
         }
 
@@ -4509,7 +4518,7 @@
                 return (id_bluetooth)(BluetoothPrivate*) NewBluetooth1;
             else delete NewBluetooth1;
 
-            auto NewBluetooth2 = new BluetoothLowEnergyClientPrivate();
+            auto NewBluetooth2 = new BluetoothLEClientPrivate();
             if(NewBluetooth2->Init(uuid))
                 return (id_bluetooth)(BluetoothPrivate*) NewBluetooth2;
             else delete NewBluetooth2;

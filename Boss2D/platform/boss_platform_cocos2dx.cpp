@@ -2389,7 +2389,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid)
+        id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid, bool ble)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

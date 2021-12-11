@@ -3636,6 +3636,8 @@ void *GenericViewGL::qt_metacast(const char *_clname)
     if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_meta_stringdata_GenericViewGL.stringdata0))
         return static_cast<void*>(this);
+    if (!strcmp(_clname, "QOpenGLFunctions"))
+        return static_cast< QOpenGLFunctions*>(this);
     return GLWidgetPrivate::qt_metacast(_clname);
 }
 
@@ -3706,6 +3708,8 @@ void *MainViewGL::qt_metacast(const char *_clname)
     if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_meta_stringdata_MainViewGL.stringdata0))
         return static_cast<void*>(this);
+    if (!strcmp(_clname, "QOpenGLFunctions"))
+        return static_cast< QOpenGLFunctions*>(this);
     return GLWidgetPrivate::qt_metacast(_clname);
 }
 

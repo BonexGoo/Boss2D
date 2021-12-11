@@ -1769,7 +1769,7 @@ public:
     };
 
     ////////////////////////////////////////////////////////////////////////////////
-    /// @brief 블루투스(BLE)지원
+    /// @brief 블루투스(BT/BLE)지원
     class Bluetooth
     {
     public:
@@ -1790,9 +1790,10 @@ public:
         /// @brief 서버역할로 블루투스ID 생성
         /// @param service : 서비스이름
         /// @param uuid : 블루투스Uuid
+        /// @param ble : BLE타입
         /// @return 블루투스ID(nullptr은 실패)
         /// @see Release
-        static id_bluetooth CreateServer(chars service, chars uuid);
+        static id_bluetooth CreateServer(chars service, chars uuid, bool ble);
 
         /// @brief 클라이언트역할로 블루투스ID 생성
         /// @param uuid : 연결할 서버의 블루투스Uuid

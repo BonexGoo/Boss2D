@@ -6346,6 +6346,123 @@
         QByteArray mRecvData;
     };
 
+    class BluetoothLEServerPrivate : public BluetoothPrivate
+    {
+        Q_OBJECT
+
+    public:
+        bool Init(chars service, chars uuid)
+        {
+            mServiceName = QString(service);
+            mServiceUuid = QBluetoothUuid(QString(uuid));
+            if(mController = QLowEnergyController::createPeripheral())
+            {
+                connect(mController, &QLowEnergyController::disconnected, this, &BluetoothLEServerPrivate::OnDisconnected);
+                mReadTimer = new QTimer(this);
+                connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEServerPrivate::OnRead);
+                mReadTimer->start(1000);
+                SetServiceInfo();
+                return true;
+            }
+            return false;
+        }
+
+    public:
+        bool Connected() override
+        {
+            return true;
+            //return (mClient != nullptr);
+        }
+        sint32 ReadAvailable() override
+        {
+            return 0;
+            //return mRecvData.count();
+        }
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            return 0;
+            /*if(mClient)
+            {
+                const sint32 MinSize = Math::Min(mRecvData.count(), size);
+                Memory::Copy(data, mRecvData.constData(), MinSize);
+                mRecvData.remove(0, MinSize);
+                return MinSize;
+            }
+            return -1;*/
+        }
+        bool Write(const uint08* data, const sint32 size) override
+        {
+            QLowEnergyCharacteristic WriteChar = mService->characteristic(mServiceUuid);
+            if(WriteChar.isValid())
+            {
+                mService->writeCharacteristic(WriteChar, QByteArray((chars) data, size));
+                return true;
+            }
+            return false;
+        }
+
+    private slots:
+        void OnDisconnected()
+        {
+            SetServiceInfo();
+        }
+        void OnRead()
+        {
+        }
+
+    private:
+        void SetServiceInfo()
+        {
+            QLowEnergyCharacteristicData CharData;
+            CharData.setUuid(mServiceUuid);
+            CharData.setValue(QByteArray(2, 0));
+            CharData.setProperties(QLowEnergyCharacteristic::Notify);
+            const QLowEnergyDescriptorData ClientConfig(QBluetoothUuid::ClientCharacteristicConfiguration, QByteArray(2, 0));
+            CharData.addDescriptor(ClientConfig);
+
+            QLowEnergyServiceData ServiceData;
+            ServiceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
+            ServiceData.setUuid(mServiceUuid);
+            ServiceData.addCharacteristic(CharData);
+
+            delete mService;
+            mService = mController->addService(ServiceData);
+
+            QLowEnergyAdvertisingData AdvertisingData;
+            AdvertisingData.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+            AdvertisingData.setIncludePowerLevel(true);
+            AdvertisingData.setLocalName(mServiceName);
+            AdvertisingData.setServices(QList<QBluetoothUuid>() << mServiceUuid);
+            mController->startAdvertising(QLowEnergyAdvertisingParameters(), AdvertisingData, AdvertisingData);
+        }
+
+    public:
+        BluetoothLEServerPrivate()
+        {
+            mController = nullptr;
+            mService = nullptr;
+            mReadTimer = nullptr;
+        }
+        ~BluetoothLEServerPrivate() override
+        {
+            if(mReadTimer)
+            {
+                mReadTimer->deleteLater();
+                delete mReadTimer;
+            }
+
+            delete mService;
+            delete mController;
+        }
+
+    private:
+        QString mServiceName;
+        QBluetoothUuid mServiceUuid;
+        QLowEnergyController* mController;
+        QLowEnergyService* mService;
+        QTimer* mReadTimer;
+    };
+
     class BluetoothClientPrivate : public BluetoothPrivate
     {
         Q_OBJECT
@@ -6451,7 +6568,7 @@
         QByteArray mRecvData;
     };
 
-    class BluetoothLowEnergyClientPrivate : public BluetoothPrivate
+    class BluetoothLEClientPrivate : public BluetoothPrivate
     {
         Q_OBJECT
 
@@ -6462,15 +6579,15 @@
             if(mController = BluetoothSearchPrivate::CreateController_BLE(this, true))
             {
                 connect(mController, &QLowEnergyController::serviceDiscovered,
-                    this, &BluetoothLowEnergyClientPrivate::OnServiceDiscovered);
+                    this, &BluetoothLEClientPrivate::OnServiceDiscovered);
                 connect(mController, &QLowEnergyController::discoveryFinished,
-                    this, &BluetoothLowEnergyClientPrivate::OnScanServiceFinished);
+                    this, &BluetoothLEClientPrivate::OnScanServiceFinished);
                 connect(mController, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                    this, &BluetoothLowEnergyClientPrivate::OnScanServiceErrorOccurred);
+                    this, &BluetoothLEClientPrivate::OnScanServiceErrorOccurred);
                 connect(mController, &QLowEnergyController::connected,
-                    this, &BluetoothLowEnergyClientPrivate::OnDeviceConnected);
+                    this, &BluetoothLEClientPrivate::OnDeviceConnected);
                 connect(mController, &QLowEnergyController::disconnected,
-                    this, &BluetoothLowEnergyClientPrivate::OnDeviceDisconnected);
+                    this, &BluetoothLEClientPrivate::OnDeviceDisconnected);
                 mController->connectToDevice();
                 return true;
             }
@@ -6522,12 +6639,12 @@
         {
             if(mService = mController->createServiceObject(mServiceUuid, this))
             {
-                connect(mService, &QLowEnergyService::stateChanged, this, &BluetoothLowEnergyClientPrivate::OnServiceStateChanged);
-                connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicChanged);
-                connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicRead);
-                connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLowEnergyClientPrivate::OnCharacteristicWritten);
+                connect(mService, &QLowEnergyService::stateChanged, this, &BluetoothLEClientPrivate::OnServiceStateChanged);
+                connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEClientPrivate::OnCharacteristicChanged);
+                connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEClientPrivate::OnCharacteristicRead);
+                connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEClientPrivate::OnCharacteristicWritten);
                 connect(mService, QOverload<QLowEnergyService::ServiceError>::of(&QLowEnergyService::error),
-                    this, &BluetoothLowEnergyClientPrivate::OnErrorOccurred);
+                    this, &BluetoothLEClientPrivate::OnErrorOccurred);
                 mService->discoverDetails();
             }
         }
@@ -6615,7 +6732,7 @@
                         if(!mReadTimer)
                         {
                             mReadTimer = new QTimer(this);
-                            connect(mReadTimer, &QTimer::timeout, this, &BluetoothLowEnergyClientPrivate::OnRead);
+                            connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEClientPrivate::OnRead);
                             mReadTimer->start(1000);
                         }
                     }
@@ -6662,7 +6779,7 @@
         }
 
     public:
-        BluetoothLowEnergyClientPrivate()
+        BluetoothLEClientPrivate()
         {
             mController = nullptr;
             mService = nullptr;
@@ -6670,7 +6787,7 @@
             mReadTimer = nullptr;
             mReadCount = 0;
         }
-        ~BluetoothLowEnergyClientPrivate() override
+        ~BluetoothLEClientPrivate() override
         {
             if(mReadTimer)
             {
@@ -8784,8 +8901,9 @@
     class BluetoothSearchPrivate : public QObject {Q_OBJECT};
     class BluetoothPrivate : public QObject {Q_OBJECT};
     class BluetoothServerPrivate : public BluetoothPrivate {Q_OBJECT};
+    class BluetoothLEServerPrivate : public BluetoothPrivate {Q_OBJECT};
     class BluetoothClientPrivate : public BluetoothPrivate {Q_OBJECT};
-    class BluetoothLowEnergyClientPrivate : public BluetoothPrivate {Q_OBJECT};
+    class BluetoothLEClientPrivate : public BluetoothPrivate {Q_OBJECT};
     class CameraSurface : public QAbstractVideoSurface {Q_OBJECT};
     class MicrophoneClass : public QAudioProbe {Q_OBJECT};
 
