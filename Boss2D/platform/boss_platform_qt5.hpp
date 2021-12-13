@@ -6357,10 +6357,27 @@
             mServiceUuid = QBluetoothUuid(QString(uuid));
             if(mController = QLowEnergyController::createPeripheral())
             {
+                mAdvertisingData.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+                mAdvertisingData.setIncludePowerLevel(true);
+                mAdvertisingData.setLocalName(mServiceName);
+                mAdvertisingData.setServices(QList<QBluetoothUuid>() << mServiceUuid);
+
+                mWriteCharData.setUuid(QBluetoothUuid(QString("f377fa5e-dd91-4427-8606-5cdddce19977")));
+                mWriteCharData.setProperties(QLowEnergyCharacteristic::Write);
+
+                mReadCharData.setUuid(QBluetoothUuid(QString("f377fa5e-dd91-4427-8606-5cdddce19988")));
+                mReadCharData.setProperties(QLowEnergyCharacteristic::Read);
+
+                mServiceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
+                mServiceData.setUuid(mServiceUuid);
+                mServiceData.addCharacteristic(mWriteCharData);
+                mServiceData.addCharacteristic(mReadCharData);
+
+                connect(mController, &QLowEnergyController::connected, this, &BluetoothLEServerPrivate::OnConnected);
                 connect(mController, &QLowEnergyController::disconnected, this, &BluetoothLEServerPrivate::OnDisconnected);
                 mReadTimer = new QTimer(this);
                 connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEServerPrivate::OnRead);
-                mReadTimer->start(1000);
+                mReadTimer->start(100);
                 SetServiceInfo();
                 return true;
             }
@@ -6370,70 +6387,87 @@
     public:
         bool Connected() override
         {
-            return true;
-            //return (mClient != nullptr);
+            if(mController)
+                return (mController->state() == QLowEnergyController::ConnectedState);
+            return false;
         }
         sint32 ReadAvailable() override
         {
-            return 0;
-            //return mRecvData.count();
+            return mReadCount;
         }
         sint32 Read(uint08* data, const sint32 size) override
         {
-            return 0;
-            /*if(mClient)
+            if(mService)
             {
-                const sint32 MinSize = Math::Min(mRecvData.count(), size);
-                Memory::Copy(data, mRecvData.constData(), MinSize);
-                mRecvData.remove(0, MinSize);
-                return MinSize;
+                if(!mReadQueue.isEmpty())
+                {
+                    QByteArray CurBytes = mReadQueue.dequeue();
+                    const sint32 CopySize = Math::Min(size, CurBytes.length());
+                    Memory::Copy(data, CurBytes.constData(), CopySize);
+                    mReadCount -= CurBytes.length();
+                    return CopySize;
+                }
+                return 0;
             }
-            return -1;*/
+            return -1;
         }
         bool Write(const uint08* data, const sint32 size) override
         {
-            QLowEnergyCharacteristic WriteChar = mService->characteristic(mServiceUuid);
-            if(WriteChar.isValid())
+            if(mService)
             {
-                mService->writeCharacteristic(WriteChar, QByteArray((chars) data, size));
-                return true;
+                QLowEnergyCharacteristic WriteChar = mService->characteristic(QBluetoothUuid(QString("f377fa5e-dd91-4427-8606-5cdddce19977")));
+                if(WriteChar.isValid())
+                {
+                    mService->writeCharacteristic(WriteChar, QByteArray((chars) data, size));
+                    return true;
+                }
             }
             return false;
         }
 
     private slots:
+        void OnConnected()
+        {
+        }
         void OnDisconnected()
         {
             SetServiceInfo();
         }
         void OnRead()
         {
+            if(mService)
+            {
+                QLowEnergyCharacteristic ReadChar = mService->characteristic(QBluetoothUuid(QString("f377fa5e-dd91-4427-8606-5cdddce19988")));
+                if(ReadChar.isValid())
+                    mService->readCharacteristic(ReadChar);
+            }
+        }
+
+        void OnCharacteristicChanged(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
+            mReadCount += value.length();
+            mReadQueue.enqueue(value);
+            Platform::BroadcastNotify("message", nullptr, NT_BluetoothReceive);
+        }
+        void OnCharacteristicRead(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
+            mReadCount += value.length();
+            mReadQueue.enqueue(value);
+            Platform::BroadcastNotify("message", nullptr, NT_BluetoothReceive);
+        }
+        void OnCharacteristicWritten(const QLowEnergyCharacteristic& info, const QByteArray& value)
+        {
         }
 
     private:
         void SetServiceInfo()
         {
-            QLowEnergyCharacteristicData CharData;
-            CharData.setUuid(mServiceUuid);
-            CharData.setValue(QByteArray(2, 0));
-            CharData.setProperties(QLowEnergyCharacteristic::Notify);
-            const QLowEnergyDescriptorData ClientConfig(QBluetoothUuid::ClientCharacteristicConfiguration, QByteArray(2, 0));
-            CharData.addDescriptor(ClientConfig);
-
-            QLowEnergyServiceData ServiceData;
-            ServiceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
-            ServiceData.setUuid(mServiceUuid);
-            ServiceData.addCharacteristic(CharData);
-
             delete mService;
-            mService = mController->addService(ServiceData);
-
-            QLowEnergyAdvertisingData AdvertisingData;
-            AdvertisingData.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
-            AdvertisingData.setIncludePowerLevel(true);
-            AdvertisingData.setLocalName(mServiceName);
-            AdvertisingData.setServices(QList<QBluetoothUuid>() << mServiceUuid);
-            mController->startAdvertising(QLowEnergyAdvertisingParameters(), AdvertisingData, AdvertisingData);
+            mService = mController->addService(mServiceData);
+            connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEServerPrivate::OnCharacteristicChanged);
+            connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEServerPrivate::OnCharacteristicRead);
+            connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEServerPrivate::OnCharacteristicWritten);
+            mController->startAdvertising(QLowEnergyAdvertisingParameters(), mAdvertisingData, mAdvertisingData);
         }
 
     public:
@@ -6442,6 +6476,7 @@
             mController = nullptr;
             mService = nullptr;
             mReadTimer = nullptr;
+            mReadCount = 0;
         }
         ~BluetoothLEServerPrivate() override
         {
@@ -6458,9 +6493,15 @@
     private:
         QString mServiceName;
         QBluetoothUuid mServiceUuid;
+        QLowEnergyAdvertisingData mAdvertisingData;
+        QLowEnergyCharacteristicData mWriteCharData;
+        QLowEnergyCharacteristicData mReadCharData;
+        QLowEnergyServiceData mServiceData;
         QLowEnergyController* mController;
         QLowEnergyService* mService;
         QTimer* mReadTimer;
+        QQueue<QByteArray> mReadQueue;
+        sint32 mReadCount;
     };
 
     class BluetoothClientPrivate : public BluetoothPrivate
@@ -6733,7 +6774,7 @@
                         {
                             mReadTimer = new QTimer(this);
                             connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEClientPrivate::OnRead);
-                            mReadTimer->start(1000);
+                            mReadTimer->start(100);
                         }
                     }
                     mNotiDesc = c.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
