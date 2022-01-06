@@ -226,7 +226,7 @@ namespace BOSS
         class WebRtc
         {
         public:
-            static id_webrtc OpenForOffer(bool audio, bool data);
+            static id_webrtc OpenForOffer(bool video, bool audio, bool data);
             static id_webrtc OpenForAnswer(chars offer_sdp);
             static bool BindWithAnswer(id_webrtc offer_webrtc, chars answer_sdp);
             static void Close(id_webrtc webrtc);

@@ -1,0 +1,76 @@
+﻿#pragma once
+#include <boss.h>
+#include <addon/boss_fakewin.h>
+
+#define HAVE_CONFIG_H
+#include <addon/opus-1.1.2_for_boss/win32/config.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// _BOSS_BATCH_COMMAND_ {"type" : "include-alias", "prm" : "BOSS_OPUS_", "restore-comment" : " //original-code:"}
+#define BOSS_OPUS_U_config_h                                                     "addon/opus-1.1.2_for_boss/win32/config.h"
+
+#define BOSS_OPUS_U_opus_h                                                       "addon/opus-1.1.2_for_boss/include/opus.h"
+#define BOSS_OPUS_U_opus_custom_h                                                "addon/opus-1.1.2_for_boss/include/opus_custom.h"
+#define BOSS_OPUS_U_opus_defines_h                                               "addon/opus-1.1.2_for_boss/include/opus_defines.h"
+#define BOSS_OPUS_U_opus_multistream_h                                           "addon/opus-1.1.2_for_boss/include/opus_multistream.h"
+#define BOSS_OPUS_U_opus_types_h                                                 "addon/opus-1.1.2_for_boss/include/opus_types.h"
+
+#define BOSS_OPUS_U_arch_h                                                       "addon/opus-1.1.2_for_boss/celt/arch.h"
+#define BOSS_OPUS_U_bands_h                                                      "addon/opus-1.1.2_for_boss/celt/bands.h"
+#define BOSS_OPUS_U_celt_h                                                       "addon/opus-1.1.2_for_boss/celt/celt.h"
+#define BOSS_OPUS_U_celt_lpc_h                                                   "addon/opus-1.1.2_for_boss/celt/celt_lpc.h"
+#define BOSS_OPUS_U_cpu_support_h                                                "addon/opus-1.1.2_for_boss/celt/cpu_support.h"
+#define BOSS_OPUS_U_cwrs_h                                                       "addon/opus-1.1.2_for_boss/celt/cwrs.h"
+#define BOSS_OPUS_U_ecintrin_h                                                   "addon/opus-1.1.2_for_boss/celt/ecintrin.h"
+#define BOSS_OPUS_U_entcode_h                                                    "addon/opus-1.1.2_for_boss/celt/entcode.h"
+#define BOSS_OPUS_U_entdec_h                                                     "addon/opus-1.1.2_for_boss/celt/entdec.h"
+#define BOSS_OPUS_U_entenc_h                                                     "addon/opus-1.1.2_for_boss/celt/entenc.h"
+#define BOSS_OPUS_U_fixed_c5x_h                                                  "addon/opus-1.1.2_for_boss/celt/fixed_c5x.h"
+#define BOSS_OPUS_U_fixed_c6x_h                                                  "addon/opus-1.1.2_for_boss/celt/fixed_c6x.h"
+#define BOSS_OPUS_U_fixed_debug_h                                                "addon/opus-1.1.2_for_boss/celt/fixed_debug.h"
+#define BOSS_OPUS_U_fixed_generic_h                                              "addon/opus-1.1.2_for_boss/celt/fixed_generic.h"
+#define BOSS_OPUS_U_float_cast_h                                                 "addon/opus-1.1.2_for_boss/celt/float_cast.h"
+#define BOSS_OPUS_U_kiss_fft_h                                                   "addon/opus-1.1.2_for_boss/celt/kiss_fft.h"
+#define BOSS_OPUS_U_laplace_h                                                    "addon/opus-1.1.2_for_boss/celt/laplace.h"
+#define BOSS_OPUS_U_mathops_h                                                    "addon/opus-1.1.2_for_boss/celt/mathops.h"
+#define BOSS_OPUS_U_mdct_h                                                       "addon/opus-1.1.2_for_boss/celt/mdct.h"
+#define BOSS_OPUS_U_mfrngcod_h                                                   "addon/opus-1.1.2_for_boss/celt/mfrngcod.h"
+#define BOSS_OPUS_U_modes_h                                                      "addon/opus-1.1.2_for_boss/celt/modes.h"
+#define BOSS_OPUS_U_os_support_h                                                 "addon/opus-1.1.2_for_boss/celt/os_support.h"
+#define BOSS_OPUS_U_pitch_h                                                      "addon/opus-1.1.2_for_boss/celt/pitch.h"
+#define BOSS_OPUS_U_quant_bands_h                                                "addon/opus-1.1.2_for_boss/celt/quant_bands.h"
+#define BOSS_OPUS_U_rate_h                                                       "addon/opus-1.1.2_for_boss/celt/rate.h"
+#define BOSS_OPUS_U_stack_alloc_h                                                "addon/opus-1.1.2_for_boss/celt/stack_alloc.h"
+#define BOSS_OPUS_U_static_modes_fixed_h                                         "addon/opus-1.1.2_for_boss/celt/static_modes_fixed.h"
+#define BOSS_OPUS_U_static_modes_fixed_arm_ne10_h                                "addon/opus-1.1.2_for_boss/celt/static_modes_fixed_arm_ne10.h"
+#define BOSS_OPUS_U_static_modes_float_h                                         "addon/opus-1.1.2_for_boss/celt/static_modes_float.h"
+#define BOSS_OPUS_U_static_modes_float_arm_ne10_h                                "addon/opus-1.1.2_for_boss/celt/static_modes_float_arm_ne10.h"
+#define BOSS_OPUS_U_vq_h                                                         "addon/opus-1.1.2_for_boss/celt/vq.h"
+
+#define BOSS_OPUS_U_API_h                                                        "addon/opus-1.1.2_for_boss/silk/API.h"
+#define BOSS_OPUS_U_control_h                                                    "addon/opus-1.1.2_for_boss/silk/control.h"
+#define BOSS_OPUS_U_debug_h                                                      "addon/opus-1.1.2_for_boss/silk/debug.h"
+#define BOSS_OPUS_U_define_h                                                     "addon/opus-1.1.2_for_boss/silk/define.h"
+#define BOSS_OPUS_U_errors_h                                                     "addon/opus-1.1.2_for_boss/silk/errors.h"
+#define BOSS_OPUS_U_Inlines_h                                                    "addon/opus-1.1.2_for_boss/silk/Inlines.h"
+#define BOSS_OPUS_U_MacroCount_h                                                 "addon/opus-1.1.2_for_boss/silk/MacroCount.h"
+#define BOSS_OPUS_U_MacroDebug_h                                                 "addon/opus-1.1.2_for_boss/silk/MacroDebug.h"
+#define BOSS_OPUS_U_macros_h                                                     "addon/opus-1.1.2_for_boss/silk/macros.h"
+#define BOSS_OPUS_U_main_h                                                       "addon/opus-1.1.2_for_boss/silk/main.h"
+#define BOSS_OPUS_U_pitch_est_defines_h                                          "addon/opus-1.1.2_for_boss/silk/pitch_est_defines.h"
+#define BOSS_OPUS_U_PLC_h                                                        "addon/opus-1.1.2_for_boss/silk/PLC.h"
+#define BOSS_OPUS_U_resampler_private_h                                          "addon/opus-1.1.2_for_boss/silk/resampler_private.h"
+#define BOSS_OPUS_U_resampler_rom_h                                              "addon/opus-1.1.2_for_boss/silk/resampler_rom.h"
+#define BOSS_OPUS_U_resampler_structs_h                                          "addon/opus-1.1.2_for_boss/silk/resampler_structs.h"
+#define BOSS_OPUS_U_SigProc_FIX_h                                                "addon/opus-1.1.2_for_boss/silk/SigProc_FIX.h"
+#define BOSS_OPUS_U_structs_h                                                    "addon/opus-1.1.2_for_boss/silk/structs.h"
+#define BOSS_OPUS_U_tables_h                                                     "addon/opus-1.1.2_for_boss/silk/tables.h"
+#define BOSS_OPUS_U_tuning_parameters_h                                          "addon/opus-1.1.2_for_boss/silk/tuning_parameters.h"
+#define BOSS_OPUS_U_typedef_h                                                    "addon/opus-1.1.2_for_boss/silk/typedef.h"
+
+#define BOSS_OPUS_U_fixed__main_FIX_h                                            "addon/opus-1.1.2_for_boss/silk/fixed/main_FIX.h"
+#define BOSS_OPUS_U_fixed__structs_FIX_h                                         "addon/opus-1.1.2_for_boss/silk/fixed/structs_FIX.h"
+
+#define BOSS_OPUS_U_float__main_FLP_h                                            "addon/opus-1.1.2_for_boss/silk/float/main_FLP.h"
+#define BOSS_OPUS_U_float__SigProc_FLP_h                                         "addon/opus-1.1.2_for_boss/silk/float/SigProc_FLP.h"
+#define BOSS_OPUS_U_float__structs_FLP_h                                         "addon/opus-1.1.2_for_boss/silk/float/structs_FLP.h"

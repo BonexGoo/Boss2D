@@ -267,10 +267,10 @@
     <ClCompile Include="..\addon\boss_integration_libsrtp-2.2.0.c">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
-    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001.cpp">
+    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001-20210616.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
-    <ClCompile Include="..\addon\boss_integration_abseil-cpp-20180600.cpp">
+    <ClCompile Include="..\addon\boss_integration_abseil-cpp-20211102.0.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_jsoncpp-1.8.4.cpp">
@@ -466,6 +466,12 @@
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_addon_abc.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libyuv-20211215.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_opus-1.1.2.c">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -707,10 +713,10 @@
     <ClInclude Include="..\addon\boss_integration_libsrtp-2.2.0.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
-    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001.h">
+    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001-20210616.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
-    <ClInclude Include="..\addon\boss_integration_abseil-cpp-20180600.h">
+    <ClInclude Include="..\addon\boss_integration_abseil-cpp-20211102.0.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_jsoncpp-1.8.4.h">
@@ -900,6 +906,12 @@
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_addon_abc.hpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libyuv-20211215.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_opus-1.1.2.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>

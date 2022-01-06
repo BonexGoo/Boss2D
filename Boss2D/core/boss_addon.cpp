@@ -403,15 +403,15 @@ namespace BOSS
 
     ////////////////////////////////////////////////////////////////////////////////
     static void WebRtc_Error() {BOSS_ASSERT("WebRtc애드온이 준비되지 않았습니다", false);}
-    BOSS_DEFINE_ADDON_FUNCTION(WebRtc, OpenForOffer, id_webrtc, return nullptr, bool, bool)
+    BOSS_DEFINE_ADDON_FUNCTION(WebRtc, OpenForOffer, id_webrtc, return nullptr, bool, bool, bool)
     BOSS_DEFINE_ADDON_FUNCTION(WebRtc, OpenForAnswer, id_webrtc, return nullptr, chars)
     BOSS_DEFINE_ADDON_FUNCTION(WebRtc, BindWithAnswer, bool, return false, id_webrtc, chars)
     BOSS_DEFINE_ADDON_FUNCTION(WebRtc, Close, void, return, id_webrtc)
     BOSS_DEFINE_ADDON_FUNCTION(WebRtc, SetMute, void, return, id_webrtc, bool)
     BOSS_DEFINE_ADDON_FUNCTION(WebRtc, SendData, void, return, id_webrtc, bytes, sint32)
 
-    id_webrtc AddOn::WebRtc::OpenForOffer(bool audio, bool data)
-    {return Core_AddOn_WebRtc_OpenForOffer()(audio, data);}
+    id_webrtc AddOn::WebRtc::OpenForOffer(bool video, bool audio, bool data)
+    {return Core_AddOn_WebRtc_OpenForOffer()(video, audio, data);}
 
     id_webrtc AddOn::WebRtc::OpenForAnswer(chars offer_sdp)
     {return Core_AddOn_WebRtc_OpenForAnswer()(offer_sdp);}

@@ -1,0 +1,14 @@
+crodbro@webrtc.org
+deadbeef@webrtc.org
+hta@webrtc.org
+juberti@webrtc.org
+magjed@webrtc.org
+perkj@webrtc.org
+tkchin@webrtc.org
+tommi@webrtc.org
+
+per-file peer_connection*=hbos@webrtc.org
+
+per-file DEPS=mbonadei@webrtc.org
+
+per-file uma_metrics.h=kron@webrtc.org

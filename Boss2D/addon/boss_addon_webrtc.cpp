@@ -9,9 +9,8 @@ bool __LINK_ADDON_WEBRTC__() {return true;} // 링크옵션 /OPT:NOREF가 안되
 
 #include "boss_addon_webrtc.hpp"
 
-#include <addon/webrtc-jumpingyang001_for_boss/rtc_base/ssladapter.h>
-#include <addon/webrtc-jumpingyang001_for_boss/rtc_base/win32socketserver.h>
-#include <addon/webrtc-jumpingyang001_for_boss/api/test/fakeconstraints.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/rtc_base/ssl_adapter.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/rtc_base/win32_socket_server.h>
 
 #include <boss.hpp>
 #include <platform/boss_platform.hpp>
@@ -19,7 +18,7 @@ bool __LINK_ADDON_WEBRTC__() {return true;} // 링크옵션 /OPT:NOREF가 안되
 // 등록과정
 namespace BOSS
 {
-    BOSS_DECLARE_ADDON_FUNCTION(WebRtc, OpenForOffer, id_webrtc, bool, bool)
+    BOSS_DECLARE_ADDON_FUNCTION(WebRtc, OpenForOffer, id_webrtc, bool, bool, bool)
     BOSS_DECLARE_ADDON_FUNCTION(WebRtc, OpenForAnswer, id_webrtc, chars)
     BOSS_DECLARE_ADDON_FUNCTION(WebRtc, BindWithAnswer, bool, id_webrtc, chars)
     BOSS_DECLARE_ADDON_FUNCTION(WebRtc, Close, void, id_webrtc)
@@ -42,12 +41,12 @@ namespace BOSS
 // 구현부
 namespace BOSS
 {
-    id_webrtc Customized_AddOn_WebRtc_OpenForOffer(bool audio, bool data)
+    id_webrtc Customized_AddOn_WebRtc_OpenForOffer(bool video, bool audio, bool data)
     {
         auto NewWebRtcManager = new WebRtcManager();
         if(NewWebRtcManager)
         {
-            if(NewWebRtcManager->CreateOffer(audio, data))
+            if(NewWebRtcManager->CreateOffer(video, audio, data))
                 return (id_webrtc) NewWebRtcManager;
             delete NewWebRtcManager;
         }
@@ -276,9 +275,9 @@ void WebRtcConnector::CSDO::OnSuccess(SessionDescriptionInterface* desc)
     BOSS_TRACE("WebRtcConnector::CSDO::OnSuccess() - %s", (chars) NewSDP);
 }
 
-void WebRtcConnector::CSDO::OnFailure(const std::string& error)
+void WebRtcConnector::CSDO::OnFailure(RTCError error)
 {
-    BOSS_TRACE("WebRtcConnector::CSDO::OnFailure(%s)", error.c_str());
+    BOSS_TRACE("WebRtcConnector::CSDO::OnFailure(%s)", error.message());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,9 +297,9 @@ void WebRtcConnector::SSDO::OnSuccess()
     BOSS_TRACE("WebRtcConnector::SSDO::OnSuccess()");
 }
 
-void WebRtcConnector::SSDO::OnFailure(const std::string& error)
+void WebRtcConnector::SSDO::OnFailure(RTCError error)
 {
-    BOSS_TRACE("WebRtcConnector::SSDO::OnFailure(%s)", error.c_str());
+    BOSS_TRACE("WebRtcConnector::SSDO::OnFailure(%s)", error.message());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -346,48 +345,63 @@ void WebRtcConnector::ATSI::OnData(const void* audio_data, int bits_per_sample, 
 // WebRtcManager
 ////////////////////////////////////////////////////////////////////////////////
 
-WebRtcManager::WebRtcManager() : mFactory(*this)
+WebRtcManager::WebRtcManager()
 {
-    PeerConnectionInterface::IceServer StunServer1;
-    StunServer1.uri = "stun:stun.l.google.com:19302";
-    mConnectionConfig.servers.push_back(StunServer1);
-
-    PeerConnectionInterface::IceServer StunServer2;//////////////////////
-    StunServer2.uri = "stun:stun01.sipphone.com";
-    mConnectionConfig.servers.push_back(StunServer2);
-
-    PeerConnectionInterface::IceServer StunServer3;//////////////////////
-    StunServer3.uri = "stun:stun.ekiga.net";
-    mConnectionConfig.servers.push_back(StunServer3);
-
-    PeerConnectionInterface::IceServer TurnServer1;//////////////////////
-    TurnServer1.urls.push_back("turn:192.158.29.39:3478?transport=udp");
-    TurnServer1.username = "28224511:1379330808";
-    TurnServer1.password = "JZEOEt2V3Qb0y27GRntt2u2PAYA=";
-    mConnectionConfig.servers.push_back(TurnServer1);
-
-    PeerConnectionInterface::IceServer TurnServer2;//////////////////////
-    TurnServer2.urls.push_back("turn:192.158.29.39:3478?transport=tcp");
-    TurnServer2.username = "28224511:1379330808";
-    TurnServer2.password = "JZEOEt2V3Qb0y27GRntt2u2PAYA=";
-    mConnectionConfig.servers.push_back(TurnServer2);
-
     rtc::InitializeSSL();
-    mThread.reset(new rtc::Thread(&mSocketServer));
-    mThread->Start(&mFactory);
+    mWorker = rtc::Thread::Create();
+    mWorker->Start();
+    mSignaling = rtc::Thread::Create();
+    mSignaling->Start();
+
+    mConnectionFactory = webrtc::CreatePeerConnectionFactory(
+        mWorker.get(), mWorker.get(), mSignaling.get(), nullptr,
+        webrtc::CreateBuiltinAudioEncoderFactory(),
+        webrtc::CreateBuiltinAudioDecoderFactory(),
+        std::unique_ptr<webrtc::VideoEncoderFactory>(new webrtc::MultiplexEncoderFactory(std::make_unique<webrtc::InternalEncoderFactory>())),
+        std::unique_ptr<webrtc::VideoDecoderFactory>(new webrtc::MultiplexDecoderFactory(std::make_unique<webrtc::InternalDecoderFactory>())),
+        nullptr, nullptr);
+
+    if(mConnectionFactory.get())
+    {
+        PeerConnectionInterface::IceServer StunServer1;
+        StunServer1.uri = "stun:stun.l.google.com:19302";
+        mConnectionConfig.servers.push_back(StunServer1);
+
+        PeerConnectionInterface::IceServer StunServer2;
+        StunServer2.uri = "stun:stun01.sipphone.com";
+        mConnectionConfig.servers.push_back(StunServer2);
+
+        PeerConnectionInterface::IceServer StunServer3;
+        StunServer3.uri = "stun:stun.ekiga.net";
+        mConnectionConfig.servers.push_back(StunServer3);
+
+        PeerConnectionInterface::IceServer TurnServer1;
+        TurnServer1.urls.push_back("turn:192.158.29.39:3478?transport=udp");
+        TurnServer1.username = "28224511:1379330808";
+        TurnServer1.password = "JZEOEt2V3Qb0y27GRntt2u2PAYA=";
+        mConnectionConfig.servers.push_back(TurnServer1);
+
+        PeerConnectionInterface::IceServer TurnServer2;
+        TurnServer2.urls.push_back("turn:192.158.29.39:3478?transport=tcp");
+        TurnServer2.username = "28224511:1379330808";
+        TurnServer2.password = "JZEOEt2V3Qb0y27GRntt2u2PAYA=";
+        mConnectionConfig.servers.push_back(TurnServer2);
+    }
+    else BOSS_ASSERT("CreatePeerConnectionFactory가 실패하였습니다", false);
 }
 
 WebRtcManager::~WebRtcManager()
 {
     mConnector.reset();
-    mThread.reset();
+    mWorker.reset();
+    mSignaling.reset();
     rtc::CleanupSSL();
 }
 
-bool WebRtcManager::CreateOffer(bool audio, bool data)
+bool WebRtcManager::CreateOffer(bool video, bool audio, bool data)
 {
-    while(!mConnectionFactory.get())
-        Platform::Utility::Sleep(1, false, true);
+    if(!mConnectionFactory.get())
+        return false;
 
     mConnectionConfig.sdp_semantics = SdpSemantics::kUnifiedPlan;
     mConnectionConfig.enable_dtls_srtp = true;
@@ -398,6 +412,25 @@ bool WebRtcManager::CreateOffer(bool audio, bool data)
 
     if(mConnector->mPeerConnection.get())
     {
+        if(video)
+        {
+            std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> DeviceInfo(webrtc::VideoCaptureFactory::CreateDeviceInfo());
+            if(DeviceInfo)
+            {
+                Strings DeviceNames;
+                for(sint32 i = 0, iend = DeviceInfo->NumberOfDevices(); i < iend; ++i)
+                {
+                    const uint32_t kSize = 256;
+                    char CurName[kSize] = {0};
+                    char CurID[kSize] = {0};
+                    if(DeviceInfo->GetDeviceName(i, CurName, kSize, CurID, kSize) != -1)
+                        DeviceNames.AtAdding() = CurName;
+                }
+
+                //auto NewVideoSource = mConnectionFactory->CreateVideoSource(cricket::AudioOptions());
+            }
+        }
+
         if(audio)
         {
             auto NewAudioSource = mConnectionFactory->CreateAudioSource(cricket::AudioOptions());
@@ -414,9 +447,10 @@ bool WebRtcManager::CreateOffer(bool audio, bool data)
         }
 
         mConnector->mSessionInfo.At("Sdp").At("Type").Set("offer");
-        FakeConstraints NewConstraints;
-        NewConstraints.SetMandatoryReceiveAudio(true);
-        mConnector->mPeerConnection->CreateOffer(mConnector->mCSDO, &NewConstraints);
+        webrtc::PeerConnectionInterface::RTCOfferAnswerOptions NewOptions;
+        NewOptions.offer_to_receive_audio = true;
+        NewOptions.offer_to_receive_video = true;
+        mConnector->mPeerConnection->CreateOffer(mConnector->mCSDO, NewOptions);
         return true;
     }
     else BOSS_ASSERT("CreatePeerConnection이 실패하였습니다", false);
@@ -425,8 +459,8 @@ bool WebRtcManager::CreateOffer(bool audio, bool data)
 
 bool WebRtcManager::CreateAnswer(const Context& offer_sdp)
 {
-    while(!mConnectionFactory.get())
-        Platform::Utility::Sleep(1, false, true);
+    if(!mConnectionFactory.get())
+        return false;
 
     if(!String::Compare("offer", offer_sdp("Sdp")("Type").GetText()))
     {
@@ -447,9 +481,10 @@ bool WebRtcManager::CreateAnswer(const Context& offer_sdp)
                 AddIce(offer_sdp);
 
                 mConnector->mSessionInfo.At("Sdp").At("Type").Set("answer");
-                FakeConstraints NewConstraints;
-                NewConstraints.SetMandatoryReceiveAudio(true);
-                mConnector->mPeerConnection->CreateAnswer(mConnector->mCSDO, &NewConstraints);
+                webrtc::PeerConnectionInterface::RTCOfferAnswerOptions NewOptions;
+                NewOptions.offer_to_receive_audio = true;
+                NewOptions.offer_to_receive_video = true;
+                mConnector->mPeerConnection->CreateAnswer(mConnector->mCSDO, NewOptions);
                 return true;
             }
             else BOSS_ASSERT("CreateSessionDescription이 실패하였습니다", false);
@@ -513,29 +548,6 @@ void WebRtcManager::Send(bytes data, sint32 len)
         DataBuffer NewBuffer(rtc::CopyOnWriteBuffer(data, len), true);
         mConnector->mDataChannel->Send(NewBuffer);
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebRtcManager
-////////////////////////////////////////////////////////////////////////////////
-
-WebRtcManager::FactoryRunnable::FactoryRunnable(WebRtcManager& parent) : mParent(parent)
-{
-}
-
-WebRtcManager::FactoryRunnable::~FactoryRunnable()
-{
-}
-
-void WebRtcManager::FactoryRunnable::Run(rtc::Thread* subthread)
-{
-    mParent.mConnectionFactory = CreatePeerConnectionFactory(
-        CreateBuiltinAudioEncoderFactory(),
-        CreateBuiltinAudioDecoderFactory());
-
-    if(mParent.mConnectionFactory.get())
-        subthread->Run();
-    else BOSS_ASSERT("CreatePeerConnectionFactory가 실패하였습니다", false);
 }
 
 #endif

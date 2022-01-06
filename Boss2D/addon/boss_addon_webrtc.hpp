@@ -1,19 +1,22 @@
 ﻿#pragma once
 #include <boss.h>
 
-#include "boss_integration_webrtc-jumpingyang001.h"
-#include <addon/webrtc-jumpingyang001_for_boss/api/audio_codecs/builtin_audio_decoder_factory.h>
-#include <addon/webrtc-jumpingyang001_for_boss/api/audio_codecs/builtin_audio_encoder_factory.h>
-#include <addon/webrtc-jumpingyang001_for_boss/api/mediastreaminterface.h>
-#include <addon/webrtc-jumpingyang001_for_boss/api/peerconnectioninterface.h>
-#include <addon/webrtc-jumpingyang001_for_boss/api/datachannelinterface.h>
-#include <addon/webrtc-jumpingyang001_for_boss/examples/peerconnection/client/defaults.h>
-#include <addon/webrtc-jumpingyang001_for_boss/examples/peerconnection/client/peer_connection_client.h>
-#include <addon/webrtc-jumpingyang001_for_boss/media/engine/webrtcvideocapturerfactory.h>
-#include <addon/webrtc-jumpingyang001_for_boss/modules/video_capture/video_capture_factory.h>
-#include <addon/webrtc-jumpingyang001_for_boss/rtc_base/checks.h>
-#include <addon/webrtc-jumpingyang001_for_boss/rtc_base/json.h>
-#include <addon/webrtc-jumpingyang001_for_boss/rtc_base/logging.h>
+#include "boss_integration_webrtc-jumpingyang001-20210616.h"
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/audio_codecs/builtin_audio_encoder_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/media_stream_interface.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/peer_connection_interface.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/data_channel_interface.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/api/create_peerconnection_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/examples/peerconnection/client/defaults.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/examples/peerconnection/client/peer_connection_client.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/modules/video_capture/video_capture_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/rtc_base/checks.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/rtc_base/strings/json.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/rtc_base/logging.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/media/engine/internal_decoder_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/media/engine/internal_encoder_factory.h>
+#include <addon/webrtc-jumpingyang001-20210616_for_boss/media/engine/multiplex_codec_factory.h>
 
 #include <boss.hpp>
 
@@ -76,7 +79,7 @@ private:
 
     public:
         void OnSuccess(SessionDescriptionInterface* desc) override;
-        void OnFailure(const std::string& error) override;
+        void OnFailure(RTCError error) override;
     };
 
 private:
@@ -90,7 +93,7 @@ private:
 
     public:
         void OnSuccess() override;
-        void OnFailure(const std::string& error) override;
+        void OnFailure(RTCError error) override;
     };
 
 private:
@@ -129,7 +132,7 @@ public:
     ~WebRtcManager();
 
 public:
-    bool CreateOffer(bool audio, bool data);
+    bool CreateOffer(bool video, bool audio, bool data);
     bool CreateAnswer(const Context& offer_sdp);
     bool BindSdp(const Context& answer_sdp);
     bool AddIce(const Context& offer_sdp);
@@ -137,22 +140,9 @@ public:
     void Send(bytes data, sint32 len);
 
 private:
-    class FactoryRunnable : public rtc::Runnable
-    {
-    public:
-        FactoryRunnable(WebRtcManager& parent);
-        ~FactoryRunnable();
-    private:
-        WebRtcManager& mParent;
-
-    public:
-        void Run(rtc::Thread* subthread) override;
-    };
-
-private:
-    std::unique_ptr<rtc::Thread> mThread;
+    std::unique_ptr<rtc::Thread> mWorker;
+    std::unique_ptr<rtc::Thread> mSignaling;
     rtc::PhysicalSocketServer mSocketServer;
-    FactoryRunnable mFactory;
 
     rtc::scoped_refptr<PeerConnectionFactoryInterface> mConnectionFactory;
     PeerConnectionInterface::RTCConfiguration mConnectionConfig;

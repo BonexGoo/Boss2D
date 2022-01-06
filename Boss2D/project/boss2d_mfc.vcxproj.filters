@@ -267,7 +267,7 @@
     <ClCompile Include="..\addon\boss_integration_usrsctp-0.9.3.0.c">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
-    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001.cpp">
+    <ClCompile Include="..\addon\boss_integration_webrtc-jumpingyang001-20210616.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_websocketpp-0.8.1.cpp">
@@ -611,7 +611,7 @@
     <ClInclude Include="..\addon\boss_integration_usrsctp-0.9.3.0.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
-    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001.h">
+    <ClInclude Include="..\addon\boss_integration_webrtc-jumpingyang001-20210616.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_websocketpp-0.8.1.hpp">
