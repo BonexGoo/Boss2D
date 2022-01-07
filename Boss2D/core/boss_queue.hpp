@@ -71,17 +71,23 @@ namespace BOSS
         /// @brief 소멸자
         ~Queue()
         {
-            if(FORTHREAD) Mutex::Close(DataMutex);
             if(FREECB)
             {
-                TYPE OldData = Dequeue();
-                while(!!OldData)
+                if(FORTHREAD) Mutex::Lock(DataMutex);
+                while(0 < DataCount)
                 {
-                    FREECB(AnyTypeToPtr(OldData));
-                    OldData = Dequeue();
+                    TYPE OldData = Head.Dequeue();
+                    void* OldPtr = *((void**) &OldData);
+                    FREECB(OldPtr);
+                    DataCount--;
                 }
+                if(FORTHREAD) Mutex::Unlock(DataMutex);
             }
-            else BOSS_ASSERT("큐에 해제되지 않은 데이터가 존재합니다", DataCount == 0);
+            else if(IsTypePointer<TYPE>())
+                BOSS_ASSERT("큐에 해제되지 않은 데이터가 존재합니다", DataCount == 0);
+
+            if(FORTHREAD)
+                Mutex::Close(DataMutex);
         }
 
         /// @brief 복사(불허)
