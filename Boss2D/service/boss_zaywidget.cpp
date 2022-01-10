@@ -218,13 +218,15 @@ namespace BOSS
             else
             {
                 Context Json;
+                Json.At("title").Set(title);
+                Json.At("detail").Set(detail);
                 if(type == ZaySon::LogType::Warning)
                     Json.At("type").Set("warning");
                 else if(type == ZaySon::LogType::Error)
                     Json.At("type").Set("error");
-                else Json.At("type").Set("info");
-                Json.At("title").Set(title);
-                Json.At("detail").Set(detail);
+                else if(type == ZaySon::LogType::Info)
+                    Json.At("type").Set("info");
+                else Json.At("type").Set("unknown");
                 if(mPipe) Platform::Pipe::SendJson(mPipe, Json.SaveJson());
                 else mPipeReservers.AtAdding() = Json.SaveJson();
             }

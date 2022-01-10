@@ -5891,11 +5891,11 @@
                 // 디바이스타겟 등록
                 if(deviceaddress)
                 {
-                    if(auto NewDevice = CloneOrCreateDevice(deviceaddress, false))
+                    if(auto NewDevice = CloneOrCreateDevice(deviceaddress))
                     {
                         if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                         {
-                            Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice, &Self);
+                            Self.mDiscoveryServiceAgent_BLE = new QLowEnergyController(*NewDevice, &Self);
                             Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
                         }
                         else
@@ -6025,8 +6025,13 @@
             QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
             return NewDeviceInfo;
         }
-        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address, bool locking)
+        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address)
         {
+            // 주소로만 구성된 경우 저장된 장치정보에서 검색
+            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(devicename_and_address))
+                return Result;
+
+            // 장치명/주소로 구성된 경우 장치정보 신규생성
             const String DeviceNameAndAddress = devicename_and_address;
             sint32 SlashPos = -1;
             sint32 NextSlashPos = 0;
@@ -6036,14 +6041,10 @@
                 if(NextSlashPos != -1)
                     SlashPos = NextSlashPos;
             }
+            if(SlashPos != -1)
+                return BluetoothSearchPrivate::CreateDevice(
+                    DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1));
 
-            if(SlashPos == -1)
-            {
-                if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(devicename_and_address))
-                    return Result;
-            }
-            else return BluetoothSearchPrivate::CreateDevice(
-                DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1));
             return nullptr;
         }
         static QBluetoothServiceInfo* GetClonedSearchedService_BT(chars uuid)
@@ -6065,7 +6066,7 @@
             QLowEnergyController* NewController = nullptr;
             Mutex::LocalLock(Self.mDiscoverMutex);
             {
-                if(auto NewDevice = CloneOrCreateDevice(Self.mFocusedDeviceAddress.toUtf8().constData(), false))
+                if(auto NewDevice = CloneOrCreateDevice(Self.mFocusedDeviceAddress.toUtf8().constData()))
                 {
                     if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                     {
@@ -6082,6 +6083,12 @@
     private slots:
         void deviceDiscovered(const QBluetoothDeviceInfo& device)
         {
+            String DeviceName = device.name().toUtf8().constData();
+            if(DeviceName.Length() == 0)
+                DeviceName = "Unknown Device";
+            if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+                DeviceName += " (BLE)";
+
             const String NewAddress = device.address().toString().toUtf8().constData();
             Mutex::LocalLock(mDiscoverMutex);
             {
@@ -6089,11 +6096,6 @@
             }
             Mutex::LocalUnlock(mDiscoverMutex);
 
-            String DeviceName = device.name().toUtf8().constData();
-            if(DeviceName.Length() == 0)
-                DeviceName += "Unknown Device";
-            if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
-                DeviceName += " (BLE)";
             Platform::BroadcastNotify(DeviceName, NewAddress, NT_BluetoothDevice);
         }
         void scanDeviceFinished()
@@ -6107,6 +6109,9 @@
 
         void serviceDiscovered_BT(const QBluetoothServiceInfo& service)
         {
+            if(service.serviceClassUuids().count() == 0)
+                return;
+
             String ServiceName = service.serviceName().toUtf8().constData();
             if(ServiceName.Length() == 0) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
                 ServiceName = "Unknown Service";
@@ -6114,8 +6119,6 @@
             Strings UuidCollector;
             for(const auto& CurUuid : service.serviceClassUuids())
                 UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
-            if(UuidCollector.Count() == 0) // 안드로이드의 경우
-                UuidCollector.AtAdding() = "00000000-0000-0000-0000-000000000000";
 
             Mutex::LocalLock(mDiscoverMutex);
             {
