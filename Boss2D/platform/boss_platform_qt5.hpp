@@ -5833,13 +5833,13 @@
             DeviceEnd();
 
             auto& Self = ST();
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mDiscoveryDeviceAgent = new QBluetoothDeviceDiscoveryAgent();
                 Self.mDiscoveryDeviceAgent->setLowEnergyDiscoveryTimeout(5000);
                 Self.mDiscoveryDeviceAgent->start();
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            Mutex::Unlock(Self.mDiscoverMutex);
 
             connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
                 &Self, &BluetoothSearchPrivate::deviceDiscovered);
@@ -5853,7 +5853,7 @@
         static void DeviceEnd()
         {
             auto& Self = ST();
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mDiscoveredDevices.empty();
 
@@ -5875,7 +5875,7 @@
                     Self.mDiscoveryDeviceAgent = nullptr;
                 }
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            Mutex::Unlock(Self.mDiscoverMutex);
         }
 
     public:
@@ -5884,18 +5884,18 @@
             ServiceEnd();
 
             auto& Self = ST();
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mFocusedDeviceAddress = deviceaddress;
 
                 // 디바이스타겟 등록
                 if(deviceaddress)
                 {
-                    if(auto NewDevice = CloneOrCreateDevice(deviceaddress))
+                    if(auto NewDevice = CloneOrCreateDevice(deviceaddress, false))
                     {
                         if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                         {
-                            Self.mDiscoveryServiceAgent_BLE = new QLowEnergyController(*NewDevice, &Self);
+                            Self.mDiscoveryServiceAgent_BLE = QLowEnergyController::createCentral(*NewDevice, &Self);
                             Self.mDiscoveryServiceAgent_BLE->setRemoteAddressType(QLowEnergyController::PublicAddress);
                         }
                         else
@@ -5926,7 +5926,7 @@
                     }
                 }
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            Mutex::Unlock(Self.mDiscoverMutex);
 
             if(Self.mDiscoveryServiceAgent_BT)
             {
@@ -5958,7 +5958,7 @@
         static void ServiceEnd()
         {
             auto& Self = ST();
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            Mutex::Lock(Self.mDiscoverMutex);
             {
                 Self.mFocusedDeviceAddress.clear();
                 Self.mDiscoveredServices_BT.empty();
@@ -6002,21 +6002,21 @@
                     Self.mDiscoveryServiceAgent_BLE = nullptr;
                 }
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            Mutex::Unlock(Self.mDiscoverMutex);
         }
 
     public:
-        static QBluetoothDeviceInfo* GetClonedSearchedDevice(chars address)
+        static QBluetoothDeviceInfo* GetClonedSearchedDevice(chars address, bool locking)
         {
             auto& Self = ST();
             QBluetoothDeviceInfo* NewDeviceInfo = nullptr;
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
                 auto Result = Self.mDiscoveredDevices.find(QString::fromUtf8(address));
                 if(Result != Self.mDiscoveredDevices.end())
                     NewDeviceInfo = new QBluetoothDeviceInfo(Result.value());
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return NewDeviceInfo;
         }
         static QBluetoothDeviceInfo* CreateDevice(chars devicename, chars address)
@@ -6025,13 +6025,13 @@
             QBluetoothDeviceInfo* NewDeviceInfo = new QBluetoothDeviceInfo(NewAddress, QString::fromUtf8(devicename), 0);
             return NewDeviceInfo;
         }
-        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address)
+        static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address, bool locking)
         {
             // 주소로만 구성된 경우 저장된 장치정보에서 검색
-            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(devicename_and_address))
+            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(devicename_and_address, locking))
                 return Result;
 
-            // 장치명/주소로 구성된 경우 장치정보 신규생성
+            // "장치명/주소"로 구성된 경우 장치정보 신규생성
             const String DeviceNameAndAddress = devicename_and_address;
             sint32 SlashPos = -1;
             sint32 NextSlashPos = 0;
@@ -6047,26 +6047,26 @@
 
             return nullptr;
         }
-        static QBluetoothServiceInfo* GetClonedSearchedService_BT(chars uuid)
+        static QBluetoothServiceInfo* GetClonedSearchedService_BT(chars uuid, bool locking)
         {
             auto& Self = ST();
             QBluetoothServiceInfo* NewServiceInfo = nullptr;
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
                 auto Result = Self.mDiscoveredServices_BT.find(QString::fromUtf8(uuid));
                 if(Result != Self.mDiscoveredServices_BT.end())
                     NewServiceInfo = new QBluetoothServiceInfo(Result.value());
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return NewServiceInfo;
         }
-        static QLowEnergyController* CreateController_BLE(QObject* parent)
+        static QLowEnergyController* CreateController_BLE(QObject* parent, bool locking)
         {
             auto& Self = ST();
             QLowEnergyController* NewController = nullptr;
-            Mutex::LocalLock(Self.mDiscoverMutex);
+            if(locking) Mutex::Lock(Self.mDiscoverMutex);
             {
-                if(auto NewDevice = CloneOrCreateDevice(Self.mFocusedDeviceAddress.toUtf8().constData()))
+                if(auto NewDevice = CloneOrCreateDevice(Self.mFocusedDeviceAddress.toUtf8().constData(), false))
                 {
                     if(NewDevice->coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
                     {
@@ -6076,26 +6076,25 @@
                     delete NewDevice;
                 }
             }
-            Mutex::LocalUnlock(Self.mDiscoverMutex);
+            if(locking) Mutex::Unlock(Self.mDiscoverMutex);
             return NewController;
         }
 
     private slots:
         void deviceDiscovered(const QBluetoothDeviceInfo& device)
         {
-            String DeviceName = device.name().toUtf8().constData();
-            if(DeviceName.Length() == 0)
-                DeviceName = "Unknown Device";
-            if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
-                DeviceName += " (BLE)";
-
             const String NewAddress = device.address().toString().toUtf8().constData();
-            Mutex::LocalLock(mDiscoverMutex);
+            Mutex::Lock(mDiscoverMutex);
             {
                 mDiscoveredDevices.insert(device.address().toString(), device);
             }
-            Mutex::LocalUnlock(mDiscoverMutex);
+            Mutex::Unlock(mDiscoverMutex);
 
+            String DeviceName = device.name().toUtf8().constData();
+            if(DeviceName.Length() == 0)
+                DeviceName += "Unknown Device";
+            if(device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
+                DeviceName += " (BLE)";
             Platform::BroadcastNotify(DeviceName, NewAddress, NT_BluetoothDevice);
         }
         void scanDeviceFinished()
@@ -6109,9 +6108,6 @@
 
         void serviceDiscovered_BT(const QBluetoothServiceInfo& service)
         {
-            if(service.serviceClassUuids().count() == 0)
-                return;
-
             String ServiceName = service.serviceName().toUtf8().constData();
             if(ServiceName.Length() == 0) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
                 ServiceName = "Unknown Service";
@@ -6119,13 +6115,18 @@
             Strings UuidCollector;
             for(const auto& CurUuid : service.serviceClassUuids())
                 UuidCollector.AtAdding() = CurUuid.toString().toUtf8().constData();
+            if(UuidCollector.Count() == 0) // 안드로이드에서는 윈도우와 달리 UUID가 나오지 않는 경우도 있음
+			{
+				static sint32 BlankUUID = 0;
+                UuidCollector.AtAdding() = String::Format("{63ce%04d-ebad-467d-b939-86d3229de522}", ++BlankUUID % 10000);
+			}
 
-            Mutex::LocalLock(mDiscoverMutex);
+            Mutex::Lock(mDiscoverMutex);
             {
                 for(sint32 i = 0, iend = UuidCollector.Count(); i < iend; ++i)
                     mDiscoveredServices_BT.insert(QString((chars) UuidCollector[i]), service);
             }
-            Mutex::LocalUnlock(mDiscoverMutex);
+            Mutex::Unlock(mDiscoverMutex);
 
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
@@ -6141,16 +6142,16 @@
         void serviceDiscovered_BLE(const QBluetoothUuid& serviceUuid)
         {
             String ServiceName = "Unknown Service";
-            Strings UuidCollector;
-            if(QLowEnergyService* NewService = mDiscoveryServiceAgent_BLE->createServiceObject(serviceUuid))
+			if(QLowEnergyService* NewService = mDiscoveryServiceAgent_BLE->createServiceObject(serviceUuid))
             {
-                ServiceName = NewService->serviceName().toUtf8().constData();
-                if(ServiceName.Length() == 0) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
-                    ServiceName = "Unknown Service";
-
-                UuidCollector.AtAdding() = serviceUuid.toString().toUtf8().constData();
+                const String NewServiceName = NewService->serviceName().toUtf8().constData();
+                if(0 < NewServiceName.Length()) // 안드로이드에서는 윈도우와 달리 서비스명이 나오지 않는 경우도 있음
+                    ServiceName = NewServiceName;
                 delete NewService;
             }
+
+            Strings UuidCollector;
+			UuidCollector.AtAdding() = serviceUuid.toString().toUtf8().constData();
 
             Platform::BroadcastNotify(ServiceName, UuidCollector, NT_BluetoothService);
         }
@@ -6350,6 +6351,7 @@
         QByteArray mRecvData;
     };
 
+	// 미완성
     class BluetoothLEServerPrivate : public BluetoothPrivate
     {
         Q_OBJECT
@@ -6515,7 +6517,7 @@
     public:
         bool Init(chars uuid)
         {
-            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid))
+            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid, true))
             {
                 mSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
                 connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientPrivate::OnConnected);
@@ -6621,7 +6623,7 @@
         bool Init(chars uuid)
         {
             mServiceUuid = QBluetoothUuid(QString(uuid));
-            if(mController = BluetoothSearchPrivate::CreateController_BLE(this))
+            if(mController = BluetoothSearchPrivate::CreateController_BLE(this, true))
             {
                 connect(mController, &QLowEnergyController::serviceDiscovered,
                     this, &BluetoothLEClientPrivate::OnServiceDiscovered);
