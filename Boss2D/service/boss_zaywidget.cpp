@@ -242,6 +242,7 @@ namespace BOSS
     ZayWidget::~ZayWidget()
     {
         Platform::SubWindowProcedure(mProcedureID);
+        ZayWidgetDOM::UnbindPipe(mPipe);
         Platform::Pipe::Close(mPipe);
     }
 
@@ -856,10 +857,10 @@ namespace BOSS
         Self.mDocument->Add(variable, formula);
     }
 
-    void ZayWidgetDOM::AddJson(const Context& json)
+    void ZayWidgetDOM::AddJson(const Context& json, const String nameheader)
     {
         auto& Self = ST();
-        Self.mDocument->AddJson(json);
+        Self.mDocument->AddJson(json, nameheader);
     }
 
     void ZayWidgetDOM::AddFlush()

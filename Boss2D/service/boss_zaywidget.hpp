@@ -56,7 +56,7 @@ namespace BOSS
 
     public:
         static void Add(chars variable, chars formula);
-        static void AddJson(const Context& json);
+        static void AddJson(const Context& json, const String nameheader = "");
         static void AddFlush();
         static void ReserverFlush();
         static void Update(chars variable, chars formula);
