@@ -10,6 +10,20 @@ namespace BOSS
     class Queue
     {
     public:
+        /// @brief 큐에 1개 데이터생성
+        /// @return 생성된 데이터
+        TYPE* Create()
+        {
+            TYPE* NewData = nullptr;
+            if(FORTHREAD) Mutex::Lock(DataMutex);
+            {
+                NewData = Head.Create();
+                DataCount++;
+            }
+            if(FORTHREAD) Mutex::Unlock(DataMutex);
+            return NewData;
+        }
+
         /// @brief 큐에 1개 데이터적재
         /// @param data : 데이터
         void Enqueue(TYPE data)
@@ -116,6 +130,8 @@ namespace BOSS
             QueueElement* Next;
 
         public:
+            QueueElement() : Prev(this), Next(this) {}
+
             QueueElement(TYPE data) : Data(data), Prev(this), Next(this) {}
 
             ~QueueElement()
@@ -133,6 +149,14 @@ namespace BOSS
             }
 
         public:
+            TYPE* Create()
+            {
+                QueueElement* NewNode = new QueueElement();
+                (NewNode->Prev = Prev)->Next = NewNode;
+                (NewNode->Next = this)->Prev = NewNode;
+                return &NewNode->Data;
+            }
+
             void Enqueue(TYPE data)
             {
                 QueueElement* NewNode = new QueueElement(data);

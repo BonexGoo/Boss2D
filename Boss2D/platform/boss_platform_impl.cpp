@@ -62,20 +62,54 @@ namespace BOSS
 
             class ProcedureClass
             {
-                BOSS_DECLARE_NONCOPYABLE_CLASS(ProcedureClass)
             public:
-                ProcedureClass() {mCb = nullptr; mData = nullptr;}
+                ProcedureClass() {mProcedureID = CreateID(); mCb = nullptr; mData = nullptr;}
                 ~ProcedureClass() {}
+                ProcedureClass(const ProcedureClass& rhs) {operator=(rhs);}
+                ProcedureClass& operator=(const ProcedureClass& rhs)
+                {mProcedureID = rhs.mProcedureID; mCb = rhs.mCb; mData = rhs.mData; return *this;}
+            private:
+                sint32 CreateID() {static sint32 _ = 0; return ++_;}
             public:
+                sint32 mProcedureID;
                 ProcedureCB mCb;
                 payload mData;
             };
             Map<ProcedureClass> g_AllProcedures;
-            sint32 g_LastProcedureID = 0;
+            Queue<ProcedureClass> g_NewProcedures;
 
             sint32 GetProcedureCount()
             {
                 return g_AllProcedures.Count();
+            }
+
+            void FlushProcedure()
+            {
+                LockProcedure();
+                {
+                    // 추가
+                    while(0 < g_NewProcedures.Count())
+                    {
+                        auto SrcProcedure = g_NewProcedures.Dequeue();
+                        auto& DestProcedure = g_AllProcedures[SrcProcedure.mProcedureID];
+                        DestProcedure.mProcedureID = SrcProcedure.mProcedureID;
+                        DestProcedure.mCb = SrcProcedure.mCb;
+                        DestProcedure.mData = SrcProcedure.mData;
+                    }
+
+                    // 삭제
+                    for(sint32 i = g_AllProcedures.Count() - 1; 0 <= i; --i)
+                    {
+                        chararray GetID;
+                        auto CurProcedure = g_AllProcedures.AccessByOrder(i, &GetID);
+                        if(!CurProcedure->mCb)
+                        {
+                            const sint32 OldProcedureID = MapPath::ToInt(GetID);
+                            g_AllProcedures.Remove(OldProcedureID);
+                        }
+                    }
+                }
+                UnlockProcedure();
             }
 
             ProcedureCB GetProcedureCB(sint32 i)
@@ -144,20 +178,24 @@ namespace BOSS
         {
             sint32 AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data)
             {
-                Core::LockProcedure();
-                sint32 Result = ++Core::g_LastProcedureID;
-                auto& NewProcedure = Core::g_AllProcedures[Result];
-                NewProcedure.mCb = cb;
-                NewProcedure.mData = data;
-                Core::UnlockProcedure();
-                return Result;
+                if(auto NewProcedure = Core::g_NewProcedures.Create())
+                {
+                    NewProcedure->mCb = cb;
+                    NewProcedure->mData = data;
+                    return NewProcedure->mProcedureID;
+                }
+                return -1;
             }
 
-            void SubWindowProcedure(sint32 id)
+            bool SubWindowProcedure(sint32 id)
             {
-                Core::LockProcedure();
-                Core::g_AllProcedures.Remove(id);
-                Core::UnlockProcedure();
+                // mCb를 제거해 놓으면 다음 FlushProcedure호출시 제거
+                if(auto CurProcedure = Core::g_AllProcedures.Access(id))
+                {
+                    CurProcedure->mCb = nullptr;
+                    return true;
+                }
+                return false;
             }
 
             chars Utility_GetOSName()

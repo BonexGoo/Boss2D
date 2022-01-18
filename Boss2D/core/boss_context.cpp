@@ -405,8 +405,28 @@ namespace BOSS
         return this;
     }
 
+    String Context::CalcErrorPos(chars begin, chars end)
+    {
+        sint32 Line = 1, Word = 1;
+        for(chars pos = begin; pos < end; ++pos)
+        {
+            if(*pos == '\n')
+            {
+                Line++;
+                Word = 1;
+            }
+            else
+            {
+                Word++;
+                pos = pos + String::GetLengthOfFirstLetter(pos) - 1;
+            }
+        }
+        return String::Format("line:%d, word:%d", Line, Word);
+    }
+
     bool Context::LoadJsonCore(chars src)
     {
+        chars OldSrc = src;
         if(*src == '\0') return true;
         while(*src != '{' && *src != '[')
             if(*(++src) == '\0')
@@ -440,7 +460,7 @@ namespace BOSS
             }
             else
             {
-                BOSS_ASSERT("잘못된 Json스크립트입니다", false);
+                BOSS_ASSERT("잘못된 Json스크립트입니다(" + CalcErrorPos(OldSrc, src) + ")", false);
                 return false;
             }
             break;
@@ -469,7 +489,7 @@ namespace BOSS
         case ',': case '}': case ']':
             if(CurStack.Count() <= 2)
             {
-                BOSS_ASSERT("잘못된 Json스크립트입니다", false);
+                BOSS_ASSERT("잘못된 Json스크립트입니다(" + CalcErrorPos(OldSrc, src) + ")", false);
                 return false;
             }
             if(0 < LastLength)
@@ -533,7 +553,7 @@ namespace BOSS
             break;
         } while(*(++src) != '\0');
 
-        BOSS_ASSERT("미완료된 Json스크립트입니다", false);
+        BOSS_ASSERT("미완료된 Json스크립트입니다(" + CalcErrorPos(OldSrc, src) + ")", false);
         return false;
     }
 

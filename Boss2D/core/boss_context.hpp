@@ -228,6 +228,7 @@ namespace BOSS
 
     private:
         Context* InitSource(Context* anyparent);
+        static String CalcErrorPos(chars begin, chars end);
         // Json
         bool LoadJsonCore(chars src);
         void SaveJsonCore(sint32 tab, String name, String& dst, bool indexable, bool lastchild) const;

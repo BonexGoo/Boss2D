@@ -1374,6 +1374,7 @@
     extern MainData* g_data;
     extern MainWindowPrivate* g_window;
     extern WidgetPrivate* g_view;
+    extern bool g_event_blocked;
     extern sint32 g_argc;
     extern char** g_argv;
 
@@ -1489,7 +1490,6 @@
             if(manager)
                 manager->SetCallback(m_view_cb, m_view_data);
 
-            m_event_blocked = false;
             m_width = 0;
             m_height = 0;
             m_request = WR_Null;
@@ -1704,13 +1704,6 @@
             m_view_manager->SendNotify(type, topic, in, nullptr, true);
         }
 
-        inline bool setEventBlocked(bool block)
-        {
-            const bool HasBlocked = m_event_blocked;
-            m_event_blocked = block;
-            return HasBlocked;
-        }
-
     public:
         void resize(sint32 width, sint32 height)
         {
@@ -1766,7 +1759,7 @@
 
         void mousePressEvent(MouseEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1789,7 +1782,7 @@
 
         void mouseMoveEvent(MouseEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1817,7 +1810,7 @@
 
         void mouseReleaseEvent(MouseEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1835,7 +1828,7 @@
 
         void wheelEvent(WheelEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1856,7 +1849,7 @@
 
         void keyPressEvent(KeyEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1867,7 +1860,7 @@
 
         void keyReleaseEvent(KeyEventPrivate* event)
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
             {
                 event->ignore();
                 return;
@@ -1879,8 +1872,9 @@
     private:
         void tick_timeout()
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
                 return;
+
             if(m_request == WR_Null)
                 sendTick();
             else
@@ -1895,7 +1889,7 @@
 
         void update_timeout()
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
                 return;
             if(m_paintcount == 0)
                 m_update_timer.stop();
@@ -1904,7 +1898,7 @@
 
         void tooltip_timeout()
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
                 return;
             m_tooltip_timer.stop();
             point64 CursorPos;
@@ -1914,7 +1908,7 @@
 
         void longpress_timeout()
         {
-            if(m_event_blocked)
+            if(g_event_blocked)
                 return;
             m_longpress_timer.stop();
             touch(TT_LongPress, 0, m_longpress_x, m_longpress_y);
@@ -1931,7 +1925,6 @@
         WidgetPrivate* m_paint_device;
 
     private:
-        bool m_event_blocked;
         sint32 m_width;
         sint32 m_height;
         WidgetRequest m_request;
@@ -2985,9 +2978,14 @@
     private:
         void tick_timeout()
         {
+            if(g_event_blocked)
+                return;
+
+            PlatformImpl::Core::FlushProcedure();
             PlatformImpl::Core::LockProcedure();
             for(sint32 i = 0, iend = PlatformImpl::Core::GetProcedureCount(); i < iend; ++i)
-                PlatformImpl::Core::GetProcedureCB(i)(PlatformImpl::Core::GetProcedureData(i));
+                if(auto CurProcedureCB = PlatformImpl::Core::GetProcedureCB(i))
+                    CurProcedureCB(PlatformImpl::Core::GetProcedureData(i));
             PlatformImpl::Core::UnlockProcedure();
         }
 

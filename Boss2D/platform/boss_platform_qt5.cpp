@@ -8,10 +8,18 @@
     MainData* g_data = nullptr;
     MainWindowPrivate* g_window = nullptr;
     WidgetPrivate* g_view = nullptr;
+    bool g_event_blocked = false;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
     static bool g_isBeginGL = false;
     static bool g_isPopupAssert = false;
+
+    bool g_setEventBlocked(bool blocked)
+    {
+        const bool OldBlocked = g_event_blocked;
+        g_event_blocked = blocked;
+        return OldBlocked;
+    }
 
     // 외부지원
     QOpenGLFunctions* g_currentGLFunctions()
@@ -232,10 +240,10 @@
                 Length = AssertMessage.toWCharArray(AssertMessageW);
                 AssertMessageW[Length] = L'\0';
 
-                const bool WasBlocked = g_data->getMainAPI()->setEventBlocked(true);
+                const bool WasBlocked = g_setEventBlocked(true);
                 const int Result = MessageBoxW((HWND) ((g_window)? (ublock) g_window->winId() : NULL),
                     AssertMessageW, L"ASSERT BREAK", MB_ICONWARNING | MB_ABORTRETRYIGNORE);
-                g_data->getMainAPI()->setEventBlocked(WasBlocked);
+                g_setEventBlocked(WasBlocked);
 
                 switch(Result)
                 {
@@ -250,13 +258,13 @@
                     AssertInfo[0], AssertInfo[1],
                     AssertInfo[2], AssertInfo[3]);
 
-                const bool WasBlocked = g_data->getMainAPI()->setEventBlocked(true);
+                const bool WasBlocked = g_setEventBlocked(true);
                 QMessageBox AssertBox(QMessageBox::Warning, "ASSERT BREAK", QString::fromUtf8(name),
                     QMessageBox::Yes | QMessageBox::No | QMessageBox::NoToAll);
                 AssertBox.setInformativeText(AssertMessage);
                 AssertBox.setDefaultButton(QMessageBox::Yes);
                 const int Result = AssertBox.exec();
-                g_data->getMainAPI()->setEventBlocked(WasBlocked);
+                g_setEventBlocked(WasBlocked);
 
                 switch(Result)
                 {
@@ -3814,7 +3822,9 @@
             case SocketBox::Type::TCP:
                 {
                     CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain), port);
+                    const bool WasBlocked = g_setEventBlocked(true);
                     bool Result = CurSocketBox->m_socket->waitForConnected(timeout);
+                    g_setEventBlocked(WasBlocked);
                     BOSS_TRACE("Connect-TCP(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
                     return Result;
                 }
@@ -3863,7 +3873,9 @@
                 {
                     const String UrlText = String::Format("ws://%s:%d", domain, (sint32) port);
                     CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
+
                     // 지정된 시간동안 결과를 기다림
+                    const bool WasBlocked = g_setEventBlocked(true);
                     bool Result = true;
                     const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
                     while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
@@ -3875,6 +3887,7 @@
                             break;
                         }
                     }
+                    g_setEventBlocked(WasBlocked);
                     BOSS_TRACE("Connect-WS(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
                     return Result;
                 }

@@ -11,6 +11,7 @@ namespace BOSS
             void LockProcedure();
             void UnlockProcedure();
             sint32 GetProcedureCount();
+            void FlushProcedure();
             ProcedureCB GetProcedureCB(sint32 i);
             payload GetProcedureData(sint32 i);
             String NormalPath(chars itemname, bool QCodeTest = true);
@@ -25,7 +26,7 @@ namespace BOSS
         namespace Wrap
         {
             sint32 AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data);
-            void SubWindowProcedure(sint32 id);
+            bool SubWindowProcedure(sint32 id);
 
             chars Utility_GetOSName();
             chars Utility_GetDeviceID();
