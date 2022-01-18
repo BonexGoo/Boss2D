@@ -2884,15 +2884,15 @@
         {
             setUnifiedTitleAndToolBarOnMac(true);
             g_data = new MainData(this);
-            connect(&m_tick_timer, &QTimer::timeout, this, &MainWindow::tick_timeout);
-            m_tick_timer.start(1000 / USER_FRAMECOUNT);
+            connect(&m_msec_timer, &QTimer::timeout, this, &MainWindow::msec_timeout);
+            m_msec_timer.start(1);
             m_inited_platform = false;
             m_first_visible = true;
         }
 
         ~MainWindow()
         {
-            m_tick_timer.stop();
+            m_msec_timer.stop();
             delete g_data;
             g_data = nullptr;
         }
@@ -2976,15 +2976,17 @@
         }
 
     private:
-        void tick_timeout()
+        void msec_timeout()
         {
             if(g_event_blocked)
                 return;
 
+            static sint32 SumMsec = 0;
+            SumMsec = (SumMsec + 1) % 1000000;
             PlatformImpl::Core::FlushProcedure();
             PlatformImpl::Core::LockProcedure();
             for(sint32 i = 0, iend = PlatformImpl::Core::GetProcedureCount(); i < iend; ++i)
-                if(auto CurProcedureCB = PlatformImpl::Core::GetProcedureCB(i))
+                if(auto CurProcedureCB = PlatformImpl::Core::GetProcedureCB(i, SumMsec))
                     CurProcedureCB(PlatformImpl::Core::GetProcedureData(i));
             PlatformImpl::Core::UnlockProcedure();
         }
@@ -2994,7 +2996,7 @@
         point64 m_window_pos_old;
         size64 m_window_size;
         size64 m_window_size_old;
-        QTimer m_tick_timer;
+        QTimer m_msec_timer;
         bool m_inited_platform;
         bool m_first_visible;
     };

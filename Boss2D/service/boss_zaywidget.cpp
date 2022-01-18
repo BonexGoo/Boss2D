@@ -234,14 +234,13 @@ namespace BOSS
         mZaySonModifyTime = 0;
         mResourceCB = nullptr;
         mProcedureID = 0;
-        mLastProcedureTime = 0;
         mPipe = nullptr;
         mPipeModifyTime = 0;
     }
 
     ZayWidget::~ZayWidget()
     {
-        Platform::SubWindowProcedure(mProcedureID);
+        Platform::SubProcedure(mProcedureID);
         ZayWidgetDOM::UnbindPipe(mPipe);
         Platform::Pipe::Close(mPipe);
     }
@@ -259,7 +258,6 @@ namespace BOSS
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
         mResourceCB = ToReference(rhs.mResourceCB);
         mProcedureID = ToReference(rhs.mProcedureID); rhs.mProcedureID = 0; // 이관
-        mLastProcedureTime = ToReference(rhs.mLastProcedureTime);
         mPipe = rhs.mPipe; rhs.mPipe = nullptr; // 이관
         mPipeModifyTime = ToReference(rhs.mPipeModifyTime);
         return *this;
@@ -288,55 +286,49 @@ namespace BOSS
             Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName));
             mZaySon.Load(mZaySonViewName, Json);
 
-            Platform::SubWindowProcedure(mProcedureID);
-            mProcedureID = Platform::AddWindowProcedure(WE_Tick,
+            Platform::SubProcedure(mProcedureID);
+            mProcedureID = Platform::AddProcedure(PE_1SEC,
                 [](payload data)->void
                 {
                     auto Self = (ZayWidget*) data;
-                    uint64 CurUpdateCheckTime = Platform::Utility::CurrentTimeMsec();
-                    if(Self->mLastProcedureTime + 1000 < CurUpdateCheckTime)
+                    // Json체크
+                    uint64 FileSize = 0, ModifyTime = 0;
+                    if(Asset::Exist(Self->mZaySonAssetName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
+                    if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
                     {
-                        Self->mLastProcedureTime = CurUpdateCheckTime;
+                        Self->mZaySonFileSize = FileSize;
+                        Self->mZaySonModifyTime = ModifyTime;
+                        Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName));
+                        Self->mZaySon.Reload(Json);
+                        Platform::UpdateAllViews();
+                    }
 
-                        // Json체크
-                        uint64 FileSize = 0, ModifyTime = 0;
-                        if(Asset::Exist(Self->mZaySonAssetName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
-                        if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
+                    // Pipe체크
+                    if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", nullptr, nullptr, nullptr, nullptr, &ModifyTime))
+                    {
+                        if(Self->mPipeModifyTime != 0)
                         {
-                            Self->mZaySonFileSize = FileSize;
-                            Self->mZaySonModifyTime = ModifyTime;
-                            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName));
-                            Self->mZaySon.Reload(Json);
-                            Platform::UpdateAllViews();
+                            ZayWidgetDOM::UnbindPipe(Self->mPipe);
+                            Platform::Pipe::Close(Self->mPipe);
+                            Self->mPipe = nullptr;
+                            Self->mPipeModifyTime = 0;
                         }
-
-                        // Pipe체크
-                        if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", nullptr, nullptr, nullptr, nullptr, &ModifyTime))
+                    }
+                    else
+                    {
+                        if(Self->mPipeModifyTime != ModifyTime)
                         {
-                            if(Self->mPipeModifyTime != 0)
-                            {
-                                ZayWidgetDOM::UnbindPipe(Self->mPipe);
-                                Platform::Pipe::Close(Self->mPipe);
-                                Self->mPipe = nullptr;
-                                Self->mPipeModifyTime = 0;
-                            }
-                        }
-                        else
-                        {
-                            if(Self->mPipeModifyTime != ModifyTime)
-                            {
-                                Self->mPipeModifyTime = ModifyTime;
-                                Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe"));
-                                const String PipeName = Json("pipe").GetText();
-                                ZayWidgetDOM::UnbindPipe(Self->mPipe);
-                                Platform::Pipe::Close(Self->mPipe);
-                                Self->mPipe = Platform::Pipe::Open(PipeName);
-                                ZayWidgetDOM::BindPipe(Self->mPipe);
-                                // 그동안 쌓인 송신내용
-                                for(sint32 i = 0, iend = Self->mPipeReservers.Count(); i < iend; ++i)
-                                    Platform::Pipe::SendJson(Self->mPipe, Self->mPipeReservers[i]);
-                                Self->mPipeReservers.Clear();
-                            }
+                            Self->mPipeModifyTime = ModifyTime;
+                            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe"));
+                            const String PipeName = Json("pipe").GetText();
+                            ZayWidgetDOM::UnbindPipe(Self->mPipe);
+                            Platform::Pipe::Close(Self->mPipe);
+                            Self->mPipe = Platform::Pipe::Open(PipeName);
+                            ZayWidgetDOM::BindPipe(Self->mPipe);
+                            // 그동안 쌓인 송신내용
+                            for(sint32 i = 0, iend = Self->mPipeReservers.Count(); i < iend; ++i)
+                                Platform::Pipe::SendJson(Self->mPipe, Self->mPipeReservers[i]);
+                            Self->mPipeReservers.Clear();
                         }
                     }
                 }, this);

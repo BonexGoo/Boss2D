@@ -446,14 +446,22 @@
             g_window->setWindowOpacity(value);
         }
 
-        sint32 Platform::AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data)
+        sint32 Platform::AddProcedure(ProcedureEvent event, ProcedureCB cb, payload data)
         {
-            return PlatformImpl::Wrap::AddWindowProcedure(event, cb, data);
+            switch(event)
+            {
+            case PE_1SEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000);
+            case PE_100MSEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 100);
+            case PE_FRAME: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000 / USER_FRAMECOUNT);
+            case PE_1MSEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 1);
+            }
+            BOSS_ASSERT("알 수 없는 ProcedureEvent입니다", false);
+            return -1;
         }
 
-        void Platform::SubWindowProcedure(sint32 id)
+        void Platform::SubProcedure(sint32 id)
         {
-            PlatformImpl::Wrap::SubWindowProcedure(id);
+            PlatformImpl::Wrap::SubProcedure(id);
         }
 
         void Platform::SetStatusText(chars text, UIStack stack)
@@ -976,6 +984,10 @@
 
         void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket)
         {
+            bool WasBlocked = false;
+            if(!process_input)
+                WasBlocked = g_setEventBlocked(true);
+
             QTime StartTime = QTime::currentTime();
             if(process_input || process_socket)
             {
@@ -987,6 +999,9 @@
             }
             sint32 SleepTime = ms - StartTime.msecsTo(QTime::currentTime());
             if(0 < SleepTime) QThread::msleep(SleepTime);
+
+            if(!process_input)
+                g_setEventBlocked(WasBlocked);
         }
 
         void Platform::Utility::SetMinimize()

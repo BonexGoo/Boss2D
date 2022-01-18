@@ -37,7 +37,7 @@ namespace BOSS
 
     View::View()
     {
-        mNotifyProcedure = Platform::AddWindowProcedure(WE_Tick,
+        mNotifyProcedure = Platform::AddProcedure(PE_1MSEC,
             [](payload data)->void
             {
                 auto Self = (View*) data;
@@ -52,7 +52,7 @@ namespace BOSS
 
     View::~View()
     {
-        Platform::SubWindowProcedure(mNotifyProcedure);
+        Platform::SubProcedure(mNotifyProcedure);
         while(auto OldNotify = mNotifyQueue.Dequeue())
             delete OldNotify;
     }

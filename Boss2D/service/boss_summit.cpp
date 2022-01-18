@@ -121,7 +121,7 @@ namespace BOSS
         }
 
         // 소켓관련 정리
-        Platform::SubWindowProcedure(ST().mRelayProcedure);
+        Platform::SubProcedure(ST().mRelayProcedure);
         Platform::Socket::Close(ST().mRelaySocket);
         ST().mRelayProcedure = 0;
         ST().mRelaySocket = nullptr;
@@ -168,7 +168,7 @@ namespace BOSS
         mAccessToken = -1;
         mRelayToken = -1;
         mRelaySocket = Platform::Socket::OpenForTCP();
-        mRelayProcedure = Platform::AddWindowProcedure(WE_Tick,
+        mRelayProcedure = Platform::AddProcedure(PE_FRAME,
             [](payload data)->void
             {
                 id_socket& RelaySocket = *((id_socket*) data);

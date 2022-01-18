@@ -63,17 +63,19 @@ namespace BOSS
             class ProcedureClass
             {
             public:
-                ProcedureClass() {mProcedureID = CreateID(); mCb = nullptr; mData = nullptr;}
+                ProcedureClass() {mID = CreateID(); mCb = nullptr; mData = nullptr; mMsec = 1;}
                 ~ProcedureClass() {}
                 ProcedureClass(const ProcedureClass& rhs) {operator=(rhs);}
                 ProcedureClass& operator=(const ProcedureClass& rhs)
-                {mProcedureID = rhs.mProcedureID; mCb = rhs.mCb; mData = rhs.mData; return *this;}
+                {mID = rhs.mID; mCb = rhs.mCb; mData = rhs.mData; mMsec = rhs.mMsec; return *this;}
             private:
                 sint32 CreateID() {static sint32 _ = 0; return ++_;}
             public:
-                sint32 mProcedureID;
+                sint32 mID;
+                ProcedureEvent mEvent;
                 ProcedureCB mCb;
                 payload mData;
+                sint32 mMsec;
             };
             Map<ProcedureClass> g_AllProcedures;
             Queue<ProcedureClass> g_NewProcedures;
@@ -91,10 +93,11 @@ namespace BOSS
                     while(0 < g_NewProcedures.Count())
                     {
                         auto SrcProcedure = g_NewProcedures.Dequeue();
-                        auto& DestProcedure = g_AllProcedures[SrcProcedure.mProcedureID];
-                        DestProcedure.mProcedureID = SrcProcedure.mProcedureID;
+                        auto& DestProcedure = g_AllProcedures[SrcProcedure.mID];
+                        DestProcedure.mID = SrcProcedure.mID;
                         DestProcedure.mCb = SrcProcedure.mCb;
                         DestProcedure.mData = SrcProcedure.mData;
+                        DestProcedure.mMsec = SrcProcedure.mMsec;
                     }
 
                     // 삭제
@@ -112,10 +115,12 @@ namespace BOSS
                 UnlockProcedure();
             }
 
-            ProcedureCB GetProcedureCB(sint32 i)
+            ProcedureCB GetProcedureCB(sint32 i, sint32 msec)
             {
                 auto CurProcedure = g_AllProcedures.AccessByOrder(i);
-                return CurProcedure->mCb;
+                if((msec % CurProcedure->mMsec) == 0)
+                    return CurProcedure->mCb;
+                return nullptr;
             }
 
             payload GetProcedureData(sint32 i)
@@ -176,18 +181,19 @@ namespace BOSS
         ////////////////////////////////////////////////////////////////////////////////
         namespace Wrap
         {
-            sint32 AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data)
+            sint32 AddProcedure(ProcedureCB cb, payload data, sint32 msec)
             {
                 if(auto NewProcedure = Core::g_NewProcedures.Create())
                 {
                     NewProcedure->mCb = cb;
                     NewProcedure->mData = data;
-                    return NewProcedure->mProcedureID;
+                    NewProcedure->mMsec = msec;
+                    return NewProcedure->mID;
                 }
                 return -1;
             }
 
-            bool SubWindowProcedure(sint32 id)
+            bool SubProcedure(sint32 id)
             {
                 // mCb를 제거해 놓으면 다음 FlushProcedure호출시 제거
                 if(auto CurProcedure = Core::g_AllProcedures.Access(id))

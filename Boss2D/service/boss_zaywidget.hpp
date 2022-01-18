@@ -36,7 +36,6 @@ namespace BOSS
         uint64 mZaySonModifyTime;
         ResourceCB mResourceCB;
         sint32 mProcedureID;
-        uint64 mLastProcedureTime;
         id_pipe mPipe;
         uint64 mPipeModifyTime;
         Strings mPipeReservers;

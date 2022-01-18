@@ -285,14 +285,14 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        sint32 Platform::AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data)
+        sint32 Platform::AddProcedure(ProcedureEvent event, ProcedureCB cb, payload data)
         {
-            return PlatformImpl::Wrap::AddWindowProcedure(event, cb, data);
+            return PlatformImpl::Wrap::AddProcedure(cb, data, 1000);
         }
 
-        void Platform::SubWindowProcedure(sint32 id)
+        void Platform::SubProcedure(sint32 id)
         {
-            PlatformImpl::Wrap::SubWindowProcedure(id);
+            PlatformImpl::Wrap::SubProcedure(id);
         }
 
         void Platform::SetStatusText(chars text, UIStack stack)

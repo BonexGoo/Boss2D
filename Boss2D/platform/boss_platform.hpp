@@ -13,7 +13,7 @@
 namespace BOSS
 {
 
-enum WindowEvent {WE_Tick, WE_Max};
+enum ProcedureEvent {PE_1SEC, PE_100MSEC, PE_FRAME, PE_1MSEC, PE_Max};
 enum UIRole {UIR_Menu = 0x1, UIR_Tool = 0x2, UIR_Both = 0x3};
 static UIRole operator|(UIRole a, UIRole b) {return (UIRole) (int(a) | int(b));}
 enum UIDirection {UID_Left = 0x1, UID_Top = 0x2, UID_Right = 0x4, UID_Bottom = 0x8, UID_Wherever = 0xF};
@@ -113,16 +113,16 @@ public:
     /// @param value : 0~1사이의 불투명도값
     static void SetWindowOpacity(float value);
 
-    /// @brief 윈도우프로시저 추가
+    /// @brief 프로시저 추가
     /// @param event : 호출시점
     /// @param cb : 콜백함수
     /// @param data : 콜백함수에 전달할 데이터
-    /// @return 생성된 윈도우프로시저의 ID
-    static sint32 AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data = nullptr);
+    /// @return 생성된 프로시저의 ID
+    static sint32 AddProcedure(ProcedureEvent event, ProcedureCB cb, payload data = nullptr);
 
-    /// @brief 윈도우프로시저 제거
-    /// @param id : 제거할 윈도우프로시저의 ID
-    static void SubWindowProcedure(sint32 id);
+    /// @brief 프로시저 제거
+    /// @param id : 제거할 프로시저의 ID
+    static void SubProcedure(sint32 id);
 
     /// @brief 상태창 설정
     /// @param text : 스트링

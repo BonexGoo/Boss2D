@@ -12,7 +12,7 @@ namespace BOSS
             void UnlockProcedure();
             sint32 GetProcedureCount();
             void FlushProcedure();
-            ProcedureCB GetProcedureCB(sint32 i);
+            ProcedureCB GetProcedureCB(sint32 i, sint32 msec);
             payload GetProcedureData(sint32 i);
             String NormalPath(chars itemname, bool QCodeTest = true);
             WString NormalPathW(wchars itemname, bool QCodeTest = true);
@@ -25,8 +25,8 @@ namespace BOSS
         // 래핑함수
         namespace Wrap
         {
-            sint32 AddWindowProcedure(WindowEvent event, ProcedureCB cb, payload data);
-            bool SubWindowProcedure(sint32 id);
+            sint32 AddProcedure(ProcedureCB cb, payload data, sint32 msec);
+            bool SubProcedure(sint32 id);
 
             chars Utility_GetOSName();
             chars Utility_GetDeviceID();
