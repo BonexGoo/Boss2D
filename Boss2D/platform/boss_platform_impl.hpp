@@ -12,7 +12,7 @@ namespace BOSS
             void UnlockProcedure();
             sint32 GetProcedureCount();
             void FlushProcedure();
-            ProcedureCB GetProcedureCB(sint32 i, sint32 msec);
+            ProcedureCB GetProcedureCB(sint32 i, uint64 oldmsec, uint64 newmsec);
             payload GetProcedureData(sint32 i);
             String NormalPath(chars itemname, bool QCodeTest = true);
             WString NormalPathW(wchars itemname, bool QCodeTest = true);

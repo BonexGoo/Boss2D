@@ -115,10 +115,10 @@ namespace BOSS
                 UnlockProcedure();
             }
 
-            ProcedureCB GetProcedureCB(sint32 i, sint32 msec)
+            ProcedureCB GetProcedureCB(sint32 i, uint64 oldmsec, uint64 newmsec)
             {
                 auto CurProcedure = g_AllProcedures.AccessByOrder(i);
-                if((msec % CurProcedure->mMsec) == 0)
+                if(oldmsec / CurProcedure->mMsec != newmsec / CurProcedure->mMsec)
                     return CurProcedure->mCb;
                 return nullptr;
             }

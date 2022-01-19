@@ -2886,6 +2886,7 @@
             g_data = new MainData(this);
             connect(&m_msec_timer, &QTimer::timeout, this, &MainWindow::msec_timeout);
             m_msec_timer.start(1);
+            m_msec_old = Platform::Utility::CurrentTimeMsec();
             m_inited_platform = false;
             m_first_visible = true;
         }
@@ -2981,13 +2982,17 @@
             if(g_event_blocked)
                 return;
 
-            static sint32 SumMsec = 0;
-            SumMsec = (SumMsec + 1) % 1000000;
             PlatformImpl::Core::FlushProcedure();
             PlatformImpl::Core::LockProcedure();
+
+            const uint64 NewMsec = Platform::Utility::CurrentTimeMsec();
             for(sint32 i = 0, iend = PlatformImpl::Core::GetProcedureCount(); i < iend; ++i)
-                if(auto CurProcedureCB = PlatformImpl::Core::GetProcedureCB(i, SumMsec))
+            {
+                if(auto CurProcedureCB = PlatformImpl::Core::GetProcedureCB(i, m_msec_old, NewMsec))
                     CurProcedureCB(PlatformImpl::Core::GetProcedureData(i));
+            }
+            m_msec_old = NewMsec;
+
             PlatformImpl::Core::UnlockProcedure();
         }
 
@@ -2997,6 +3002,7 @@
         size64 m_window_size;
         size64 m_window_size_old;
         QTimer m_msec_timer;
+        uint64 m_msec_old;
         bool m_inited_platform;
         bool m_first_visible;
     };
