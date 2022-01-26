@@ -96,16 +96,15 @@ namespace BOSS
             void Clear();
             bool Finished() const;
             void ValidBitmap(id_bitmap_read bitmap);
-            id_image_read GetLastImage();
             id_image_read GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring);
         private:
             id_bitmap_read m_RefBitmap;
             sint32 m_BitmapWidth;
             sint32 m_BitmapHeight;
-            id_image mLastImage;
             size64 mRoutineResize;
             Color mRoutineColor;
             id_image_routine mRoutine;
+            id_image_routine mRoutineOld;
             bool mIsRoutineFinished;
         };
 

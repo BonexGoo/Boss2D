@@ -119,1261 +119,12 @@
         extern JNIEnv* GetAndroidJNIEnv();
     #endif
 
-    #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-        typedef WId WIdPrivate;
-        typedef QColor ColorPrivate;
-        typedef QMatrix MatrixPrivate;
-        typedef QFocusEvent FocusEventPrivate;
-        typedef QCloseEvent CloseEventPrivate;
-        typedef QMoveEvent MoveEventPrivate;
-        typedef QResizeEvent ResizeEventPrivate;
-        typedef QPaintEvent PaintEventPrivate;
-        typedef QInputEvent InputEventPrivate;
-        typedef QMouseEvent MouseEventPrivate;
-        typedef QWheelEvent WheelEventPrivate;
-        typedef QKeyEvent KeyEventPrivate;
-        typedef QDesktopServices DesktopServicesPrivate;
-        typedef QFont FontPrivate;
-        typedef QFontMetrics FontMetricsPrivate;
-        typedef QPalette PalettePrivate;
-        typedef QCursor CursorPrivate;
-        typedef QPaintDevice PaintDevicePrivate;
-        typedef QPainter PainterPrivate;
-        typedef QPainterPath PainterPathPrivate;
-        typedef QImage ImagePrivate;
-        typedef QBitmap BitmapPrivate;
-        typedef QPixmap PixmapPrivate;
-        typedef QStyle StylePrivate;
-        typedef QScreen ScreenForPrivate;
-        typedef QIcon IconPrivate;
-        typedef QAction ActionPrivate;
-        typedef QWindow WindowPrivate;
-        typedef QList<QWindow*> WindowListPrivate;
-        typedef QWidget WidgetPrivate;
-        typedef QList<QWidget*> WidgetListPrivate;
-        typedef QDesktopWidget DesktopWidgetPrivate;
-        typedef QGuiApplication GuiApplicationPrivate;
-        typedef QApplication ApplicationPrivate;
-        typedef QFrame FramePrivate;
-        typedef QMenu MenuPrivate;
-        typedef QMenuBar MenuBarPrivate;
-        typedef QStatusBar StatusBarPrivate;
-        typedef QToolBar ToolBarPrivate;
-        typedef QDockWidget DockWidgetPrivate;
-        typedef QMainWindow MainWindowPrivate;
-        typedef QAbstractScrollArea AbstractScrollAreaPrivate;
-        typedef QMdiArea MdiAreaPrivate;
-        typedef QValidator ValidatorPrivate;
-        typedef QIntValidator IntValidatorPrivate;
-        typedef QDoubleValidator DoubleValidatorPrivate;
-        typedef QSystemTrayIcon SystemTrayIconPrivate;
-        typedef QHBoxLayout HBoxLayoutPrivate;
-        typedef QLineEdit LineEditPrivate;
-        typedef QListWidgetItem ListWidgetItemPrivate;
-        typedef QListWidget ListWidgetPrivate;
-        typedef QInputDialog InputDialogPrivate;
-        typedef QColorDialog ColorDialogPrivate;
-        typedef QOpenGLWidget GLWidgetPrivate;
-    #else
-        class WIdForEmpty;
-        typedef WIdForEmpty WIdPrivate;
-        class ColorForEmpty;
-        typedef ColorForEmpty ColorPrivate;
-        class MatrixForEmpty;
-        typedef MatrixForEmpty MatrixPrivate;
-        class FocusEventForEmpty;
-        typedef FocusEventForEmpty FocusEventPrivate;
-        class CloseEventForEmpty;
-        typedef CloseEventForEmpty CloseEventPrivate;
-        class MoveEventForEmpty;
-        typedef MoveEventForEmpty MoveEventPrivate;
-        class ResizeEventForEmpty;
-        typedef ResizeEventForEmpty ResizeEventPrivate;
-        class PaintEventForEmpty;
-        typedef PaintEventForEmpty PaintEventPrivate;
-        class InputEventForEmpty;
-        typedef InputEventForEmpty InputEventPrivate;
-        class MouseEventForEmpty;
-        typedef MouseEventForEmpty MouseEventPrivate;
-        class WheelEventForEmpty;
-        typedef WheelEventForEmpty WheelEventPrivate;
-        class KeyEventForEmpty;
-        typedef KeyEventForEmpty KeyEventPrivate;
-        class DesktopServicesForEmpty;
-        typedef DesktopServicesForEmpty DesktopServicesPrivate;
-        class FontForEmpty;
-        typedef FontForEmpty FontPrivate;
-        class FontMetricsForEmpty;
-        typedef FontMetricsForEmpty FontMetricsPrivate;
-        class PaletteForEmpty;
-        typedef PaletteForEmpty PalettePrivate;
-        class CursorForEmpty;
-        typedef CursorForEmpty CursorPrivate;
-        class PaintDeviceForEmpty;
-        typedef PaintDeviceForEmpty PaintDevicePrivate;
-        class PainterForEmpty;
-        typedef PainterForEmpty PainterPrivate;
-        class PainterPathForEmpty;
-        typedef PainterPathForEmpty PainterPathPrivate;
-        class ImageForEmpty;
-        typedef ImageForEmpty ImagePrivate;
-        class BitmapForEmpty;
-        typedef BitmapForEmpty BitmapPrivate;
-        class PixmapForEmpty;
-        typedef PixmapForEmpty PixmapPrivate;
-        class StyleForEmpty;
-        typedef StyleForEmpty StylePrivate;
-        class ScreenForEmpty;
-        typedef ScreenForEmpty ScreenForPrivate;
-        class IconForEmpty;
-        typedef IconForEmpty IconPrivate;
-        class ActionForEmpty;
-        typedef ActionForEmpty ActionPrivate;
-        class WindowForEmpty;
-        typedef WindowForEmpty WindowPrivate;
-        typedef QList<WindowPrivate*> WindowListPrivate;
-        class WidgetForEmpty;
-        typedef WidgetForEmpty WidgetPrivate;
-        typedef QList<WidgetPrivate*> WidgetListPrivate;
-        class DesktopWidgetForEmpty;
-        typedef DesktopWidgetForEmpty DesktopWidgetPrivate;
-        class GuiApplicationForEmpty;
-        typedef GuiApplicationForEmpty GuiApplicationPrivate;
-        class ApplicationForEmpty;
-        typedef ApplicationForEmpty ApplicationPrivate;
-        class FrameForEmpty;
-        typedef FrameForEmpty FramePrivate;
-        class MenuForEmpty;
-        typedef MenuForEmpty MenuPrivate;
-        class MenuBarForEmpty;
-        typedef MenuBarForEmpty MenuBarPrivate;
-        class StatusBarForEmpty;
-        typedef StatusBarForEmpty StatusBarPrivate;
-        class ToolBarForEmpty;
-        typedef ToolBarForEmpty ToolBarPrivate;
-        class DockWidgetForEmpty;
-        typedef DockWidgetForEmpty DockWidgetPrivate;
-        class MainWindowForEmpty;
-        typedef MainWindowForEmpty MainWindowPrivate;
-        class AbstractScrollAreaForEmpty;
-        typedef AbstractScrollAreaForEmpty AbstractScrollAreaPrivate;
-        class MdiAreaForEmpty;
-        typedef MdiAreaForEmpty MdiAreaPrivate;
-        class ValidatorForEmpty;
-        typedef ValidatorForEmpty ValidatorPrivate;
-        class IntValidatorForEmpty;
-        typedef IntValidatorForEmpty IntValidatorPrivate;
-        class DoubleValidatorForEmpty;
-        typedef DoubleValidatorForEmpty DoubleValidatorPrivate;
-        class SystemTrayIconForEmpty;
-        typedef SystemTrayIconForEmpty SystemTrayIconPrivate;
-        class HBoxLayoutForEmpty;
-        typedef HBoxLayoutForEmpty HBoxLayoutPrivate;
-        class LineEditForEmpty;
-        typedef LineEditForEmpty LineEditPrivate;
-        class ListWidgetItemForEmpty;
-        typedef ListWidgetItemForEmpty ListWidgetItemPrivate;
-        class ListWidgetForEmpty;
-        typedef ListWidgetForEmpty ListWidgetPrivate;
-        class InputDialogForEmpty;
-        typedef InputDialogForEmpty InputDialogPrivate;
-        class ColorDialogForEmpty;
-        typedef ColorDialogForEmpty ColorDialogPrivate;
-        class GLWidgetForEmpty;
-        typedef GLWidgetForEmpty GLWidgetPrivate;
-    #endif
-
-    class WIdForEmpty
-    {
-    public:
-        WIdForEmpty() {}
-        WIdForEmpty(ublock wid) {mWId = wid;}
-        ~WIdForEmpty() {}
-
-    public:
-        operator ublock() {return mWId;}
-
-    public:
-        ublock mWId;
-    };
-
-    class ColorForEmpty
-    {
-    public:
-        ColorForEmpty() {}
-        ColorForEmpty(Qt::GlobalColor color) {}
-        ColorForEmpty(int r, int g, int b, int a = 255) {}
-        ~ColorForEmpty() {}
-
-    public:
-        int alpha() const {return 0;}
-        int red() const {return 0;}
-        int green() const {return 0;}
-        int blue() const {return 0;}
-        void setRgb(int r, int g, int b, int a = 255) {}
-        bool isValid() const {return false;}
-    };
-
-    class MatrixForEmpty
-    {
-    public:
-        MatrixForEmpty() {}
-        MatrixForEmpty(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy) {}
-        ~MatrixForEmpty() {}
-
-    public:
-        MatrixForEmpty& translate(qreal dx, qreal dy) {return *this;}
-        MatrixForEmpty& scale(qreal sx, qreal sy) {return *this;}
-        MatrixForEmpty& shear(qreal sh, qreal sv) {return *this;}
-        MatrixForEmpty& rotate(qreal a) {return *this;}
-        qreal m11() const {return 0;}
-        qreal m12() const {return 0;}
-        qreal m21() const {return 0;}
-        qreal m22() const {return 0;}
-        qreal dx() const {return 0;}
-        qreal dy() const {return 0;}
-    };
-
-    class FocusEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        FocusEventForEmpty(Type type) : QEvent(type) {}
-        ~FocusEventForEmpty() {}
-    };
-
-    class CloseEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        CloseEventForEmpty(Type type) : QEvent(type) {}
-        ~CloseEventForEmpty() {}
-    };
-
-    class MoveEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        MoveEventForEmpty(Type type) : QEvent(type) {}
-        ~MoveEventForEmpty() {}
-
-    public:
-        const QPoint& pos() const {return mPos;}
-
-    public:
-        QPoint mPos;
-    };
-
-    class ResizeEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        ResizeEventForEmpty(Type type) : QEvent(type) {}
-        ~ResizeEventForEmpty() {}
-
-    public:
-        const QSize& size() const {return mSize;}
-
-    public:
-        QSize mSize;
-    };
-
-    class PaintEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        PaintEventForEmpty(Type type) : QEvent(type) {}
-        ~PaintEventForEmpty() {}
-    };
-
-    class InputEventForEmpty : public QEvent
-    {
-        Q_GADGET
-
-    public:
-        InputEventForEmpty(Type type) : QEvent(type) {}
-        ~InputEventForEmpty() {}
-    };
-
-    class MouseEventForEmpty : public InputEventForEmpty
-    {
-        Q_GADGET
-
-    public:
-        MouseEventForEmpty(Type type) : InputEventForEmpty(type) {}
-        ~MouseEventForEmpty() {}
-
-    public:
-        Qt::MouseButton button() const {return Qt::MouseButton();}
-        Qt::MouseButtons buttons() const {return Qt::MouseButtons();}
-        QPoint pos() const {return QPoint();}
-        int x() const {return 0;}
-        int y() const {return 0;}
-    };
-
-    class WheelEventForEmpty : public InputEventForEmpty
-    {
-        Q_GADGET
-
-    public:
-        WheelEventForEmpty(Type type) : InputEventForEmpty(type) {}
-        ~WheelEventForEmpty() {}
-    public:
-        int delta() const {return 0;}
-        QPoint pos() const {return QPoint();}
-        int x() const {return 0;}
-        int y() const {return 0;}
-    };
-
-    class KeyEventForEmpty : public InputEventForEmpty
-    {
-        Q_GADGET
-
-    public:
-        KeyEventForEmpty(Type type) : InputEventForEmpty(type) {}
-        ~KeyEventForEmpty() {}
-
-    public:
-        int key() const {return 0;}
-        QString text() const {return QString();}
-        bool isAutoRepeat() const {return false;}
-    };
-
-    class DesktopServicesForEmpty
-    {
-    public:
-        DesktopServicesForEmpty() {}
-        ~DesktopServicesForEmpty() {}
-
-    public:
-        static bool openUrl(const QUrl& url) {return false;}
-    };
-
-    class FontForEmpty
-    {
-    public:
-        FontForEmpty() {}
-        FontForEmpty(const FontForEmpty&) {}
-        FontForEmpty(const QString& family, int pointSize = -1, int weight = -1, bool italic = false) {}
-        ~FontForEmpty() {}
-
-    public:
-        FontForEmpty& operator=(const FontForEmpty&) {return *this;}
-    };
-
-    class FontMetricsForEmpty
-    {
-    public:
-        FontMetricsForEmpty(const FontPrivate&) {}
-        ~FontMetricsForEmpty() {}
-
-    public:
-        int ascent() const {return 0;}
-        int width(const QString&, int len = -1) const {return 0;}
-        int height() const {return 0;}
-    };
-
-    class PaletteForEmpty
-    {
-        Q_GADGET
-
-    public:
-        enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
-        Q_ENUM(ColorGroup)
-        enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
-            Text, BrightText, ButtonText, Base, Window, Shadow,
-            Highlight, HighlightedText,
-            Link, LinkVisited,
-            AlternateBase,
-            NoRole,
-            ToolTipBase, ToolTipText,
-            NColorRoles = ToolTipText + 1,
-            Foreground = WindowText, Background = Window };
-        Q_ENUM(ColorRole)
-
-    public:
-        PaletteForEmpty() {}
-        ~PaletteForEmpty() {}
-
-    public:
-        void setColor(ColorRole cr, const ColorPrivate& color) {}
-    };
-
-    class CursorForEmpty
-    {
-    public:
-        CursorForEmpty() {}
-        ~CursorForEmpty() {}
-
-    public:
-        static QPoint pos() {return QPoint();}
-    };
-
-    class PaintDeviceForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        PaintDeviceForEmpty() {}
-        ~PaintDeviceForEmpty() {}
-    };
-
-    class PainterForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum CompositionMode
-        {
-            CompositionMode_SourceOver,
-            CompositionMode_DestinationOver,
-            CompositionMode_Clear,
-            CompositionMode_Source,
-            CompositionMode_Destination,
-            CompositionMode_SourceIn,
-            CompositionMode_DestinationIn,
-            CompositionMode_SourceOut,
-            CompositionMode_DestinationOut,
-            CompositionMode_SourceAtop,
-            CompositionMode_DestinationAtop,
-            CompositionMode_Xor,
-            //svg 1.2 blend modes
-            CompositionMode_Plus,
-            CompositionMode_Multiply,
-            CompositionMode_Screen,
-            CompositionMode_Overlay,
-            CompositionMode_Darken,
-            CompositionMode_Lighten,
-            CompositionMode_ColorDodge,
-            CompositionMode_ColorBurn,
-            CompositionMode_HardLight,
-            CompositionMode_SoftLight,
-            CompositionMode_Difference,
-            CompositionMode_Exclusion,
-            // ROPs
-            RasterOp_SourceOrDestination,
-            RasterOp_SourceAndDestination,
-            RasterOp_SourceXorDestination,
-            RasterOp_NotSourceAndNotDestination,
-            RasterOp_NotSourceOrNotDestination,
-            RasterOp_NotSourceXorDestination,
-            RasterOp_NotSource,
-            RasterOp_NotSourceAndDestination,
-            RasterOp_SourceAndNotDestination,
-            RasterOp_NotSourceOrDestination,
-            RasterOp_SourceOrNotDestination,
-            RasterOp_ClearDestination,
-            RasterOp_SetDestination,
-            RasterOp_NotDestination
-        };
-        enum RenderHint
-        {
-            Antialiasing = 0x01,
-            TextAntialiasing = 0x02,
-            SmoothPixmapTransform = 0x04,
-            HighQualityAntialiasing = 0x08,
-            NonCosmeticDefaultPen = 0x10,
-            Qt4CompatiblePainting = 0x20
-        };
-        Q_FLAG(RenderHint)
-
-        Q_DECLARE_FLAGS(RenderHints, RenderHint)
-        Q_FLAG(RenderHints)
-
-    public:
-        PainterForEmpty() : mFontMetrics(mFont) {}
-        ~PainterForEmpty() {}
-
-    public:
-        PaintDevicePrivate* device() const {return nullptr;}
-        bool begin(PaintDevicePrivate*) {return false;}
-        bool end() {return false;}
-        void setRenderHint(RenderHint hint, bool on = true) {}
-        void setRenderHints(RenderHints hints, bool on = true) {}
-        void setMatrix(const MatrixPrivate& matrix, bool combine = false) {mMatrix = matrix;}
-        const MatrixPrivate& matrix() const {return mMatrix;}
-        void setClipRect(const QRectF&) {}
-        QRectF clipBoundingRect() const {return QRectF();}
-        const FontPrivate& font() const {return mFont;}
-        void setFont(const FontPrivate& f) {mFont = f;}
-        FontMetricsPrivate fontMetrics() const {return mFontMetrics;}
-
-    public:
-        MatrixPrivate mMatrix;
-        FontPrivate mFont;
-        FontMetricsPrivate mFontMetrics;
-    };
-    Q_DECLARE_OPERATORS_FOR_FLAGS(PainterForEmpty::RenderHints)
-
-    class PainterPathForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        PainterPathForEmpty() {}
-        ~PainterPathForEmpty() {}
-    };
-
-    class ImageForEmpty : public PaintDeviceForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        enum Format {
-            Format_Invalid,
-            Format_Mono,
-            Format_MonoLSB,
-            Format_Indexed8,
-            Format_RGB32,
-            Format_ARGB32,
-            Format_ARGB32_Premultiplied,
-            Format_RGB16,
-            Format_ARGB8565_Premultiplied,
-            Format_RGB666,
-            Format_ARGB6666_Premultiplied,
-            Format_RGB555,
-            Format_ARGB8555_Premultiplied,
-            Format_RGB888,
-            Format_RGB444,
-            Format_ARGB4444_Premultiplied,
-            Format_RGBX8888,
-            Format_RGBA8888,
-            Format_RGBA8888_Premultiplied,
-            Format_BGR30,
-            Format_A2BGR30_Premultiplied,
-            Format_RGB30,
-            Format_A2RGB30_Premultiplied,
-            Format_Alpha8,
-            Format_Grayscale8,
-            #if 0
-                // reserved for future use
-                Format_Grayscale16,
-            #endif
-            #ifndef Q_QDOC
-                NImageFormats
-            #endif
-        };
-
-    public:
-        ImageForEmpty() {}
-        ImageForEmpty(const ImageForEmpty&) {}
-        ImageForEmpty(int width, int height, Format format) {}
-        ImageForEmpty(bytes data, int width, int height, Format format) {}
-        ~ImageForEmpty() {}
-
-    public:
-        uint08* bits() {return nullptr;}
-        bytes bits() const {return nullptr;}
-        bytes constBits() const {return nullptr;}
-        int bitPlaneCount() const {return 0;}
-        int	width() const {return 0;}
-        int	height() const {return 0;}
-        ImageForEmpty scaled(int w, int h) const {return ImageForEmpty();}
-        ImageForEmpty transformed(const MatrixPrivate& matrix) const {return ImageForEmpty();}
-        ImageForEmpty convertToFormat(Format f) const {return ImageForEmpty();}
-
-    public:
-        ImageForEmpty& operator=(const ImageForEmpty&) {return *this;}
-    };
-
-    class BitmapForEmpty : public PaintDeviceForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        BitmapForEmpty() {}
-        BitmapForEmpty(const BitmapForEmpty&) {}
-        ~BitmapForEmpty() {}
-    };
-
-    class PixmapForEmpty : public PaintDeviceForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        PixmapForEmpty() {}
-        PixmapForEmpty(const PixmapForEmpty&) {}
-        ~PixmapForEmpty() {}
-
-    public:
-        static PixmapForEmpty fromImage(const ImagePrivate& image) {return PixmapForEmpty();}
-        bool convertFromImage(const ImagePrivate& img) {return false;}
-        int	width() const {return 0;}
-        int	height() const {return 0;}
-        ImagePrivate toImage() const {return ImagePrivate();}
-        BitmapPrivate mask() const {return BitmapPrivate();}
-
-    public:
-        PixmapForEmpty& operator=(const PixmapForEmpty&) {return *this;}
-    };
-
-    class StyleForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum PixelMetric {
-            PM_ButtonMargin,
-            PM_ButtonDefaultIndicator,
-            PM_MenuButtonIndicator,
-            PM_ButtonShiftHorizontal,
-            PM_ButtonShiftVertical,
-            PM_DefaultFrameWidth,
-            PM_SpinBoxFrameWidth,
-            PM_ComboBoxFrameWidth,
-            PM_MaximumDragDistance,
-            PM_ScrollBarExtent,
-            PM_ScrollBarSliderMin,
-            PM_SliderThickness,             // total slider thickness
-            PM_SliderControlThickness,      // thickness of the business part
-            PM_SliderLength,                // total length of slider
-            PM_SliderTickmarkOffset,        //
-            PM_SliderSpaceAvailable,        // available space for slider to move
-            PM_DockWidgetSeparatorExtent,
-            PM_DockWidgetHandleExtent,
-            PM_DockWidgetFrameWidth,
-            PM_TabBarTabOverlap,
-            PM_TabBarTabHSpace,
-            PM_TabBarTabVSpace,
-            PM_TabBarBaseHeight,
-            PM_TabBarBaseOverlap,
-            PM_ProgressBarChunkWidth,
-            PM_SplitterWidth,
-            PM_TitleBarHeight,
-            PM_MenuScrollerHeight,
-            PM_MenuHMargin,
-            PM_MenuVMargin,
-            PM_MenuPanelWidth,
-            PM_MenuTearoffHeight,
-            PM_MenuDesktopFrameWidth,
-            PM_MenuBarPanelWidth,
-            PM_MenuBarItemSpacing,
-            PM_MenuBarVMargin,
-            PM_MenuBarHMargin,
-            PM_IndicatorWidth,
-            PM_IndicatorHeight,
-            PM_ExclusiveIndicatorWidth,
-            PM_ExclusiveIndicatorHeight,
-            PM_DialogButtonsSeparator,
-            PM_DialogButtonsButtonWidth,
-            PM_DialogButtonsButtonHeight,
-            PM_MdiSubWindowFrameWidth,
-            PM_MDIFrameWidth = PM_MdiSubWindowFrameWidth,         // ### Qt 6: remove
-            PM_MdiSubWindowMinimizedWidth,
-            PM_MDIMinimizedWidth = PM_MdiSubWindowMinimizedWidth, // ### Qt 6: remove
-            PM_HeaderMargin,
-            PM_HeaderMarkSize,
-            PM_HeaderGripMargin,
-            PM_TabBarTabShiftHorizontal,
-            PM_TabBarTabShiftVertical,
-            PM_TabBarScrollButtonWidth,
-            PM_ToolBarFrameWidth,
-            PM_ToolBarHandleExtent,
-            PM_ToolBarItemSpacing,
-            PM_ToolBarItemMargin,
-            PM_ToolBarSeparatorExtent,
-            PM_ToolBarExtensionExtent,
-            PM_SpinBoxSliderHeight,
-            PM_DefaultTopLevelMargin, // ### Qt 6: remove
-            PM_DefaultChildMargin,    // ### Qt 6: remove
-            PM_DefaultLayoutSpacing,  // ### Qt 6: remove
-            PM_ToolBarIconSize,
-            PM_ListViewIconSize,
-            PM_IconViewIconSize,
-            PM_SmallIconSize,
-            PM_LargeIconSize,
-            PM_FocusFrameVMargin,
-            PM_FocusFrameHMargin,
-            PM_ToolTipLabelFrameWidth,
-            PM_CheckBoxLabelSpacing,
-            PM_TabBarIconSize,
-            PM_SizeGripSize,
-            PM_DockWidgetTitleMargin,
-            PM_MessageBoxIconSize,
-            PM_ButtonIconSize,
-            PM_DockWidgetTitleBarButtonMargin,
-            PM_RadioButtonLabelSpacing,
-            PM_LayoutLeftMargin,
-            PM_LayoutTopMargin,
-            PM_LayoutRightMargin,
-            PM_LayoutBottomMargin,
-            PM_LayoutHorizontalSpacing,
-            PM_LayoutVerticalSpacing,
-            PM_TabBar_ScrollButtonOverlap,
-            PM_TextCursorWidth,
-            PM_TabCloseIndicatorWidth,
-            PM_TabCloseIndicatorHeight,
-            PM_ScrollView_ScrollBarSpacing,
-            PM_ScrollView_ScrollBarOverlap,
-            PM_SubMenuOverlap,
-            PM_TreeViewIndentation,
-            PM_HeaderDefaultSectionSizeHorizontal,
-            PM_HeaderDefaultSectionSizeVertical,
-            PM_TitleBarButtonIconSize,
-            PM_TitleBarButtonSize,
-            // do not add any values below/greater than this
-            PM_CustomBase = 0xf0000000
-        };
-        Q_ENUM(PixelMetric)
-
-    public:
-        StyleForEmpty() {}
-        ~StyleForEmpty() {}
-
-    public:
-        int pixelMetric(PixelMetric metric) const {return 0;}
-    };
-
-    class ScreenForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        ScreenForEmpty() {}
-        ~ScreenForEmpty() {}
-
-    public:
-        PixmapPrivate grabWindow(WIdPrivate window, int x = 0, int y = 0, int w = -1, int h = -1) {return PixmapPrivate();}
-    };
-
-    class IconForEmpty
-    {
-    public:
-        IconForEmpty() {}
-        IconForEmpty(const QString& fileName) {}
-        ~IconForEmpty() {}
-    };
-
-    class ActionForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        ActionForEmpty(QObject* parent = nullptr) {}
-        ActionForEmpty(const QString& text, QObject* parent = nullptr) {}
-        ActionForEmpty(const IconPrivate& icon, const QString& text, QObject* parent = nullptr) {}
-        ~ActionForEmpty() {}
-
-    public:
-        void setStatusTip(const QString& statusTip) {}
-    };
-
-    class WindowForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        WindowForEmpty(WindowForEmpty* parent = nullptr) {}
-        ~WindowForEmpty() {}
-
-    public Q_SLOTS:
-        void alert(int msec) {}
-        bool close() {return true;}
-        void hide() {}
-        void lower() {}
-        void raise() {}
-        void requestActivate() {}
-        void requestUpdate() {}
-        void setGeometry(int posx, int posy, int w, int h) {}
-        void setGeometry(const QRect& rect) {}
-        void setHeight(int arg) {}
-        void setMaximumHeight(int h) {}
-        void setMaximumWidth(int w) {}
-        void setMinimumHeight(int h) {}
-        void setMinimumWidth(int w) {}
-        void setTitle(const QString&) {}
-        void setVisible(bool visible) {}
-        void setWidth(int arg) {}
-        void setX(int arg) {}
-        void setY(int arg) {}
-        void show() {}
-        void showFullScreen() {}
-        void showMaximized() {}
-        void showMinimized() {}
-        void showNormal() {}
-    };
-
-    class WidgetForEmpty : public PaintDeviceForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        WidgetForEmpty(WidgetForEmpty* parent = nullptr) {}
-        ~WidgetForEmpty() {}
-
-    public:
-        void activateWindow() {}
-        void move(int x, int y) {}
-        void resize(const QSize&) {}
-        void resize(int w, int h) {}
-        bool isHidden() const {return false;}
-        void setAttribute(Qt::WidgetAttribute attribute, bool on = true) {}
-        void setAutoFillBackground(bool enabled) {}
-        void setFocusPolicy(Qt::FocusPolicy policy) {}
-        void setLayout(WidgetForEmpty*) {}
-        void setMouseTracking(bool enable) {}
-        void setMask(const BitmapPrivate&) {}
-        void clearMask() {}
-        void setMinimumSize(int minw, int minh) {}
-        void setMaximumSize(int maxw, int maxh) {}
-        void addAction(ActionPrivate* action) {}
-        void setWindowFlags(Qt::WindowFlags type) {}
-        Qt::WindowFlags windowFlags() const {return Qt::WindowFlags();}
-        void setWindowModality(Qt::WindowModality windowModality) {}
-        void setWindowOpacity(qreal level) {}
-        const PalettePrivate& palette() const {return mPalette;}
-        void setPalette(const PalettePrivate&) {}
-        QPoint mapToGlobal(const QPoint& pos) const {return QPoint();}
-        int	minimumWidth() const {return 0;}
-        int	minimumHeight() const {return 0;}
-        int	maximumWidth() const {return 0;}
-        int	maximumHeight() const {return 0;}
-        QPoint pos() const {return QPoint();}
-        QSize size() const {return QSize();}
-        WindowPrivate* windowHandle() const {return nullptr;}
-        Qt::WindowType windowType() const {return Qt::Widget;}
-        WIdPrivate winId() const {return WIdPrivate();}
-        int	x() const {return 0;}
-        int	y() const {return 0;}
-        int	width() const {return 0;}
-        int	height() const {return 0;}
-
-    public Q_SLOTS:
-        bool close() {return true;}
-        void hide() {}
-        void lower() {}
-        void raise() {}
-        void repaint() {}
-        void setDisabled(bool disable) {}
-        void setEnabled(bool) {}
-        void setFocus() {}
-        void setHidden(bool hidden) {}
-        void setStyleSheet(const QString& styleSheet) {}
-        virtual void setVisible(bool visible) {}
-        void setWindowModified(bool) {}
-        void setWindowTitle(const QString& name)
-        {
-            BOSS_TRACE("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            BOSS_TRACE("┃ %s", name.toUtf8().constData());
-            BOSS_TRACE("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        }
-        void setWindowIcon(const IconPrivate& icon) {}
-        void show() {}
-        void showFullScreen() {}
-        void showMaximized() {}
-        void showMinimized() {}
-        void showNormal() {}
-        void update() {}
-
-    protected:
-        virtual void changeEvent(QEvent* event) {}
-        virtual void closeEvent(CloseEventPrivate* event) {}
-                void create(WIdPrivate window = 0, bool initializeWindow = true, bool destroyOldWindow = true) {}
-                void destroy(bool destroyWindow = true, bool destroySubWindows = true) {}
-        virtual void enterEvent(QEvent* event) {}
-        virtual void focusInEvent(FocusEventPrivate* event) {}
-                bool focusNextChild() {return false;}
-        virtual bool focusNextPrevChild(bool next) {return false;}
-        virtual void focusOutEvent(FocusEventPrivate* event) {}
-                bool focusPreviousChild() {return false;}
-        virtual void keyPressEvent(KeyEventPrivate* event) {}
-        virtual void keyReleaseEvent(KeyEventPrivate* event) {}
-        virtual void leaveEvent(QEvent* event) {}
-        virtual void mouseDoubleClickEvent(MouseEventPrivate* event) {}
-        virtual void mouseMoveEvent(MouseEventPrivate* event) {}
-        virtual void mousePressEvent(MouseEventPrivate* event) {}
-        virtual void mouseReleaseEvent(MouseEventPrivate* event) {}
-        virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result) {return false;}
-        virtual void paintEvent(PaintEventPrivate* event) {}
-        virtual void resizeEvent(ResizeEventPrivate* event) {}
-        virtual void wheelEvent(WheelEventPrivate* event) {}
-
-    protected:
-        PalettePrivate mPalette;
-    };
-
-    class DesktopWidgetForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        DesktopWidgetForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~DesktopWidgetForEmpty() {}
-
-    public:
-        const QRect availableGeometry(int screen = -1) const {return QRect();}
-        const QRect availableGeometry(const WidgetPrivate* widget) const {return QRect();}
-        const QRect screenGeometry(int screen = -1) const {return QRect();}
-        const QRect screenGeometry(const WidgetPrivate* widget) const {return QRect();}
-        const QRect screenGeometry(const QPoint& point) const {return QRect();}
-        int numScreens() const {return 1;}
-        int screenNumber(const WidgetPrivate* widget = nullptr) const {return 0;}
-    };
-
-    class GuiApplicationForEmpty : public QCoreApplication
-    {
-        Q_OBJECT
-
-    public:
-        GuiApplicationForEmpty(int& argc, char** argv) : QCoreApplication(argc, argv) {}
-        ~GuiApplicationForEmpty() {}
-
-    public:
-        static ScreenForPrivate* primaryScreen() {return nullptr;}
-    };
-
-    class ApplicationForEmpty : public GuiApplicationForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        ApplicationForEmpty(int& argc, char** argv) : GuiApplicationForEmpty(argc, argv) {}
-        ~ApplicationForEmpty() {}
-
-    public:
-        static WidgetPrivate* activeModalWidget() {return nullptr;}
-        static WidgetListPrivate topLevelWidgets() {return WidgetListPrivate();}
-        static DesktopWidgetPrivate* desktop() {return nullptr;}
-        static StylePrivate* style() {return nullptr;}
-    };
-
-    class FrameForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        FrameForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~FrameForEmpty() {}
-    };
-
-    class MenuForEmpty : public WidgetForEmpty
-    {
-    public:
-        MenuForEmpty() {}
-        ~MenuForEmpty() {}
-
-    public:
-        ActionPrivate* addSeparator() {return nullptr;}
-    };
-
-    class MenuBarForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        MenuBarForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~MenuBarForEmpty() {}
-
-    public:
-        MenuPrivate* addMenu(const QString& title) {return nullptr;}
-    };
-
-    class StatusBarForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        StatusBarForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~StatusBarForEmpty() {}
-
-    public:
-        void showMessage(const QString& text, int timeout = 0) {}
-    };
-
-    class ToolBarForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        ToolBarForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~ToolBarForEmpty() {}
-
-    public:
-        ActionPrivate* addSeparator() {return nullptr;}
-    };
-
-    class DockWidgetForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        DockWidgetForEmpty(WidgetPrivate* parent = nullptr) {}
-        DockWidgetForEmpty(const QString& title, WidgetPrivate* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()) {}
-        ~DockWidgetForEmpty() {}
-
-    public:
-        void setWidget(WidgetPrivate* widget) {}
-        void setAllowedAreas(Qt::DockWidgetAreas areas) {}
-        ActionPrivate* toggleViewAction() const {return nullptr;}
-    };
-
-    class MainWindowForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        MainWindowForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~MainWindowForEmpty() {}
-
-    public:
-        MenuBarPrivate* menuBar() const {return nullptr;}
-        StatusBarPrivate* statusBar() const {return nullptr;}
-        ToolBarPrivate* addToolBar(const QString& title) {return nullptr;}
-        void addDockWidget(Qt::DockWidgetArea area, DockWidgetPrivate* dockwidget) {}
-        void setUnifiedTitleAndToolBarOnMac(bool set) {}
-        void setCentralWidget(WidgetPrivate* widget) {}
-        int logicalDpiX() const {return 0;}
-        int logicalDpiY() const {return 0;}
-        int devicePixelRatio() const {return 0;}
-        int depth() const {return 0;}
-    };
-
-    class AbstractScrollAreaForEmpty : public FrameForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        AbstractScrollAreaForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~AbstractScrollAreaForEmpty() {}
-
-    public:
-        WidgetPrivate* viewport() const {return nullptr;}
-    };
-
-    class MdiAreaForEmpty : public AbstractScrollAreaForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        MdiAreaForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~MdiAreaForEmpty() {}
-
-    public:
-        WidgetPrivate* currentSubWindow() const {return nullptr;}
-        WidgetPrivate* addSubWindow(WidgetPrivate* widget) {return nullptr;}
-
-    public Q_SLOTS:
-        void closeAllSubWindows() {}
-    };
-
-    class ValidatorForEmpty
-    {
-    public:
-        ValidatorForEmpty() {}
-        virtual ~ValidatorForEmpty() {}
-    };
-
-    class IntValidatorForEmpty : public ValidatorForEmpty
-    {
-    public:
-        IntValidatorForEmpty(QObject*) {}
-        ~IntValidatorForEmpty() {}
-    };
-
-    class DoubleValidatorForEmpty : public ValidatorForEmpty
-    {
-    public:
-        DoubleValidatorForEmpty(QObject*) {}
-        ~DoubleValidatorForEmpty() {}
-    };
-
-    class SystemTrayIconForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum ActivationReason
-        {Unknown, Context, DoubleClick, Trigger, MiddleClick};
-
-    public:
-        SystemTrayIconForEmpty(QObject* parent = nullptr) {}
-        ~SystemTrayIconForEmpty() {}
-
-    public:
-        void setIcon(const IconPrivate& icon) {}
-
-    public Q_SLOTS:
-        void show() {}
-    };
-
-    class HBoxLayoutForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        HBoxLayoutForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~HBoxLayoutForEmpty() {}
-
-    public:
-        void setMargin(int) {}
-        void addWidget(WidgetPrivate*) {}
-    };
-
-    class LineEditForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        enum EchoMode {Normal, NoEcho, Password, PasswordEchoOnEdit};
-        Q_ENUM(EchoMode)
-
-    public:
-        LineEditForEmpty(const QString& contents, WidgetPrivate* parent = nullptr) {}
-        ~LineEditForEmpty() {}
-
-    public:
-        void setFrame(bool) {}
-        void setValidator(const ValidatorPrivate*) {}
-        QString text() const {return QString();}
-
-    public Q_SLOTS:
-        void clear() {}
-        void copy() const {}
-        void cut() {}
-        void paste() {}
-        void redo() {}
-        void selectAll() {}
-        void setText(const QString&) {}
-        void undo() {}
-    };
-
-    class ListWidgetItemForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum ItemType {Type = 0, UserType = 1000};
-
-    public:
-        ListWidgetItemForEmpty(const QString& text, WidgetPrivate* parent = nullptr, int type = Type) {}
-        ~ListWidgetItemForEmpty() {}
-
-    public:
-        void setTextAlignment(int alignment) {}
-    };
-
-    class ListWidgetForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        ListWidgetForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~ListWidgetForEmpty() {}
-
-    public:
-        void addItem(ListWidgetItemPrivate* item) {}
-        int row(const ListWidgetItemPrivate* item) const {return 0;}
-    };
-
-    class InputDialogForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        InputDialogForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~InputDialogForEmpty() {}
-
-    public:
-        static QString getText(WidgetPrivate* parent, const QString& title, const QString& label,
-            LineEditPrivate::EchoMode echo = LineEditPrivate::Normal,
-            const QString& text = QString(), bool* ok = nullptr,
-            Qt::WindowFlags flags = Qt::WindowFlags(),
-            Qt::InputMethodHints inputMethodHints = Qt::ImhNone) {return QString();}
-    };
-
-    class ColorDialogForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum ColorDialogOption {
-            ShowAlphaChannel    = 0x00000001,
-            NoButtons           = 0x00000002,
-            DontUseNativeDialog = 0x00000004
-        };
-        Q_ENUM(ColorDialogOption)
-
-        Q_DECLARE_FLAGS(ColorDialogOptions, ColorDialogOption)
-
-    public:
-        ColorDialogForEmpty(WidgetPrivate* parent = nullptr) {}
-        ~ColorDialogForEmpty() {}
-
-    public:
-        static ColorPrivate getColor(const ColorPrivate& initial = Qt::white,
-            WidgetPrivate* parent = nullptr,
-            const QString& title = QString(),
-            ColorDialogOptions options = ColorDialogOptions()) {return initial;}
-    };
-
-    class GLWidgetForEmpty : public WidgetForEmpty
-    {
-        Q_OBJECT
-
-    public:
-        GLWidgetForEmpty(WidgetForEmpty* parent = nullptr) {}
-        ~GLWidgetForEmpty() {}
-
-    public:
-        void makeCurrent() {}
-        void swapBuffers() {}
-
-    protected:
-        virtual void initializeGL() {}
-        virtual void paintGL() {}
-        virtual void resizeGL(int width, int height) {}
-
-    protected:
-        void setAutoBufferSwap(bool on) {}
-    };
-
-    #if !BOSS_WASM
-        typedef QSharedMemory SharedMemoryPrivate;
-        typedef QNetworkInterface NetworkInterfacePrivate;
-    #else
-        class SharedMemoryForEmpty;
-        typedef SharedMemoryForEmpty SharedMemoryPrivate;
-        class NetworkInterfaceForEmpty;
-        typedef NetworkInterfaceForEmpty NetworkInterfacePrivate;
-    #endif
-
-    class SharedMemoryForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        SharedMemoryForEmpty(QObject *parent = nullptr) {}
-        SharedMemoryForEmpty(const QString &key, QObject *parent = nullptr) {}
-        ~SharedMemoryForEmpty() {}
-    public:
-        enum AccessMode {ReadOnly, ReadWrite};
-    public:
-        bool attach(AccessMode mode = ReadWrite) {return false;}
-        bool create(int size, AccessMode mode = ReadWrite) {return false;}
-    };
-
-    class NetworkInterfaceForEmpty : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        NetworkInterfaceForEmpty() {}
-        ~NetworkInterfaceForEmpty() {}
-    public:
-        static QList<QHostAddress> allAddresses() {return QList<QHostAddress>();}
-    };
-
     #define USER_FRAMECOUNT (60)
 
     class MainData;
     extern MainData* g_data;
-    extern MainWindowPrivate* g_window;
-    extern WidgetPrivate* g_view;
+    extern QMainWindow* g_window;
+    extern QWidget* g_view;
     extern bool g_event_blocked;
     extern sint32 g_argc;
     extern char** g_argv;
@@ -1419,27 +170,27 @@
     {
     public:
         CanvasClass();
-        CanvasClass(PaintDevicePrivate* device);
+        CanvasClass(QPaintDevice* device);
         ~CanvasClass();
     public:
-        void Bind(PaintDevicePrivate* device);
+        void Bind(QPaintDevice* device);
         void Unbind();
     private:
-        void BindCore(PaintDevicePrivate* device);
+        void BindCore(QPaintDevice* device);
         void UnbindCore();
     public:
         // Getter
         static inline CanvasClass* get() {return ST();}
-        inline PainterPrivate& painter() {return mPainter;}
+        inline QPainter& painter() {return mPainter;}
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
         inline float zoom() const {return mPainter.transform().m11();}
         inline const QRect& scissor() const {return mScissor;}
-        inline const ColorPrivate& color() const {return mColor;}
+        inline const QColor& color() const {return mColor;}
         // Setter
         inline void SetFont(chars name, sint32 size)
-        {mUseFontFT = false; painter().setFont(FontPrivate(name, size));}
+        {mUseFontFT = false; painter().setFont(QFont(name, size));}
         inline void SetFontFT(chars nickname, sint32 height)
         {mUseFontFT = true; mFontFT.mNickName = nickname; mFontFT.mHeight = height;}
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
@@ -1449,8 +200,8 @@
         }
         inline void SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
         {mColor.setRgb(r, g, b, a);}
-        inline const PainterPrivate::CompositionMode& mask() const {return mMask;}
-        inline void SetMask(PainterPrivate::CompositionMode mask)
+        inline const QPainter::CompositionMode& mask() const {return mMask;}
+        inline void SetMask(QPainter::CompositionMode mask)
         {mMask = mask;}
     private:
         static inline CanvasClass*& ST() {static CanvasClass* _ = nullptr; return _;}
@@ -1461,11 +212,11 @@
         float mSavedZoom;
         bool mUseFontFT;
         FTFontClass mFontFT;
-        FontPrivate mSavedFont;
-        PainterPrivate mPainter;
+        QFont mSavedFont;
+        QPainter mPainter;
         QRect mScissor;
-        ColorPrivate mColor;
-        PainterPrivate::CompositionMode mMask;
+        QColor mColor;
+        QPainter::CompositionMode mMask;
     };
 
     class ViewAPI : public QObject
@@ -1477,7 +228,7 @@
         enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2};
 
     public:
-        ViewAPI(ParentType type, buffer buf, View* manager, View::UpdaterCB cb, WidgetPrivate* data, WidgetPrivate* device)
+        ViewAPI(ParentType type, buffer buf, View* manager, View::UpdaterCB cb, QWidget* data, QWidget* device)
         {
             m_parent_type = type;
             m_parent_buf = buf;
@@ -1582,7 +333,7 @@
             update(1);
         }
 
-        inline void changeViewData(WidgetPrivate* data)
+        inline void changeViewData(QWidget* data)
         {
             m_view_data = data;
             if(m_view_manager)
@@ -1594,19 +345,19 @@
             return (ViewClass*) m_view_manager->GetClass();
         }
 
-        inline WidgetPrivate* getWidget() const
+        inline QWidget* getWidget() const
         {
             if(m_view_manager)
             {
                 if(m_view_data)
                     return m_view_data;
                 if(m_view_manager->IsNative())
-                    return (WidgetPrivate*) m_view_manager->GetClass();
+                    return (QWidget*) m_view_manager->GetClass();
             }
-            return (WidgetPrivate*) getParent();
+            return (QWidget*) getParent();
         }
 
-        inline WidgetPrivate* getWidgetForPaint() const
+        inline QWidget* getWidgetForPaint() const
         {
             if(m_paint_device)
                 return m_paint_device;
@@ -1746,7 +497,7 @@
             }
         }
 
-        bool closeEvent(CloseEventPrivate* event)
+        bool closeEvent(QCloseEvent* event)
         {
             if(canQuit())
             {
@@ -1757,7 +508,7 @@
             return false;
         }
 
-        void mousePressEvent(MouseEventPrivate* event)
+        void mousePressEvent(QMouseEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1780,7 +531,7 @@
             m_tooltip_timer.stop();
         }
 
-        void mouseMoveEvent(MouseEventPrivate* event)
+        void mouseMoveEvent(QMouseEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1808,7 +559,7 @@
                 m_longpress_timer.stop();
         }
 
-        void mouseReleaseEvent(MouseEventPrivate* event)
+        void mouseReleaseEvent(QMouseEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1826,7 +577,7 @@
             m_longpress_timer.stop();
         }
 
-        void wheelEvent(WheelEventPrivate* event)
+        void wheelEvent(QWheelEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1847,7 +598,7 @@
             }
         }
 
-        void keyPressEvent(KeyEventPrivate* event)
+        void keyPressEvent(QKeyEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1858,7 +609,7 @@
                 key(event->key(), event->text().toUtf8().constData(), true);
         }
 
-        void keyReleaseEvent(KeyEventPrivate* event)
+        void keyReleaseEvent(QKeyEvent* event)
         {
             if(g_event_blocked)
             {
@@ -1921,8 +672,8 @@
         View* m_view_manager;
         View* m_next_manager;
         View::UpdaterCB m_view_cb;
-        WidgetPrivate* m_view_data;
-        WidgetPrivate* m_paint_device;
+        QWidget* m_view_data;
+        QWidget* m_paint_device;
 
     private:
         sint32 m_width;
@@ -1937,12 +688,12 @@
         sint32 m_longpress_y;
     };
 
-    class GenericView : public FramePrivate
+    class GenericView : public QFrame
     {
         Q_OBJECT
 
     public:
-        GenericView(WidgetPrivate* parent = nullptr) : FramePrivate(parent)
+        GenericView(QWidget* parent = nullptr) : QFrame(parent)
         {
             m_api = nullptr;
 
@@ -1990,21 +741,21 @@
         GenericView& operator=(const GenericView& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
 
     protected:
-        void resizeEvent(ResizeEventPrivate* event) Q_DECL_OVERRIDE
+        void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
         {
             m_api->resize(event->size().width(), event->size().height());
         }
 
-        void paintEvent(PaintEventPrivate* event) Q_DECL_OVERRIDE
+        void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
             if(m_api->hasViewManager())
                 m_api->paint();
-            else FramePrivate::paintEvent(event);
+            else QFrame::paintEvent(event);
             m_api->nextPaint();
         }
 
     protected:
-        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             if(m_api->closeEvent(event))
             {
@@ -2013,13 +764,13 @@
                 setAttribute(Qt::WA_DeleteOnClose);
             }
         }
-        void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
-        void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
-        void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
-        void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
-        void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
+        void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
+        void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
+        void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
         static void updater(void* data, sint32 count)
         {((GenericView*) data)->m_api->update(count);}
 
@@ -2077,20 +828,20 @@
     public:
         static bool CloseAllWindows()
         {
-            WindowListPrivate processedWindows;
-            while(auto w = ApplicationPrivate::activeModalWidget())
+            QList<QWindow*> processedWindows;
+            while(auto w = QApplication::activeModalWidget())
             {
-                if(WindowPrivate* window = w->windowHandle())
+                if(QWindow* window = w->windowHandle())
                 {
                     if(!window->close()) return false;
                     processedWindows.append(window);
                 }
             }
-            for(auto w : ApplicationPrivate::topLevelWidgets())
+            for(auto w : QApplication::topLevelWidgets())
             {
                 if(w->windowType() == Qt::Desktop)
                     continue;
-                if(WindowPrivate* window = w->windowHandle())
+                if(QWindow* window = w->windowHandle())
                 {
                     if(!window->close()) return false;
                     processedWindows.append(window);
@@ -2110,12 +861,12 @@
         h_window m_window;
     };
 
-    class GenericViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
+    class GenericViewGL : public QOpenGLWidget, protected QOpenGLFunctions
     {
         Q_OBJECT
 
     public:
-        GenericViewGL(WidgetPrivate* parent = nullptr) : GLWidgetPrivate(parent)
+        GenericViewGL(QWidget* parent = nullptr) : QOpenGLWidget(parent)
         {
             m_api = nullptr;
 
@@ -2225,12 +976,12 @@
                 }
                 m_api->paint();
             }
-            else GLWidgetPrivate::paintGL();
+            else QOpenGLWidget::paintGL();
             m_api->nextPaint();
         }
 
     protected:
-        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             if(m_api->closeEvent(event))
             {
@@ -2239,13 +990,13 @@
                 setAttribute(Qt::WA_DeleteOnClose);
             }
         }
-        void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
-        void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
-        void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
-        void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
-        void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
+        void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
+        void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
+        void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
         static void updater(void* data, sint32 count)
         {((GenericViewGL*) data)->m_api->update(count);}
 
@@ -2311,20 +1062,20 @@
     public:
         static bool CloseAllWindows()
         {
-            WindowListPrivate processedWindows;
-            while(auto w = ApplicationPrivate::activeModalWidget())
+            QList<QWindow*> processedWindows;
+            while(auto w = QApplication::activeModalWidget())
             {
-                if(WindowPrivate* window = w->windowHandle())
+                if(QWindow* window = w->windowHandle())
                 {
                     if(!window->close()) return false;
                     processedWindows.append(window);
                 }
             }
-            for(auto w : ApplicationPrivate::topLevelWidgets())
+            for(auto w : QApplication::topLevelWidgets())
             {
                 if(w->windowType() == Qt::Desktop)
                     continue;
-                if(WindowPrivate* window = w->windowHandle())
+                if(QWindow* window = w->windowHandle())
                 {
                     if(!window->close()) return false;
                     processedWindows.append(window);
@@ -2351,199 +1102,131 @@
         h_window m_window;
     };
 
-    #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-        class MainViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
-        {
-            Q_OBJECT
-
-        public:
-            MainViewGL(WidgetPrivate* parent) : GLWidgetPrivate(parent)
-            {
-                BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
-                buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
-                BOSS_CONSTRUCTOR(NewAPI, 0, ViewAPI, ViewAPI::PT_MainViewGL, (buffer) this, nullptr, updater, this, nullptr);
-                m_api = (ViewAPI*) NewAPI;
-
-                m_fbo_update = true;
-                m_fbo = 0;
-                m_fbo_render = 0;
-                m_fbo_width = 0;
-                m_fbo_height = 0;
-
-                // setAttribute(Qt::WA_PaintOnScreen); 이 항목이 있으면 update()가 안먹힘
-                setAttribute(Qt::WA_NoSystemBackground);
-                setAttribute(Qt::WA_AcceptTouchEvents);
-                setMouseTracking(true);
-                setFocusPolicy(Qt::ClickFocus);
-                setAutoFillBackground(false);
-            }
-
-            virtual ~MainViewGL()
-            {
-                if(m_api->parentIsPtr())
-                    Buffer::Free((buffer) m_api);
-
-                if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
-                {
-                    QOpenGLFunctions* f = ctx->functions();
-                    f->glDeleteFramebuffers(1, &m_fbo);
-                    f->glDeleteRenderbuffers(1, &m_fbo_render);
-                }
-            }
-
-            MainViewGL(const MainViewGL* rhs) {BOSS_ASSERT("사용금지", false);}
-            MainViewGL& operator=(const MainViewGL& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
-
-        public:
-            void onCloseEvent(CloseEventPrivate* event)
-            {
-                if(m_api->closeEvent(event))
-                    GenericView::CloseAllWindows();
-            }
-
-        protected:
-            void initializeGL() Q_DECL_OVERRIDE
-            {
-                initializeOpenGLFunctions();
-            }
-
-            void resizeGL(int width, int height) Q_DECL_OVERRIDE
-            {
-                m_fbo_update = true;
-                m_fbo_width = geometry().width();
-                m_fbo_height = geometry().height();
-                m_api->resize(m_fbo_width, m_fbo_height);
-            }
-
-            void paintGL() Q_DECL_OVERRIDE
-            {
-                if(m_api->hasViewManager())
-                {
-                    if(m_fbo_update)
-                    {
-                        m_fbo_update = false;
-                        if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
-                        {
-                            QOpenGLFunctions* f = ctx->functions();
-                            if(m_fbo) f->glDeleteFramebuffers(1, &m_fbo);
-                            if(m_fbo_render) f->glDeleteRenderbuffers(1, &m_fbo_render);
-
-                            f->glGenRenderbuffers(1, &m_fbo_render);
-                            f->glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_render);
-                            f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_fbo_width, m_fbo_height);
-                            f->glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-                            GLuint prevFbo = 0;
-                            f->glGenFramebuffers(1, &m_fbo);
-                            f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
-                            f->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-                            f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_fbo_render);
-                            GLenum status = f->glCheckFramebufferStatus(GL_FRAMEBUFFER);
-                            BOSS_ASSERT("프레임버퍼의 생성에 실패하였습니다", status == GL_FRAMEBUFFER_COMPLETE);
-                            f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-                        }
-                    }
-                    m_api->paint();
-                }
-                else GLWidgetPrivate::paintGL();
-                m_api->nextPaint();
-            }
-
-        protected:
-            void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE {m_api->closeEvent(event);}
-            void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-            void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-            void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
-            void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
-            void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
-            void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
-            void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-            static void updater(void* data, sint32 count)
-            {((MainViewGL*) data)->m_api->update(count);}
-
-        public:
-            ViewAPI* m_api;
-
-        private:
-            bool m_fbo_update;
-            GLuint m_fbo;
-            GLuint m_fbo_render;
-            sint32 m_fbo_width;
-            sint32 m_fbo_height;
-        };
-    #else
-        class MainViewGL : public GLWidgetPrivate, protected QOpenGLFunctions
-        {
-            Q_OBJECT
-
-        public:
-            MainViewGL(WidgetPrivate* parent) : GLWidgetPrivate(parent)
-            {
-                BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
-                buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
-                BOSS_CONSTRUCTOR(NewAPI, 0, ViewAPI, ViewAPI::PT_MainViewGL, (buffer) this, nullptr, updater, this, nullptr);
-                m_api = (ViewAPI*) NewAPI;
-            }
-            virtual ~MainViewGL()
-            {
-                if(m_api->parentIsPtr())
-                    Buffer::Free((buffer) m_api);
-            }
-            MainViewGL(const MainViewGL* rhs) {BOSS_ASSERT("사용금지", false);}
-            MainViewGL& operator=(const MainViewGL& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
-
-        public:
-            void onCloseEvent(CloseEventPrivate* event)
-            {
-                if(m_api->closeEvent(event))
-                    GenericView::CloseAllWindows();
-            }
-
-        protected:
-            void initializeGL() Q_DECL_OVERRIDE
-            {
-                initializeOpenGLFunctions();
-            }
-
-            void resizeGL(int width, int height) Q_DECL_OVERRIDE
-            {
-                m_api->resize(width, height);
-            }
-
-            void paintGL() Q_DECL_OVERRIDE
-            {
-                if(m_api->hasViewManager())
-                {
-                    m_api->paint();
-                    swapBuffers();
-                }
-                else GLWidgetPrivate::paintGL();
-                m_api->nextPaint();
-            }
-
-        protected:
-            void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE {m_api->closeEvent(event);}
-            void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-            void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-            void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
-            void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
-            void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
-            void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
-            void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-            static void updater(void* data, sint32 count)
-            {((MainViewGL*) data)->m_api->update(count);}
-
-        public:
-            ViewAPI* m_api;
-        };
-    #endif
-
-    class MainViewMDI : public MdiAreaPrivate
+    class MainViewGL : public QOpenGLWidget, protected QOpenGLFunctions
     {
         Q_OBJECT
 
     public:
-        MainViewMDI(WidgetPrivate* parent) : MdiAreaPrivate(parent)
+        MainViewGL(QWidget* parent) : QOpenGLWidget(parent)
+        {
+            BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
+            buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewAPI, 0, ViewAPI, ViewAPI::PT_MainViewGL, (buffer) this, nullptr, updater, this, nullptr);
+            m_api = (ViewAPI*) NewAPI;
+
+            m_fbo_update = true;
+            m_fbo = 0;
+            m_fbo_render = 0;
+            m_fbo_width = 0;
+            m_fbo_height = 0;
+
+            // setAttribute(Qt::WA_PaintOnScreen); 이 항목이 있으면 update()가 안먹힘
+            setAttribute(Qt::WA_NoSystemBackground);
+            setAttribute(Qt::WA_AcceptTouchEvents);
+            setMouseTracking(true);
+            setFocusPolicy(Qt::ClickFocus);
+            setAutoFillBackground(false);
+        }
+
+        virtual ~MainViewGL()
+        {
+            if(m_api->parentIsPtr())
+                Buffer::Free((buffer) m_api);
+            if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
+            {
+                QOpenGLFunctions* f = ctx->functions();
+                f->glDeleteFramebuffers(1, &m_fbo);
+                f->glDeleteRenderbuffers(1, &m_fbo_render);
+            }
+        }
+
+        MainViewGL(const MainViewGL* rhs) {BOSS_ASSERT("사용금지", false);}
+        MainViewGL& operator=(const MainViewGL& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
+
+    public:
+        void onCloseEvent(QCloseEvent* event)
+        {
+            if(m_api->closeEvent(event))
+                GenericView::CloseAllWindows();
+        }
+
+    protected:
+        void initializeGL() Q_DECL_OVERRIDE
+        {
+            initializeOpenGLFunctions();
+        }
+
+        void resizeGL(int width, int height) Q_DECL_OVERRIDE
+        {
+            m_fbo_update = true;
+            m_fbo_width = geometry().width();
+            m_fbo_height = geometry().height();
+            m_api->resize(m_fbo_width, m_fbo_height);
+        }
+
+        void paintGL() Q_DECL_OVERRIDE
+        {
+            if(m_api->hasViewManager())
+            {
+                if(m_fbo_update)
+                {
+                    m_fbo_update = false;
+                    if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
+                    {
+                        QOpenGLFunctions* f = ctx->functions();
+                        if(m_fbo) f->glDeleteFramebuffers(1, &m_fbo);
+                        if(m_fbo_render) f->glDeleteRenderbuffers(1, &m_fbo_render);
+
+                        f->glGenRenderbuffers(1, &m_fbo_render);
+                        f->glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_render);
+                        f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_fbo_width, m_fbo_height);
+                        f->glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+                        GLuint prevFbo = 0;
+                        f->glGenFramebuffers(1, &m_fbo);
+                        f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                        f->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+                        f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_fbo_render);
+                        GLenum status = f->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+                        BOSS_ASSERT("프레임버퍼의 생성에 실패하였습니다", status == GL_FRAMEBUFFER_COMPLETE);
+                        f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                    }
+                }
+                m_api->paint();
+            }
+            else QOpenGLWidget::paintGL();
+            m_api->nextPaint();
+        }
+
+    protected:
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE {m_api->closeEvent(event);}
+        void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
+        void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
+        void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
+        static void updater(void* data, sint32 count)
+        {((MainViewGL*) data)->m_api->update(count);}
+
+    public:
+        ViewAPI* m_api;
+
+    private:
+        bool m_fbo_update;
+        GLuint m_fbo;
+        GLuint m_fbo_render;
+        sint32 m_fbo_width;
+        sint32 m_fbo_height;
+    };
+
+    class MainViewMDI : public QMdiArea
+    {
+        Q_OBJECT
+
+    public:
+        MainViewMDI(QWidget* parent) : QMdiArea(parent)
         {
             BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
             buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
@@ -2571,37 +1254,37 @@
         MainViewMDI& operator=(const MainViewMDI& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
 
     public:
-        void onCloseEvent(CloseEventPrivate* event)
+        void onCloseEvent(QCloseEvent* event)
         {
             if(m_api->closeEvent(event))
                 GenericView::CloseAllWindows();
         }
 
     protected:
-        void resizeEvent(ResizeEventPrivate* event) Q_DECL_OVERRIDE
+        void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
         {
             m_width = event->size().width();
             m_height = event->size().height();
             m_api->resize(m_width, m_height);
         }
 
-        void paintEvent(PaintEventPrivate* event) Q_DECL_OVERRIDE
+        void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
             if(m_api->hasViewManager())
                 m_api->paint();
-            else MdiAreaPrivate::paintEvent(event);
+            else QMdiArea::paintEvent(event);
             m_api->nextPaint();
         }
 
     protected:
-        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE {m_api->closeEvent(event);}
-        void mousePressEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseDoubleClickEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
-        void mouseMoveEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
-        void mouseReleaseEvent(MouseEventPrivate* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
-        void wheelEvent(WheelEventPrivate* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
-        void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
-        void keyReleaseEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE {m_api->closeEvent(event);}
+        void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mousePressEvent(event);}
+        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseMoveEvent(event);}
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE {m_api->mouseReleaseEvent(event);}
+        void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
+        void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
         static void updater(void* data, sint32 count)
         {((MainViewMDI*) data)->m_api->update(count);}
 
@@ -2627,7 +1310,7 @@
                 delete m_view;
         }
 
-        void setWidget(GenericView* view, WidgetPrivate* widget)
+        void setWidget(GenericView* view, QWidget* widget)
         {
             m_view = view;
             m_widget = widget;
@@ -2635,15 +1318,15 @@
 
     private:
         GenericView* m_view;
-        WidgetPrivate* m_widget;
+        QWidget* m_widget;
     };
 
-    class TrayIcon : public SystemTrayIconPrivate
+    class TrayIcon : public QSystemTrayIcon
     {
         Q_OBJECT
 
     public:
-        TrayIcon(WidgetPrivate* menu)
+        TrayIcon(QWidget* menu)
         {
             m_ref_menu = menu;
             Qt::WindowFlags TypeCollector = Qt::Dialog;
@@ -2663,13 +1346,13 @@
         {
             switch(reason)
             {
-            case SystemTrayIconPrivate::Context: // R버튼 클릭
-            case SystemTrayIconPrivate::Trigger: // L버튼 클릭
-            case SystemTrayIconPrivate::MiddleClick: // 휠버튼 클릭
+            case QSystemTrayIcon::Context: // R버튼 클릭
+            case QSystemTrayIcon::Trigger: // L버튼 클릭
+            case QSystemTrayIcon::MiddleClick: // 휠버튼 클릭
                 {
-                    const QPoint ClickPos = CursorPrivate::pos();
+                    const QPoint ClickPos = QCursor::pos();
                     const QSize MenuSize = m_ref_menu->size();
-                    const QRect GeometryRect = ApplicationPrivate::desktop()->screenGeometry(ClickPos);
+                    const QRect GeometryRect = QApplication::desktop()->screenGeometry(ClickPos);
                     const float PosX = (GeometryRect.right() < ClickPos.x() + MenuSize.width())?
                         ClickPos.x() - MenuSize.width() : ClickPos.x();
                     const float PosY = (GeometryRect.bottom() < ClickPos.y() + MenuSize.height())?
@@ -2680,7 +1363,7 @@
                     m_ref_menu->raise(); // 부모기준 첫번째 자식으로 올림
                 }
                 break;
-            case SystemTrayIconPrivate::DoubleClick: // L버튼 더블클릭된 순간
+            case QSystemTrayIcon::DoubleClick: // L버튼 더블클릭된 순간
                 break;
             default:
                 break;
@@ -2699,7 +1382,7 @@
         }
 
     private:
-        WidgetPrivate* m_ref_menu;
+        QWidget* m_ref_menu;
     };
 
     class TrayBox
@@ -2714,18 +1397,18 @@
             delete m_tray;
         }
 
-        void setWidget(GenericView* view, IconPrivate* icon)
+        void setWidget(GenericView* view, QIcon* icon)
         {
-            WidgetPrivate* OldWidget = view->m_api->getWidget();
+            QWidget* OldWidget = view->m_api->getWidget();
             OldWidget->resize(view->getFirstSize());
             m_tray = new TrayIcon(OldWidget);
             if(icon) m_tray->setIcon(*icon);
             m_tray->show();
         }
 
-        void setWidgetGL(GenericViewGL* view, IconPrivate* icon)
+        void setWidgetGL(GenericViewGL* view, QIcon* icon)
         {
-            WidgetPrivate* OldWidget = view->m_api->getWidget();
+            QWidget* OldWidget = view->m_api->getWidget();
             OldWidget->resize(view->getFirstSize());
             m_tray = new TrayIcon(OldWidget);
             if(icon) m_tray->setIcon(*icon);
@@ -2744,7 +1427,7 @@
         rect128 m_lastWindowNormalRect;
 
     public:
-        MainData(MainWindowPrivate* parent) :
+        MainData(QMainWindow* parent) :
             m_lastWindowType(WindowType::Normal), m_lastWindowNormalRect({0, 0, 0, 0})
         {
             m_parent = parent;
@@ -2754,7 +1437,7 @@
         ~MainData() {}
 
     public:
-        void onCloseEvent(CloseEventPrivate* event)
+        void onCloseEvent(QCloseEvent* event)
         {
             Platform::Popup::CloseAllTracker();
             if(m_viewGL)
@@ -2775,8 +1458,8 @@
             m_viewGL->m_api->renewParent(m_viewGL);
             // Qt5.9.1부터는 m_parent->setCentralWidget(m_viewGL)식의 접합은
             // 윈도우즈OS에서 다중 모니터상황에서 레이아웃의 정렬불량 문제가 발생
-            WidgetPrivate* MainWidget = new WidgetPrivate();
-            HBoxLayoutPrivate* MainLayout = new HBoxLayoutPrivate();
+            QWidget* MainWidget = new QWidget();
+            QHBoxLayout* MainLayout = new QHBoxLayout();
             MainLayout->setMargin(0);
             MainLayout->addWidget(m_viewGL);
             MainWidget->setLayout(MainLayout);
@@ -2832,12 +1515,12 @@
             return m_viewMDI->m_api;
         }
 
-        GLWidgetPrivate* getGLWidget()
+        QOpenGLWidget* getGLWidget()
         {
             return m_viewGL;
         }
 
-        WidgetPrivate* bindWidget(GenericView* view)
+        QWidget* bindWidget(GenericView* view)
         {
             BOSS_ASSERT("GL/MDI의 초기화가 되어있지 않습니다", m_viewGL || m_viewMDI);
             if(m_viewGL) return view->m_api->getWidget();
@@ -2845,37 +1528,37 @@
         }
 
     public:
-        MenuPrivate* getMenu(chars name)
+        QMenu* getMenu(chars name)
         {
-            MenuPrivate** Result = m_menuMap.Access(name);
+            QMenu** Result = m_menuMap.Access(name);
             if(!Result)
             {
-                m_menuMap(name) = g_window->menuBar()->addMenu(QString::fromUtf8(name));
+                m_menuMap(name) = g_window->menuBar()->addMenu(QString::fromUtf8(name, -1));
                 Result = m_menuMap.Access(name);
             }
             return *Result;
         }
 
-        ToolBarPrivate* getToolbar(chars name)
+        QToolBar* getToolbar(chars name)
         {
-            ToolBarPrivate** Result = m_toolbarMap.Access(name);
+            QToolBar** Result = m_toolbarMap.Access(name);
             if(!Result)
             {
-                m_toolbarMap(name) = g_window->addToolBar(QString::fromUtf8(name));
+                m_toolbarMap(name) = g_window->addToolBar(QString::fromUtf8(name, -1));
                 Result = m_toolbarMap.Access(name);
             }
             return *Result;
         }
 
     private:
-        MainWindowPrivate* m_parent;
+        QMainWindow* m_parent;
         MainViewGL* m_viewGL;
         MainViewMDI* m_viewMDI;
-        Map<MenuPrivate*> m_menuMap;
-        Map<ToolBarPrivate*> m_toolbarMap;
+        Map<QMenu*> m_menuMap;
+        Map<QToolBar*> m_toolbarMap;
     };
 
-    class MainWindow : public MainWindowPrivate
+    class MainWindow : public QMainWindow
     {
         Q_OBJECT
 
@@ -2905,7 +1588,7 @@
         bool firstVisible() const {return m_first_visible;}
 
     protected:
-        void moveEvent(MoveEventPrivate* event) Q_DECL_OVERRIDE
+        void moveEvent(QMoveEvent* event) Q_DECL_OVERRIDE
         {
             m_window_pos_old = m_window_pos;
             auto CurPos = event->pos();
@@ -2913,13 +1596,13 @@
             m_window_pos.y = CurPos.y();
         }
 
-        void resizeEvent(ResizeEventPrivate* event) Q_DECL_OVERRIDE
+        void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
         {
             m_window_size_old = m_window_size;
             auto CurSize = event->size();
             m_window_size.w = CurSize.width();
             m_window_size.h = CurSize.height();
-            WidgetPrivate::resizeEvent(event);
+            QWidget::resizeEvent(event);
         }
 
         void changeEvent(QEvent* event) Q_DECL_OVERRIDE
@@ -2963,10 +1646,10 @@
                     break;
                 }
             }
-            WidgetPrivate::changeEvent(event);
+            QWidget::changeEvent(event);
         }
 
-        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             g_data->onCloseEvent(event);
         }
@@ -3059,7 +1742,7 @@
         typedef void (*ExitCB)(void*);
 
     public:
-        Tracker(WidgetPrivate* parent, ExitCB exit, void* data)
+        Tracker(QWidget* parent, ExitCB exit, void* data)
         {
             m_parent = parent;
             m_exit = exit;
@@ -3086,7 +1769,7 @@
             m_loop.quit();
         }
 
-        static void CloseAll(WidgetPrivate* parent)
+        static void CloseAll(QWidget* parent)
         {
             Tracker* CurNode = Top().m_next;
             while(CurNode)
@@ -3101,7 +1784,7 @@
             }
         }
 
-        static bool HasAnyone(WidgetPrivate* parent)
+        static bool HasAnyone(QWidget* parent)
         {
             Tracker* CurNode = Top().m_next;
             while(CurNode)
@@ -3139,14 +1822,14 @@
         {static Tracker _(nullptr, nullptr, nullptr); return _;}
 
     private:
-        WidgetPrivate* m_parent;
+        QWidget* m_parent;
         QEventLoop m_loop;
         ExitCB m_exit;
         void* m_data;
         Tracker* m_next;
     };
 
-    class EditTracker : public LineEditPrivate
+    class EditTracker : public QLineEdit
     {
         Q_OBJECT
 
@@ -3154,8 +1837,8 @@
         enum TrackerClosingType {TCT_Null, TCT_Enter, TCT_Escape, TCT_FocusOut, TCT_ForcedExit};
 
     public:
-        EditTracker(UIEditType type, const QString& contents, WidgetPrivate* parent)
-            : LineEditPrivate(contents, nullptr), m_tracker(parent, OnExit, this)
+        EditTracker(UIEditType type, const QString& contents, QWidget* parent)
+            : QLineEdit(contents, nullptr), m_tracker(parent, OnExit, this)
         {
             if(parent)
                 m_parentpos = parent->mapToGlobal(QPoint(0, 0));
@@ -3172,14 +1855,14 @@
 
             switch(type)
             {
-            case UIET_Int: setValidator(new IntValidatorPrivate(this)); break;
-            case UIET_Float: setValidator(new DoubleValidatorPrivate(this)); break;
+            case UIET_Int: setValidator(new QIntValidator(this)); break;
+            case UIET_Float: setValidator(new QDoubleValidator(this)); break;
             default: break;
             }
 
-            PalettePrivate Palette = palette();
-            Palette.setColor(PalettePrivate::Base, ColorPrivate(255, 255, 255));
-            Palette.setColor(PalettePrivate::Text, ColorPrivate(0, 0, 0));
+            QPalette Palette = palette();
+            Palette.setColor(QPalette::Base, QColor(255, 255, 255));
+            Palette.setColor(QPalette::Text, QColor(0, 0, 0));
             setPalette(Palette);
         }
 
@@ -3209,7 +1892,7 @@
         }
 
     private:
-        void focusOutEvent(FocusEventPrivate* event) Q_DECL_OVERRIDE
+        void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE
         {
             if(m_closing == TCT_Null)
                 m_closing = TCT_FocusOut;
@@ -3217,7 +1900,7 @@
             m_tracker.Unlock();
         }
 
-        void keyPressEvent(KeyEventPrivate* event) Q_DECL_OVERRIDE
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE
         {
             if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             {
@@ -3233,7 +1916,7 @@
                 close();
                 m_tracker.Unlock();
             }
-            else LineEditPrivate::keyPressEvent(event);
+            else QLineEdit::keyPressEvent(event);
         }
 
     private:
@@ -3242,17 +1925,17 @@
         QPoint m_parentpos;
     };
 
-    class ListTracker : public ListWidgetPrivate
+    class ListTracker : public QListWidget
     {
         Q_OBJECT
 
     public:
-        ListTracker(const Strings& strings, WidgetPrivate* parent)
-            : ListWidgetPrivate(nullptr), m_tracker(parent, OnExit, this)
+        ListTracker(const Strings& strings, QWidget* parent)
+            : QListWidget(nullptr), m_tracker(parent, OnExit, this)
         {
             for(sint32 i = 0, iend = strings.Count(); i < iend; ++i)
             {
-                ListWidgetItemPrivate* NewItem = new ListWidgetItemPrivate(QString::fromUtf8(strings[i]), this);
+                QListWidgetItem* NewItem = new QListWidgetItem(QString::fromUtf8(strings[i], -1), this);
                 NewItem->setTextAlignment(Qt::AlignCenter);
                 addItem(NewItem);
             }
@@ -3296,14 +1979,14 @@
         }
 
     private:
-        void focusOutEvent(FocusEventPrivate* event) Q_DECL_OVERRIDE
+        void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE
         {
             close();
             m_tracker.Unlock();
         }
 
     private slots:
-        void onItemPressed(ListWidgetItemPrivate* item)
+        void onItemPressed(QListWidgetItem* item)
         {
             m_select = row(item);
             close();
@@ -3316,938 +1999,871 @@
         QPoint m_parentpos;
     };
 
-    #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-        class OpenGLPrivate
+    class OpenGLClass
+    {
+    private:
+        OpenGLClass()
         {
-        private:
-            OpenGLPrivate()
+            mVShader[0] = mVShader[1] = 0;
+            mFShader[0] = mFShader[1] = 0;
+            mProgram[0] = mProgram[1] = 0;
+            if(QOpenGLContext::currentContext()->isOpenGLES())
+                InitShaderGLES30();
+            else InitShaderGL();
+        }
+        ~OpenGLClass()
+        {
+            TermShader();
+        }
+
+    public:
+        static OpenGLClass& ST()
+        {static OpenGLClass _; return _;}
+
+    public:
+        void FillRect(uint32 fbo, const BOSS::Rect& rect, const BOSS::Color& color)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+            const float DeviceRatio = Platform::Utility::GetPixelRatio();
+
+            GLuint prevFbo = 0;
+            if(fbo != 0)
             {
-                mVShader[0] = mVShader[1] = 0;
-                mFShader[0] = mFShader[1] = 0;
-                mProgram[0] = mProgram[1] = 0;
-                switch(GetVersionGLES() & 0xF0)
-                {
-                case 0x20:
-                    InitShaderGLES20();
-                    break;
-                case 0x30:
-                    InitShaderGLES30();
-                    break;
-                default:
-                    InitShaderGL();
-                    break;
-                }
+                f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                TestGL(BOSS_DBG 0);
             }
-            ~OpenGLPrivate()
+
+            GLint ViewPortValues[4] = {0};
+            f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
+            const GLint Width = ViewPortValues[2];
+            const GLint Height = ViewPortValues[3];
+            BOSS::Rect NewRect;
+            NewRect.l = 2 * rect.l / Width - 1;
+            NewRect.t = 1 - 2 * rect.t / Height;
+            NewRect.r = 2 * rect.r / Width - 1;
+            NewRect.b = 1 - 2 * rect.b / Height;
+
+            f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+
+            f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
+            f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
+            f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
+            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const QRect& CurScissor = CanvasClass::get()->scissor();
+            const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
+            f->glScissor(CurScissor.x() * Zoom,
+                (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
+                CurScissor.width() * Zoom,
+                CurScissor.height() * Zoom);
+
+            mAttrib[0].vertices[0] = NewRect.l;
+            mAttrib[0].vertices[1] = NewRect.t;
+            mAttrib[0].color32 = color.ToABGR();
+            mAttrib[0].texcoords[0] = 0;
+            mAttrib[0].texcoords[1] = 0;
+
+            mAttrib[1].vertices[0] = NewRect.r;
+            mAttrib[1].vertices[1] = NewRect.t;
+            mAttrib[1].color32 = color.ToABGR();
+            mAttrib[1].texcoords[0] = 1;
+            mAttrib[1].texcoords[1] = 0;
+
+            mAttrib[2].vertices[0] = NewRect.l;
+            mAttrib[2].vertices[1] = NewRect.b;
+            mAttrib[2].color32 = color.ToABGR();
+            mAttrib[2].texcoords[0] = 0;
+            mAttrib[2].texcoords[1] = 1;
+
+            mAttrib[3].vertices[0] = NewRect.r;
+            mAttrib[3].vertices[1] = NewRect.b;
+            mAttrib[3].color32 = color.ToABGR();
+            mAttrib[3].texcoords[0] = 1;
+            mAttrib[3].texcoords[1] = 1;
+            f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
+
+            if(fbo != 0)
             {
-                TermShader();
+                f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                TestGL(BOSS_DBG 0);
+            }
+        }
+        void DrawPixmap(uint32 fbo, float x, float y, const BOSS::Point (&ps)[3],
+            const QPixmap& pixmap, const BOSS::Point (&ips)[3], const BOSS::Color (&colors)[3])
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+            const float DeviceRatio = (fbo == 0)? Platform::Utility::GetPixelRatio() : 1;
+
+            GLuint prevFbo = 0;
+            if(fbo != 0)
+            {
+                f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                TestGL(BOSS_DBG 0);
             }
 
-        public:
-            static OpenGLPrivate& ST()
-            {static OpenGLPrivate _; return _;}
+            GLint ViewPortValues[4] = {0};
+            f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
+            #if BOSS_ANDROID
+                const GLint DstWidth = ViewPortValues[2] / 4;
+                const GLint DstHeight = ViewPortValues[3] / 4;
+            #else
+                const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
+                const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
+            #endif
 
-        public:
-            void FillRect(uint32 fbo, const BOSS::Rect& rect, const BOSS::Color& color)
+            auto CurContext = QGLContext::fromOpenGLContext(ctx);
+            GLuint CurTexture = CurContext->bindTexture(pixmap);
+            f->glActiveTexture(GL_TEXTURE0);
+            f->glBindTexture(GL_TEXTURE_2D, CurTexture);
+
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+
+            f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
+            f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
+            f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
+            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const QRect& CurScissor = CanvasClass::get()->scissor();
+            const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
+            f->glScissor(CurScissor.x() * Zoom,
+                (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
+                CurScissor.width() * Zoom,
+                CurScissor.height() * Zoom);
+
+            const bool NeedReverse = !(fbo == 0 && pixmap.devicePixelRatio() == 1);
+            for(int i = 0; i < 3; ++i)
             {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-                const float DeviceRatio = Platform::Utility::GetPixelRatio();
-
-                GLuint prevFbo = 0;
-                if(fbo != 0)
-                {
-                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                    TestGL(BOSS_DBG 0);
-                }
-
-                GLint ViewPortValues[4] = {0};
-                f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
-                const GLint Width = ViewPortValues[2];
-                const GLint Height = ViewPortValues[3];
-                BOSS::Rect NewRect;
-                NewRect.l = 2 * rect.l / Width - 1;
-                NewRect.t = 1 - 2 * rect.t / Height;
-                NewRect.r = 2 * rect.r / Width - 1;
-                NewRect.b = 1 - 2 * rect.b / Height;
-
-                f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-                f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
-
-                f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
-                f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
-                f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-                const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
-                const QRect& CurScissor = CanvasClass::get()->scissor();
-                const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
-                f->glScissor(CurScissor.x() * Zoom,
-                    (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
-                    CurScissor.width() * Zoom,
-                    CurScissor.height() * Zoom);
-
-                mAttrib[0].vertices[0] = NewRect.l;
-                mAttrib[0].vertices[1] = NewRect.t;
-                mAttrib[0].color32 = color.ToABGR();
-                mAttrib[0].texcoords[0] = 0;
-                mAttrib[0].texcoords[1] = 0;
-
-                mAttrib[1].vertices[0] = NewRect.r;
-                mAttrib[1].vertices[1] = NewRect.t;
-                mAttrib[1].color32 = color.ToABGR();
-                mAttrib[1].texcoords[0] = 1;
-                mAttrib[1].texcoords[1] = 0;
-
-                mAttrib[2].vertices[0] = NewRect.l;
-                mAttrib[2].vertices[1] = NewRect.b;
-                mAttrib[2].color32 = color.ToABGR();
-                mAttrib[2].texcoords[0] = 0;
-                mAttrib[2].texcoords[1] = 1;
-
-                mAttrib[3].vertices[0] = NewRect.r;
-                mAttrib[3].vertices[1] = NewRect.b;
-                mAttrib[3].color32 = color.ToABGR();
-                mAttrib[3].texcoords[0] = 1;
-                mAttrib[3].texcoords[1] = 1;
-                f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
-
-                if(fbo != 0)
-                {
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-                    TestGL(BOSS_DBG 0);
-                }
+                mAttrib[i].vertices[0] = 2 * (x + ps[i].x) * Zoom / DstWidth - 1;
+                mAttrib[i].vertices[1] = 1 - 2 * (y + ps[i].y) * Zoom / DstHeight;
+                mAttrib[i].color32 = colors[i].ToABGR();
+                mAttrib[i].texcoords[0] = ips[i].x;
+                mAttrib[i].texcoords[1] = (NeedReverse)? 1 - ips[i].y : ips[i].y;
             }
-            void DrawPixmap(uint32 fbo, float x, float y, const BOSS::Point (&ps)[3],
-                const PixmapPrivate& pixmap, const BOSS::Point (&ips)[3], const BOSS::Color (&colors)[3])
+            f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); TestGL(BOSS_DBG 0);
+
+            if(fbo != 0)
             {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-                const float DeviceRatio = (fbo == 0)? Platform::Utility::GetPixelRatio() : 1;
+                f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                TestGL(BOSS_DBG 0);
+            }
+        }
+        void DrawTexture(uint32 fbo, const BOSS::Rect& rect, id_texture_read tex, const BOSS::Rect& texrect, const BOSS::Color& color, orientationtype ori, bool antialiasing)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+            const float DeviceRatio = Platform::Utility::GetPixelRatio();
 
-                GLuint prevFbo = 0;
-                if(fbo != 0)
-                {
-                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                    TestGL(BOSS_DBG 0);
-                }
+            GLuint prevFbo = 0;
+            if(fbo != 0)
+            {
+                f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                TestGL(BOSS_DBG 0);
+            }
 
-                GLint ViewPortValues[4] = {0};
-                f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
-                #if BOSS_ANDROID
-                    const GLint DstWidth = ViewPortValues[2] / 4;
-                    const GLint DstHeight = ViewPortValues[3] / 4;
-                #else
-                    const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
-                    const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
-                #endif
+            GLint ViewPortValues[4] = {0};
+            f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
+            #if BOSS_ANDROID
+                const GLint DstWidth = ViewPortValues[2] / 4;
+                const GLint DstHeight = ViewPortValues[3] / 4;
+            #else
+                const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
+                const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
+            #endif
+            BOSS::Rect NewRect;
+            NewRect.l = 2 * rect.l / DstWidth - 1;
+            NewRect.t = 1 - 2 * rect.t / DstHeight;
+            NewRect.r = 2 * rect.r / DstWidth - 1;
+            NewRect.b = 1 - 2 * rect.b / DstHeight;
 
-                auto CurContext = QGLContext::fromOpenGLContext(ctx);
-                GLuint CurTexture = CurContext->bindTexture(pixmap);
+            const bool IsNV21 = (mProgram[1] && Platform::Graphics::IsTextureNV21(tex));
+            if(IsNV21)
+            {
                 f->glActiveTexture(GL_TEXTURE0);
-                f->glBindTexture(GL_TEXTURE_2D, CurTexture);
-
+                f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 0));
+                f->glUniform1i(mTextureY, 0);
+                f->glActiveTexture(GL_TEXTURE1);
+                f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 1));
+                f->glUniform1i(mTextureUV, 1);
+            }
+            else
+            {
+                f->glActiveTexture(GL_TEXTURE0);
+                f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex));
+            }
+            if(antialiasing)
+            {
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+            else
+            {
+                f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }
 
-                f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
+            const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
+            const sint32 SelectedProgram = (IsNV21)? 1 : 0;
+            f->glUseProgram(mProgram[SelectedProgram]); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mMatrix[SelectedProgram], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+
+            f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
+            f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
+            f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
+            f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
+            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const QRect& CurScissor = CanvasClass::get()->scissor();
+            const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
+            f->glScissor(CurScissor.x() * Zoom,
+                (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
+                CurScissor.width() * Zoom,
+                CurScissor.height() * Zoom);
+
+            mAttrib[0].vertices[0] = NewRect.l;
+            mAttrib[0].vertices[1] = NewRect.t;
+            mAttrib[0].color32 = color.ToABGR();
+            mAttrib[1].vertices[0] = NewRect.r;
+            mAttrib[1].vertices[1] = NewRect.t;
+            mAttrib[1].color32 = color.ToABGR();
+            mAttrib[2].vertices[0] = NewRect.l;
+            mAttrib[2].vertices[1] = NewRect.b;
+            mAttrib[2].color32 = color.ToABGR();
+            mAttrib[3].vertices[0] = NewRect.r;
+            mAttrib[3].vertices[1] = NewRect.b;
+            mAttrib[3].color32 = color.ToABGR();
+
+            sint32 UV[4] = {2, 3, 1, 0};
+            switch(ori)
+            {
+            case orientationtype_normal0: UV[0] = 2; UV[1] = 3; UV[2] = 1; UV[3] = 0; break;
+            case orientationtype_normal90: UV[0] = 0; UV[1] = 2; UV[2] = 3; UV[3] = 1; break;
+            case orientationtype_normal180: UV[0] = 1; UV[1] = 0; UV[2] = 2; UV[3] = 3; break;
+            case orientationtype_normal270: UV[0] = 3; UV[1] = 1; UV[2] = 0; UV[3] = 2; break;
+            case orientationtype_fliped0: UV[0] = 3; UV[1] = 2; UV[2] = 0; UV[3] = 1; break;
+            case orientationtype_fliped90: UV[0] = 2; UV[1] = 0; UV[2] = 1; UV[3] = 3; break;
+            case orientationtype_fliped180: UV[0] = 0; UV[1] = 1; UV[2] = 3; UV[3] = 2; break;
+            case orientationtype_fliped270: UV[0] = 1; UV[1] = 3; UV[2] = 2; UV[3] = 0; break;
+            }
+
+            mAttrib[UV[0]].texcoords[0] = texrect.l / SrcWidth; // 좌측상단
+            mAttrib[UV[0]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
+            mAttrib[UV[1]].texcoords[0] = texrect.r / SrcWidth; // 우측상단
+            mAttrib[UV[1]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
+            mAttrib[UV[2]].texcoords[0] = texrect.r / SrcWidth; // 우측하단
+            mAttrib[UV[2]].texcoords[1] = (SrcHeight - texrect.t) / SrcHeight;
+            mAttrib[UV[3]].texcoords[0] = texrect.l / SrcWidth; // 좌측하단
+            mAttrib[UV[3]].texcoords[1] = (SrcHeight - texrect.t) / SrcHeight;
+            f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
+
+            if(fbo != 0)
+            {
+                f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                TestGL(BOSS_DBG 0);
+            }
+        }
+
+    private:
+        void InitShader(chars vsource_rgb, chars fsource_rgb, chars vsource_nv21 = nullptr, chars fsource_nv21 = nullptr)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+
+            chars VSources[2] = {vsource_rgb, vsource_nv21};
+            chars FSources[2] = {fsource_rgb, fsource_nv21};
+            for(sint32 i = 0, iend = (vsource_nv21 && fsource_nv21)? 2 : 1; i < iend; ++i)
+            {
+                mVShader[i] = f->glCreateShader(GL_VERTEX_SHADER); TestGL(BOSS_DBG 0);
+                f->glShaderSource(mVShader[i], 1, &VSources[i], NULL); TestGL(BOSS_DBG 0);
+                f->glCompileShader(mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
+
+                mFShader[i] = f->glCreateShader(GL_FRAGMENT_SHADER); TestGL(BOSS_DBG 0);
+                f->glShaderSource(mFShader[i], 1, &FSources[i], NULL); TestGL(BOSS_DBG 0);
+                f->glCompileShader(mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
+
+                mProgram[i] = f->glCreateProgram(); TestGL(BOSS_DBG 0);
+                f->glAttachShader(mProgram[i], mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
+                f->glAttachShader(mProgram[i], mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
+
                 f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
                 f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
+                f->glBindAttribLocation(mProgram[i], VerticeID, "a_position"); TestGL(BOSS_DBG 0);
+                f->glBindAttribLocation(mProgram[i], ColorID, "a_color"); TestGL(BOSS_DBG 0);
                 f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
                 f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-                f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
 
-                f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
-                f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
-                f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-                const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
-                const QRect& CurScissor = CanvasClass::get()->scissor();
-                const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
-                f->glScissor(CurScissor.x() * Zoom,
-                    (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
-                    CurScissor.width() * Zoom,
-                    CurScissor.height() * Zoom);
+                f->glLinkProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
+                f->glValidateProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
 
-                const bool NeedReverse = !(fbo == 0 && pixmap.devicePixelRatio() == 1);
-                for(int i = 0; i < 3; ++i)
+                LoadIdentity();
+                f->glUseProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
+                mMatrix[i] = f->glGetUniformLocation(mProgram[i], "u_matrix"); TestGL(BOSS_DBG 0);
+                f->glUniformMatrix4fv(mMatrix[i], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+                if(i == 1)
                 {
-                    mAttrib[i].vertices[0] = 2 * (x + ps[i].x) * Zoom / DstWidth - 1;
-                    mAttrib[i].vertices[1] = 1 - 2 * (y + ps[i].y) * Zoom / DstHeight;
-                    mAttrib[i].color32 = colors[i].ToABGR();
-                    mAttrib[i].texcoords[0] = ips[i].x;
-                    mAttrib[i].texcoords[1] = (NeedReverse)? 1 - ips[i].y : ips[i].y;
-                }
-                f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); TestGL(BOSS_DBG 0);
-
-                if(fbo != 0)
-                {
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-                    TestGL(BOSS_DBG 0);
+                    mTextureY = f->glGetUniformLocation(mProgram[i], "u_texture_y"); TestGL(BOSS_DBG 0);
+                    mTextureUV = f->glGetUniformLocation(mProgram[i], "u_texture_uv"); TestGL(BOSS_DBG 0);
                 }
             }
-            void DrawTexture(uint32 fbo, const BOSS::Rect& rect, id_texture_read tex, const BOSS::Rect& texrect, const BOSS::Color& color, orientationtype ori, bool antialiasing)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-                const float DeviceRatio = Platform::Utility::GetPixelRatio();
-
-                GLuint prevFbo = 0;
-                if(fbo != 0)
-                {
-                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                    TestGL(BOSS_DBG 0);
-                }
-
-                GLint ViewPortValues[4] = {0};
-                f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
-                #if BOSS_ANDROID
-                    const GLint DstWidth = ViewPortValues[2] / 4;
-                    const GLint DstHeight = ViewPortValues[3] / 4;
-                #else
-                    const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
-                    const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
-                #endif
-                BOSS::Rect NewRect;
-                NewRect.l = 2 * rect.l / DstWidth - 1;
-                NewRect.t = 1 - 2 * rect.t / DstHeight;
-                NewRect.r = 2 * rect.r / DstWidth - 1;
-                NewRect.b = 1 - 2 * rect.b / DstHeight;
-
-                const bool IsNV21 = (mProgram[1] && Platform::Graphics::IsTextureNV21(tex));
-                if(IsNV21)
-                {
-                    f->glActiveTexture(GL_TEXTURE0);
-                    f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 0));
-                    f->glUniform1i(mTextureY, 0);
-                    f->glActiveTexture(GL_TEXTURE1);
-                    f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 1));
-                    f->glUniform1i(mTextureUV, 1);
-                }
-                else
-                {
-                    f->glActiveTexture(GL_TEXTURE0);
-                    f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex));
-                }
-                if(antialiasing)
-                {
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                }
-                else
-                {
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                }
-
-                const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
-                const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
-                const sint32 SelectedProgram = (IsNV21)? 1 : 0;
-                f->glUseProgram(mProgram[SelectedProgram]); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-                f->glUniformMatrix4fv(mMatrix[SelectedProgram], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
-
-                f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
-                f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
-                f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
-                f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-                const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
-                const QRect& CurScissor = CanvasClass::get()->scissor();
-                const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
-                f->glScissor(CurScissor.x() * Zoom,
-                    (ScreenHeight - (CurScissor.y() + CurScissor.height())) * Zoom,
-                    CurScissor.width() * Zoom,
-                    CurScissor.height() * Zoom);
-
-                mAttrib[0].vertices[0] = NewRect.l;
-                mAttrib[0].vertices[1] = NewRect.t;
-                mAttrib[0].color32 = color.ToABGR();
-                mAttrib[1].vertices[0] = NewRect.r;
-                mAttrib[1].vertices[1] = NewRect.t;
-                mAttrib[1].color32 = color.ToABGR();
-                mAttrib[2].vertices[0] = NewRect.l;
-                mAttrib[2].vertices[1] = NewRect.b;
-                mAttrib[2].color32 = color.ToABGR();
-                mAttrib[3].vertices[0] = NewRect.r;
-                mAttrib[3].vertices[1] = NewRect.b;
-                mAttrib[3].color32 = color.ToABGR();
-
-                sint32 UV[4] = {2, 3, 1, 0};
-                switch(ori)
-                {
-                case orientationtype_normal0: UV[0] = 2; UV[1] = 3; UV[2] = 1; UV[3] = 0; break;
-                case orientationtype_normal90: UV[0] = 0; UV[1] = 2; UV[2] = 3; UV[3] = 1; break;
-                case orientationtype_normal180: UV[0] = 1; UV[1] = 0; UV[2] = 2; UV[3] = 3; break;
-                case orientationtype_normal270: UV[0] = 3; UV[1] = 1; UV[2] = 0; UV[3] = 2; break;
-                case orientationtype_fliped0: UV[0] = 3; UV[1] = 2; UV[2] = 0; UV[3] = 1; break;
-                case orientationtype_fliped90: UV[0] = 2; UV[1] = 0; UV[2] = 1; UV[3] = 3; break;
-                case orientationtype_fliped180: UV[0] = 0; UV[1] = 1; UV[2] = 3; UV[3] = 2; break;
-                case orientationtype_fliped270: UV[0] = 1; UV[1] = 3; UV[2] = 2; UV[3] = 0; break;
-                }
-
-                mAttrib[UV[0]].texcoords[0] = texrect.l / SrcWidth; // 좌측상단
-                mAttrib[UV[0]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
-                mAttrib[UV[1]].texcoords[0] = texrect.r / SrcWidth; // 우측상단
-                mAttrib[UV[1]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
-                mAttrib[UV[2]].texcoords[0] = texrect.r / SrcWidth; // 우측하단
-                mAttrib[UV[2]].texcoords[1] = (SrcHeight - texrect.t) / SrcHeight;
-                mAttrib[UV[3]].texcoords[0] = texrect.l / SrcWidth; // 좌측하단
-                mAttrib[UV[3]].texcoords[1] = (SrcHeight - texrect.t) / SrcHeight;
-                f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); TestGL(BOSS_DBG 0);
-
-                if(fbo != 0)
-                {
-                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-                    TestGL(BOSS_DBG 0);
-                }
-            }
-
-        private:
-            void InitShader(chars vsource_rgb, chars fsource_rgb, chars vsource_nv21 = nullptr, chars fsource_nv21 = nullptr)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-
-                chars VSources[2] = {vsource_rgb, vsource_nv21};
-                chars FSources[2] = {fsource_rgb, fsource_nv21};
-                for(sint32 i = 0, iend = (vsource_nv21 && fsource_nv21)? 2 : 1; i < iend; ++i)
-                {
-                    mVShader[i] = f->glCreateShader(GL_VERTEX_SHADER); TestGL(BOSS_DBG 0);
-                    f->glShaderSource(mVShader[i], 1, &VSources[i], NULL); TestGL(BOSS_DBG 0);
-                    f->glCompileShader(mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
-
-                    mFShader[i] = f->glCreateShader(GL_FRAGMENT_SHADER); TestGL(BOSS_DBG 0);
-                    f->glShaderSource(mFShader[i], 1, &FSources[i], NULL); TestGL(BOSS_DBG 0);
-                    f->glCompileShader(mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
-
-                    mProgram[i] = f->glCreateProgram(); TestGL(BOSS_DBG 0);
-                    f->glAttachShader(mProgram[i], mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
-                    f->glAttachShader(mProgram[i], mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
-
-                    f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-                    f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-                    f->glBindAttribLocation(mProgram[i], VerticeID, "a_position"); TestGL(BOSS_DBG 0);
-                    f->glBindAttribLocation(mProgram[i], ColorID, "a_color"); TestGL(BOSS_DBG 0);
-                    f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-                    f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-
-                    f->glLinkProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-                    f->glValidateProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-
-                    LoadIdentity();
-                    f->glUseProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-                    mMatrix[i] = f->glGetUniformLocation(mProgram[i], "u_matrix"); TestGL(BOSS_DBG 0);
-                    f->glUniformMatrix4fv(mMatrix[i], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
-                    if(i == 1)
-                    {
-                        mTextureY = f->glGetUniformLocation(mProgram[i], "u_texture_y"); TestGL(BOSS_DBG 0);
-                        mTextureUV = f->glGetUniformLocation(mProgram[i], "u_texture_uv"); TestGL(BOSS_DBG 0);
-                    }
-                }
-            }
-            void InitShaderGLES20()
-            {
-                InitShader(
-                    "attribute highp vec2 a_position;\n"
-                    "attribute highp vec4 a_color;\n"
+        }
+        void InitShaderGLES30()
+        {
+            InitShader(
+                ////////////////////////////////////////////////////////////
+                // RGB
+                ////////////////////////////////////////////////////////////
+                String::Format(
+                    "#version 300 es\n"
+                    "layout (location = %d) in highp vec2 a_position;\n"
+                    "layout (location = %d) in highp vec4 a_color;\n"
+                    "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
-                    "varying mediump vec4 v_fragmentColor;\n"
+                    "out mediump vec4 v_fragmentColor;\n"
+                    "out mediump vec2 v_texCoord;\n"
                     "\n"
                     "void main()\n"
                     "{\n"
                     "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
                     "    v_fragmentColor = a_color;\n"
-                    "}",
-                    "uniform highp mat4 u_matrix;\n"
-                    "varying mediump vec4 v_fragmentColor;\n"
-                    "\n"
-                    "void main()\n"
-                    "{\n"
-                    "    gl_FragColor = v_fragmentColor;\n"
-                    "}");
-            }
-            void InitShaderGLES30()
-            {
-                InitShader(
-                    ////////////////////////////////////////////////////////////
-                    // RGB
-                    ////////////////////////////////////////////////////////////
-                    String::Format(
-                        "#version 300 es\n"
-                        "layout (location = %d) in highp vec2 a_position;\n"
-                        "layout (location = %d) in highp vec4 a_color;\n"
-                        "layout (location = %d) in highp vec2 a_texcoord;\n"
-                        "uniform highp mat4 u_matrix;\n"
-                        "out mediump vec4 v_fragmentColor;\n"
-                        "out mediump vec2 v_texCoord;\n"
-                        "\n"
-                        "void main()\n"
-                        "{\n"
-                        "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
-                        "    v_fragmentColor = a_color;\n"
-                        "    v_texCoord = a_texcoord;\n"
-                        "}", VerticeID, ColorID, TexCoordsID),
+                    "    v_texCoord = a_texcoord;\n"
+                    "}", VerticeID, ColorID, TexCoordsID),
+                "#version 300 es\n"
+                "layout (location = 0) out highp vec4 oColour;\n"
+                "uniform highp mat4 u_matrix;\n"
+                "uniform highp sampler2D u_texture;\n"
+                "in mediump vec4 v_fragmentColor;\n"
+                "in mediump vec2 v_texCoord;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "    oColour = v_fragmentColor * texture(u_texture, v_texCoord);\n"
+                "}",
+                ////////////////////////////////////////////////////////////
+                // NV21
+                ////////////////////////////////////////////////////////////
+                String::Format(
                     "#version 300 es\n"
-                    "layout (location = 0) out highp vec4 oColour;\n"
-                    "uniform highp mat4 u_matrix;\n"
-                    "uniform highp sampler2D u_texture;\n"
-                    "in mediump vec4 v_fragmentColor;\n"
-                    "in mediump vec2 v_texCoord;\n"
-                    "\n"
-                    "void main()\n"
-                    "{\n"
-                    "    oColour = v_fragmentColor * texture(u_texture, v_texCoord);\n"
-                    "}",
-                    ////////////////////////////////////////////////////////////
-                    // NV21
-                    ////////////////////////////////////////////////////////////
-                    String::Format(
-                        "#version 300 es\n"
-                        "layout (location = %d) in highp vec2 a_position;\n"
-                        "layout (location = %d) in highp vec4 a_color;\n"
-                        "layout (location = %d) in highp vec2 a_texcoord;\n"
-                        "uniform highp mat4 u_matrix;\n"
-                        "uniform highp sampler2D u_texture_y;\n"
-                        "uniform highp sampler2D u_texture_uv;\n"
-                        "out mediump vec4 v_fragmentColor;\n"
-                        "out mediump vec2 v_texCoord;\n"
-                        "\n"
-                        "void main()\n"
-                        "{\n"
-                        "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
-                        "    v_fragmentColor = a_color;\n"
-                        "    v_texCoord = a_texcoord;\n"
-                        "}", VerticeID, ColorID, TexCoordsID),
-                    "#version 300 es\n"
-                    "layout (location = 0) out highp vec4 oColour;\n"
+                    "layout (location = %d) in highp vec2 a_position;\n"
+                    "layout (location = %d) in highp vec4 a_color;\n"
+                    "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
                     "uniform highp sampler2D u_texture_y;\n"
                     "uniform highp sampler2D u_texture_uv;\n"
-                    "in mediump vec4 v_fragmentColor;\n"
-                    "in mediump vec2 v_texCoord;\n"
+                    "out mediump vec4 v_fragmentColor;\n"
+                    "out mediump vec2 v_texCoord;\n"
                     "\n"
                     "void main()\n"
                     "{\n"
-                    "    highp float y = texture(u_texture_y, v_texCoord).r;\n"
-                    "    highp float u = texture(u_texture_uv, v_texCoord).a - 0.5;\n"
-                    "    highp float v = texture(u_texture_uv, v_texCoord).r - 0.5;\n"
-                    "    highp float r = y + 1.403 * v;\n"
-                    "    highp float g = y - 0.344 * u - 0.714 * v;\n"
-                    "    highp float b = y + 1.770 * u;\n"
-                    "    oColour = v_fragmentColor * vec4(r, g, b, 1.0);\n"
-                    "}");
-            }
-            void InitShaderGL()
-            {
-                InitShader(
-                    String::Format(
-                        "#version 330 core\n"
-                        "layout (location = %d) in highp vec2 a_position;\n"
-                        "layout (location = %d) in highp vec4 a_color;\n"
-                        "layout (location = %d) in highp vec2 a_texcoord;\n"
-                        "uniform highp mat4 u_matrix;\n"
-                        "out mediump vec4 v_fragmentColor;\n"
-                        "out mediump vec2 v_texCoord;\n"
-                        "\n"
-                        "void main()\n"
-                        "{\n"
-                        "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
-                        "    v_fragmentColor = a_color;\n"
-                        "    v_texCoord = a_texcoord;\n"
-                        "}", VerticeID, ColorID, TexCoordsID),
+                    "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
+                    "    v_fragmentColor = a_color;\n"
+                    "    v_texCoord = a_texcoord;\n"
+                    "}", VerticeID, ColorID, TexCoordsID),
+                "#version 300 es\n"
+                "layout (location = 0) out highp vec4 oColour;\n"
+                "uniform highp mat4 u_matrix;\n"
+                "uniform highp sampler2D u_texture_y;\n"
+                "uniform highp sampler2D u_texture_uv;\n"
+                "in mediump vec4 v_fragmentColor;\n"
+                "in mediump vec2 v_texCoord;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "    highp float y = texture(u_texture_y, v_texCoord).r;\n"
+                "    highp float u = texture(u_texture_uv, v_texCoord).a - 0.5;\n"
+                "    highp float v = texture(u_texture_uv, v_texCoord).r - 0.5;\n"
+                "    highp float r = y + 1.403 * v;\n"
+                "    highp float g = y - 0.344 * u - 0.714 * v;\n"
+                "    highp float b = y + 1.770 * u;\n"
+                "    oColour = v_fragmentColor * vec4(r, g, b, 1.0);\n"
+                "}");
+        }
+        void InitShaderGL()
+        {
+            InitShader(
+                String::Format(
                     "#version 330 core\n"
-                    "layout (location = 0) out highp vec4 oColour;\n"
+                    "layout (location = %d) in highp vec2 a_position;\n"
+                    "layout (location = %d) in highp vec4 a_color;\n"
+                    "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
-                    "uniform highp sampler2D u_texture;\n"
-                    "in mediump vec4 v_fragmentColor;\n"
-                    "in mediump vec2 v_texCoord;\n"
+                    "out mediump vec4 v_fragmentColor;\n"
+                    "out mediump vec2 v_texCoord;\n"
                     "\n"
                     "void main()\n"
                     "{\n"
-                    "    oColour = v_fragmentColor * texture2D(u_texture, v_texCoord);\n"
-                    "}");
-            }
-            void TermShader()
+                    "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
+                    "    v_fragmentColor = a_color;\n"
+                    "    v_texCoord = a_texcoord;\n"
+                    "}", VerticeID, ColorID, TexCoordsID),
+                "#version 330 core\n"
+                "layout (location = 0) out highp vec4 oColour;\n"
+                "uniform highp mat4 u_matrix;\n"
+                "uniform highp sampler2D u_texture;\n"
+                "in mediump vec4 v_fragmentColor;\n"
+                "in mediump vec2 v_texCoord;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "    oColour = v_fragmentColor * texture2D(u_texture, v_texCoord);\n"
+                "}");
+        }
+        void TermShader()
+        {
+            if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
             {
-                if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
+                QOpenGLFunctions* f = ctx->functions();
+                for(sint32 i = 0; i < 2; ++i)
                 {
-                    QOpenGLFunctions* f = ctx->functions();
+                    if(mProgram[i]) {f->glDeleteProgram(mProgram[i]); TestGL(BOSS_DBG 0); mProgram[i] = 0;}
+                    if(mVShader[i]) {f->glDeleteShader(mVShader[i]); TestGL(BOSS_DBG 0); mVShader[i] = 0;}
+                    if(mFShader[i]) {f->glDeleteShader(mFShader[i]); TestGL(BOSS_DBG 0); mFShader[i] = 0;}
+                }
+            }
+        }
+
+    public:
+        static void TestGL(BOSS_DBG_PRM sint32 nouse)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+            if(auto errorCode = f->glGetError())
+                BOSS_ASSERT_PRM(String::Format("TestGL(error:%d) is failed", errorCode), false);
+        }
+        static void TestShader(BOSS_DBG_PRM GLuint shader)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+
+            GLint status;
+            f->glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+            if(status == GL_FALSE)
+            {
+                GLchar log[4096];
+                GLsizei s;
+                f->glGetShaderInfoLog(shader, 4096, &s, log);
+                BOSS_ASSERT_PRM(String::Format("TestShader(%s) is failed", log), false);
+            }
+            else if(auto errorCode = f->glGetError())
+                BOSS_ASSERT_PRM(String::Format("TestShader(error:%d) is failed", errorCode), false);
+        }
+        static void TestProgram(BOSS_DBG_PRM GLuint program)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            QOpenGLFunctions* f = ctx->functions();
+
+            GLint linked;
+            f->glGetProgramiv(program, GL_LINK_STATUS, &linked);
+            if(!linked)
+            {
+                int i32InfoLogLength, i32CharsWritten;
+                f->glGetProgramiv(program, GL_INFO_LOG_LENGTH, &i32InfoLogLength);
+                char* pszInfoLog = new char[i32InfoLogLength];
+                f->glGetProgramInfoLog(program, i32InfoLogLength, &i32CharsWritten, pszInfoLog);
+                BOSS_ASSERT_PRM(String::Format("TestProgram(%s) is failed", pszInfoLog), false);
+                delete [] pszInfoLog;
+            }
+            else if(auto errorCode = f->glGetError())
+                BOSS_ASSERT_PRM(String::Format("TestProgram(error:%d) is failed", errorCode), false);
+        }
+
+    private:
+        void LoadIdentity()
+        {
+            mM[0][0] = 1; mM[0][1] = 0; mM[0][2] = 0; mM[0][3] = 0;
+            mM[1][0] = 0; mM[1][1] = 1; mM[1][2] = 0; mM[1][3] = 0;
+            mM[2][0] = 0; mM[2][1] = 0; mM[2][2] = 1; mM[2][3] = 0;
+            mM[3][0] = 0; mM[3][1] = 0; mM[3][2] = 0; mM[3][3] = 1;
+        }
+        void Multiply(
+            const float m00, const float m01, const float m02, const float m03,
+            const float m10, const float m11, const float m12, const float m13,
+            const float m20, const float m21, const float m22, const float m23,
+            const float m30, const float m31, const float m32, const float m33)
+        {
+            GLfloat m[4][4];
+            Memory::Copy(&m[0][0], &mM[0][0], sizeof(GLfloat) * 16);
+            mM[0][0] = m[0][0] * m00 + m[0][1] * m10 + m[0][2] * m20 + m[0][3] * m30;
+            mM[0][1] = m[0][0] * m01 + m[0][1] * m11 + m[0][2] * m21 + m[0][3] * m31;
+            mM[0][2] = m[0][0] * m02 + m[0][1] * m12 + m[0][2] * m22 + m[0][3] * m32;
+            mM[0][3] = m[0][0] * m03 + m[0][1] * m13 + m[0][2] * m23 + m[0][3] * m33;
+            mM[1][0] = m[1][0] * m00 + m[1][1] * m10 + m[1][2] * m20 + m[1][3] * m30;
+            mM[1][1] = m[1][0] * m01 + m[1][1] * m11 + m[1][2] * m21 + m[1][3] * m31;
+            mM[1][2] = m[1][0] * m02 + m[1][1] * m12 + m[1][2] * m22 + m[1][3] * m32;
+            mM[1][3] = m[1][0] * m03 + m[1][1] * m13 + m[1][2] * m23 + m[1][3] * m33;
+            mM[2][0] = m[2][0] * m00 + m[2][1] * m10 + m[2][2] * m20 + m[2][3] * m30;
+            mM[2][1] = m[2][0] * m01 + m[2][1] * m11 + m[2][2] * m21 + m[2][3] * m31;
+            mM[2][2] = m[2][0] * m02 + m[2][1] * m12 + m[2][2] * m22 + m[2][3] * m32;
+            mM[2][3] = m[2][0] * m03 + m[2][1] * m13 + m[2][2] * m23 + m[2][3] * m33;
+            mM[3][0] = m[3][0] * m00 + m[3][1] * m10 + m[3][2] * m20 + m[3][3] * m30;
+            mM[3][1] = m[3][0] * m01 + m[3][1] * m11 + m[3][2] * m21 + m[3][3] * m31;
+            mM[3][2] = m[3][0] * m02 + m[3][1] * m12 + m[3][2] * m22 + m[3][3] * m32;
+            mM[3][3] = m[3][0] * m03 + m[3][1] * m13 + m[3][2] * m23 + m[3][3] * m33;
+        }
+
+    private:
+        GLuint mVShader[2];
+        GLuint mFShader[2];
+        GLuint mProgram[2];
+
+    private:
+        enum {VerticeID = 0, ColorID = 1, TexCoordsID = 2};
+        struct Attrib
+        {
+            GLfloat vertices[2];
+            union
+            {
+                GLubyte colors[4];
+                GLuint color32;
+            };
+            GLfloat texcoords[2];
+        };
+        Attrib mAttrib[4];
+        GLint mMatrix[2];
+        GLfloat mM[4][4];
+        GLint mTextureY;
+        GLint mTextureUV;
+    };
+
+    class TextureClass
+    {
+        BOSS_DECLARE_NONCOPYABLE_CLASS(TextureClass)
+
+    public:
+        TextureClass()
+        {
+            mRefCount = 1;
+            mNV21 = false;
+            mWidth = 0;
+            mHeight = 0;
+            mTexture[0] = mTexture[1] = 0;
+        }
+        ~TextureClass()
+        {
+            BOSS_ASSERT("잘못된 시나리오입니다", mRefCount == 0);
+            Remove();
+        }
+
+    public:
+        void Init(bool nv21, bool bitmapcache, sint32 width, sint32 height, const void* bits)
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
+            if(ctx)
+            {
+                QOpenGLFunctions* f = ctx->functions();
+                mNV21 = nv21;
+                mWidth = width;
+                mHeight = height;
+                if(nv21)
+                {
+                    const sint32 Level[2] = {GL_LUMINANCE, GL_LUMINANCE_ALPHA};
+                    const sint32 Widths[2]  = {mWidth, mWidth / 2};
+                    const sint32 Heights[2] = {mHeight, mHeight / 2};
+                    const void* Bits[2] = {bits, (bits)? &((bytes) bits)[mWidth * mHeight] : nullptr};
+                    const sint32 BitsSizes[2] = {1 * Widths[0] * Heights[0], 2 * Widths[1] * Heights[1]};
+                    f->glGenTextures(2, mTexture);
                     for(sint32 i = 0; i < 2; ++i)
                     {
-                        if(mProgram[i]) {f->glDeleteProgram(mProgram[i]); TestGL(BOSS_DBG 0); mProgram[i] = 0;}
-                        if(mVShader[i]) {f->glDeleteShader(mVShader[i]); TestGL(BOSS_DBG 0); mVShader[i] = 0;}
-                        if(mFShader[i]) {f->glDeleteShader(mFShader[i]); TestGL(BOSS_DBG 0); mFShader[i] = 0;}
-                    }
-                }
-            }
-
-        public:
-            static uint08 GetVersionGLES()
-            {
-                static uint08 Version = 0xFF;
-                if(Version != 0xFF) return Version;
-
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-                chars VendorString = (chars) f->glGetString(GL_VENDOR);
-                chars RendererString = (chars) f->glGetString(GL_RENDERER);
-                chars VersionString = (chars) f->glGetString(GL_VERSION);
-                // 예시1: OpenGL ES 2.0 IMGSGX543-124.1
-                // 예시2: OpenGL ES 3.0 APPLE-12.0.38
-                // 예시3: 2.1 ATI-1.51.8
-                // 예시4: 4.0.0 - Build 10.18.10.4303
-                BOSS_TRACE("========================================");
-                BOSS_TRACE("OpenGLPrivate GetVersion()");
-                BOSS_TRACE("----------------------------------------");
-                BOSS_TRACE("Vendor: %s", VendorString);
-                BOSS_TRACE("Renderer: %s", RendererString);
-                BOSS_TRACE("Version: %s", VersionString);
-                BOSS_TRACE("========================================");
-                Platform::BroadcastNotify("GL_VENDOR", String(VendorString), NT_GLState);
-                Platform::BroadcastNotify("GL_RENDERER", String(RendererString), NT_GLState);
-                Platform::BroadcastNotify("GL_VERSION", String(VersionString), NT_GLState);
-
-                if(!boss_strncmp(VersionString, "OpenGL ES ", 10))
-                {
-                    const uint32 VersionMajor = VersionString[10] - '0';
-                    const uint32 VersionMinor = VersionString[12] - '0';
-                    Version = ((VersionMajor & 0xF) << 4) | (VersionMinor & 0xF);
-                }
-                else if(!boss_strcmp(VersionString, "3.0 Mesa 18.0.5"))
-                    Version = 0x30;
-                else Version = 0x00; // 데스크탑용 OpenGL
-                return Version;
-            }
-            static void TestGL(BOSS_DBG_PRM sint32 nouse)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-                if(auto errorCode = f->glGetError())
-                    BOSS_ASSERT_PRM(String::Format("TestGL(error:%d) is failed", errorCode), false);
-            }
-            static void TestShader(BOSS_DBG_PRM GLuint shader)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-
-                GLint status;
-                f->glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-                if(status == GL_FALSE)
-                {
-                    GLchar log[4096];
-                    GLsizei s;
-                    f->glGetShaderInfoLog(shader, 4096, &s, log);
-                    BOSS_ASSERT_PRM(String::Format("TestShader(%s) is failed", log), false);
-                }
-                else if(auto errorCode = f->glGetError())
-                    BOSS_ASSERT_PRM(String::Format("TestShader(error:%d) is failed", errorCode), false);
-            }
-            static void TestProgram(BOSS_DBG_PRM GLuint program)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                QOpenGLFunctions* f = ctx->functions();
-
-                GLint linked;
-                f->glGetProgramiv(program, GL_LINK_STATUS, &linked);
-                if(!linked)
-                {
-                    int i32InfoLogLength, i32CharsWritten;
-                    f->glGetProgramiv(program, GL_INFO_LOG_LENGTH, &i32InfoLogLength);
-                    char* pszInfoLog = new char[i32InfoLogLength];
-                    f->glGetProgramInfoLog(program, i32InfoLogLength, &i32CharsWritten, pszInfoLog);
-                    BOSS_ASSERT_PRM(String::Format("TestProgram(%s) is failed", pszInfoLog), false);
-                    delete [] pszInfoLog;
-                }
-                else if(auto errorCode = f->glGetError())
-                    BOSS_ASSERT_PRM(String::Format("TestProgram(error:%d) is failed", errorCode), false);
-            }
-        private:
-            void LoadIdentity()
-            {
-                mM[0][0] = 1; mM[0][1] = 0; mM[0][2] = 0; mM[0][3] = 0;
-                mM[1][0] = 0; mM[1][1] = 1; mM[1][2] = 0; mM[1][3] = 0;
-                mM[2][0] = 0; mM[2][1] = 0; mM[2][2] = 1; mM[2][3] = 0;
-                mM[3][0] = 0; mM[3][1] = 0; mM[3][2] = 0; mM[3][3] = 1;
-            }
-            void Multiply(
-                const float m00, const float m01, const float m02, const float m03,
-                const float m10, const float m11, const float m12, const float m13,
-                const float m20, const float m21, const float m22, const float m23,
-                const float m30, const float m31, const float m32, const float m33)
-            {
-                GLfloat m[4][4];
-                Memory::Copy(&m[0][0], &mM[0][0], sizeof(GLfloat) * 16);
-                mM[0][0] = m[0][0] * m00 + m[0][1] * m10 + m[0][2] * m20 + m[0][3] * m30;
-                mM[0][1] = m[0][0] * m01 + m[0][1] * m11 + m[0][2] * m21 + m[0][3] * m31;
-                mM[0][2] = m[0][0] * m02 + m[0][1] * m12 + m[0][2] * m22 + m[0][3] * m32;
-                mM[0][3] = m[0][0] * m03 + m[0][1] * m13 + m[0][2] * m23 + m[0][3] * m33;
-                mM[1][0] = m[1][0] * m00 + m[1][1] * m10 + m[1][2] * m20 + m[1][3] * m30;
-                mM[1][1] = m[1][0] * m01 + m[1][1] * m11 + m[1][2] * m21 + m[1][3] * m31;
-                mM[1][2] = m[1][0] * m02 + m[1][1] * m12 + m[1][2] * m22 + m[1][3] * m32;
-                mM[1][3] = m[1][0] * m03 + m[1][1] * m13 + m[1][2] * m23 + m[1][3] * m33;
-                mM[2][0] = m[2][0] * m00 + m[2][1] * m10 + m[2][2] * m20 + m[2][3] * m30;
-                mM[2][1] = m[2][0] * m01 + m[2][1] * m11 + m[2][2] * m21 + m[2][3] * m31;
-                mM[2][2] = m[2][0] * m02 + m[2][1] * m12 + m[2][2] * m22 + m[2][3] * m32;
-                mM[2][3] = m[2][0] * m03 + m[2][1] * m13 + m[2][2] * m23 + m[2][3] * m33;
-                mM[3][0] = m[3][0] * m00 + m[3][1] * m10 + m[3][2] * m20 + m[3][3] * m30;
-                mM[3][1] = m[3][0] * m01 + m[3][1] * m11 + m[3][2] * m21 + m[3][3] * m31;
-                mM[3][2] = m[3][0] * m02 + m[3][1] * m12 + m[3][2] * m22 + m[3][3] * m32;
-                mM[3][3] = m[3][0] * m03 + m[3][1] * m13 + m[3][2] * m23 + m[3][3] * m33;
-            }
-
-        private:
-            GLuint mVShader[2];
-            GLuint mFShader[2];
-            GLuint mProgram[2];
-
-        private:
-            enum {VerticeID = 0, ColorID = 1, TexCoordsID = 2};
-            struct Attrib
-            {
-                GLfloat vertices[2];
-                union
-                {
-                    GLubyte colors[4];
-                    GLuint color32;
-                };
-                GLfloat texcoords[2];
-            };
-            Attrib mAttrib[4];
-            GLint mMatrix[2];
-            GLfloat mM[4][4];
-            GLint mTextureY;
-            GLint mTextureUV;
-        };
-
-        class TextureClass
-        {
-            BOSS_DECLARE_NONCOPYABLE_CLASS(TextureClass)
-
-        public:
-            TextureClass()
-            {
-                mRefCount = 1;
-                mNV21 = false;
-                mWidth = 0;
-                mHeight = 0;
-                mTexture[0] = mTexture[1] = 0;
-            }
-            ~TextureClass()
-            {
-                BOSS_ASSERT("잘못된 시나리오입니다", mRefCount == 0);
-                Remove();
-            }
-
-        public:
-            void Init(bool nv21, bool bitmapcache, sint32 width, sint32 height, const void* bits)
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
-                if(ctx)
-                {
-                    QOpenGLFunctions* f = ctx->functions();
-                    mNV21 = nv21;
-                    mWidth = width;
-                    mHeight = height;
-                    if(nv21)
-                    {
-                        const sint32 Level[2] = {GL_LUMINANCE, GL_LUMINANCE_ALPHA};
-                        const sint32 Widths[2]  = {mWidth, mWidth / 2};
-                        const sint32 Heights[2] = {mHeight, mHeight / 2};
-                        const void* Bits[2] = {bits, (bits)? &((bytes) bits)[mWidth * mHeight] : nullptr};
-                        const sint32 BitsSizes[2] = {1 * Widths[0] * Heights[0], 2 * Widths[1] * Heights[1]};
-                        f->glGenTextures(2, mTexture);
-                        for(sint32 i = 0; i < 2; ++i)
-                        {
-                            f->glBindTexture(GL_TEXTURE_2D, mTexture[i]);
-                            f->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-                            f->glTexImage2D(GL_TEXTURE_2D,
-                                0, Level[i], Widths[i], Heights[i],
-                                0, Level[i], GL_UNSIGNED_BYTE, Bits[i]);
-                            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                            if(bitmapcache && Bits[i]) // CreateBitmap()을 위해 저장해 둠
-                                Memory::Copy(mBits[i].AtDumping(0, BitsSizes[i]), Bits[i], BitsSizes[i]);
-                        }
-                    }
-                    else
-                    {
-                        const sint32 BitsSize = 4 * mWidth * mHeight;
-                        f->glGenTextures(1, mTexture);
-                        f->glBindTexture(GL_TEXTURE_2D, mTexture[0]);
+                        f->glBindTexture(GL_TEXTURE_2D, mTexture[i]);
+                        f->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                         f->glTexImage2D(GL_TEXTURE_2D,
-                            0, GL_RGBA8, mWidth, mHeight,
-                            0, GL_BGRA, GL_UNSIGNED_BYTE, bits);
+                            0, Level[i], Widths[i], Heights[i],
+                            0, Level[i], GL_UNSIGNED_BYTE, Bits[i]);
                         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                        if(bitmapcache && bits) // CreateBitmap()을 위해 저장해 둠
-                            Memory::Copy(mBits[0].AtDumping(0, BitsSize), bits, BitsSize);
+                        if(bitmapcache && Bits[i]) // CreateBitmap()을 위해 저장해 둠
+                            Memory::Copy(mBits[i].AtDumping(0, BitsSizes[i]), Bits[i], BitsSizes[i]);
                     }
-                }
-            }
-            void Remove()
-            {
-                QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                if(ctx)
-                {
-                    QOpenGLFunctions* f = ctx->functions();
-                    for(sint32 i = 0; i < 2; ++i)
-                    {
-                        if(mTexture[i])
-                        {
-                            f->glDeleteTextures(1, &mTexture[i]);
-                            mTexture[i] = 0;
-                        }
-                    }
-                }
-            }
-            id_bitmap CreateBitmapByGL() const
-            {
-                id_bitmap NewBitmap = nullptr;
-                if(mNV21)
-                    BOSS_ASSERT("NV21방식은 CreateBitmapByGL를 지원하지 않습니다", false);
-                else
-                {
-                    QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                    if(ctx)
-                    {
-                        QOpenGLFunctions* f = ctx->functions();
-                        GLuint fbo = 0, prevFbo = 0;
-                        f->glGenFramebuffers(1, &fbo);
-                        f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
-                        f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                        NewBitmap = Bmp::Create(4, mWidth, mHeight);
-                        f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture[0], 0);
-                        f->glReadPixels(0, 0, mWidth, mHeight, GL_RGBA, GL_UNSIGNED_BYTE, Bmp::GetBits(NewBitmap));
-                        f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-                        f->glDeleteFramebuffers(1, &fbo);
-                        Bmp::SwapRedBlue(NewBitmap);
-                    }
-                    else BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
-                }
-                return NewBitmap;
-            }
-            id_bitmap CreateBitmapByCopy() const
-            {
-                id_bitmap NewBitmap = nullptr;
-                if(mNV21)
-                {
-                    const sint32 Widths[2]  = {mWidth, mWidth / 2};
-                    const sint32 Heights[2] = {mHeight, mHeight / 2};
-                    const sint32 BitsSizes[2] = {1 * Widths[0] * Heights[0], 2 * Widths[1] * Heights[1]};
-                    if(mBits[0].Count() == BitsSizes[0] && mBits[1].Count() == BitsSizes[1])
-                        NewBitmap = Bmp::CloneFromNV21(&mBits[0][0], (uv16s) &mBits[1][0], mWidth, mHeight);
-                    else BOSS_ASSERT("미리 저장된 mBits가 없어서 CreateBitmapByCopy에 실패하였습니다", false);
                 }
                 else
                 {
                     const sint32 BitsSize = 4 * mWidth * mHeight;
-                    if(mBits[0].Count() == BitsSize)
-                    {
-                        NewBitmap = Bmp::Create(4, mWidth, mHeight);
-                        Memory::Copy(Bmp::GetBits(NewBitmap), &mBits[0][0], BitsSize);
-                    }
-                    else BOSS_ASSERT("미리 저장된 mBits가 없어서 CreateBitmapByCopy에 실패하였습니다", false);
+                    f->glGenTextures(1, mTexture);
+                    f->glBindTexture(GL_TEXTURE_2D, mTexture[0]);
+                    f->glTexImage2D(GL_TEXTURE_2D,
+                        0, GL_RGBA8, mWidth, mHeight,
+                        0, GL_BGRA, GL_UNSIGNED_BYTE, bits);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    if(bitmapcache && bits) // CreateBitmap()을 위해 저장해 둠
+                        Memory::Copy(mBits[0].AtDumping(0, BitsSize), bits, BitsSize);
                 }
-                return NewBitmap;
             }
-            void CopyFromBitmap(sint32 x, sint32 y, sint32 width, sint32 height, const Bmp::bitmappixel* bits)
+        }
+        void Remove()
+        {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            if(ctx)
             {
-                BOSS_ASSERT("복사영역이 텍스쳐영역을 벗어납니다", 0 <= x && 0 <= y && x + width <= mWidth && y + height <= mHeight);
-
+                QOpenGLFunctions* f = ctx->functions();
+                for(sint32 i = 0; i < 2; ++i)
+                {
+                    if(mTexture[i])
+                    {
+                        f->glDeleteTextures(1, &mTexture[i]);
+                        mTexture[i] = 0;
+                    }
+                }
+            }
+        }
+        id_bitmap CreateBitmapByGL() const
+        {
+            id_bitmap NewBitmap = nullptr;
+            if(mNV21)
+                BOSS_ASSERT("NV21방식은 CreateBitmapByGL를 지원하지 않습니다", false);
+            else
+            {
                 QOpenGLContext* ctx = QOpenGLContext::currentContext();
-                BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
                 if(ctx)
                 {
                     QOpenGLFunctions* f = ctx->functions();
-                    if(mNV21)
-                        BOSS_ASSERT("개발이 필요합니다!", false);
-                    else
-                    {
-                        f->glBindTexture(GL_TEXTURE_2D, mTexture[0]);
-                        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                        f->glTexSubImage2D(GL_TEXTURE_2D, 0,
-                            x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, bits);
-                    }
+                    GLuint fbo = 0, prevFbo = 0;
+                    f->glGenFramebuffers(1, &fbo);
+                    f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*) &prevFbo);
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                    NewBitmap = Bmp::Create(4, mWidth, mHeight);
+                    f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture[0], 0);
+                    f->glReadPixels(0, 0, mWidth, mHeight, GL_RGBA, GL_UNSIGNED_BYTE, Bmp::GetBits(NewBitmap));
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+                    f->glDeleteFramebuffers(1, &fbo);
+                    Bmp::SwapRedBlue(NewBitmap);
                 }
+                else BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
             }
-
-        public:
-            inline TextureClass* clone() {++mRefCount; return this;}
-            inline bool release() {return (--mRefCount == 0);}
-            inline bool nv21() const {return mNV21;}
-            inline sint32 width() const {return mWidth;}
-            inline sint32 height() const {return mHeight;}
-            inline uint32 id(sint32 i) const {return mTexture[i];}
-
-        public:
-            void ResetDirectly(uint32 texture, sint32 width, sint32 height)
-            {
-                mRefCount = 1;
-                mNV21 = false;
-                mWidth = width;
-                mHeight = height;
-                mTexture[0] = texture;
-            }
-            void ClearDirectly()
-            {
-                mRefCount = 0;
-                mTexture[0] = 0;
-            }
-
-        private:
-            sint32 mRefCount;
-            bool mNV21;
-            sint32 mWidth;
-            sint32 mHeight;
-            uint32 mTexture[2];
-            uint08s mBits[2];
-        };
-
-        class SurfaceClass
+            return NewBitmap;
+        }
+        id_bitmap CreateBitmapByCopy() const
         {
-        public:
-            SurfaceClass() : mFBO(0, 0, QOpenGLFramebufferObjectFormat()), mDevice(0, 0)
+            id_bitmap NewBitmap = nullptr;
+            if(mNV21)
             {
-                BOSS_ASSERT("잘못된 시나리오입니다", false);
+                const sint32 Widths[2]  = {mWidth, mWidth / 2};
+                const sint32 Heights[2] = {mHeight, mHeight / 2};
+                const sint32 BitsSizes[2] = {1 * Widths[0] * Heights[0], 2 * Widths[1] * Heights[1]};
+                if(mBits[0].Count() == BitsSizes[0] && mBits[1].Count() == BitsSizes[1])
+                    NewBitmap = Bmp::CloneFromNV21(&mBits[0][0], (uv16s) &mBits[1][0], mWidth, mHeight);
+                else BOSS_ASSERT("미리 저장된 mBits가 없어서 CreateBitmapByCopy에 실패하였습니다", false);
+            }
+            else
+            {
+                const sint32 BitsSize = 4 * mWidth * mHeight;
+                if(mBits[0].Count() == BitsSize)
+                {
+                    NewBitmap = Bmp::Create(4, mWidth, mHeight);
+                    Memory::Copy(Bmp::GetBits(NewBitmap), &mBits[0][0], BitsSize);
+                }
+                else BOSS_ASSERT("미리 저장된 mBits가 없어서 CreateBitmapByCopy에 실패하였습니다", false);
+            }
+            return NewBitmap;
+        }
+        void CopyFromBitmap(sint32 x, sint32 y, sint32 width, sint32 height, const Bmp::bitmappixel* bits)
+        {
+            BOSS_ASSERT("복사영역이 텍스쳐영역을 벗어납니다", 0 <= x && 0 <= y && x + width <= mWidth && y + height <= mHeight);
+
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            BOSS_ASSERT("OpenGL의 Context접근에 실패하였습니다", ctx);
+            if(ctx)
+            {
+                QOpenGLFunctions* f = ctx->functions();
+                if(mNV21)
+                    BOSS_ASSERT("개발이 필요합니다!", false);
+                else
+                {
+                    f->glBindTexture(GL_TEXTURE_2D, mTexture[0]);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    f->glTexSubImage2D(GL_TEXTURE_2D, 0,
+                        x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+                }
+            }
+        }
+
+    public:
+        inline TextureClass* clone() {++mRefCount; return this;}
+        inline bool release() {return (--mRefCount == 0);}
+        inline bool nv21() const {return mNV21;}
+        inline sint32 width() const {return mWidth;}
+        inline sint32 height() const {return mHeight;}
+        inline uint32 id(sint32 i) const {return mTexture[i];}
+
+    public:
+        void ResetDirectly(uint32 texture, sint32 width, sint32 height)
+        {
+            mRefCount = 1;
+            mNV21 = false;
+            mWidth = width;
+            mHeight = height;
+            mTexture[0] = texture;
+        }
+        void ClearDirectly()
+        {
+            mRefCount = 0;
+            mTexture[0] = 0;
+        }
+
+    private:
+        sint32 mRefCount;
+        bool mNV21;
+        sint32 mWidth;
+        sint32 mHeight;
+        uint32 mTexture[2];
+        uint08s mBits[2];
+    };
+
+    class SurfaceClass
+    {
+    public:
+        SurfaceClass() : mFBO(0, 0, QOpenGLFramebufferObjectFormat()), mDevice(0, 0)
+        {
+            BOSS_ASSERT("잘못된 시나리오입니다", false);
+            mSavedSurface = nullptr;
+            mIsValidLastImage = false;
+        }
+        SurfaceClass(sint32 width, sint32 height, QOpenGLFramebufferObjectFormat* format)
+            : mFBO(width, height, *format), mDevice(width, height)
+        {
+            BOSS_ASSERT("FBO생성에 실패하였습니다", mFBO.isValid());
+            mSavedSurface = nullptr;
+            mIsValidLastImage = false;
+        }
+        ~SurfaceClass()
+        {
+            mFBO.release();
+            mLastTexture.ClearDirectly();
+        }
+
+    public:
+        SurfaceClass(const SurfaceClass& rhs) : mFBO(0, 0, QOpenGLFramebufferObjectFormat()), mDevice(0, 0)
+        {
+            operator=(rhs);
+        }
+        SurfaceClass& operator=(const SurfaceClass& rhs)
+        {
+            BOSS_ASSERT("잘못된 시나리오입니다", false);
+            return *this;
+        }
+
+    public:
+        inline uint32 fbo() const {return mFBO.handle();}
+        inline id_texture_read texture() const
+        {
+            mLastTexture.ResetDirectly(mFBO.texture(), mFBO.width(), mFBO.height());
+            return (id_texture_read) &mLastTexture;
+        }
+        inline sint32 width() const {return mFBO.width();}
+        inline sint32 height() const {return mFBO.height();}
+        inline QPainter* painter() {return &mCanvas.painter();}
+
+    public:
+        void BindGraphics()
+        {
+            BOSS_ASSERT("mSavedSurface는 nullptr이어야 합니다", !mSavedSurface);
+            mSavedSurface = ST();
+            mCanvas.Bind(&mDevice);
+            mFBO.bind();
+            ST() = this;
+        }
+        void UnbindGraphics()
+        {
+            BOSS_ASSERT("SurfaceClass는 스택식으로 해제해야 합니다", ST() == this);
+            mIsValidLastImage = false;
+            mCanvas.Unbind();
+            if(ST() = mSavedSurface)
+            {
+                mSavedSurface->mFBO.bind();
                 mSavedSurface = nullptr;
-                mIsValidLastImage = false;
             }
-            SurfaceClass(sint32 width, sint32 height, QOpenGLFramebufferObjectFormat* format)
-                : mFBO(width, height, *format), mDevice(width, height)
+        }
+        const QImage& GetLastImage() const
+        {
+            if(!mIsValidLastImage)
             {
-                BOSS_ASSERT("FBO생성에 실패하였습니다", mFBO.isValid());
-                mSavedSurface = nullptr;
-                mIsValidLastImage = false;
+                mIsValidLastImage = true;
+                mLastImage = mFBO.toImage();
             }
-            ~SurfaceClass()
-            {
-                mFBO.release();
-                mLastTexture.ClearDirectly();
-            }
+            return mLastImage;
+        }
 
-        public:
-            SurfaceClass(const SurfaceClass& rhs) : mFBO(0, 0, QOpenGLFramebufferObjectFormat()), mDevice(0, 0)
+    public:
+        static void LockForGL()
+        {
+            BOSS_ASSERT("STGL()는 nullptr이어야 합니다", !STGL());
+            STGL() = ST();
+            ST() = nullptr;
+        }
+        static void UnlockForGL()
+        {
+            BOSS_ASSERT("ST()는 nullptr이어야 합니다", !ST());
+            if(ST() = STGL())
             {
-                operator=(rhs);
+                STGL()->mFBO.bind();
+                STGL() = nullptr;
             }
-            SurfaceClass& operator=(const SurfaceClass& rhs)
-            {
-                BOSS_ASSERT("잘못된 시나리오입니다", false);
-                return *this;
-            }
+        }
 
-        public:
-            inline uint32 fbo() const {return mFBO.handle();}
-            inline id_texture_read texture() const
-            {
-                mLastTexture.ResetDirectly(mFBO.texture(), mFBO.width(), mFBO.height());
-                return (id_texture_read) &mLastTexture;
-            }
-            inline sint32 width() const {return mFBO.width();}
-            inline sint32 height() const {return mFBO.height();}
-            inline PainterPrivate* painter() {return &mCanvas.painter();}
+    private:
+        static inline SurfaceClass*& ST() {static SurfaceClass* _ = nullptr; return _;}
+        static inline SurfaceClass*& STGL() {static SurfaceClass* _ = nullptr; return _;}
 
-        public:
-            void BindGraphics()
-            {
-                BOSS_ASSERT("mSavedSurface는 nullptr이어야 합니다", !mSavedSurface);
-                mSavedSurface = ST();
-                mCanvas.Bind(&mDevice);
-                mFBO.bind();
-                ST() = this;
-            }
-            void UnbindGraphics()
-            {
-                BOSS_ASSERT("SurfaceClass는 스택식으로 해제해야 합니다", ST() == this);
-                mIsValidLastImage = false;
-                mCanvas.Unbind();
-                if(ST() = mSavedSurface)
-                {
-                    mSavedSurface->mFBO.bind();
-                    mSavedSurface = nullptr;
-                }
-            }
-            const ImagePrivate& GetLastImage() const
-            {
-                if(!mIsValidLastImage)
-                {
-                    mIsValidLastImage = true;
-                    mLastImage = mFBO.toImage();
-                }
-                return mLastImage;
-            }
+    private:
+        SurfaceClass* mSavedSurface;
+        QOpenGLFramebufferObject mFBO;
+        QOpenGLPaintDevice mDevice;
+        CanvasClass mCanvas;
 
-        public:
-            static void LockForGL()
-            {
-                BOSS_ASSERT("STGL()는 nullptr이어야 합니다", !STGL());
-                STGL() = ST();
-                ST() = nullptr;
-            }
-            static void UnlockForGL()
-            {
-                BOSS_ASSERT("ST()는 nullptr이어야 합니다", !ST());
-                if(ST() = STGL())
-                {
-                    STGL()->mFBO.bind();
-                    STGL() = nullptr;
-                }
-            }
-
-        private:
-            static inline SurfaceClass*& ST() {static SurfaceClass* _ = nullptr; return _;}
-            static inline SurfaceClass*& STGL() {static SurfaceClass* _ = nullptr; return _;}
-
-        private:
-            SurfaceClass* mSavedSurface;
-            QOpenGLFramebufferObject mFBO;
-            QOpenGLPaintDevice mDevice;
-            CanvasClass mCanvas;
-
-        private:
-            mutable bool mIsValidLastImage;
-            mutable ImagePrivate mLastImage;
-            mutable TextureClass mLastTexture;
-        };
-    #endif
+    private:
+        mutable bool mIsValidLastImage;
+        mutable QImage mLastImage;
+        mutable TextureClass mLastTexture;
+    };
 
     class ThreadClass : public QThread
     {
@@ -5135,18 +3751,18 @@
         chars s_proto;
     };
 
-    class PipePrivate : public QObject
+    class PipeClass : public QObject
     {
         Q_OBJECT
 
     public:
-        PipePrivate(SharedMemoryPrivate* semaphore)
+        PipeClass(QSharedMemory* semaphore)
         {
             mStatus = CS_Connecting;
             mTempContext = nullptr;
             mSemaphore = semaphore;
         }
-        virtual ~PipePrivate()
+        virtual ~PipeClass()
         {
             delete mTempContext;
             delete mSemaphore;
@@ -5214,21 +3830,21 @@
         ConnectStatus mStatus;
         chararray mData;
         Context* mTempContext;
-        SharedMemoryPrivate* mSemaphore;
+        QSharedMemory* mSemaphore;
     };
 
-    class PipeServerPrivate : public PipePrivate
+    class PipeServerClass : public PipeClass
     {
         Q_OBJECT
 
     public:
-        PipeServerPrivate(QLocalServer* server, SharedMemoryPrivate* semaphore) : PipePrivate(semaphore)
+        PipeServerClass(QLocalServer* server, QSharedMemory* semaphore) : PipeClass(semaphore)
         {
             mServer = server;
             mLastClient = nullptr;
-            connect(server, &QLocalServer::newConnection, this, &PipeServerPrivate::OnNewConnection);
+            connect(server, &QLocalServer::newConnection, this, &PipeServerClass::OnNewConnection);
         }
-        ~PipeServerPrivate() override
+        ~PipeServerClass() override
         {
             delete mServer;
         }
@@ -5258,8 +3874,8 @@
             {
                 mStatus = CS_Connected;
                 mLastClient = NewClient;
-                connect(mLastClient, &QLocalSocket::readyRead, this, &PipeServerPrivate::OnReadyRead);
-                connect(mLastClient, &QLocalSocket::disconnected, this, &PipeServerPrivate::OnDisconnected);
+                connect(mLastClient, &QLocalSocket::readyRead, this, &PipeServerClass::OnReadyRead);
+                connect(mLastClient, &QLocalSocket::disconnected, this, &PipeServerClass::OnDisconnected);
             }
             else NewClient->disconnectFromServer();
         }
@@ -5280,22 +3896,22 @@
         QLocalSocket* mLastClient;
     };
 
-    class PipeClientPrivate : public PipePrivate
+    class PipeClientClass : public PipeClass
     {
         Q_OBJECT
 
     public:
-        PipeClientPrivate(chars name, SharedMemoryPrivate* semaphore) : PipePrivate(semaphore)
+        PipeClientClass(chars name, QSharedMemory* semaphore) : PipeClass(semaphore)
         {
             mClient = new QLocalSocket();
-            connect(mClient, &QLocalSocket::readyRead, this, &PipeClientPrivate::OnReadyRead);
-            connect(mClient, &QLocalSocket::connected, this, &PipeClientPrivate::OnConnected);
-            connect(mClient, &QLocalSocket::disconnected, this, &PipeClientPrivate::OnDisconnected);
+            connect(mClient, &QLocalSocket::readyRead, this, &PipeClientClass::OnReadyRead);
+            connect(mClient, &QLocalSocket::connected, this, &PipeClientClass::OnConnected);
+            connect(mClient, &QLocalSocket::disconnected, this, &PipeClientClass::OnDisconnected);
 
             mClient->abort();
             mClient->connectToServer(name);
         }
-        ~PipeClientPrivate() override
+        ~PipeClientClass() override
         {
             delete mClient;
         }
@@ -5379,7 +3995,7 @@
         Q_OBJECT
 
     public:
-        WebEngineViewForExtraDesktop(WidgetPrivate* parent = nullptr)
+        WebEngineViewForExtraDesktop(QWidget* parent = nullptr)
         {
             mPage = new WebEnginePageForExtraDesktop(this);
         }
@@ -5396,13 +4012,13 @@
         }
         WebEnginePageForExtraDesktop* page() const {return mPage;}
         void setMouseTracking(...) {}
-        virtual void closeEvent(CloseEventPrivate* event) {}
+        virtual void closeEvent(QCloseEvent* event) {}
 
     public:
         WebEnginePageForExtraDesktop* mPage;
     };
 
-    #if defined(QT_HAVE_WEBENGINEWIDGETS) & !defined(BOSS_SILENT_NIGHT_IS_ENABLED)
+    #if defined(QT_HAVE_WEBENGINEWIDGETS)
         typedef QWebEnginePage WebEnginePageClass;
         typedef QWebEngineView WebEngineViewClass;
     #else
@@ -5410,17 +4026,17 @@
         typedef WebEngineViewForExtraDesktop WebEngineViewClass;
     #endif
 
-    class WebPagePrivate : public WebEnginePageClass
+    class WebPageClass : public WebEnginePageClass
     {
         Q_OBJECT
 
     public:
-        WebPagePrivate(QObject* parent = nullptr) : WebEnginePageClass(parent)
+        WebPageClass(QObject* parent = nullptr) : WebEnginePageClass(parent)
         {
             mCb = nullptr;
             mData = nullptr;
         }
-        ~WebPagePrivate() override {}
+        ~WebPageClass() override {}
 
     public:
         void SetCallback(Platform::Web::EventCB cb, payload data)
@@ -5448,12 +4064,12 @@
         payload mData;
     };
 
-    class WebViewPrivate : public WebEngineViewClass
+    class WebViewClass : public WebEngineViewClass
     {
         Q_OBJECT
 
     public:
-        WebViewPrivate(WidgetPrivate* parent = nullptr) : WebEngineViewClass(parent), mHandle(h_web::null())
+        WebViewClass(QWidget* parent = nullptr) : WebEngineViewClass(parent), mHandle(h_web::null())
         {
             mNowLoading = false;
             mLoadingProgress = 100;
@@ -5461,7 +4077,7 @@
             mCb = nullptr;
             mData = nullptr;
 
-            setPage(new WebPagePrivate(this));
+            setPage(new WebPageClass(this));
             setMouseTracking(true);
             connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
             connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
@@ -5473,21 +4089,21 @@
             connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
                 SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
         }
-        virtual ~WebViewPrivate()
+        virtual ~WebViewClass()
         {
             mHandle.set_buf(nullptr);
         }
 
     public:
-        WebViewPrivate(const WebViewPrivate&) {BOSS_ASSERT("사용금지", false);}
-        WebViewPrivate& operator=(const WebViewPrivate&) {BOSS_ASSERT("사용금지", false); return *this;}
+        WebViewClass(const WebViewClass&) {BOSS_ASSERT("사용금지", false);}
+        WebViewClass& operator=(const WebViewClass&) {BOSS_ASSERT("사용금지", false); return *this;}
 
     public:
         void SetCallback(Platform::Web::EventCB cb, payload data)
         {
             mCb = cb;
             mData = data;
-            ((WebPagePrivate*) page())->SetCallback(cb, data);
+            ((WebPageClass*) page())->SetCallback(cb, data);
         }
         void CallJSFunction(chars script, sint32 matchid)
         {
@@ -5504,7 +4120,7 @@
         }
 
     protected:
-        void closeEvent(CloseEventPrivate* event) Q_DECL_OVERRIDE
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             event->accept();
             mHandle.set_buf(nullptr);
@@ -5569,16 +4185,16 @@
         payload mData;
     };
 
-    #if defined(QT_HAVE_WEBENGINEWIDGETS) & !defined(BOSS_SILENT_NIGHT_IS_ENABLED)
-        class WebPrivateForDesktop
+    #if defined(QT_HAVE_WEBENGINEWIDGETS)
+        class WebClassForDesktop
         {
         public:
-            WebPrivateForDesktop()
+            WebClassForDesktop()
             {
                 mProxy = mScene.addWidget(&mView);
                 mLastTextureGL = nullptr;
             }
-            ~WebPrivateForDesktop()
+            ~WebClassForDesktop()
             {
                 mScene.removeItem(mProxy);
                 mLastTexture.ClearDirectly();
@@ -5586,8 +4202,8 @@
             }
 
         public:
-            WebPrivateForDesktop(const WebPrivateForDesktop&) {BOSS_ASSERT("사용금지", false);}
-            WebPrivateForDesktop& operator=(const WebPrivateForDesktop&) {BOSS_ASSERT("사용금지", false); return *this;}
+            WebClassForDesktop(const WebClassForDesktop&) {BOSS_ASSERT("사용금지", false);}
+            WebClassForDesktop& operator=(const WebClassForDesktop&) {BOSS_ASSERT("사용금지", false); return *this;}
 
         public:
             void AttachHandle(h_web web)
@@ -5616,7 +4232,7 @@
                 if(width != mLastImage.width() || height != mLastImage.height())
                 {
                     mView.resize(width, height);
-                    mLastImage = ImagePrivate(width, height, ImagePrivate::Format_ARGB32);
+                    mLastImage = QImage(width, height, QImage::Format_ARGB32);
                     return true;
                 }
                 return false;
@@ -5627,35 +4243,35 @@
             }
             void SendTouchEvent(TouchType type, sint32 x, sint32 y)
             {
-                MouseEventPrivate::Type CurType = MouseEventPrivate::None;
+                QMouseEvent::Type CurType = QMouseEvent::None;
                 sint32 ButtonType = 0;
                 switch(type)
                 {
-                case TT_Moving: CurType = MouseEventPrivate::MouseMove; break;
-                case TT_Press: CurType = MouseEventPrivate::MouseButtonPress; ButtonType = 1; break;
-                case TT_Dragging: CurType = MouseEventPrivate::MouseMove; ButtonType = 1; break;
-                case TT_Release: CurType = MouseEventPrivate::MouseButtonRelease; ButtonType = 1; break;
-                case TT_ExtendPress: CurType = MouseEventPrivate::MouseButtonPress; ButtonType = 2; break;
-                case TT_ExtendDragging: CurType = MouseEventPrivate::MouseMove; ButtonType = 2; break;
-                case TT_ExtendRelease: CurType = MouseEventPrivate::MouseButtonRelease; ButtonType = 2; break;
+                case TT_Moving: CurType = QMouseEvent::MouseMove; break;
+                case TT_Press: CurType = QMouseEvent::MouseButtonPress; ButtonType = 1; break;
+                case TT_Dragging: CurType = QMouseEvent::MouseMove; ButtonType = 1; break;
+                case TT_Release: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 1; break;
+                case TT_ExtendPress: CurType = QMouseEvent::MouseButtonPress; ButtonType = 2; break;
+                case TT_ExtendDragging: CurType = QMouseEvent::MouseMove; ButtonType = 2; break;
+                case TT_ExtendRelease: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 2; break;
                 default: BOSS_ASSERT("해당 case가 준비되지 않았습니다", false);
                 }
-                MouseEventPrivate NewEvent(CurType, QPoint(x, y),
+                QMouseEvent NewEvent(CurType, QPoint(x, y),
                     (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
                     (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
                     Qt::NoModifier);
                 Q_FOREACH(QObject* obj, mView.page()->view()->children())
                 {
-                    if(qobject_cast<WidgetPrivate*>(obj))
-                        ApplicationPrivate::sendEvent(obj, &NewEvent);
+                    if(qobject_cast<QWidget*>(obj))
+                        QApplication::sendEvent(obj, &NewEvent);
                 }
             }
             void SendKeyEvent(sint32 code, chars text, bool pressed)
             {
                 if(auto CurWidget = mView.focusProxy())
                 {
-                    KeyEventPrivate NewEvent((pressed)? KeyEventPrivate::KeyPress : KeyEventPrivate::KeyRelease, code, Qt::NoModifier, text);
-                    ApplicationPrivate::sendEvent(CurWidget, &NewEvent);
+                    QKeyEvent NewEvent((pressed)? QKeyEvent::KeyPress : QKeyEvent::KeyRelease, code, Qt::NoModifier, text);
+                    QApplication::sendEvent(CurWidget, &NewEvent);
                 }
             }
             void CallJSFunction(chars script, sint32 matchid)
@@ -5669,11 +4285,11 @@
                 mLastTexture.ResetDirectly(mLastTextureGL->textureId(), mLastTextureGL->width(), mLastTextureGL->height());
                 return (id_texture_read) &mLastTexture;
             }
-            const PixmapPrivate GetPixmap()
+            const QPixmap GetPixmap()
             {
-                return PixmapPrivate::fromImage(GetImage());
+                return QPixmap::fromImage(GetImage());
             }
-            const ImagePrivate& GetImage()
+            const QImage& GetImage()
             {
                 CanvasClass CurCanvas(&mLastImage);
                 mView.update();
@@ -5682,28 +4298,28 @@
             }
 
         private:
-            WebViewPrivate mView;
+            WebViewClass mView;
             QGraphicsProxyWidget* mProxy;
             QGraphicsScene mScene;
-            ImagePrivate mLastImage;
+            QImage mLastImage;
             TextureClass mLastTexture;
             QOpenGLTexture* mLastTextureGL;
         };
-        typedef WebPrivateForDesktop WebPrivate;
+        typedef WebClassForDesktop WebClass;
     #else
-        class WebPrivateForExtraDesktop
+        class WebClassForExtraDesktop
         {
         public:
-            WebPrivateForExtraDesktop()
+            WebClassForExtraDesktop()
             {
             }
-            ~WebPrivateForExtraDesktop()
+            ~WebClassForExtraDesktop()
             {
             }
 
         public:
-            WebPrivateForExtraDesktop(const WebPrivateForExtraDesktop&) {BOSS_ASSERT("사용금지", false);}
-            WebPrivateForExtraDesktop& operator=(const WebPrivateForExtraDesktop&) {BOSS_ASSERT("사용금지", false); return *this;}
+            WebClassForExtraDesktop(const WebClassForExtraDesktop&) {BOSS_ASSERT("사용금지", false);}
+            WebClassForExtraDesktop& operator=(const WebClassForExtraDesktop&) {BOSS_ASSERT("사용금지", false); return *this;}
 
         public:
             void AttachHandle(h_web web)
@@ -5724,7 +4340,7 @@
             {
                 if(width != mLastImage.width() || height != mLastImage.height())
                 {
-                    mLastImage = ImagePrivate(width, height, ImagePrivate::Format_ARGB32);
+                    mLastImage = QImage(width, height, QImage::Format_ARGB32);
                     return true;
                 }
                 return false;
@@ -5745,11 +4361,11 @@
             {
                 return nullptr;
             }
-            const PixmapPrivate GetPixmap()
+            const QPixmap GetPixmap()
             {
-                return PixmapPrivate::fromImage(GetImage());
+                return QPixmap::fromImage(GetImage());
             }
-            const ImagePrivate& GetImage()
+            const QImage& GetImage()
             {
                 CanvasClass CurCanvas(&mLastImage);
                 const QRect CurRect(0, 0, mLastImage.width(), mLastImage.height());
@@ -5757,31 +4373,31 @@
             }
 
         private:
-            ImagePrivate mLastImage;
+            QImage mLastImage;
         };
-        typedef WebPrivateForExtraDesktop WebPrivate;
+        typedef WebClassForExtraDesktop WebClass;
     #endif
 
     #ifdef QT_HAVE_PURCHASING
-        class PurchasePrivate : public QInAppStore
+        class PurchaseClass : public QInAppStore
         {
             Q_OBJECT
 
         public:
-            PurchasePrivate(WidgetPrivate* parent = nullptr) : QInAppStore(parent)
+            PurchaseClass(WidgetClass* parent = nullptr) : QInAppStore(parent)
             {
                 mProduct = nullptr;
                 connect(this, SIGNAL(productRegistered(QInAppProduct*)), SLOT(onProductRegistered(QInAppProduct*)));
                 connect(this, SIGNAL(productUnknown(QInAppProduct::ProductType, const QString&)), SLOT(onProductUnknown(QInAppProduct::ProductType, const QString&)));
                 connect(this, SIGNAL(transactionReady(QInAppTransaction*)), SLOT(onTransactionReady(QInAppTransaction*)));
             }
-            ~PurchasePrivate()
+            ~PurchaseClass()
             {
             }
 
         public:
-            PurchasePrivate(const PurchasePrivate&) {BOSS_ASSERT("사용금지", false);}
-            PurchasePrivate& operator=(const PurchasePrivate&) {BOSS_ASSERT("사용금지", false); return *this;}
+            PurchaseClass(const PurchaseClass&) {BOSS_ASSERT("사용금지", false);}
+            PurchaseClass& operator=(const PurchaseClass&) {BOSS_ASSERT("사용금지", false); return *this;}
 
         public:
             bool Register(chars name, PurchaseType type)
@@ -5826,10 +4442,10 @@
             QInAppProduct* mProduct;
         };
     #else
-        class PurchasePrivate : public QObject {Q_OBJECT};
+        class PurchaseClass : public QObject {Q_OBJECT};
     #endif
 
-    class BluetoothSearchPrivate : public QObject
+    class BluetoothSearchClass : public QObject
     {
         Q_OBJECT
 
@@ -5848,11 +4464,11 @@
             Mutex::Unlock(Self.mDiscoverMutex);
 
             connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-                &Self, &BluetoothSearchPrivate::deviceDiscovered);
+                &Self, &BluetoothSearchClass::deviceDiscovered);
             connect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::finished,
-                &Self, &BluetoothSearchPrivate::scanDeviceFinished);
+                &Self, &BluetoothSearchClass::scanDeviceFinished);
             connect(Self.mDiscoveryDeviceAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
-                &Self, &BluetoothSearchPrivate::scanDeviceErrorOccurred);
+                &Self, &BluetoothSearchClass::scanDeviceErrorOccurred);
 
             Platform::BroadcastNotify("ScanDeviceStarted", nullptr, NT_BluetoothSearch);
         }
@@ -5866,11 +4482,11 @@
                 if(Self.mDiscoveryDeviceAgent)
                 {
                     disconnect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-                        &Self, &BluetoothSearchPrivate::deviceDiscovered);
+                        &Self, &BluetoothSearchClass::deviceDiscovered);
                     disconnect(Self.mDiscoveryDeviceAgent, &QBluetoothDeviceDiscoveryAgent::finished,
-                        &Self, &BluetoothSearchPrivate::scanDeviceFinished);
+                        &Self, &BluetoothSearchClass::scanDeviceFinished);
                     disconnect(Self.mDiscoveryDeviceAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
-                        &Self, &BluetoothSearchPrivate::scanDeviceErrorOccurred);
+                        &Self, &BluetoothSearchClass::scanDeviceErrorOccurred);
 
                     if(Self.mDiscoveryDeviceAgent->isActive())
                     {
@@ -5937,25 +4553,25 @@
             if(Self.mDiscoveryServiceAgent_BT)
             {
                 connect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
-                    &Self, &BluetoothSearchPrivate::serviceDiscovered_BT);
+                    &Self, &BluetoothSearchClass::serviceDiscovered_BT);
                 connect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::finished,
-                    &Self, &BluetoothSearchPrivate::scanServiceFinished_BT);
+                    &Self, &BluetoothSearchClass::scanServiceFinished_BT);
                 connect(Self.mDiscoveryServiceAgent_BT, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
-                    &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BT);
+                    &Self, &BluetoothSearchClass::scanServiceErrorOccurred_BT);
                 Self.mDiscoveryServiceAgent_BT->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
             }
             else if(Self.mDiscoveryServiceAgent_BLE)
             {
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
-                    &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                    &Self, &BluetoothSearchClass::serviceDiscovered_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
-                    &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                    &Self, &BluetoothSearchClass::scanServiceFinished_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                    &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                    &Self, &BluetoothSearchClass::scanServiceErrorOccurred_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
-                    &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
+                    &Self, &BluetoothSearchClass::deviceConnected_BLE);
                 connect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
-                    &Self, &BluetoothSearchPrivate::deviceDisconnected_BLE);
+                    &Self, &BluetoothSearchClass::deviceDisconnected_BLE);
                 Self.mDiscoveryServiceAgent_BLE->connectToDevice();
             }
 
@@ -5972,11 +4588,11 @@
                 if(Self.mDiscoveryServiceAgent_BT)
                 {
                     disconnect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::serviceDiscovered,
-                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BT);
+                        &Self, &BluetoothSearchClass::serviceDiscovered_BT);
                     disconnect(Self.mDiscoveryServiceAgent_BT, &QBluetoothServiceDiscoveryAgent::finished,
-                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BT);
+                        &Self, &BluetoothSearchClass::scanServiceFinished_BT);
                     disconnect(Self.mDiscoveryServiceAgent_BT, QOverload<QBluetoothServiceDiscoveryAgent::Error>::of(&QBluetoothServiceDiscoveryAgent::error),
-                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BT);
+                        &Self, &BluetoothSearchClass::scanServiceErrorOccurred_BT);
 
                     if(Self.mDiscoveryServiceAgent_BT->isActive())
                     {
@@ -5989,15 +4605,15 @@
                 else if(Self.mDiscoveryServiceAgent_BLE)
                 {
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::serviceDiscovered,
-                        &Self, &BluetoothSearchPrivate::serviceDiscovered_BLE);
+                        &Self, &BluetoothSearchClass::serviceDiscovered_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::discoveryFinished,
-                        &Self, &BluetoothSearchPrivate::scanServiceFinished_BLE);
+                        &Self, &BluetoothSearchClass::scanServiceFinished_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                        &Self, &BluetoothSearchPrivate::scanServiceErrorOccurred_BLE);
+                        &Self, &BluetoothSearchClass::scanServiceErrorOccurred_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::connected,
-                        &Self, &BluetoothSearchPrivate::deviceConnected_BLE);
+                        &Self, &BluetoothSearchClass::deviceConnected_BLE);
                     disconnect(Self.mDiscoveryServiceAgent_BLE, &QLowEnergyController::disconnected,
-                        &Self, &BluetoothSearchPrivate::deviceDisconnected_BLE);
+                        &Self, &BluetoothSearchClass::deviceDisconnected_BLE);
 
                     if(Self.mDiscoveryServiceAgent_BLE->state() != QLowEnergyController::UnconnectedState)
                     {
@@ -6034,7 +4650,7 @@
         static QBluetoothDeviceInfo* CloneOrCreateDevice(chars devicename_and_address, bool locking)
         {
             // 주소로만 구성된 경우 저장된 장치정보에서 검색
-            if(auto Result = BluetoothSearchPrivate::GetClonedSearchedDevice(devicename_and_address, locking))
+            if(auto Result = BluetoothSearchClass::GetClonedSearchedDevice(devicename_and_address, locking))
                 return Result;
 
             // "장치명/주소"로 구성된 경우 장치정보 신규생성
@@ -6048,7 +4664,7 @@
                     SlashPos = NextSlashPos;
             }
             if(SlashPos != -1)
-                return BluetoothSearchPrivate::CreateDevice(
+                return BluetoothSearchClass::CreateDevice(
                     DeviceNameAndAddress.Left(SlashPos), DeviceNameAndAddress.Offset(SlashPos + 1));
 
             return nullptr;
@@ -6178,14 +4794,14 @@
         }
 
     private:
-        BluetoothSearchPrivate()
+        BluetoothSearchClass()
         {
             mDiscoverMutex = Mutex::Open();
             mDiscoveryDeviceAgent = nullptr;
             mDiscoveryServiceAgent_BT = nullptr;
             mDiscoveryServiceAgent_BLE = nullptr;
         }
-        ~BluetoothSearchPrivate()
+        ~BluetoothSearchClass()
         {
             delete mDiscoveryDeviceAgent;
             delete mDiscoveryServiceAgent_BT;
@@ -6194,8 +4810,8 @@
         }
 
     private:
-        static BluetoothSearchPrivate& ST()
-        {static BluetoothSearchPrivate _; return _;}
+        static BluetoothSearchClass& ST()
+        {static BluetoothSearchClass _; return _;}
 
     private:
         id_mutex mDiscoverMutex;
@@ -6207,7 +4823,7 @@
         QLowEnergyController* mDiscoveryServiceAgent_BLE;
     };
 
-    class BluetoothPrivate : public QObject
+    class BluetoothClass : public QObject
     {
         Q_OBJECT
 
@@ -6218,15 +4834,15 @@
         virtual bool Write(const uint08* data, const sint32 size) = 0;
 
     public:
-        BluetoothPrivate()
+        BluetoothClass()
         {
         }
-        virtual ~BluetoothPrivate()
+        virtual ~BluetoothClass()
         {
         }
     };
 
-    class BluetoothServerPrivate : public BluetoothPrivate
+    class BluetoothServerClass : public BluetoothClass
     {
         Q_OBJECT
 
@@ -6235,7 +4851,7 @@
         {
             mServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
             const QBluetoothAddress LocalAdapter = QBluetoothAddress();
-            connect(mServer, &QBluetoothServer::newConnection, this, &BluetoothServerPrivate::OnClientConnected);
+            connect(mServer, &QBluetoothServer::newConnection, this, &BluetoothServerClass::OnClientConnected);
             mServer->listen(LocalAdapter);
 
             SetServiceInfo(service, uuid, description, provider);
@@ -6280,8 +4896,8 @@
             if(mServer && !mClient)
             {
                 mClient = mServer->nextPendingConnection();
-                connect(mClient, &QBluetoothSocket::disconnected, this, &BluetoothServerPrivate::OnDisconnected);
-                connect(mClient, &QBluetoothSocket::readyRead, this, &BluetoothServerPrivate::OnReadyRead);
+                connect(mClient, &QBluetoothSocket::disconnected, this, &BluetoothServerClass::OnDisconnected);
+                connect(mClient, &QBluetoothSocket::readyRead, this, &BluetoothServerClass::OnReadyRead);
                 Platform::BroadcastNotify("connected", nullptr, NT_BluetoothReceive);
             }
         }
@@ -6340,12 +4956,12 @@
         }
 
     public:
-        BluetoothServerPrivate()
+        BluetoothServerClass()
         {
             mServer = nullptr;
             mClient = nullptr;
         }
-        ~BluetoothServerPrivate() override
+        ~BluetoothServerClass() override
         {
             delete mServer;
         }
@@ -6358,7 +4974,7 @@
     };
 
 	// 미완성
-    class BluetoothLEServerPrivate : public BluetoothPrivate
+    class BluetoothLEServerClass : public BluetoothClass
     {
         Q_OBJECT
 
@@ -6385,10 +5001,10 @@
                 mServiceData.addCharacteristic(mWriteCharData);
                 mServiceData.addCharacteristic(mReadCharData);
 
-                connect(mController, &QLowEnergyController::connected, this, &BluetoothLEServerPrivate::OnConnected);
-                connect(mController, &QLowEnergyController::disconnected, this, &BluetoothLEServerPrivate::OnDisconnected);
+                connect(mController, &QLowEnergyController::connected, this, &BluetoothLEServerClass::OnConnected);
+                connect(mController, &QLowEnergyController::disconnected, this, &BluetoothLEServerClass::OnDisconnected);
                 mReadTimer = new QTimer(this);
-                connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEServerPrivate::OnRead);
+                connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEServerClass::OnRead);
                 mReadTimer->start(100);
                 SetServiceInfo();
                 return true;
@@ -6476,21 +5092,21 @@
         {
             delete mService;
             mService = mController->addService(mServiceData);
-            connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEServerPrivate::OnCharacteristicChanged);
-            connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEServerPrivate::OnCharacteristicRead);
-            connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEServerPrivate::OnCharacteristicWritten);
+            connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEServerClass::OnCharacteristicChanged);
+            connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEServerClass::OnCharacteristicRead);
+            connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEServerClass::OnCharacteristicWritten);
             mController->startAdvertising(QLowEnergyAdvertisingParameters(), mAdvertisingData, mAdvertisingData);
         }
 
     public:
-        BluetoothLEServerPrivate()
+        BluetoothLEServerClass()
         {
             mController = nullptr;
             mService = nullptr;
             mReadTimer = nullptr;
             mReadCount = 0;
         }
-        ~BluetoothLEServerPrivate() override
+        ~BluetoothLEServerClass() override
         {
             if(mReadTimer)
             {
@@ -6516,21 +5132,21 @@
         sint32 mReadCount;
     };
 
-    class BluetoothClientPrivate : public BluetoothPrivate
+    class BluetoothClientClass : public BluetoothClass
     {
         Q_OBJECT
 
     public:
         bool Init(chars uuid)
         {
-            if(auto NewService = BluetoothSearchPrivate::GetClonedSearchedService_BT(uuid, true))
+            if(auto NewService = BluetoothSearchClass::GetClonedSearchedService_BT(uuid, true))
             {
                 mSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
-                connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientPrivate::OnConnected);
-                connect(mSocket, &QBluetoothSocket::disconnected, this, &BluetoothClientPrivate::OnDisconnected);
-                connect(mSocket, &QBluetoothSocket::readyRead, this, &BluetoothClientPrivate::OnReadyRead);
+                connect(mSocket, &QBluetoothSocket::connected, this, &BluetoothClientClass::OnConnected);
+                connect(mSocket, &QBluetoothSocket::disconnected, this, &BluetoothClientClass::OnDisconnected);
+                connect(mSocket, &QBluetoothSocket::readyRead, this, &BluetoothClientClass::OnReadyRead);
                 connect(mSocket, QOverload<QBluetoothSocket::SocketError>::of(&QBluetoothSocket::error),
-                    this, &BluetoothClientPrivate::OnErrorOccurred);
+                    this, &BluetoothClientClass::OnErrorOccurred);
                 mSocket->connectToService(*NewService);
                 delete NewService;
                 return true;
@@ -6604,12 +5220,12 @@
         }
 
     public:
-        BluetoothClientPrivate()
+        BluetoothClientClass()
         {
             mSocket = nullptr;
             mConnected = false;
         }
-        ~BluetoothClientPrivate() override
+        ~BluetoothClientClass() override
         {
             delete mSocket;
         }
@@ -6621,7 +5237,7 @@
         QByteArray mRecvData;
     };
 
-    class BluetoothLEClientPrivate : public BluetoothPrivate
+    class BluetoothLEClientClass : public BluetoothClass
     {
         Q_OBJECT
 
@@ -6629,18 +5245,18 @@
         bool Init(chars uuid)
         {
             mServiceUuid = QBluetoothUuid(QString(uuid));
-            if(mController = BluetoothSearchPrivate::CreateController_BLE(this, true))
+            if(mController = BluetoothSearchClass::CreateController_BLE(this, true))
             {
                 connect(mController, &QLowEnergyController::serviceDiscovered,
-                    this, &BluetoothLEClientPrivate::OnServiceDiscovered);
+                    this, &BluetoothLEClientClass::OnServiceDiscovered);
                 connect(mController, &QLowEnergyController::discoveryFinished,
-                    this, &BluetoothLEClientPrivate::OnScanServiceFinished);
+                    this, &BluetoothLEClientClass::OnScanServiceFinished);
                 connect(mController, QOverload<QLowEnergyController::Error>::of(&QLowEnergyController::error),
-                    this, &BluetoothLEClientPrivate::OnScanServiceErrorOccurred);
+                    this, &BluetoothLEClientClass::OnScanServiceErrorOccurred);
                 connect(mController, &QLowEnergyController::connected,
-                    this, &BluetoothLEClientPrivate::OnDeviceConnected);
+                    this, &BluetoothLEClientClass::OnDeviceConnected);
                 connect(mController, &QLowEnergyController::disconnected,
-                    this, &BluetoothLEClientPrivate::OnDeviceDisconnected);
+                    this, &BluetoothLEClientClass::OnDeviceDisconnected);
                 mController->connectToDevice();
                 return true;
             }
@@ -6692,12 +5308,12 @@
         {
             if(mService = mController->createServiceObject(mServiceUuid, this))
             {
-                connect(mService, &QLowEnergyService::stateChanged, this, &BluetoothLEClientPrivate::OnServiceStateChanged);
-                connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEClientPrivate::OnCharacteristicChanged);
-                connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEClientPrivate::OnCharacteristicRead);
-                connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEClientPrivate::OnCharacteristicWritten);
+                connect(mService, &QLowEnergyService::stateChanged, this, &BluetoothLEClientClass::OnServiceStateChanged);
+                connect(mService, &QLowEnergyService::characteristicChanged, this, &BluetoothLEClientClass::OnCharacteristicChanged);
+                connect(mService, &QLowEnergyService::characteristicRead, this, &BluetoothLEClientClass::OnCharacteristicRead);
+                connect(mService, &QLowEnergyService::characteristicWritten, this, &BluetoothLEClientClass::OnCharacteristicWritten);
                 connect(mService, QOverload<QLowEnergyService::ServiceError>::of(&QLowEnergyService::error),
-                    this, &BluetoothLEClientPrivate::OnErrorOccurred);
+                    this, &BluetoothLEClientClass::OnErrorOccurred);
                 mService->discoverDetails();
             }
         }
@@ -6785,7 +5401,7 @@
                         if(!mReadTimer)
                         {
                             mReadTimer = new QTimer(this);
-                            connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEClientPrivate::OnRead);
+                            connect(mReadTimer, &QTimer::timeout, this, &BluetoothLEClientClass::OnRead);
                             mReadTimer->start(100);
                         }
                     }
@@ -6832,7 +5448,7 @@
         }
 
     public:
-        BluetoothLEClientPrivate()
+        BluetoothLEClientClass()
         {
             mController = nullptr;
             mService = nullptr;
@@ -6840,7 +5456,7 @@
             mReadTimer = nullptr;
             mReadCount = 0;
         }
-        ~BluetoothLEClientPrivate() override
+        ~BluetoothLEClientClass() override
         {
             if(mReadTimer)
             {
@@ -8448,7 +7064,7 @@
                 Mutex::Unlock(mMutex);
                 return Result;
             }
-            void GetCapturedImage(PixmapPrivate& pixmap, sint32 maxwidth, sint32 maxheight, sint32 rotate)
+            void GetCapturedImage(QPixmap& pixmap, sint32 maxwidth, sint32 maxheight, sint32 rotate)
             {
                 Mutex::Lock(mMutex);
                 {
@@ -8465,7 +7081,7 @@
                     {
                         mUpdateForImage = false;
                         if(mUpdateForBitmap) DecodeImage(mDecodedWidth, mDecodedHeight, mDecodedBits);
-                        ImagePrivate NewImage(&mDecodedBits[0], mDecodedWidth, mDecodedHeight, ImagePrivate::Format_ARGB32);
+                        QImage NewImage(&mDecodedBits[0], mDecodedWidth, mDecodedHeight, QImage::Format_ARGB32);
 
                         if(maxwidth == -1 && maxheight == -1)
                         {maxwidth = mDecodedWidth; maxheight = mDecodedHeight;}
@@ -8479,7 +7095,7 @@
                         // 회전
                         if(0 < rotate)
                         {
-                            MatrixPrivate NewMatrix;
+                            QMatrix NewMatrix;
                             NewMatrix.translate(mDecodedWidth / 2, mDecodedHeight / 2);
                             NewMatrix.rotate(rotate);
                             NewImage = NewImage.transformed(NewMatrix);
@@ -8551,7 +7167,7 @@
             sint32 mRefCount;
             QCameraInfo mCameraInfo;
             CameraService* mCameraService;
-            PixmapPrivate mLastPixmap;
+            QPixmap mLastPixmap;
             id_bitmap mLastBitmap;
 
         public:
@@ -8945,18 +7561,18 @@
     class ServerClass : public QObject {Q_OBJECT};
     class TCPServerClass : public ServerClass {Q_OBJECT};
     class WSServerClass : public ServerClass {Q_OBJECT};
-    class PipePrivate : public QObject {Q_OBJECT};
-    class PipeServerPrivate : public PipePrivate {Q_OBJECT};
-    class PipeClientPrivate : public PipePrivate {Q_OBJECT};
+    class PipeClass : public QObject {Q_OBJECT};
+    class PipeServerClass : public PipeClass {Q_OBJECT};
+    class PipeClientClass : public PipeClass {Q_OBJECT};
     class WebEngineViewForExtraDesktop : public QObject {Q_OBJECT};
-    class WebViewPrivate : public WebEngineViewClass {Q_OBJECT};
-    class PurchasePrivate : public QInAppStore {Q_OBJECT};
-    class BluetoothSearchPrivate : public QObject {Q_OBJECT};
-    class BluetoothPrivate : public QObject {Q_OBJECT};
-    class BluetoothServerPrivate : public BluetoothPrivate {Q_OBJECT};
-    class BluetoothLEServerPrivate : public BluetoothPrivate {Q_OBJECT};
-    class BluetoothClientPrivate : public BluetoothPrivate {Q_OBJECT};
-    class BluetoothLEClientPrivate : public BluetoothPrivate {Q_OBJECT};
+    class WebViewClass : public WebEngineViewClass {Q_OBJECT};
+    class PurchaseClass : public QInAppStore {Q_OBJECT};
+    class BluetoothSearchClass : public QObject {Q_OBJECT};
+    class BluetoothClass : public QObject {Q_OBJECT};
+    class BluetoothServerClass : public BluetoothClass {Q_OBJECT};
+    class BluetoothLEServerClass : public BluetoothClass {Q_OBJECT};
+    class BluetoothClientClass : public BluetoothClass {Q_OBJECT};
+    class BluetoothLEClientClass : public BluetoothClass {Q_OBJECT};
     class CameraSurface : public QAbstractVideoSurface {Q_OBJECT};
     class MicrophoneClass : public QAudioProbe {Q_OBJECT};
 

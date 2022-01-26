@@ -858,23 +858,24 @@ namespace BOSS
 
     id_image_read Image::GetImageCore(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring) const
     {
-        if(!m_bitmap) return nullptr;
+        if(!m_bitmap || build == Build::Null)
+            return nullptr;
         m_builder.ValidBitmap(m_bitmap);
         return m_builder.GetImage(build, resizing_width, resizing_height, coloring);
     }
 
     Image::Builder::Builder()
     {
-        mLastImage = nullptr;
         mRoutine = nullptr;
+        mRoutineOld = nullptr;
         mIsRoutineFinished = true;
         Clear();
     }
 
     Image::Builder::Builder(Builder&& rhs)
     {
-        mLastImage = nullptr;
         mRoutine = nullptr;
+        mRoutineOld = nullptr;
         mIsRoutineFinished = true;
         operator=(ToReference(rhs));
     }
@@ -886,18 +887,18 @@ namespace BOSS
 
     Image::Builder& Image::Builder::operator=(Builder&& rhs)
     {
-        Platform::Graphics::RemoveImage(mLastImage);
         Platform::Graphics::RemoveImageRoutine(mRoutine);
+        Platform::Graphics::RemoveImageRoutine(mRoutineOld);
         m_RefBitmap = rhs.m_RefBitmap;
         m_BitmapWidth = rhs.m_BitmapWidth;
         m_BitmapHeight = rhs.m_BitmapHeight;
-        mLastImage = rhs.mLastImage;
         mRoutineResize = rhs.mRoutineResize;
         mRoutineColor = rhs.mRoutineColor;
         mRoutine = rhs.mRoutine;
+        mRoutineOld = rhs.mRoutineOld;
         mIsRoutineFinished = rhs.mIsRoutineFinished;
-        rhs.mLastImage = nullptr;
         rhs.mRoutine = nullptr;
+        rhs.mRoutineOld = nullptr;
         rhs.mIsRoutineFinished = true;
         return *this;
     }
@@ -907,12 +908,12 @@ namespace BOSS
         m_RefBitmap = nullptr;
         m_BitmapWidth = 0;
         m_BitmapHeight = 0;
-        Platform::Graphics::RemoveImage(mLastImage);
-        mLastImage = nullptr;
         mRoutineResize.w = mRoutineResize.h = 0;
         mRoutineColor.argb = Color::ColoringDefault;
         Platform::Graphics::RemoveImageRoutine(mRoutine);
+        Platform::Graphics::RemoveImageRoutine(mRoutineOld);
         mRoutine = nullptr;
+        mRoutineOld = nullptr;
         mIsRoutineFinished = true;
     }
 
@@ -932,54 +933,61 @@ namespace BOSS
         }
     }
 
-    id_image_read Image::Builder::GetLastImage()
-    {
-        if(!mLastImage)
-            mLastImage = Platform::Graphics::CreateImage(m_RefBitmap, false);
-        return mLastImage;
-    }
-
     id_image_read Image::Builder::GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring)
     {
-        if(build == Build::Null || (coloring.argb == Color::ColoringDefault &&
-            (resizing_width == -1 || resizing_width == m_BitmapWidth) &&
-            (resizing_height == -1 || resizing_height == m_BitmapHeight)))
-            return GetLastImage();
+        BOSS_ASSERT("잘못된 시나리오입니다", build != Build::Null);
 
-        if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height || mRoutineColor.argb != coloring.argb)
+        // 색상변화용 이미지루틴 재구성
+        if(mRoutineColor.argb != coloring.argb)
         {
-            mRoutineResize.w = resizing_width;
-            mRoutineResize.h = resizing_height;
+            mRoutineResize.w = (resizing_width == -1)? m_BitmapWidth : resizing_width;
+            mRoutineResize.h = (resizing_height == -1)? m_BitmapHeight : resizing_height;
             mRoutineColor = coloring;
 
-            Platform::Graphics::RemoveImage(mLastImage);
-            mLastImage = nullptr;
-
             Platform::Graphics::RemoveImageRoutine(mRoutine);
-            mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, resizing_width, resizing_height, coloring);
-            mIsRoutineFinished = false;
+            Platform::Graphics::RemoveImageRoutine(mRoutineOld);
+            mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, mRoutineResize.w, mRoutineResize.h, mRoutineColor);
+            mRoutineOld = nullptr;
+
+            auto Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, build == Build::Async);
+            mIsRoutineFinished = (Result != nullptr);
+            return Result;
         }
 
-        if(build == Build::Force)
+        // 크기변화용 이미지루틴 재구성
+        else if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height)
         {
-            mIsRoutineFinished = true;
-            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, false);
+            mRoutineResize.w = (resizing_width == -1)? m_BitmapWidth : resizing_width;
+            mRoutineResize.h = (resizing_height == -1)? m_BitmapHeight : resizing_height;
+            mRoutineColor = coloring;
+
+            // 이전 루틴의 처리
+            if(mRoutine && mIsRoutineFinished)
+            {
+                Platform::Graphics::RemoveImageRoutine(mRoutineOld);
+                mRoutineOld = mRoutine;
+            }
+            else Platform::Graphics::RemoveImageRoutine(mRoutine);
+
+            // 새 루틴을 생성
+            mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, mRoutineResize.w, mRoutineResize.h, mRoutineColor);
+            const bool NeedForce = (build == Build::Force || (build != Build::Async && !mRoutineOld));
+            auto Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, !NeedForce);
+            mIsRoutineFinished = (Result != nullptr);
+            if(Result) return Result;
         }
 
-        if(id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true))
+        // 이미지루틴 1회실시
+        else if(id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true))
         {
+            Platform::Graphics::RemoveImageRoutine(mRoutineOld);
+            mRoutineOld = nullptr;
             mIsRoutineFinished = true;
             return Result;
         }
 
-        if(mLastImage)
-            return mLastImage;
-
-        if(build == Build::AsyncNotNull)
-        {
-            mIsRoutineFinished = true;
-            return Platform::Graphics::BuildImageRoutineOnce(mRoutine, false);
-        }
+        if(mRoutineOld)
+            return Platform::Graphics::BuildImageRoutineOnce(mRoutineOld, false);
         return nullptr;
     }
 }

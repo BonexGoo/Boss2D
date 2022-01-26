@@ -1460,9 +1460,6 @@ extern "C" void boss_seterrno(int err)
 #if !defined(BOSS_NEED_NATIVE_OPENGL) || (BOSS_NEED_NATIVE_OPENGL != 0 && BOSS_NEED_NATIVE_OPENGL != 1)
     #error BOSS_NEED_NATIVE_OPENGL macro is invalid use
 #endif
-#if !defined(BOSS_NEED_SILENT_NIGHT) || (BOSS_NEED_SILENT_NIGHT != 0 && BOSS_NEED_SILENT_NIGHT != 1)
-    #error BOSS_NEED_SILENT_NIGHT macro is invalid use
-#endif
 #if !defined(BOSS_NEED_EMBEDDED_ASSET) || (BOSS_NEED_EMBEDDED_ASSET != 0 && BOSS_NEED_EMBEDDED_ASSET != 1)
     #error BOSS_NEED_EMBEDDED_ASSET macro is invalid use
 #endif

@@ -6,8 +6,8 @@
     #include <format/boss_bmp.hpp>
 
     MainData* g_data = nullptr;
-    MainWindowPrivate* g_window = nullptr;
-    WidgetPrivate* g_view = nullptr;
+    QMainWindow* g_window = nullptr;
+    QWidget* g_view = nullptr;
     bool g_event_blocked = false;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
@@ -43,15 +43,15 @@
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
         mUseFontFT = false;
-        mMask = PainterPrivate::CompositionMode_SourceOver;
+        mMask = QPainter::CompositionMode_SourceOver;
     }
-    CanvasClass::CanvasClass(PaintDevicePrivate* device) : mIsTypeSurface(false)
+    CanvasClass::CanvasClass(QPaintDevice* device) : mIsTypeSurface(false)
     {
         mIsSurfaceBinded = false;
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
         mUseFontFT = false;
-        mMask = PainterPrivate::CompositionMode_SourceOver;
+        mMask = QPainter::CompositionMode_SourceOver;
         BindCore(device);
     }
     CanvasClass::~CanvasClass()
@@ -59,7 +59,7 @@
         if(!mIsTypeSurface)
             UnbindCore();
     }
-    void CanvasClass::Bind(PaintDevicePrivate* device)
+    void CanvasClass::Bind(QPaintDevice* device)
     {
         BOSS_ASSERT("본 함수의 사용은 Surface타입에서만 허용합니다", mIsTypeSurface);
         if(!mIsSurfaceBinded)
@@ -77,7 +77,7 @@
             UnbindCore();
         }
     }
-    void CanvasClass::BindCore(PaintDevicePrivate* device)
+    void CanvasClass::BindCore(QPaintDevice* device)
     {
         BOSS_ASSERT("mSavedCanvas는 nullptr이어야 합니다", !mSavedCanvas);
         if(mSavedCanvas = ST())
@@ -87,7 +87,7 @@
             mSavedCanvas->mPainter.end();
         }
         mPainter.begin(device);
-        mPainter.setRenderHints(PainterPrivate::Antialiasing | PainterPrivate::HighQualityAntialiasing);
+        mPainter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
         ST() = this;
     }
     void CanvasClass::UnbindCore()
@@ -99,7 +99,7 @@
         if(ST() = mSavedCanvas)
         {
             mSavedCanvas->mPainter.begin(mSavedCanvas->mPainter.device());
-            mSavedCanvas->mPainter.setRenderHints(PainterPrivate::Antialiasing | PainterPrivate::HighQualityAntialiasing);
+            mSavedCanvas->mPainter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
             Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom);
             mSavedCanvas->mPainter.setFont(mSavedCanvas->mSavedFont);
             mSavedCanvas->mPainter.setClipRect(mSavedCanvas->mScissor);
@@ -140,7 +140,7 @@
     #elif BOSS_IPHONE
         void* GetIOSApplicationUIView()
         {
-            return GuiApplicationPrivate::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
+            return QGuiApplication::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
         }
     #endif
 
@@ -159,7 +159,7 @@
             #endif
             {
                 QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-                ApplicationPrivate app(argc, argv);
+                QApplication app(argc, argv);
 
                 MainWindow mainWindow;
                 g_window = &mainWindow;
@@ -250,7 +250,7 @@
                 case IDABORT: delete[] AssertMessageW; return 0;
                 case IDIGNORE: delete[] AssertMessageW; return 1;
                 }
-            #elif !defined(BOSS_SILENT_NIGHT_IS_ENABLED) & !BOSS_MAC_OSX
+            #elif !BOSS_MAC_OSX
                 QString AssertMessage;
                 AssertMessage.sprintf(
                     "%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
@@ -320,7 +320,7 @@
         void Platform::SetWindowName(chars name)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            g_window->setWindowTitle(QString::fromUtf8(name));
+            g_window->setWindowTitle(QString::fromUtf8(name, -1));
         }
 
         h_view Platform::SetWindowView(chars viewclass)
@@ -434,7 +434,7 @@
             if(IsFramelessStyle)
             {
                 if(image) // 윈도우가 보여지기 전에 setMask를 호출하면 그 이후에 계속 프레임이
-                    g_window->setMask(((PixmapPrivate*) image)->mask()); // 현저히 떨어지는(33f/s → 10f/s) 이유를 알아낼 것
+                    g_window->setMask(((QPixmap*) image)->mask()); // 현저히 떨어지는(33f/s → 10f/s) 이유를 알아낼 것
                 else g_window->clearMask();
             }
             return IsFramelessStyle;
@@ -470,7 +470,7 @@
             if(stack == UIS_Push || stack == UIS_PushPop)
                 StackMessage::Me().Push();
             g_window->statusBar()->showMessage(QString::fromUtf8(
-                (StackMessage::Me().Count() == 0)? text : (chars) StackMessage::Me().Get(text)));
+                (StackMessage::Me().Count() == 0)? text : (chars) StackMessage::Me().Get(text), -1));
             if(stack == UIS_Pop || stack == UIS_PushPop)
                 StackMessage::Me().Pop();
         }
@@ -478,22 +478,22 @@
         h_icon Platform::CreateIcon(chars filepath)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            buffer NewIcon = Buffer::AllocNoConstructorOnce<IconPrivate>(BOSS_DBG 1);
+            buffer NewIcon = Buffer::AllocNoConstructorOnce<QIcon>(BOSS_DBG 1);
             const String FilepathUTF8 = PlatformImpl::Core::NormalPath(Platform::File::RootForAssets() + filepath);
-            BOSS_CONSTRUCTOR(NewIcon, 0, IconPrivate, QString::fromUtf8(FilepathUTF8));
+            BOSS_CONSTRUCTOR(NewIcon, 0, QIcon, QString::fromUtf8(FilepathUTF8, -1));
             return h_icon::create_by_buf(BOSS_DBG NewIcon);
         }
 
         h_action Platform::CreateAction(chars name, chars tip, h_view view, h_icon icon)
         {
-            BOSS_DECLARE_BUFFERED_CLASS(BufferedActionPrivate, ActionPrivate, nullptr);
+            BOSS_DECLARE_BUFFERED_CLASS(QBufferedAction, QAction, nullptr);
 
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            buffer NewAction = Buffer::AllocNoConstructorOnce<BufferedActionPrivate>(BOSS_DBG 1);
-            if(icon.get()) BOSS_CONSTRUCTOR(NewAction, 0, ActionPrivate, *((IconPrivate*) icon.get()), QString::fromUtf8(name), g_window);
-            else BOSS_CONSTRUCTOR(NewAction, 0, ActionPrivate, QString::fromUtf8(name), g_window);
+            buffer NewAction = Buffer::AllocNoConstructorOnce<QBufferedAction>(BOSS_DBG 1);
+            if(icon.get()) BOSS_CONSTRUCTOR(NewAction, 0, QAction, *((QIcon*) icon.get()), QString::fromUtf8(name, -1), g_window);
+            else BOSS_CONSTRUCTOR(NewAction, 0, QAction, QString::fromUtf8(name, -1), g_window);
 
-            ((ActionPrivate*) NewAction)->setStatusTip(QString::fromUtf8(tip));
+            ((QAction*) NewAction)->setStatusTip(QString::fromUtf8(tip, -1));
             return h_action::create_by_buf(BOSS_DBG NewAction);
         }
 
@@ -517,14 +517,14 @@
             {
                 buffer NewGenericView = Buffer::AllocNoConstructorOnce<GenericViewGL>(BOSS_DBG 1);
                 BOSS_CONSTRUCTOR(NewGenericView, 0, GenericViewGL, NewViewManager,
-                    QString::fromUtf8(name), width, height, (SizePolicy*) policy.get());
+                    QString::fromUtf8(name, -1), width, height, (SizePolicy*) policy.get());
                 NewViewHandle = h_view::create_by_buf(BOSS_DBG (buffer) ((GenericViewGL*) NewGenericView)->m_api);
             }
             else
             {
                 buffer NewGenericView = Buffer::AllocNoConstructorOnce<GenericView>(BOSS_DBG 1);
                 BOSS_CONSTRUCTOR(NewGenericView, 0, GenericView, NewViewManager,
-                    QString::fromUtf8(name), width, height, (SizePolicy*) policy.get());
+                    QString::fromUtf8(name, -1), width, height, (SizePolicy*) policy.get());
                 NewViewHandle = h_view::create_by_buf(BOSS_DBG (buffer) ((GenericView*) NewGenericView)->m_api);
             }
             NewViewManager->SetView(NewViewHandle);
@@ -559,11 +559,11 @@
                 if(directions[i] & UID_Bottom) Areas[i] = Areas[i] | Qt::BottomDockWidgetArea;
             }
 
-            DockWidgetPrivate* NewDock = new DockWidgetPrivate(GenericView::cast(view)->getName(), g_window);
+            QDockWidget* NewDock = new QDockWidget(GenericView::cast(view)->getName(), g_window);
             GenericView* RenewedView = new GenericView(view);
-            ((DockWidgetPrivate*) NewDock)->setAllowedAreas(Areas[1]);
-            ((DockWidgetPrivate*) NewDock)->setWidget(RenewedView->m_api->getWidget());
-            g_window->addDockWidget((Qt::DockWidgetArea) (unsigned int) Areas[0], (DockWidgetPrivate*) NewDock);
+            ((QDockWidget*) NewDock)->setAllowedAreas(Areas[1]);
+            ((QDockWidget*) NewDock)->setWidget(RenewedView->m_api->getWidget());
+            g_window->addDockWidget((Qt::DockWidgetArea) (unsigned int) Areas[0], (QDockWidget*) NewDock);
             return h_dock::create_by_ptr(BOSS_DBG NewDock);
         }
 
@@ -572,13 +572,13 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(role & UIR_Menu)
             {
-                MenuPrivate* CurMenu = g_data->getMenu(group);
-                CurMenu->addAction((ActionPrivate*) action.get());
+                QMenu* CurMenu = g_data->getMenu(group);
+                CurMenu->addAction((QAction*) action.get());
             }
             if(role & UIR_Tool)
             {
-                ToolBarPrivate* CurToolBar = g_data->getToolbar(group);
-                CurToolBar->addAction((ActionPrivate*) action.get());
+                QToolBar* CurToolBar = g_data->getToolbar(group);
+                CurToolBar->addAction((QAction*) action.get());
             }
         }
 
@@ -587,12 +587,12 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(role & UIR_Menu)
             {
-                MenuPrivate* CurMenu = g_data->getMenu(group);
+                QMenu* CurMenu = g_data->getMenu(group);
                 CurMenu->addSeparator();
             }
             if(role & UIR_Tool)
             {
-                ToolBarPrivate* CurToolBar = g_data->getToolbar(group);
+                QToolBar* CurToolBar = g_data->getToolbar(group);
                 CurToolBar->addSeparator();
             }
         }
@@ -602,13 +602,13 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(role & UIR_Menu)
             {
-                MenuPrivate* CurMenu = g_data->getMenu(group);
-                CurMenu->addAction(((DockWidgetPrivate*) dock.get())->toggleViewAction());
+                QMenu* CurMenu = g_data->getMenu(group);
+                CurMenu->addAction(((QDockWidget*) dock.get())->toggleViewAction());
             }
             if(role & UIR_Tool)
             {
-                ToolBarPrivate* CurToolBar = g_data->getToolbar(group);
-                CurToolBar->addAction(((DockWidgetPrivate*) dock.get())->toggleViewAction());
+                QToolBar* CurToolBar = g_data->getToolbar(group);
+                CurToolBar->addAction(((QDockWidget*) dock.get())->toggleViewAction());
             }
         }
 
@@ -616,10 +616,10 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             GenericView* RenewedView = new GenericView(view);
-            WidgetPrivate* NewWidget = g_data->bindWidget(RenewedView);
+            QWidget* NewWidget = g_data->bindWidget(RenewedView);
             NewWidget->resize(RenewedView->getFirstSize());
             NewWidget->setWindowTitle(RenewedView->getName());
-            if(icon.get()) NewWidget->setWindowIcon(*((IconPrivate*) icon.get()));
+            if(icon.get()) NewWidget->setWindowIcon(*((QIcon*) icon.get()));
             NewWidget->show();
 
             buffer NewBox = Buffer::Alloc<WidgetBox>(BOSS_DBG 1);
@@ -633,10 +633,10 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             GenericView* RenewedView = new GenericView(view);
-            WidgetPrivate* NewWidget = g_data->bindWidget(RenewedView);
+            QWidget* NewWidget = g_data->bindWidget(RenewedView);
             NewWidget->resize(RenewedView->getFirstSize());
             NewWidget->setWindowTitle(RenewedView->getName());
-            if(icon.get()) NewWidget->setWindowIcon(*((IconPrivate*) icon.get()));
+            if(icon.get()) NewWidget->setWindowIcon(*((QIcon*) icon.get()));
             NewWidget->show();
 
             buffer NewBox = Buffer::Alloc<WidgetBox>(BOSS_DBG 1);
@@ -657,7 +657,7 @@
                     GenericView* RenewedView = new GenericView(view);
                     RenewedView->m_api->getWidget()->setParent(g_window);
                     buffer NewBox = Buffer::Alloc<TrayBox>(BOSS_DBG 1);
-                    ((TrayBox*) NewBox)->setWidget(RenewedView, (IconPrivate*) icon.get());
+                    ((TrayBox*) NewBox)->setWidget(RenewedView, (QIcon*) icon.get());
                     NewWindowHandle = h_window::create_by_buf(BOSS_DBG NewBox);
                     RenewedView->attachWindow(NewWindowHandle);
                 }
@@ -667,7 +667,7 @@
                     GenericViewGL* RenewedView = new GenericViewGL(view);
                     RenewedView->m_api->getWidget()->setParent(g_window);
                     buffer NewBox = Buffer::Alloc<TrayBox>(BOSS_DBG 1);
-                    ((TrayBox*) NewBox)->setWidgetGL(RenewedView, (IconPrivate*) icon.get());
+                    ((TrayBox*) NewBox)->setWidgetGL(RenewedView, (QIcon*) icon.get());
                     NewWindowHandle = h_window::create_by_buf(BOSS_DBG NewBox);
                     RenewedView->attachWindow(NewWindowHandle);
                 }
@@ -778,11 +778,11 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
             bool IsOk = false;
-            QString NewText = InputDialogPrivate::getText(g_window,
-                QString::fromUtf8(title),
-                QString::fromUtf8(topic),
-                (ispassword)? LineEditPrivate::Password : LineEditPrivate::Normal,
-                QString::fromUtf8(text), &IsOk);
+            QString NewText = QInputDialog::getText(g_window,
+                QString::fromUtf8(title, -1),
+                QString::fromUtf8(topic, -1),
+                (ispassword)? QLineEdit::Password : QLineEdit::Normal,
+                QString::fromUtf8(text, -1), &IsOk);
             if(IsOk) text = NewText.toUtf8().constData();
             return IsOk;
         }
@@ -791,8 +791,8 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
-            ColorPrivate NewColor = ColorDialogPrivate::getColor(ColorPrivate(r, g, b, a), g_window,
-                QString::fromUtf8(title), ColorDialogPrivate::ShowAlphaChannel);
+            QColor NewColor = QColorDialog::getColor(QColor(r, g, b, a), g_window,
+                QString::fromUtf8(title, -1), QColorDialog::ShowAlphaChannel);
             const bool IsOk = NewColor.isValid();
             if(IsOk)
             {
@@ -877,7 +877,7 @@
             #if BOSS_WINDOWS
                 PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
             #else
-                DesktopServicesPrivate::openUrl(QUrl(url, QUrl::TolerantMode));
+                QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
             #endif
         }
 
@@ -896,7 +896,7 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_view);
             if(r <= l || b <= t) return false;
 
-            EditTracker* NewTracker = new EditTracker(type, QString::fromUtf8(text), g_view);
+            EditTracker* NewTracker = new EditTracker(type, QString::fromUtf8(text, -1), g_view);
             switch(NewTracker->Popup(l, t, r - l, b - t))
             {
             case EditTracker::TCT_Enter:
@@ -941,17 +941,13 @@
         void Platform::Popup::ShowToolTip(String text)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                QToolTip::showText(CursorPrivate::pos(), QString::fromUtf8(text));
-            #endif
+            QToolTip::showText(QCursor::pos(), QString::fromUtf8(text, -1));
         }
 
         void Platform::Popup::HideToolTip()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                QToolTip::hideText();
-            #endif
+            QToolTip::hideText();
         }
 
         static QSplashScreen* g_splash = nullptr;
@@ -1056,7 +1052,7 @@
 
         void Platform::Utility::ExitProgram()
         {
-            ApplicationPrivate::quit();
+            QApplication::quit();
         }
 
         String Platform::Utility::GetProgramPath(bool dironly)
@@ -1162,12 +1158,12 @@
         sint32 Platform::Utility::GetScreenID(const point64& pos)
         {
             QPoint GeometryPoint(pos.x, pos.y);
-            return ApplicationPrivate::desktop()->screenNumber(GeometryPoint);
+            return QApplication::desktop()->screenNumber(GeometryPoint);
         }
 
         sint32 Platform::Utility::GetScreenCount()
         {
-            return ApplicationPrivate::desktop()->numScreens();
+            return QApplication::desktop()->numScreens();
         }
 
         void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
@@ -1183,8 +1179,8 @@
                     for(sint32 i = 0; i < NumScreens; ++i)
                     {
                         QRect GeometryRect = (available_only)?
-                            ApplicationPrivate::desktop()->availableGeometry(i) :
-                            ApplicationPrivate::desktop()->screenGeometry(i);
+                            QApplication::desktop()->availableGeometry(i) :
+                            QApplication::desktop()->screenGeometry(i);
                         TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left());
                         TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top());
                         TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right() + 1);
@@ -1198,8 +1194,8 @@
                 else
                 {
                     QRect GeometryRect = (available_only)?
-                        ApplicationPrivate::desktop()->availableGeometry(screenid) :
-                        ApplicationPrivate::desktop()->screenGeometry(screenid);
+                        QApplication::desktop()->availableGeometry(screenid) :
+                        QApplication::desktop()->screenGeometry(screenid);
                     rect.l = GeometryRect.left();
                     rect.t = GeometryRect.top();
                     rect.r = GeometryRect.right() + 1;
@@ -1227,8 +1223,8 @@
 
         id_image_read Platform::Utility::GetScreenshotImage(const rect128& rect)
         {
-            PixmapPrivate& ScreenshotPixmap = *BOSS_STORAGE_SYS(PixmapPrivate);
-            ScreenshotPixmap = GuiApplicationPrivate::primaryScreen()->grabWindow(
+            QPixmap& ScreenshotPixmap = *BOSS_STORAGE_SYS(QPixmap);
+            ScreenshotPixmap = QGuiApplication::primaryScreen()->grabWindow(
                 0, rect.l, rect.t, rect.r - rect.l, rect.b - rect.t);
             return (id_image_read) &ScreenshotPixmap;
         }
@@ -1236,9 +1232,9 @@
         id_bitmap Platform::Utility::ImageToBitmap(id_image_read image, orientationtype ori)
         {
             if(!image) return nullptr;
-            ImagePrivate CurImage = ((PixmapPrivate*) image)->toImage();
+            QImage CurImage = ((QPixmap*) image)->toImage();
             if(!CurImage.constBits()) return nullptr;
-            CurImage = CurImage.convertToFormat(ImagePrivate::Format_ARGB32);
+            CurImage = CurImage.convertToFormat(QImage::Format_ARGB32);
             id_bitmap Result = Bmp::CloneFromBits(CurImage.constBits(),
                 CurImage.width(), CurImage.height(), CurImage.bitPlaneCount(), ori);
             return Result;
@@ -1285,7 +1281,7 @@
 
         void Platform::Utility::GetCursorPos(point64& pos)
         {
-            const QPoint CursorPos = CursorPrivate::pos();
+            const QPoint CursorPos = QCursor::pos();
             pos.x = CursorPos.x();
             pos.y = CursorPos.y();
         }
@@ -1293,7 +1289,7 @@
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            const QPoint CursorPos = CursorPrivate::pos();
+            const QPoint CursorPos = QCursor::pos();
             const QRect ClientRect = g_window->geometry();
             pos.x = CursorPos.x() - ClientRect.left();
             pos.y = CursorPos.y() - ClientRect.top();
@@ -1557,18 +1553,18 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             switch(role)
             {
-            case MR_SrcOver: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_SourceOver); break;
-            case MR_DstOver: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_DestinationOver); break;
-            case MR_Clear: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_Clear); break;
-            case MR_Src: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_Source); break;
-            case MR_Dst: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_Destination); break;
-            case MR_SrcIn: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_SourceIn); break;
-            case MR_DstIn: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_DestinationIn); break;
-            case MR_SrcOut: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_SourceOut); break;
-            case MR_DstOut: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_DestinationOut); break;
-            case MR_SrcAtop: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_SourceAtop); break;
-            case MR_DstAtop: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_DestinationAtop); break;
-            case MR_Xor: CanvasClass::get()->SetMask(PainterPrivate::CompositionMode_Xor); break;
+            case MR_SrcOver: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceOver); break;
+            case MR_DstOver: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationOver); break;
+            case MR_Clear: CanvasClass::get()->SetMask(QPainter::CompositionMode_Clear); break;
+            case MR_Src: CanvasClass::get()->SetMask(QPainter::CompositionMode_Source); break;
+            case MR_Dst: CanvasClass::get()->SetMask(QPainter::CompositionMode_Destination); break;
+            case MR_SrcIn: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceIn); break;
+            case MR_DstIn: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationIn); break;
+            case MR_SrcOut: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceOut); break;
+            case MR_DstOut: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationOut); break;
+            case MR_SrcAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceAtop); break;
+            case MR_DstAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationAtop); break;
+            case MR_Xor: CanvasClass::get()->SetMask(QPainter::CompositionMode_Xor); break;
             }
         }
 
@@ -1592,198 +1588,176 @@
         void Platform::Graphics::SetZoom(float zoom)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            MatrixPrivate NewMatrix(zoom, 0, 0, zoom, 0, 0);
+            QMatrix NewMatrix(zoom, 0, 0, zoom, 0, 0);
             CanvasClass::get()->painter().setMatrix(NewMatrix);
-            CanvasClass::get()->painter().setRenderHint(PainterPrivate::SmoothPixmapTransform, zoom < 1);
+            CanvasClass::get()->painter().setRenderHint(QPainter::SmoothPixmapTransform, zoom < 1);
         }
 
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
-                CanvasClass::get()->painter().setCompositionMode(PainterPrivate::CompositionMode_Clear);
-                CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
-                CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
-            #endif
+            auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
+            CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
+            CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
 
         void Platform::Graphics::FillRect(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
-            #endif
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
         }
 
         void Platform::Graphics::FillCircle(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                CanvasClass::get()->painter().setPen(Qt::NoPen);
-                CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
-            #endif
+            CanvasClass::get()->painter().setPen(Qt::NoPen);
+            CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
         void Platform::Graphics::FillPolygon(float x, float y, Points p)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                const sint32 Count = p.Count();
-                if(Count < 3) return;
+            const sint32 Count = p.Count();
+            if(Count < 3) return;
 
-                QPointF* NewPoint = new QPointF[Count];
-                for(sint32 i = 0; i < Count; ++i)
-                {
-                    NewPoint[i].setX(x + p[i].x);
-                    NewPoint[i].setY(y + p[i].y);
-                }
+            QPointF* NewPoint = new QPointF[Count];
+            for(sint32 i = 0; i < Count; ++i)
+            {
+                NewPoint[i].setX(x + p[i].x);
+                NewPoint[i].setY(y + p[i].y);
+            }
 
-                CanvasClass::get()->painter().setPen(Qt::NoPen);
-                CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPolygon(NewPoint, Count);
-                delete[] NewPoint;
-            #endif
+            CanvasClass::get()->painter().setPen(Qt::NoPen);
+            CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawPolygon(NewPoint, Count);
+            delete[] NewPoint;
         }
 
         void Platform::Graphics::DrawRect(float x, float y, float w, float h, float thick)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                QPen NewPen(QBrush(CanvasClass::get()->color()), thick);
-                NewPen.setCapStyle(Qt::FlatCap);
-                NewPen.setJoinStyle(Qt::MiterJoin);
-                CanvasClass::get()->painter().setPen(NewPen);
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
-            #endif
+            QPen NewPen(QBrush(CanvasClass::get()->color()), thick);
+            NewPen.setCapStyle(Qt::FlatCap);
+            NewPen.setJoinStyle(Qt::MiterJoin);
+            CanvasClass::get()->painter().setPen(NewPen);
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
         void Platform::Graphics::DrawLine(const Point& begin, const Point& end, float thick)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawLine(QPointF(begin.x, begin.y), QPointF(end.x, end.y));
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawLine(QPointF(begin.x, begin.y), QPointF(end.x, end.y));
         }
 
         void Platform::Graphics::DrawCircle(float x, float y, float w, float h, float thick)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
         void Platform::Graphics::DrawBezier(const Vector& begin, const Vector& end, float thick)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                PainterPathPrivate NewPath;
-                NewPath.moveTo(begin.x, begin.y);
-                NewPath.cubicTo(begin.x + begin.vx, begin.y + begin.vy,
-                    end.x + end.vx, end.y + end.vy, end.x, end.y);
+            QPainterPath NewPath;
+            NewPath.moveTo(begin.x, begin.y);
+            NewPath.cubicTo(begin.x + begin.vx, begin.y + begin.vy,
+                end.x + end.vx, end.y + end.vy, end.x, end.y);
 
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPath(NewPath);
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick, bool ring)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                const sint32 Count = p.Count();
-                if(Count < 2) return;
+            const sint32 Count = p.Count();
+            if(Count < 2) return;
 
-                const sint32 RealCount = (ring)? Count + 1 : Count;
-                QPointF* NewPoint = new QPointF[RealCount];
-                for(sint32 i = 0; i < RealCount; ++i)
-                {
-                    NewPoint[i].setX(x + p[i % Count].x);
-                    NewPoint[i].setY(y + p[i % Count].y);
-                }
+            const sint32 RealCount = (ring)? Count + 1 : Count;
+            QPointF* NewPoint = new QPointF[RealCount];
+            for(sint32 i = 0; i < RealCount; ++i)
+            {
+                NewPoint[i].setX(x + p[i % Count].x);
+                NewPoint[i].setY(y + p[i % Count].y);
+            }
 
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
-                delete[] NewPoint;
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
+            delete[] NewPoint;
         }
 
         void Platform::Graphics::DrawPolyBezier(float x, float y, Points p, float thick, bool showfirst, bool showlast)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                const sint32 Count = p.Count();
-                if(Count < 4) return;
+            const sint32 Count = p.Count();
+            if(Count < 4) return;
 
-                PainterPathPrivate NewPath;
-                if(showfirst)
-                {
-                    NewPath.moveTo(x + p[0].x, y + p[0].y);
-                    NewPath.lineTo(x + p[1].x, y + p[1].y);
-                }
-                else NewPath.moveTo(x + p[1].x, y + p[1].y);
+            QPainterPath NewPath;
+            if(showfirst)
+            {
+                NewPath.moveTo(x + p[0].x, y + p[0].y);
+                NewPath.lineTo(x + p[1].x, y + p[1].y);
+            }
+            else NewPath.moveTo(x + p[1].x, y + p[1].y);
 
-                for(sint32 i = 2; i < Count - 1; ++i)
-                {
-                    const sint32 A = i - 2, B = i - 1, C = i, D = i + 1;
-                    const float Ctrl1X = x + p[B].x + ((A == 0)? (p[B].x - p[A].x) * 6 : (p[C].x - p[A].x) / 6);
-                    const float Ctrl1Y = y + p[B].y + ((A == 0)? (p[B].y - p[A].y) * 6 : (p[C].y - p[A].y) / 6);
-                    const float Ctrl2X = x + p[C].x + ((D == Count - 1)? (p[C].x - p[D].x) * 6 : (p[B].x - p[D].x) / 6);
-                    const float Ctrl2Y = y + p[C].y + ((D == Count - 1)? (p[C].y - p[D].y) * 6 : (p[B].y - p[D].y) / 6);
-                    NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
-                }
+            for(sint32 i = 2; i < Count - 1; ++i)
+            {
+                const sint32 A = i - 2, B = i - 1, C = i, D = i + 1;
+                const float Ctrl1X = x + p[B].x + ((A == 0)? (p[B].x - p[A].x) * 6 : (p[C].x - p[A].x) / 6);
+                const float Ctrl1Y = y + p[B].y + ((A == 0)? (p[B].y - p[A].y) * 6 : (p[C].y - p[A].y) / 6);
+                const float Ctrl2X = x + p[C].x + ((D == Count - 1)? (p[C].x - p[D].x) * 6 : (p[B].x - p[D].x) / 6);
+                const float Ctrl2Y = y + p[C].y + ((D == Count - 1)? (p[C].y - p[D].y) * 6 : (p[B].y - p[D].y) / 6);
+                NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
+            }
 
-                if(showlast)
-                    NewPath.lineTo(x + p[-1].x, y + p[-1].y);
+            if(showlast)
+                NewPath.lineTo(x + p[-1].x, y + p[-1].y);
 
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPath(NewPath);
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick, float curve)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                const sint32 Count = p.Count();
-                if(Count < 3) return;
+            const sint32 Count = p.Count();
+            if(Count < 3) return;
 
-                PainterPathPrivate NewPath;
-                NewPath.moveTo(x + p[0].x, y + p[0].y);
-                for(sint32 i = 0; i < Count; ++i)
-                {
-                    const sint32 A = (i + Count - 1) % Count, B = i, C = (i + 1) % Count, D = (i + 2) % Count;
-                    const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) * curve;
-                    const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) * curve;
-                    const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) * curve;
-                    const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) * curve;
-                    NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
-                }
+            QPainterPath NewPath;
+            NewPath.moveTo(x + p[0].x, y + p[0].y);
+            for(sint32 i = 0; i < Count; ++i)
+            {
+                const sint32 A = (i + Count - 1) % Count, B = i, C = (i + 1) % Count, D = (i + 2) % Count;
+                const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) * curve;
+                const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) * curve;
+                const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) * curve;
+                const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) * curve;
+                NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
+            }
 
-                CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
-                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                CanvasClass::get()->painter().drawPath(NewPath);
-            #endif
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawTextureToFBO(id_texture_read texture, float tx, float ty, float tw, float th,
@@ -1791,12 +1765,10 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(texture == nullptr) return;
+            if(texture == nullptr) return;
 
-                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
-                    texture, Rect(tx, ty, tx + tw, ty + th), color, ori, antialiasing);
-            #endif
+            OpenGLClass::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
+                texture, Rect(tx, ty, tx + tw, ty + th), color, ori, antialiasing);
         }
 
         id_image Platform::Graphics::CreateImage(id_bitmap_read bitmap, bool mirrored)
@@ -1804,7 +1776,7 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             const sint32 SrcWidth = Bmp::GetWidth(bitmap);
             const sint32 SrcHeight = Bmp::GetHeight(bitmap);
-            ImagePrivate NewImage(SrcWidth, SrcHeight, ImagePrivate::Format_ARGB32);
+            QImage NewImage(SrcWidth, SrcHeight, QImage::Format_ARGB32);
 
             Bmp::bitmappixel* DstBits = (Bmp::bitmappixel*) NewImage.bits();
             const Bmp::bitmappixel* SrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
@@ -1813,21 +1785,21 @@
             else for(sint32 y = 0; y < SrcHeight; ++y)
                 Memory::Copy(&DstBits[y * SrcWidth], &SrcBits[(SrcHeight - 1 - y) * SrcWidth], sizeof(Bmp::bitmappixel) * SrcWidth);
 
-            buffer NewPixmap = Buffer::Alloc<PixmapPrivate>(BOSS_DBG 1);
-            ((PixmapPrivate*) NewPixmap)->convertFromImage(NewImage);
+            buffer NewPixmap = Buffer::Alloc<QPixmap>(BOSS_DBG 1);
+            ((QPixmap*) NewPixmap)->convertFromImage(NewImage);
             return (id_image) NewPixmap;
         }
 
         sint32 Platform::Graphics::GetImageWidth(id_image_read image)
         {
-            if(const PixmapPrivate* CurPixmap = (const PixmapPrivate*) image)
+            if(const QPixmap* CurPixmap = (const QPixmap*) image)
                 return CurPixmap->width();
             return 0;
         }
 
         sint32 Platform::Graphics::GetImageHeight(id_image_read image)
         {
-            if(const PixmapPrivate* CurPixmap = (const PixmapPrivate*) image)
+            if(const QPixmap* CurPixmap = (const QPixmap*) image)
                 return CurPixmap->height();
             return 0;
         }
@@ -1930,7 +1902,23 @@
             }
             bool ResizingOnce(uint64 timeout)
             {
-                if(mNeedResizing && 0 < mDstWidth)
+                // Copying
+                if(!mNeedResizing)
+                {
+                    for(sint32 dy = mResultResizingLine; dy < mDstHeight; ++dy)
+                    {
+                        Bmp::bitmappixel* CurDstBits = &mDstBits[dy * mDstWidth];
+                        const Bmp::bitmappixel* CurSrcBits = &mSrcBits[(mDstHeight - 1 - dy) * mDstWidth];
+                        Memory::Copy(CurDstBits, CurSrcBits, mDstWidth * sizeof(Bmp::bitmappixel));
+                        if(0 < timeout && timeout < Platform::Utility::CurrentTimeMsec())
+                        {
+                            mResultResizingLine = dy + 1;
+                            return false;
+                        }
+                    }
+                }
+                // Resizing
+                else if(0 < mDstWidth)
                 {
                     const uint32 level = 16; // 2의 승수
                     const sint32* sxpool_ptr = mSxPool.AtDumping(0, mDstWidth * 4);
@@ -2050,8 +2038,8 @@
             {
                 if(mResultResizingLine == mDstHeight && mResultColoringLine == mDstHeight)
                 {
-                    buffer NewPixmap = Buffer::Alloc<PixmapPrivate>(BOSS_DBG 1);
-                    ((PixmapPrivate*) NewPixmap)->convertFromImage(*mPlatformImage);
+                    buffer NewPixmap = Buffer::Alloc<QPixmap>(BOSS_DBG 1);
+                    ((QPixmap*) NewPixmap)->convertFromImage(*mPlatformImage);
                     mResultImage = (id_image) NewPixmap;
                     // 불필요한 요소 해제
                     delete mPlatformImage;
@@ -2065,7 +2053,7 @@
             sint32 mSrcHeight;
             sint32 mDstWidth;
             sint32 mDstHeight;
-            ImagePrivate* mPlatformImage;
+            QImage* mPlatformImage;
             bool mNeedResizing;
             bool mNeedColoring;
             Color mColoring;
@@ -2080,12 +2068,14 @@
         id_image_routine Platform::Graphics::CreateImageRoutine(id_bitmap_read bitmap, sint32 resizing_width, sint32 resizing_height, const Color coloring)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            BOSS_ASSERT("잘못된 파라미터입니다", resizing_width != -1 && resizing_height != -1);
+
             auto NewImageRoutine = (ImageRoutine*) Buffer::Alloc<ImageRoutine>(BOSS_DBG 1);
             NewImageRoutine->mSrcWidth = Bmp::GetWidth(bitmap);
             NewImageRoutine->mSrcHeight = Bmp::GetHeight(bitmap);
-            NewImageRoutine->mDstWidth = (resizing_width == -1)? NewImageRoutine->mSrcWidth : resizing_width;
-            NewImageRoutine->mDstHeight = (resizing_height == -1)? NewImageRoutine->mSrcHeight : resizing_height;
-            NewImageRoutine->mPlatformImage = new ImagePrivate(NewImageRoutine->mDstWidth, NewImageRoutine->mDstHeight, ImagePrivate::Format_ARGB32);
+            NewImageRoutine->mDstWidth = resizing_width;
+            NewImageRoutine->mDstHeight = resizing_height;
+            NewImageRoutine->mPlatformImage = new QImage(NewImageRoutine->mDstWidth, NewImageRoutine->mDstHeight, QImage::Format_ARGB32);
             NewImageRoutine->mNeedResizing = (NewImageRoutine->mDstWidth != NewImageRoutine->mSrcWidth || NewImageRoutine->mDstHeight != NewImageRoutine->mSrcHeight);
             NewImageRoutine->mNeedColoring = (coloring.argb != Color::ColoringDefault);
             NewImageRoutine->mColoring = coloring;
@@ -2124,20 +2114,18 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                if(w == iw && h == ih)
-                    CanvasClass::get()->painter().drawPixmap(QPoint((sint32) x, (sint32) y), *((const PixmapPrivate*) image),
-                        QRect((sint32) ix, (sint32) iy, (sint32) iw, (sint32) ih));
-                else CanvasClass::get()->painter().drawPixmap(QRect((sint32) x, (sint32) y, (sint32) w, (sint32) h),
-                    *((const PixmapPrivate*) image), QRect((sint32) ix, (sint32) iy, (sint32) iw, (sint32) ih));
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            if(w == iw && h == ih)
+                CanvasClass::get()->painter().drawPixmap(QPoint((sint32) x, (sint32) y), *((const QPixmap*) image),
+                    QRect((sint32) ix, (sint32) iy, (sint32) iw, (sint32) ih));
+            else CanvasClass::get()->painter().drawPixmap(QRect((sint32) x, (sint32) y, (sint32) w, (sint32) h),
+                *((const QPixmap*) image), QRect((sint32) ix, (sint32) iy, (sint32) iw, (sint32) ih));
 
-                // 아래 코드는 QT의 소수점표현 랜더링으로 이미지변형이 있음 → 안이쁘고 연결된 이미지 사이에 구멍뚫림
-                // QT에서 나중에 개선할 지도 모르니 보관함
-                //if(w == iw && h == ih)
-                //    CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const PixmapPrivate*) image), QRectF(ix, iy, iw, ih));
-                //else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const PixmapPrivate*) image), QRectF(ix, iy, iw, ih));
-            #endif
+            // 아래 코드는 QT의 소수점표현 랜더링으로 이미지변형이 있음 → 안이쁘고 연결된 이미지 사이에 구멍뚫림
+            // QT에서 나중에 개선할 지도 모르니 보관함
+            //if(w == iw && h == ih)
+            //    CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            //else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)
@@ -2145,11 +2133,9 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(image == nullptr) return;
+            if(image == nullptr) return;
 
-                OpenGLPrivate::ST().DrawPixmap(fbo, x, y, ps, *((const PixmapPrivate*) image), ips, colors);
-            #endif
+            OpenGLClass::ST().DrawPixmap(fbo, x, y, ps, *((const QPixmap*) image), ips, colors);
         }
 
         static Qt::Alignment _ExchangeAlignment(UIFontAlign align)
@@ -2424,7 +2410,7 @@
             }
 
         public:
-            void Render(sint32 x, sint32 y, wchars string, sint32 count, ColorPrivate color, float justifyrate)
+            void Render(sint32 x, sint32 y, wchars string, sint32 count, QColor color, float justifyrate)
             {
                 BOSS_ASSERT("count에는 음수값이 올 수 없습니다", 0 <= count);
                 if(Platform::Graphics::BeginGL())
@@ -2514,115 +2500,87 @@
         static bool _DrawString(float x, float y, float w, float h, const TYPE* string, sint32 count, UIFontAlign align, UIFontElide elide)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
 
-                ////////////////////
-                #if BOSS_ANDROID
-                    if(CanvasClass::get()->is_font_ft())
-                    {
-                        CanvasClass::get()->SetFont("Arial", (sint32) (CanvasClass::get()->font_ft_height() * 0.4));
-                        CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
-                        CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                        CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            if(CanvasClass::get()->is_font_ft())
+            {
+                const float Zoom = CanvasClass::get()->zoom();
+                FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height() * Zoom);
+                x *= Zoom;
+                y *= Zoom;
+                w *= Zoom;
+                h *= Zoom;
 
-                        const QString Text = (sizeof(TYPE) == 1)?
-                            QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
-                        if(elide != UIFE_None)
-                        {
-                            const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
-                            if(ElidedText != Text)
-                            {
-                                CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
-                                return true;
-                            }
-                        }
-                        CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
-                    }
-                    else
-                #endif
-                ////////////////////
-
-                if(CanvasClass::get()->is_font_ft())
+                WString Text = (sizeof(TYPE) == 1)?
+                    WString::FromChars((chars) string, count) : WString((wchars) string, count);
+                if(elide != UIFE_None)
+                if(w < Platform::Graphics::GetStringWidthW(Text))
                 {
-                    const float Zoom = CanvasClass::get()->zoom();
-                    FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height() * Zoom);
-                    x *= Zoom;
-                    y *= Zoom;
-                    w *= Zoom;
-                    h *= Zoom;
-
-                    WString Text = (sizeof(TYPE) == 1)?
-                        WString::FromChars((chars) string, count) : WString((wchars) string, count);
-                    if(elide != UIFE_None)
-                    if(w < Platform::Graphics::GetStringWidthW(Text))
+                    const sint32 DotsSize = Platform::Graphics::GetStringWidthW(L"...");
+                    const sint32 ClipSize = w - DotsSize;
+                    if(0 < ClipSize)
                     {
-                        const sint32 DotsSize = Platform::Graphics::GetStringWidthW(L"...");
-                        const sint32 ClipSize = w - DotsSize;
-                        if(0 < ClipSize)
-                        {
-                            const sint32 ClipCount = Platform::Graphics::GetLengthOfStringW(false, ClipSize, Text);
-                            // 현재 UIFE_Right로만 가능
-                            Text = WString(Text, ClipCount) + L"...";
-                        }
-                        else Text.Empty();
+                        const sint32 ClipCount = Platform::Graphics::GetLengthOfStringW(false, ClipSize, Text);
+                        // 현재 UIFE_Right로만 가능
+                        Text = WString(Text, ClipCount) + L"...";
                     }
-
-                    const sint32 XAlign = _GetXFontAlignCode(align);
-                    sint32 TextWidth = 0;
-                    if(XAlign != 0) // Center, Right, Justify에 모두 가로길이 필요
-                        TextWidth = CurFreeFont.GetWidth(Text, Text.Length());
-
-                    sint32 DstX = x; // Left
-                    switch(XAlign)
-                    {
-                    case 1: // Center
-                        DstX += (sint32(w) - TextWidth) / 2; // sint32(w)를 하지 않으면 연산오차발생
-                        break;
-                    case 2: // Right
-                        DstX += sint32(w) - TextWidth;
-                        break;
-                    default:
-                        break;
-                    }
-
-                    sint32 DstY = y; // Top
-                    switch(_GetYFontAlignCode(align))
-                    {
-                    case 1: // Middle
-                        DstY += (sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A')) / 2; // sint32(h)를 하지 않으면 연산오차발생
-                        break;
-                    case 2: // Ascent
-                        DstY += sint32(h) - CurFreeFont.GetAscent(L'A');
-                        break;
-                    case 3: // Bottom
-                        DstY += sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A');
-                        break;
-                    default:
-                        break;
-                    }
-                    CurFreeFont.Render(DstX, DstY, Text, Text.Length(),
-                        CanvasClass::get()->color(), (XAlign == 3)? w / TextWidth : 1);
+                    else Text.Empty();
                 }
-                else
+
+                const sint32 XAlign = _GetXFontAlignCode(align);
+                sint32 TextWidth = 0;
+                if(XAlign != 0) // Center, Right, Justify에 모두 가로길이 필요
+                    TextWidth = CurFreeFont.GetWidth(Text, Text.Length());
+
+                sint32 DstX = x; // Left
+                switch(XAlign)
                 {
-                    CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
-                    CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                    CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-
-                    const QString Text = (sizeof(TYPE) == 1)?
-                        QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
-                    if(elide != UIFE_None)
-                    {
-                        const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
-                        if(ElidedText != Text)
-                        {
-                            CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
-                            return true;
-                        }
-                    }
-                    CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
+                case 1: // Center
+                    DstX += (sint32(w) - TextWidth) / 2; // sint32(w)를 하지 않으면 연산오차발생
+                    break;
+                case 2: // Right
+                    DstX += sint32(w) - TextWidth;
+                    break;
+                default:
+                    break;
                 }
-            #endif
+
+                sint32 DstY = y; // Top
+                switch(_GetYFontAlignCode(align))
+                {
+                case 1: // Middle
+                    DstY += (sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A')) / 2; // sint32(h)를 하지 않으면 연산오차발생
+                    break;
+                case 2: // Ascent
+                    DstY += sint32(h) - CurFreeFont.GetAscent(L'A');
+                    break;
+                case 3: // Bottom
+                    DstY += sint32(h) - CurFreeFont.GetAscent(L'A') - CurFreeFont.GetDescent(L'A');
+                    break;
+                default:
+                    break;
+                }
+                CurFreeFont.Render(DstX, DstY, Text, Text.Length(),
+                    CanvasClass::get()->color(), (XAlign == 3)? w / TextWidth : 1);
+            }
+            else
+            {
+                CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
+                CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+
+                const QString Text = (sizeof(TYPE) == 1)?
+                    QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
+                if(elide != UIFE_None)
+                {
+                    const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
+                    if(ElidedText != Text)
+                    {
+                        CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
+                        return true;
+                    }
+                }
+                CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
+            }
             return false;
         }
 
@@ -2746,213 +2704,149 @@
         bool Platform::Graphics::BeginGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(QOpenGLContext::currentContext())
-                {
-                    g_isBeginGL = true;
-                    SurfaceClass::LockForGL();
-                    CanvasClass::get()->painter().beginNativePainting();
-                    return true;
-                }
-            #endif
+            if(QOpenGLContext::currentContext())
+            {
+                g_isBeginGL = true;
+                SurfaceClass::LockForGL();
+                CanvasClass::get()->painter().beginNativePainting();
+                return true;
+            }
             return false;
         }
 
         void Platform::Graphics::EndGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                g_isBeginGL = false;
-                CanvasClass::get()->painter().endNativePainting();
-                SurfaceClass::UnlockForGL();
-            #endif
+            g_isBeginGL = false;
+            CanvasClass::get()->painter().endNativePainting();
+            SurfaceClass::UnlockForGL();
         }
 
         id_texture Platform::Graphics::CreateTexture(bool nv21, bool bitmapcache, sint32 width, sint32 height, const void* bits)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                buffer NewTexture = Buffer::Alloc<TextureClass>(BOSS_DBG 1);
-                ((TextureClass*) NewTexture)->Init(nv21, bitmapcache, width, height, bits);
-                return (id_texture) NewTexture;
-            #else
-                return nullptr;
-            #endif
+            buffer NewTexture = Buffer::Alloc<TextureClass>(BOSS_DBG 1);
+            ((TextureClass*) NewTexture)->Init(nv21, bitmapcache, width, height, bits);
+            return (id_texture) NewTexture;
         }
 
         id_texture Platform::Graphics::CloneTexture(id_texture texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return nullptr;
-                return (id_texture) ((TextureClass*) texture)->clone();
-            #else
-                return nullptr;
-            #endif
+            if(!texture) return nullptr;
+            return (id_texture) ((TextureClass*) texture)->clone();
         }
 
         bool Platform::Graphics::IsTextureNV21(id_texture_read texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return false;
-                return ((const TextureClass*) texture)->nv21();
-            #else
-                return false;
-            #endif
+            if(!texture) return false;
+            return ((const TextureClass*) texture)->nv21();
         }
 
         uint32 Platform::Graphics::GetTextureID(id_texture_read texture, sint32 i)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return 0;
-                return ((const TextureClass*) texture)->id(i);
-            #else
-                return 0;
-            #endif
+            if(!texture) return 0;
+            return ((const TextureClass*) texture)->id(i);
         }
 
         sint32 Platform::Graphics::GetTextureWidth(id_texture_read texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return 0;
-                return ((const TextureClass*) texture)->width();
-            #else
-                return 0;
-            #endif
+            if(!texture) return 0;
+            return ((const TextureClass*) texture)->width();
         }
 
         sint32 Platform::Graphics::GetTextureHeight(id_texture_read texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return 0;
-                return ((const TextureClass*) texture)->height();
-            #else
-                return 0;
-            #endif
+            if(!texture) return 0;
+            return ((const TextureClass*) texture)->height();
         }
 
         void Platform::Graphics::RemoveTexture(id_texture texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(texture && ((TextureClass*) texture)->release())
-                    Buffer::Free((buffer) texture);
-            #endif
+            if(texture && ((TextureClass*) texture)->release())
+                Buffer::Free((buffer) texture);
         }
 
         id_bitmap Platform::Graphics::CreateBitmapFromTextureGL(id_texture_read texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return nullptr;
-                return ((const TextureClass*) texture)->CreateBitmapByGL();
-            #else
-                return nullptr;
-            #endif
+            if(!texture) return nullptr;
+            return ((const TextureClass*) texture)->CreateBitmapByGL();
         }
 
         id_bitmap Platform::Graphics::CreateBitmapFromTextureFast(id_texture texture)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!texture) return nullptr;
-                return ((const TextureClass*) texture)->CreateBitmapByCopy();
-            #else
-                return nullptr;
-            #endif
+            if(!texture) return nullptr;
+            return ((const TextureClass*) texture)->CreateBitmapByCopy();
         }
 
         id_surface Platform::Graphics::CreateSurface(sint32 width, sint32 height)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!g_data->getGLWidget()) return nullptr;
-            
-                QOpenGLFramebufferObjectFormat SurfaceFormat;
-                SurfaceFormat.setSamples(4);
-                SurfaceFormat.setMipmap(false);
-                SurfaceFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-                SurfaceFormat.setTextureTarget(GL_TEXTURE_2D);
-                #if BOSS_IPHONE | BOSS_ANDROID | BOSS_WASM
-                    SurfaceFormat.setInternalTextureFormat(GL_RGBA8);
-                #else
-                    SurfaceFormat.setInternalTextureFormat(GL_RGBA32F_ARB);
-                #endif
+            if(!g_data->getGLWidget()) return nullptr;
 
-                buffer NewSurface = Buffer::AllocNoConstructorOnce<SurfaceClass>(BOSS_DBG 1);
-                BOSS_CONSTRUCTOR(NewSurface, 0, SurfaceClass, width, height, &SurfaceFormat);
-                return (id_surface) NewSurface;
+            QOpenGLFramebufferObjectFormat SurfaceFormat;
+            SurfaceFormat.setSamples(4);
+            SurfaceFormat.setMipmap(false);
+            SurfaceFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+            SurfaceFormat.setTextureTarget(GL_TEXTURE_2D);
+            #if BOSS_IPHONE | BOSS_ANDROID | BOSS_WASM
+                SurfaceFormat.setInternalTextureFormat(GL_RGBA8);
             #else
-                return nullptr;
+                SurfaceFormat.setInternalTextureFormat(GL_RGBA32F_ARB);
             #endif
+
+            buffer NewSurface = Buffer::AllocNoConstructorOnce<SurfaceClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewSurface, 0, SurfaceClass, width, height, &SurfaceFormat);
+            return (id_surface) NewSurface;
         }
 
         uint32 Platform::Graphics::GetSurfaceFBO(id_surface_read surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!surface) return 0;
-                return ((const SurfaceClass*) surface)->fbo();
-            #else
-                return 0;
-            #endif
+            if(!surface) return 0;
+            return ((const SurfaceClass*) surface)->fbo();
         }
 
         sint32 Platform::Graphics::GetSurfaceWidth(id_surface_read surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!surface) return 0;
-                return ((const SurfaceClass*) surface)->width();
-            #else
-                return 0;
-            #endif
+            if(!surface) return 0;
+            return ((const SurfaceClass*) surface)->width();
         }
 
         sint32 Platform::Graphics::GetSurfaceHeight(id_surface_read surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!surface) return 0;
-                return ((const SurfaceClass*) surface)->height();
-            #else
-                return 0;
-            #endif
+            if(!surface) return 0;
+            return ((const SurfaceClass*) surface)->height();
         }
 
         void Platform::Graphics::RemoveSurface(id_surface surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                Buffer::Free((buffer) surface);
-            #endif
+            Buffer::Free((buffer) surface);
         }
 
         void Platform::Graphics::BindSurface(id_surface surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(surface)
-                    ((SurfaceClass*) surface)->BindGraphics();
-            #endif
+            if(surface)
+                ((SurfaceClass*) surface)->BindGraphics();
         }
 
         void Platform::Graphics::UnbindSurface(id_surface surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(surface)
-                    ((SurfaceClass*) surface)->UnbindGraphics();
-            #endif
+            if(surface)
+                ((SurfaceClass*) surface)->UnbindGraphics();
         }
 
         void Platform::Graphics::DrawSurface(id_surface_read surface, float sx, float sy, float sw, float sh, float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!surface) return;
+            if(!surface) return;
 
-                auto OldOpacity = CanvasClass::get()->painter().opacity();
-                CanvasClass::get()->painter().setOpacity(Math::Min(128, CanvasClass::get()->color().alpha()) / 128.0f);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
-                if(w == sw && h == sh)
-                    CanvasClass::get()->painter().drawImage(QPoint((sint32) x, (sint32) y),
-                        ((const SurfaceClass*) surface)->GetLastImage(), QRect((sint32) sx, (sint32) sy, (sint32) sw, (sint32) sh));
-                else CanvasClass::get()->painter().drawImage(QRect((sint32) x, (sint32) y, (sint32) w, (sint32) h),
+            auto OldOpacity = CanvasClass::get()->painter().opacity();
+            CanvasClass::get()->painter().setOpacity(Math::Min(128, CanvasClass::get()->color().alpha()) / 128.0f);
+            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+            if(w == sw && h == sh)
+                CanvasClass::get()->painter().drawImage(QPoint((sint32) x, (sint32) y),
                     ((const SurfaceClass*) surface)->GetLastImage(), QRect((sint32) sx, (sint32) sy, (sint32) sw, (sint32) sh));
-                CanvasClass::get()->painter().setOpacity(OldOpacity);
-            #endif
+            else CanvasClass::get()->painter().drawImage(QRect((sint32) x, (sint32) y, (sint32) w, (sint32) h),
+                ((const SurfaceClass*) surface)->GetLastImage(), QRect((sint32) sx, (sint32) sy, (sint32) sw, (sint32) sh));
+            CanvasClass::get()->painter().setOpacity(OldOpacity);
         }
 
         void Platform::Graphics::DrawSurfaceToFBO(id_surface_read surface, float sx, float sy, float sw, float sh,
@@ -2960,39 +2854,29 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                if(!surface) return;
+            if(!surface) return;
 
-                OpenGLPrivate::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
-                    ((const SurfaceClass*) surface)->texture(), Rect(sx, sy, sx + sw, sy + sh), color, ori, antialiasing);
-            #endif
+            OpenGLClass::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
+                ((const SurfaceClass*) surface)->texture(), Rect(sx, sy, sx + sw, sy + sh), color, ori, antialiasing);
         }
 
         id_image_read Platform::Graphics::GetImageFromSurface(id_surface_read surface)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                PixmapPrivate& SurfacePixmap = *BOSS_STORAGE_SYS(PixmapPrivate);
-                if(!surface) return nullptr;
+            QPixmap& SurfacePixmap = *BOSS_STORAGE_SYS(QPixmap);
+            if(!surface) return nullptr;
 
-                SurfacePixmap = PixmapPrivate::fromImage(((const SurfaceClass*) surface)->GetLastImage());
-                return (id_image_read) &SurfacePixmap;
-            #else
-                return nullptr;
-            #endif
+            SurfacePixmap = QPixmap::fromImage(((const SurfaceClass*) surface)->GetLastImage());
+            return (id_image_read) &SurfacePixmap;
         }
 
         id_bitmap_read Platform::Graphics::GetBitmapFromSurface(id_surface_read surface, orientationtype ori)
         {
-            #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
-                Image& SurfaceImage = *BOSS_STORAGE_SYS(Image);
-                if(!surface) return nullptr;
+            Image& SurfaceImage = *BOSS_STORAGE_SYS(Image);
+            if(!surface) return nullptr;
 
-                ImagePrivate CurImage = ((const SurfaceClass*) surface)->GetLastImage().convertToFormat(ImagePrivate::Format_ARGB32);
-                SurfaceImage.LoadBitmapFromBits(CurImage.constBits(), CurImage.width(), CurImage.height(), CurImage.bitPlaneCount(), ori);
-                return SurfaceImage.GetBitmap();
-            #else
-                return nullptr;
-            #endif
+            QImage CurImage = ((const SurfaceClass*) surface)->GetLastImage().convertToFormat(QImage::Format_ARGB32);
+            SurfaceImage.LoadBitmapFromBits(CurImage.constBits(), CurImage.width(), CurImage.height(), CurImage.bitPlaneCount(), ori);
+            return SurfaceImage.GetBitmap();
         }
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -3022,21 +2906,21 @@
         bool Platform::File::Exist(chars filename)
         {
             const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
-            QFileInfo CurInfo(QString::fromUtf8(FilenameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(FilenameUTF8, -1));
             return CurInfo.exists() && CurInfo.isFile();
         }
 
         bool Platform::File::ExistForDir(chars dirname)
         {
             const String DirnameUTF8 = PlatformImpl::Core::NormalPath(dirname);
-            QFileInfo CurInfo(QString::fromUtf8(DirnameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(DirnameUTF8, -1));
             return CurInfo.exists() && CurInfo.isDir();
         }
 
         id_file_read Platform::File::OpenForRead(chars filename)
         {
             const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
-            QFile* NewFile = new QFile(QString::fromUtf8(FilenameUTF8));
+            QFile* NewFile = new QFile(QString::fromUtf8(FilenameUTF8, -1));
             if(!NewFile->open(QFileDevice::ReadOnly))
             {
                 BOSS_TRACE("OpenForRead(%s) - The file is nonexistent", filename);
@@ -3055,7 +2939,7 @@
                 const char OneChar = *iChar;
                 if(OneChar == '/' || OneChar == '\\')
                 {
-                    if(QDir().mkdir(QString::fromUtf8(Dirname)))
+                    if(QDir().mkdir(QString::fromUtf8(Dirname, -1)))
                         BOSS_TRACE("_CreateMiddleDir(%s)", (chars) Dirname);
                     Dirname += '/';
                 }
@@ -3066,7 +2950,7 @@
         id_file Platform::File::OpenForWrite(chars filename, bool autocreatedir)
         {
             const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
-            QFile* NewFile = new QFile(QString::fromUtf8(FilenameUTF8));
+            QFile* NewFile = new QFile(QString::fromUtf8(FilenameUTF8, -1));
             if(!NewFile->open(QFileDevice::WriteOnly))
             {
                 delete NewFile;
@@ -3133,7 +3017,7 @@
                 ParsedDirname.SubTail(2);
 
             const String PathUTF8 = PlatformImpl::Core::NormalPath(ParsedDirname);
-            QString PathQ = QString::fromUtf8(PathUTF8);
+            QString PathQ = QString::fromUtf8(PathUTF8, -1);
             sint32 FindPos = PathQ.lastIndexOf("assets:");
             if(0 <= FindPos) PathQ = PathQ.mid(FindPos);
 
@@ -3146,11 +3030,11 @@
             }
             else
             {
-                TargetDir = String(RootForAssets()).SubTail(1) + PathQ.mid(7);
+                TargetDir = QString((chars) RootForAssets().Left(RootForAssets().Length() - 1)) + PathQ.mid(7);
                 Exists = TargetDir.exists();
                 if(!Exists)
                 {
-                    TargetDir = String(RootForAssetsRem()).SubTail(1) + PathQ.mid(7);
+                    TargetDir = QString((chars) RootForAssetsRem().Left(RootForAssets().Length() - 1)) + PathQ.mid(7);
                     Exists = TargetDir.exists();
                 }
             }
@@ -3178,7 +3062,7 @@
         {
             const String ItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(itemname));
 
-            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8, -1));
             if(!CurInfo.exists()) return -1; // INVALID_FILE_ATTRIBUTES
 
             sint32 Result = 0;
@@ -3202,7 +3086,7 @@
                 ('a' <= ItemnameUTF8[0] && ItemnameUTF8[0] <= 'z')) && ItemnameUTF8[1] == ':')
                 return WString::FromChars(ItemnameUTF8);
 
-            QFileInfo CurInfo(QString::fromUtf8(BOSS::Platform::File::RootForAssetsRem() + ItemnameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(BOSS::Platform::File::RootForAssetsRem() + ItemnameUTF8, -1));
             String AbsoluteName = CurInfo.absoluteFilePath().toUtf8().constData();
             if(AbsoluteName[-2] == '/' || AbsoluteName[-2] == '\\')
                 AbsoluteName.SubTail(1);
@@ -3234,7 +3118,7 @@
         bool Platform::File::CanAccess(wchars itemname)
         {
             const String ItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(itemname));
-            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8, -1));
 
             const bool Result = CurInfo.exists();
             BOSS_TRACE("CanAccess(%s)%s", (chars) ItemnameUTF8, Result? "" : " - Failed");
@@ -3244,7 +3128,7 @@
         bool Platform::File::CanWritable(wchars itemname)
         {
             const String ItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(itemname));
-            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8));
+            QFileInfo CurInfo(QString::fromUtf8(ItemnameUTF8, -1));
 
             const bool Result = (CurInfo.exists() && CurInfo.isWritable());
             BOSS_TRACE("CanWritable(%s)%s", (chars) ItemnameUTF8, Result? "" : " - Failed");
@@ -3266,7 +3150,7 @@
             }
             if(0 < LastDirname.Length())
             {
-                const bool Result = QDir().rmdir(QString::fromUtf8(LastDirname));
+                const bool Result = QDir().rmdir(QString::fromUtf8(LastDirname, -1));
                 BOSS_TRACE("_RemoveMiddleDir(%s)%s", (chars) LastDirname, Result? "" : " - Failed");
                 if(Result) _RemoveMiddleDir(LastDirname);
             }
@@ -3276,7 +3160,7 @@
         {
             const String ItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(itemname));
 
-            const bool Result = QFile::remove(QString::fromUtf8(ItemnameUTF8));
+            const bool Result = QFile::remove(QString::fromUtf8(ItemnameUTF8, -1));
             if(Result && autoremovedir)
                 _RemoveMiddleDir(ItemnameUTF8);
             BOSS_TRACE("Remove(%s)%s", (chars) ItemnameUTF8, Result? "" : " - Failed");
@@ -3288,7 +3172,7 @@
             const String ExistingItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(existing_itemname));
             const String NewItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(new_itemname));
 
-            const bool Result = QFile::rename(QString::fromUtf8(ExistingItemnameUTF8), QString::fromUtf8(NewItemnameUTF8));
+            const bool Result = QFile::rename(QString::fromUtf8(ExistingItemnameUTF8, -1), QString::fromUtf8(NewItemnameUTF8, -1));
             BOSS_TRACE("Rename(%s -> %s)%s", (chars) ExistingItemnameUTF8, (chars) NewItemnameUTF8, Result? "" : " - Failed");
             return Result;
         }
@@ -3302,13 +3186,13 @@
         {
             const String DirnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(dirname));
 
-            if(QDir(QString::fromUtf8(DirnameUTF8)).exists())
+            if(QDir(QString::fromUtf8(DirnameUTF8, -1)).exists())
             {
                 BOSS_TRACE("CreateDir(%s) - Skipped", (chars) DirnameUTF8);
                 return true;
             }
 
-            if(!QDir().mkdir(QString::fromUtf8(DirnameUTF8)))
+            if(!QDir().mkdir(QString::fromUtf8(DirnameUTF8, -1)))
             {
                 if(autocreatedir)
                 {
@@ -3329,7 +3213,7 @@
         {
             const String DirnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(dirname));
 
-            if(!QDir(QString::fromUtf8(DirnameUTF8)).exists())
+            if(!QDir(QString::fromUtf8(DirnameUTF8, -1)).exists())
             {
                 if(autoremovedir)
                     _RemoveMiddleDir(DirnameUTF8);
@@ -3337,7 +3221,7 @@
                 return true;
             }
 
-            const bool Result = QDir().rmdir(QString::fromUtf8(DirnameUTF8));
+            const bool Result = QDir().rmdir(QString::fromUtf8(DirnameUTF8, -1));
             if(Result && autoremovedir)
                 _RemoveMiddleDir(DirnameUTF8);
             BOSS_TRACE("RemoveDir(%s)%s", (chars) DirnameUTF8, Result? "" : " - Failed");
@@ -3836,7 +3720,7 @@
             {
             case SocketBox::Type::TCP:
                 {
-                    CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain), port);
+                    CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain, -1), port);
                     const bool WasBlocked = g_setEventBlocked(true);
                     bool Result = CurSocketBox->m_socket->waitForConnected(timeout);
                     g_setEventBlocked(WasBlocked);
@@ -4154,7 +4038,7 @@
         ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
             ip4address Result = {};
-            for(const QHostAddress& CurAddress : NetworkInterfacePrivate::allAddresses())
+            for(const QHostAddress& CurAddress : QNetworkInterface::allAddresses())
             {
                 if(CurAddress != QHostAddress(QHostAddress::LocalHost))
                 {
@@ -4270,75 +4154,75 @@
         id_pipe Platform::Pipe::Open(chars name)
         {
             // 서버
-            SharedMemoryPrivate* Semaphore = new SharedMemoryPrivate(name);
+            QSharedMemory* Semaphore = new QSharedMemory(name);
             if(!Semaphore->attach() && Semaphore->create(1))
             {
                 QLocalServer* NewServer = new QLocalServer();
                 if(NewServer->listen(name))
-                    return (id_pipe) new PipeServerPrivate(NewServer, Semaphore);
+                    return (id_pipe)(PipeClass*) new PipeServerClass(NewServer, Semaphore);
                 delete NewServer;
             }
             delete Semaphore;
 
             // 클라이언트
-            Semaphore = new SharedMemoryPrivate((chars) (String(name) + ".client"));
+            Semaphore = new QSharedMemory((chars) (String(name) + ".client"));
             if(!Semaphore->attach() && Semaphore->create(1))
-                return (id_pipe) new PipeClientPrivate(name, Semaphore);
+                return (id_pipe)(PipeClass*) new PipeClientClass(name, Semaphore);
             delete Semaphore;
             return nullptr;
         }
 
         void Platform::Pipe::Close(id_pipe pipe)
         {
-            auto OldPipe = (PipePrivate*) pipe;
+            auto OldPipe = (PipeClass*) pipe;
             delete OldPipe;
         }
 
         bool Platform::Pipe::IsServer(id_pipe pipe)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return false;
             return CurPipe->IsServer();
         }
 
         ConnectStatus Platform::Pipe::Status(id_pipe pipe)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return CS_Disconnected;
             return CurPipe->Status();
         }
 
         sint32 Platform::Pipe::RecvAvailable(id_pipe pipe)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return 0;
             return CurPipe->RecvAvailable();
         }
 
         sint32 Platform::Pipe::Recv(id_pipe pipe, uint08* data, sint32 size)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return 0;
             return CurPipe->Recv(data, size);
         }
 
         const Context* Platform::Pipe::RecvJson(id_pipe pipe)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return nullptr;
             return CurPipe->RecvJson();
         }
 
         bool Platform::Pipe::Send(id_pipe pipe, bytes data, sint32 size)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return false;
             return CurPipe->Send(data, size);
         }
 
         bool Platform::Pipe::SendJson(id_pipe pipe, const String& json)
         {
-            auto CurPipe = (PipePrivate*) pipe;
+            auto CurPipe = (PipeClass*) pipe;
             if(!CurPipe) return false;
             return CurPipe->SendJson(json);
         }
@@ -4348,7 +4232,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         h_web Platform::Web::Create(chars url, sint32 width, sint32 height, bool clearcookies, EventCB cb, payload data)
         {
-            auto NewWeb = (WebPrivate*) Buffer::Alloc<WebPrivate>(BOSS_DBG 1);
+            auto NewWeb = (WebClass*) Buffer::Alloc<WebClass>(BOSS_DBG 1);
             if(clearcookies) NewWeb->ClearCookies();
             if(cb) NewWeb->SetCallback(cb, data);
             NewWeb->Resize(width, height);
@@ -4366,54 +4250,54 @@
 
         void Platform::Web::Reload(h_web web, chars url)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 CurWeb->Reload(url);
         }
 
         bool Platform::Web::NowLoading(h_web web, float* rate)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 return CurWeb->NowLoading(rate);
             return false;
         }
 
         bool Platform::Web::Resize(h_web web, sint32 width, sint32 height)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 return CurWeb->Resize(width, height);
             return false;
         }
 
         void Platform::Web::SendTouchEvent(h_web web, TouchType type, sint32 x, sint32 y)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 CurWeb->SendTouchEvent(type, x, y);
         }
 
         void Platform::Web::SendKeyEvent(h_web web, sint32 code, chars text, bool pressed)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 CurWeb->SendKeyEvent(code, text, pressed);
         }
 
         void Platform::Web::CallJSFunction(h_web web, chars script, sint32 matchid)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 CurWeb->CallJSFunction(script, matchid);
         }
 
         id_texture_read Platform::Web::GetPageTexture(h_web web)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
                 return CurWeb->GetTexture();
             return nullptr;
         }
 
         id_image_read Platform::Web::GetPageImage(h_web web)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
             {
-                PixmapPrivate& ScreenshotPixmap = *BOSS_STORAGE_SYS(PixmapPrivate);
+                QPixmap& ScreenshotPixmap = *BOSS_STORAGE_SYS(QPixmap);
                 ScreenshotPixmap = CurWeb->GetPixmap();
                 return (id_image_read) &ScreenshotPixmap;
             }
@@ -4422,10 +4306,10 @@
 
         id_bitmap_read Platform::Web::GetPageBitmap(h_web web, orientationtype ori)
         {
-            if(auto CurWeb = (WebPrivate*) web.get())
+            if(auto CurWeb = (WebClass*) web.get())
             {
                 Image& ScreenshotImage = *BOSS_STORAGE_SYS(Image);
-                const ImagePrivate& CurImage = CurWeb->GetImage();
+                const QImage& CurImage = CurWeb->GetImage();
                 ScreenshotImage.LoadBitmapFromBits(CurImage.constBits(), CurImage.width(), CurImage.height(),
                     CurImage.bitPlaneCount(), ori);
                 return ScreenshotImage.GetBitmap();
@@ -4454,7 +4338,7 @@
         id_purchase Platform::Purchase::Open(chars name, PurchaseType type)
         {
             #ifdef QT_HAVE_PURCHASING
-                auto NewPurchase = new PurchasePrivate();
+                auto NewPurchase = new PurchaseClass();
                 if(!NewPurchase->Register(name, type))
                 {
                     delete NewPurchase;
@@ -4470,7 +4354,7 @@
         {
             #ifdef QT_HAVE_PURCHASING
                 if(!purchase) return;
-                auto OldPurchase = (PurchasePrivate*) purchase;
+                auto OldPurchase = (PurchaseClass*) purchase;
                 delete OldPurchase;
             #endif
         }
@@ -4479,7 +4363,7 @@
         {
             #ifdef QT_HAVE_PURCHASING
                 if(!purchase) return false;
-                auto CurPurchase = (PurchasePrivate*) purchase;
+                auto CurPurchase = (PurchaseClass*) purchase;
                 ///////////////////////////////////
             #endif
             return false;
@@ -4490,7 +4374,7 @@
             #ifdef QT_HAVE_PURCHASING
                 if(purchase)
                 {
-                    auto CurPurchase = (PurchasePrivate*) purchase;
+                    auto CurPurchase = (PurchaseClass*) purchase;
                     return CurPurchase->Purchase(cb);
                 }
             #endif
@@ -4502,38 +4386,38 @@
         ////////////////////////////////////////////////////////////////////////////////
         void Platform::Bluetooth::SearchingDeviceBegin()
         {
-            BluetoothSearchPrivate::DeviceBegin();
+            BluetoothSearchClass::DeviceBegin();
         }
 
         void Platform::Bluetooth::SearchingDeviceEnd()
         {
-            BluetoothSearchPrivate::DeviceEnd();
+            BluetoothSearchClass::DeviceEnd();
         }
 
         void Platform::Bluetooth::SearchingServiceBegin(chars deviceaddress, Strings uuidfilters)
         {
-            BluetoothSearchPrivate::ServiceBegin(deviceaddress, uuidfilters);
+            BluetoothSearchClass::ServiceBegin(deviceaddress, uuidfilters);
         }
 
         void Platform::Bluetooth::SearchingServiceEnd()
         {
-            BluetoothSearchPrivate::ServiceEnd();
+            BluetoothSearchClass::ServiceEnd();
         }
 
         id_bluetooth Platform::Bluetooth::CreateServer(chars service, chars uuid, bool ble)
         {
             if(!ble)
             {
-                auto NewBluetooth = new BluetoothServerPrivate();
+                auto NewBluetooth = new BluetoothServerClass();
                 if(NewBluetooth->Init(service, uuid))
-                    return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+                    return (id_bluetooth)(BluetoothClass*) NewBluetooth;
                 else delete NewBluetooth;
             }
             else
             {
-                auto NewBluetooth = new BluetoothLEServerPrivate();
+                auto NewBluetooth = new BluetoothLEServerClass();
                 if(NewBluetooth->Init(service, uuid))
-                    return (id_bluetooth)(BluetoothPrivate*) NewBluetooth;
+                    return (id_bluetooth)(BluetoothClass*) NewBluetooth;
                 else delete NewBluetooth;
             }
             return nullptr;
@@ -4541,14 +4425,14 @@
 
         id_bluetooth Platform::Bluetooth::CreateClient(chars uuid)
         {
-            auto NewBluetooth1 = new BluetoothClientPrivate();
+            auto NewBluetooth1 = new BluetoothClientClass();
             if(NewBluetooth1->Init(uuid))
-                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth1;
+                return (id_bluetooth)(BluetoothClass*) NewBluetooth1;
             else delete NewBluetooth1;
 
-            auto NewBluetooth2 = new BluetoothLEClientPrivate();
+            auto NewBluetooth2 = new BluetoothLEClientClass();
             if(NewBluetooth2->Init(uuid))
-                return (id_bluetooth)(BluetoothPrivate*) NewBluetooth2;
+                return (id_bluetooth)(BluetoothClass*) NewBluetooth2;
             else delete NewBluetooth2;
 
             return nullptr;
@@ -4556,34 +4440,34 @@
 
         void Platform::Bluetooth::Release(id_bluetooth bluetooth)
         {
-            if(auto OldBluetooth = (BluetoothPrivate*) bluetooth)
+            if(auto OldBluetooth = (BluetoothClass*) bluetooth)
                 delete OldBluetooth;
         }
 
         bool Platform::Bluetooth::Connected(id_bluetooth bluetooth)
         {
-            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+            if(auto CurBluetooth = (BluetoothClass*) bluetooth)
                 return CurBluetooth->Connected();
             return false;
         }
 
         sint32 Platform::Bluetooth::ReadAvailable(id_bluetooth bluetooth)
         {
-            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+            if(auto CurBluetooth = (BluetoothClass*) bluetooth)
                 return CurBluetooth->ReadAvailable();
             return 0;
         }
 
         sint32 Platform::Bluetooth::Read(id_bluetooth bluetooth, uint08* data, const sint32 size)
         {
-            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+            if(auto CurBluetooth = (BluetoothClass*) bluetooth)
                 return CurBluetooth->Read(data, size);
             return -1;
         }
 
         bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
-            if(auto CurBluetooth = (BluetoothPrivate*) bluetooth)
+            if(auto CurBluetooth = (BluetoothClass*) bluetooth)
                 return CurBluetooth->Write(data, size);
             return false;
         }
