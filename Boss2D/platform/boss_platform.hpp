@@ -698,6 +698,15 @@ public:
         /// @param h : 세로길이(px)
         static void FillRect(float x, float y, float w, float h);
 
+        /// @brief 지정한 FBO핸들로 사각형 출력
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param w : 가로길이(px)
+        /// @param h : 세로길이(px)
+        /// @param color : 컬러링값
+        /// @param fbo : 출력될 프레임버퍼의 FBO핸들(화면출력시 0)
+        static void FillRectToFBO(float x, float y, float w, float h, Color color = Color::White, uint32 fbo = 0);
+
         /// @brief 타원 출력
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)

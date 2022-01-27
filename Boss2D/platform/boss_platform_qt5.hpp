@@ -190,9 +190,11 @@
         inline const QColor& color() const {return mColor;}
         // Setter
         inline void SetFont(chars name, sint32 size)
-        {mUseFontFT = false; painter().setFont(QFont(name, size));}
+        {mUseFontFT = false; mPainter.setFont(QFont(name, size));}
         inline void SetFontFT(chars nickname, sint32 height)
         {mUseFontFT = true; mFontFT.mNickName = nickname; mFontFT.mHeight = height;}
+        inline void SetMask(QPainter::CompositionMode mask)
+        {mPainter.setCompositionMode(mask);}
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
         {
             mScissor = QRect(l, t, r - l, b - t);
@@ -200,9 +202,6 @@
         }
         inline void SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
         {mColor.setRgb(r, g, b, a);}
-        inline const QPainter::CompositionMode& mask() const {return mMask;}
-        inline void SetMask(QPainter::CompositionMode mask)
-        {mMask = mask;}
     private:
         static inline CanvasClass*& ST() {static CanvasClass* _ = nullptr; return _;}
     private:
@@ -213,10 +212,10 @@
         bool mUseFontFT;
         FTFontClass mFontFT;
         QFont mSavedFont;
+        QPainter::CompositionMode mSavedMask;
         QPainter mPainter;
         QRect mScissor;
         QColor mColor;
-        QPainter::CompositionMode mMask;
     };
 
     class ViewAPI : public QObject
@@ -2010,9 +2009,12 @@
             if(QOpenGLContext::currentContext()->isOpenGLES())
                 InitShaderGLES30();
             else InitShaderGL();
+            const uint08 SampleBGRA[4] = {255, 255, 255, 255};
+            mFillTexture = Platform::Graphics::CreateTexture(false, false, 1, 1, SampleBGRA);
         }
         ~OpenGLClass()
         {
+            Platform::Graphics::RemoveTexture(mFillTexture);
             TermShader();
         }
 
@@ -2045,6 +2047,13 @@
             NewRect.r = 2 * rect.r / Width - 1;
             NewRect.b = 1 - 2 * rect.b / Height;
 
+            f->glActiveTexture(GL_TEXTURE0);
+            f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(mFillTexture));
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
             f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
@@ -2074,19 +2083,16 @@
             mAttrib[0].color32 = color.ToABGR();
             mAttrib[0].texcoords[0] = 0;
             mAttrib[0].texcoords[1] = 0;
-
             mAttrib[1].vertices[0] = NewRect.r;
             mAttrib[1].vertices[1] = NewRect.t;
             mAttrib[1].color32 = color.ToABGR();
             mAttrib[1].texcoords[0] = 1;
             mAttrib[1].texcoords[1] = 0;
-
             mAttrib[2].vertices[0] = NewRect.l;
             mAttrib[2].vertices[1] = NewRect.b;
             mAttrib[2].color32 = color.ToABGR();
             mAttrib[2].texcoords[0] = 0;
             mAttrib[2].texcoords[1] = 1;
-
             mAttrib[3].vertices[0] = NewRect.r;
             mAttrib[3].vertices[1] = NewRect.b;
             mAttrib[3].color32 = color.ToABGR();
@@ -2129,7 +2135,6 @@
             GLuint CurTexture = CurContext->bindTexture(pixmap);
             f->glActiveTexture(GL_TEXTURE0);
             f->glBindTexture(GL_TEXTURE_2D, CurTexture);
-
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2159,7 +2164,7 @@
                 CurScissor.width() * Zoom,
                 CurScissor.height() * Zoom);
 
-            const bool NeedReverse = !(fbo == 0 && pixmap.devicePixelRatio() == 1);
+            const bool NeedReverse = true; //!(fbo == 0 && pixmap.devicePixelRatio() == 1);
             for(int i = 0; i < 3; ++i)
             {
                 mAttrib[i].vertices[0] = 2 * (x + ps[i].x) * Zoom / DstWidth - 1;
@@ -2235,8 +2240,6 @@
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             }
 
-            const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
-            const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
             const sint32 SelectedProgram = (IsNV21)? 1 : 0;
             f->glUseProgram(mProgram[SelectedProgram]); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
@@ -2288,6 +2291,8 @@
             case orientationtype_fliped270: UV[0] = 1; UV[1] = 3; UV[2] = 2; UV[3] = 0; break;
             }
 
+            const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
+            const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
             mAttrib[UV[0]].texcoords[0] = texrect.l / SrcWidth; // 좌측상단
             mAttrib[UV[0]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
             mAttrib[UV[1]].texcoords[0] = texrect.r / SrcWidth; // 우측상단
@@ -2447,6 +2452,19 @@
                 "void main()\n"
                 "{\n"
                 "    oColour = v_fragmentColor * texture2D(u_texture, v_texCoord);\n"
+                //"    float Pi2 = 6.28318530718;\n"
+                //"    float Direction = 16.0;\n"
+                //"    float Quality = 3.0;\n"
+                //"    vec2 Radius = vec2(8.0);\n"
+                //"    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
+                //"    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
+                //"    {\n"
+                //"        for(float i = 1.0 / Quality; i <= 1.0; i += 1.0 / Quality)\n"
+                //"        {\n"
+                //"            Sum += texture2D(u_texture, v_texCoord + vec2(cos(d), sin(d)) * Radius * i);\n"
+                //"        }\n"
+                //"    }\n"
+                //"    oColour = v_fragmentColor * (Sum / (Quality * Direction - 15.0));\n"
                 "}");
         }
         void TermShader()
@@ -2546,6 +2564,7 @@
         GLuint mVShader[2];
         GLuint mFShader[2];
         GLuint mProgram[2];
+        id_texture mFillTexture;
 
     private:
         enum {VerticeID = 0, ColorID = 1, TexCoordsID = 2};
@@ -4384,7 +4403,7 @@
             Q_OBJECT
 
         public:
-            PurchaseClass(WidgetClass* parent = nullptr) : QInAppStore(parent)
+            PurchaseClass(QWidget* parent = nullptr) : QInAppStore(parent)
             {
                 mProduct = nullptr;
                 connect(this, SIGNAL(productRegistered(QInAppProduct*)), SLOT(onProductRegistered(QInAppProduct*)));

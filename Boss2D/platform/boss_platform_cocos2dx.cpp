@@ -1006,6 +1006,13 @@
                 cocos2d::Color4F(ViewAPI::CurColor()));
         }
 
+        void Platform::Graphics::FillRectToFBO(float x, float y, float w, float h, Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::Graphics::FillCircle(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());

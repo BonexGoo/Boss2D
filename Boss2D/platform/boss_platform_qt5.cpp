@@ -43,7 +43,7 @@
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
         mUseFontFT = false;
-        mMask = QPainter::CompositionMode_SourceOver;
+        mSavedMask = QPainter::CompositionMode_SourceOver;
     }
     CanvasClass::CanvasClass(QPaintDevice* device) : mIsTypeSurface(false)
     {
@@ -51,7 +51,7 @@
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
         mUseFontFT = false;
-        mMask = QPainter::CompositionMode_SourceOver;
+        mSavedMask = QPainter::CompositionMode_SourceOver;
         BindCore(device);
     }
     CanvasClass::~CanvasClass()
@@ -84,6 +84,7 @@
         {
             mSavedCanvas->mSavedZoom = mSavedCanvas->mPainter.matrix().m11();
             mSavedCanvas->mSavedFont = mSavedCanvas->mPainter.font();
+            mSavedCanvas->mSavedMask = mSavedCanvas->mPainter.compositionMode();
             mSavedCanvas->mPainter.end();
         }
         mPainter.begin(device);
@@ -103,6 +104,7 @@
             Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom);
             mSavedCanvas->mPainter.setFont(mSavedCanvas->mSavedFont);
             mSavedCanvas->mPainter.setClipRect(mSavedCanvas->mScissor);
+            mSavedCanvas->mPainter.setCompositionMode(mSavedCanvas->mSavedMask);
             mSavedCanvas = nullptr;
         }
     }
@@ -1605,8 +1607,14 @@
         void Platform::Graphics::FillRect(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
+        }
+
+        void Platform::Graphics::FillRectToFBO(float x, float y, float w, float h, Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            OpenGLClass::ST().FillRect(fbo, Rect(x, y, x + w, y + h), color);
         }
 
         void Platform::Graphics::FillCircle(float x, float y, float w, float h)
@@ -1614,7 +1622,6 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             CanvasClass::get()->painter().setPen(Qt::NoPen);
             CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
@@ -1633,7 +1640,6 @@
 
             CanvasClass::get()->painter().setPen(Qt::NoPen);
             CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawPolygon(NewPoint, Count);
             delete[] NewPoint;
         }
@@ -1646,7 +1652,6 @@
             NewPen.setJoinStyle(Qt::MiterJoin);
             CanvasClass::get()->painter().setPen(NewPen);
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
@@ -1655,7 +1660,6 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawLine(QPointF(begin.x, begin.y), QPointF(end.x, end.y));
         }
 
@@ -1664,7 +1668,6 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
@@ -1678,7 +1681,6 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -1698,7 +1700,6 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
             delete[] NewPoint;
         }
@@ -1732,7 +1733,6 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -1756,7 +1756,6 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -2114,7 +2113,7 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+
             if(w == iw && h == ih)
                 CanvasClass::get()->painter().drawPixmap(QPoint((sint32) x, (sint32) y), *((const QPixmap*) image),
                     QRect((sint32) ix, (sint32) iy, (sint32) iw, (sint32) ih));
@@ -2501,6 +2500,31 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
 
+            ////////////////////
+            #if BOSS_ANDROID
+                if(CanvasClass::get()->is_font_ft())
+                {
+                    CanvasClass::get()->SetFont("Arial", (sint32) (CanvasClass::get()->font_ft_height() * 0.4));
+                    CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
+                    CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+
+                    const QString Text = (sizeof(TYPE) == 1)?
+                        QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
+                    if(elide != UIFE_None)
+                    {
+                        const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
+                        if(ElidedText != Text)
+                        {
+                            CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
+                            return true;
+                        }
+                    }
+                    CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
+                }
+                else
+            #endif
+            ////////////////////
+
             if(CanvasClass::get()->is_font_ft())
             {
                 const float Zoom = CanvasClass::get()->zoom();
@@ -2566,7 +2590,6 @@
             {
                 CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
                 CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-                CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
 
                 const QString Text = (sizeof(TYPE) == 1)?
                     QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
@@ -2840,7 +2863,7 @@
 
             auto OldOpacity = CanvasClass::get()->painter().opacity();
             CanvasClass::get()->painter().setOpacity(Math::Min(128, CanvasClass::get()->color().alpha()) / 128.0f);
-            CanvasClass::get()->painter().setCompositionMode(CanvasClass::get()->mask());
+
             if(w == sw && h == sh)
                 CanvasClass::get()->painter().drawImage(QPoint((sint32) x, (sint32) y),
                     ((const SurfaceClass*) surface)->GetLastImage(), QRect((sint32) sx, (sint32) sy, (sint32) sw, (sint32) sh));
@@ -4232,6 +4255,9 @@
         ////////////////////////////////////////////////////////////////////////////////
         h_web Platform::Web::Create(chars url, sint32 width, sint32 height, bool clearcookies, EventCB cb, payload data)
         {
+            BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
+                g_data->getGLWidget() == nullptr || g_isBeginGL);
+
             auto NewWeb = (WebClass*) Buffer::Alloc<WebClass>(BOSS_DBG 1);
             if(clearcookies) NewWeb->ClearCookies();
             if(cb) NewWeb->SetCallback(cb, data);
@@ -4245,6 +4271,9 @@
 
         void Platform::Web::Release(h_web web)
         {
+            BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
+                g_data->getGLWidget() == nullptr || g_isBeginGL);
+
             web.set_buf(nullptr);
         }
 
@@ -4288,6 +4317,9 @@
 
         id_texture_read Platform::Web::GetPageTexture(h_web web)
         {
+            BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
+                g_data->getGLWidget() == nullptr || g_isBeginGL);
+
             if(auto CurWeb = (WebClass*) web.get())
                 return CurWeb->GetTexture();
             return nullptr;
