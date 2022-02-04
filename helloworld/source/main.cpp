@@ -42,19 +42,14 @@ bool PlatformInit()
     R::AddAtlas("ui_atlaskey.png", "atlas.png", AtlasInfo);
     if(R::IsAtlasUpdated())
         R::RebuildAll();
-    Platform::AddWindowProcedure(WE_Tick,
+
+    Platform::AddProcedure(PE_100MSEC,
         [](payload data)->void
         {
-            static uint64 LastUpdateCheckTime = Platform::Utility::CurrentTimeMsec();
-            uint64 CurUpdateCheckTime = Platform::Utility::CurrentTimeMsec();
-            if(LastUpdateCheckTime + 100 < CurUpdateCheckTime)
+            if(R::IsAtlasUpdated())
             {
-                LastUpdateCheckTime = CurUpdateCheckTime;
-                if(R::IsAtlasUpdated())
-                {
-                    R::RebuildAll();
-                    Platform::UpdateAllViews();
-                }
+                R::RebuildAll();
+                Platform::UpdateAllViews();
             }
         });
     return true;

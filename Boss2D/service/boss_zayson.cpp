@@ -8,7 +8,6 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     ZaySonDocument::ZaySonDocument(chars chain) : mChain(chain)
     {
-        mExecutedCount = 0;
     }
 
     ZaySonDocument::~ZaySonDocument()
@@ -23,80 +22,29 @@ namespace BOSS
     ZaySonDocument& ZaySonDocument::operator=(ZaySonDocument&& rhs)
     {
         mSolvers = ToReference(rhs.mSolvers);
-        mExecutedCount = rhs.mExecutedCount; rhs.mExecutedCount = 0;
         return *this;
     }
 
-    void ZaySonDocument::Add(chars variable, chars formula)
+    bool ZaySonDocument::ExistValue(chars variable) const
     {
-        auto& NewSolver = mSolvers.AtAdding();
-        NewSolver.Link(mChain, variable);
-        NewSolver.Parse(formula);
+        return (Solver::Find(mChain, variable) != nullptr);
     }
 
-    void ZaySonDocument::AddJson(const Context& json, const String nameheader)
-    {
-        if(auto Length = json.LengthOfNamable())
-        {
-            for(sint32 i = 0; i < Length; ++i)
-            {
-                chararray GetKey;
-                auto& ChildJson = json(i, &GetKey);
-                AddJson(ChildJson, nameheader + String::Format("%s.", &GetKey[0]));
-            }
-        }
-        else if(auto Length = json.LengthOfIndexable())
-        {
-            for(sint32 i = 0; i < Length; ++i)
-                AddJson(json[i], nameheader + String::Format("%d.", i));
-            // 수량정보
-            const String Key = nameheader + "count";
-            auto& NewSolver = mSolvers.AtAdding();
-            NewSolver.Link(mChain, Key);
-            NewSolver.Parse(String::FromInteger(Length));
-        }
-        else
-        {
-            const String Key = nameheader.Left(nameheader.Length() - 1);
-            const String Value = json.GetText();
-            auto& NewSolver = mSolvers.AtAdding();
-            NewSolver.Link(mChain, Key);
-            {
-                sint32 IntOffset = 0;
-                Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
-                if(IntOffset == Value.Length())
-                    NewSolver.Parse(Value);
-                else
-                {
-                    sint32 FloatOffset = 0;
-                    Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
-                    if(FloatOffset == Value.Length())
-                        NewSolver.Parse(Value);
-                    else NewSolver.Parse(String::Format("\'%s\'", (chars) Value));
-                }
-            }
-            PostProcess(Key, Value);
-        }
-    }
-
-    void ZaySonDocument::AddFlush()
-    {
-        for(sint32 i = mExecutedCount, iend = mSolvers.Count(); i < iend; ++i)
-            mSolvers.At(i).Execute(true);
-        mExecutedCount = mSolvers.Count();
-    }
-
-    void ZaySonDocument::Update(chars variable, chars formula)
+    SolverValue ZaySonDocument::GetValue(chars variable) const
     {
         if(auto CurSolver = Solver::Find(mChain, variable))
-        {
-            CurSolver->Parse(formula);
-            CurSolver->Execute(true);
-        }
-        else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", variable), false);
+            return CurSolver->result();
+        return SolverValue();
     }
 
-    void ZaySonDocument::UpdateJson(const Context& json, const String nameheader)
+    void ZaySonDocument::SetValue(chars variable, chars formula)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.Parse(formula);
+        CurSolver.Execute(true);
+    }
+
+    void ZaySonDocument::SetJson(const Context& json, const String nameheader)
     {
         if(auto Length = json.LengthOfNamable())
         {
@@ -104,44 +52,37 @@ namespace BOSS
             {
                 chararray GetKey;
                 auto& ChildJson = json(i, &GetKey);
-                UpdateJson(ChildJson, nameheader + String::Format("%s.", &GetKey[0]));
+                SetJson(ChildJson, nameheader + String::Format("%s.", &GetKey[0]));
             }
         }
         else if(auto Length = json.LengthOfIndexable())
         {
             for(sint32 i = 0; i < Length; ++i)
-                UpdateJson(json[i], nameheader + String::Format("%d.", i));
+                SetJson(json[i], nameheader + String::Format("%d.", i));
             // 수량정보
             const String Key = nameheader + "count";
-            if(auto CurSolver = Solver::Find(mChain, Key))
-            {
-                CurSolver->Parse(String::FromInteger(Length));
-                CurSolver->Execute(true);
-            }
-            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
+            auto& CurSolver = LinkedSolver(Key);
+            CurSolver.Parse(String::FromInteger(Length));
+            CurSolver.Execute(true);
         }
         else
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
             const String Value = json.GetText();
-            if(auto CurSolver = Solver::Find(mChain, Key))
+            auto& CurSolver = LinkedSolver(Key);
+            sint32 IntOffset = 0;
+            Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
+            if(IntOffset == Value.Length())
+                CurSolver.Parse(Value);
+            else
             {
-                sint32 IntOffset = 0;
-                Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
-                if(IntOffset == Value.Length())
-                    CurSolver->Parse(Value);
-                else
-                {
-                    sint32 FloatOffset = 0;
-                    Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
-                    if(FloatOffset == Value.Length())
-                        CurSolver->Parse(Value);
-                    else CurSolver->Parse(String::Format("\'%s\'", (chars) Value));
-                }
-                CurSolver->Execute(true);
+                sint32 FloatOffset = 0;
+                Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
+                if(FloatOffset == Value.Length())
+                    CurSolver.Parse(Value);
+                else CurSolver.Parse(String::Format("\'%s\'", (chars) Value));
             }
-            else BOSS_ASSERT(String::Format("해당 변수(%s)를 찾을 수 없습니다", (chars) Key), false);
-            PostProcess(Key, Value);
+            CurSolver.Execute(true);
         }
     }
 
@@ -157,16 +98,18 @@ namespace BOSS
 
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
     {
-        for(sint32 i = 0; i < mExecutedCount; ++i)
+        for(sint32 i = 0, iend = mSolvers.Count(); i < iend; ++i)
             if(msec <= mSolvers[i].resultmsec())
                 cb(&mSolvers[i]);
     }
 
-    SolverValue ZaySonDocument::GetValue(chars variable) const
+    Solver& ZaySonDocument::LinkedSolver(chars variable)
     {
         if(auto CurSolver = Solver::Find(mChain, variable))
-            return CurSolver->result();
-        return SolverValue();
+            return *CurSolver;
+        auto& NewSolver = mSolvers.AtAdding();
+        NewSolver.Link(mChain, variable);
+        return NewSolver;
     }
 
     ////////////////////////////////////////////////////////////////////////////////

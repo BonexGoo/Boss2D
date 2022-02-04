@@ -161,6 +161,8 @@ namespace BOSS
             case SolverOperatorType::Function_Max:   collector += " [max] "; break;
             case SolverOperatorType::Function_Abs:   collector += " [abs] "; break;
             case SolverOperatorType::Function_Pow:   collector += " [pow] "; break;
+            case SolverOperatorType::Function_And:   collector += " [and] "; break;
+            case SolverOperatorType::Function_Or:    collector += " [or] "; break;
             }
             PrintOperand(mOperandR, collector);
         }
@@ -206,6 +208,8 @@ namespace BOSS
             case SolverOperatorType::Function_Max:   return mOperandL->result(Zero).Function_Max(mOperandR->result(One));
             case SolverOperatorType::Function_Abs:   return mOperandL->result(Zero).Function_Abs(mOperandR->result(One));
             case SolverOperatorType::Function_Pow:   return mOperandL->result(Zero).Function_Pow(mOperandR->result(One));
+            case SolverOperatorType::Function_And:   return mOperandL->result(Zero).Function_And(mOperandR->result(One));
+            case SolverOperatorType::Function_Or:    return mOperandL->result(Zero).Function_Or(mOperandR->result(One));
             }
             return zero;
         }
@@ -690,6 +694,28 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::Function_And(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() != 0 && rhs.ToInteger() != 0);
+        case SolverValueType::Float: return MakeByInteger(ToFloat() != 0 && rhs.ToFloat() != 0);
+        case SolverValueType::Text: return MakeByInteger(0 < ToText().Length() && 0 < rhs.ToText().Length());
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Or(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() != 0 || rhs.ToInteger() != 0);
+        case SolverValueType::Float: return MakeByInteger(ToFloat() != 0 || rhs.ToFloat() != 0);
+        case SolverValueType::Text: return MakeByInteger(0 < ToText().Length() || 0 < rhs.ToText().Length());
+        }
+        return SolverValue();
+    }
+
     Solver::Solver()
     {
         mLinkedChain = nullptr;
@@ -781,13 +807,14 @@ namespace BOSS
             }
             else
             {
-                const sint32 KeywordLength = boss_strlen(keyword);
+                const String FindKeyword(keyword);
                 for(sint32 i = 0, iend = FindedChain->Count(); i < iend; ++i)
                 {
                     chararray GetName;
                     FindedChain->AccessByOrder(i, &GetName);
-                    if(!String::Compare(&GetName[0], keyword, KeywordLength))
-                        Collector.AtAdding() = &GetName[0];
+                    const String Variable(ToReference(GetName));
+                    if(0 <= Variable.Find(0, FindKeyword))
+                        Collector.AtAdding() = Variable;
                 }
             }
         }
@@ -805,31 +832,35 @@ namespace BOSS
         auto AddOperator = [](SolverOperandObject*& focus, SolverOperatorType type, sint32 deep)->void
         {
             BOSS_ASSERT("잘못된 시나리오입니다", focus);
-            sint32 NewPriority = deep * 7;
+            const sint32 PriorityCount = 8;
+            sint32 NewPriority = deep * PriorityCount;
             switch(type)
             {
             case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
-                NewPriority += 5;
+                NewPriority += PriorityCount - 2;
                 break;
             case SolverOperatorType::Multiply: case SolverOperatorType::Divide: case SolverOperatorType::Remainder: // 1순위> *, /, %
-                NewPriority += 6;
+                NewPriority += PriorityCount - 1;
                 break;
             case SolverOperatorType::Variabler: // 5순위> @
-                NewPriority += 2;
+                NewPriority += PriorityCount - 5;
                 break;
             case SolverOperatorType::RangeTarget: // 3순위> ~
-                NewPriority += 4;
+                NewPriority += PriorityCount - 3;
                 break;
             case SolverOperatorType::RangeTimer: // 4순위> :
-                NewPriority += 3;
+                NewPriority += PriorityCount - 4;
                 break;
             case SolverOperatorType::Greater: case SolverOperatorType::GreaterOrEqual: case SolverOperatorType::Less: // 7순위> <, <=, >, >=, ==, !=
             case SolverOperatorType::LessOrEqual: case SolverOperatorType::Equal: case SolverOperatorType::Different:
-                NewPriority += 0;
+                NewPriority += PriorityCount - 7;
                 break;
             case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 6순위> [min], [max], [abs], [pow]
             case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
-                NewPriority += 1;
+                NewPriority += PriorityCount - 6;
+                break;
+            case SolverOperatorType::Function_And: case SolverOperatorType::Function_Or: // 8순위> [and], [or]
+                NewPriority += PriorityCount - 8;
                 break;
             }
 
@@ -936,6 +967,16 @@ namespace BOSS
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Pow, deep);
                         formula += 4;
+                    }
+                    jump(!String::Compare("[and]", formula, 5))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_And, deep);
+                        formula += 4;
+                    }
+                    jump(!String::Compare("[or]", formula, 4))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Or, deep);
+                        formula += 3;
                     }
                     else
                     {

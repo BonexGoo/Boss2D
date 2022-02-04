@@ -18,23 +18,20 @@ namespace BOSS
         typedef std::function<void(const Solver*)> UpdateCB;
 
     public:
-        void Add(chars variable, chars formula);
-        void AddJson(const Context& json, const String nameheader = "");
-        void AddFlush();
-        void Update(chars variable, chars formula);
-        void UpdateJson(const Context& json, const String nameheader = "");
+        bool ExistValue(chars variable) const;
+        SolverValue GetValue(chars variable) const;
+        void SetValue(chars variable, chars formula);
+        void SetJson(const Context& json, const String nameheader = "");
         Strings MatchedVariables(chars keyword = nullptr);
         void Remove(chars variable);
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
-        SolverValue GetValue(chars variable) const;
 
     protected:
-        virtual void PostProcess(const String key, const String value) {}
+        Solver& LinkedSolver(chars variable);
 
     private:
         const String mChain;
         Solvers mSolvers;
-        sint32 mExecutedCount;
     };
 
     /// @brief 뷰스크립트 원형

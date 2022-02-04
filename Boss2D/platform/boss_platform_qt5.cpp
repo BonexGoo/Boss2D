@@ -4272,7 +4272,7 @@
         void Platform::Web::Release(h_web web)
         {
             BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
-                g_data->getGLWidget() == nullptr || g_isBeginGL);
+                (g_data && g_data->getGLWidget() == nullptr) || g_isBeginGL);
 
             web.set_buf(nullptr);
         }

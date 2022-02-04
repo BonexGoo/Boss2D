@@ -14,7 +14,7 @@ namespace BOSS
     {
     }
 
-    String::String(String&& rhs) : m_words(rhs.m_words), m_findmap(rhs.m_findmap)
+    String::String(String&& rhs) : m_words(ToReference(rhs.m_words)), m_findmap(ToReference(rhs.m_findmap))
     {
         rhs.m_words = NullString();
         rhs.m_findmap = sint32s::Null();
@@ -22,6 +22,11 @@ namespace BOSS
 
     String::String(const chararray& rhs) : m_words(rhs), m_findmap(sint32s::Null())
     {
+    }
+
+    String::String(chararray&& rhs) : m_words(ToReference(rhs)), m_findmap(sint32s::Null())
+    {
+        rhs = NullString();
     }
 
     String::String(id_share_read rhs) : m_words(rhs), m_findmap(sint32s::Null())

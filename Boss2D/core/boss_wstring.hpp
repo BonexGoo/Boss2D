@@ -18,9 +18,13 @@ namespace BOSS
         /// @param rhs : 이동할 인스턴스
         WString(WString&& rhs);
 
-        /// @brief 특수생성자(공유배열로부터)
+        /// @brief 특수생성자(공유배열로부터 복사)
         /// @param rhs : 공유배열
         WString(const wchararray& rhs);
+
+        /// @brief 특수생성자(공유배열로부터 이동)
+        /// @param rhs : 공유배열
+        WString(wchararray&& rhs);
 
         /// @brief 특수생성자(공유ID로부터)
         /// @param rhs : 복사할 인스턴스

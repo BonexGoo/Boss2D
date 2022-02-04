@@ -15,43 +15,16 @@ namespace BOSS
         ZayWidgetDocumentP(ZayWidgetDocumentP&& rhs);
         ZayWidgetDocumentP& operator=(ZayWidgetDocumentP&& rhs);
 
-    public:
-        void PostProcess(const String key, const String value) override;
-        void ReserverFlush();
-
     private:
         static void RemoveCB(chars itemname, payload data);
-
-    private:
-        class DownloadReserver
-        {
-            BOSS_DECLARE_STANDARD_CLASS(DownloadReserver)
-        public:
-            DownloadReserver();
-            ~DownloadReserver();
-        public:
-            static sint32 OnTask(buffer& self, Queue<buffer>& query, Queue<buffer>& answer, id_common common);
-        public:
-            bool mHtml;
-            String mPath;
-            String mFileName;
-            String mContent;
-        };
-        typedef Array<DownloadReserver> DownloadReservers;
-
-    private:
-        DownloadReservers mReservers;
-        id_tasking mReserverTask;
     };
 
     ZayWidgetDocumentP::ZayWidgetDocumentP() : ZaySonDocument("d")
     {
-        mReserverTask = nullptr;
     }
 
     ZayWidgetDocumentP::~ZayWidgetDocumentP()
     {
-        Tasking::Release(mReserverTask, true);
     }
 
     ZayWidgetDocumentP::ZayWidgetDocumentP(ZayWidgetDocumentP&& rhs) : ZaySonDocument("d")
@@ -62,93 +35,7 @@ namespace BOSS
     ZayWidgetDocumentP& ZayWidgetDocumentP::operator=(ZayWidgetDocumentP&& rhs)
     {
         ZaySonDocument::operator=(ToReference(rhs));
-        mReservers = ToReference(rhs.mReservers);
-        Tasking::Release(mReserverTask, true);
-        mReserverTask = rhs.mReserverTask;
-        rhs.mReserverTask = nullptr;
         return *this;
-    }
-
-    void ZayWidgetDocumentP::PostProcess(const String key, const String value)
-    {
-        // 마지막 키명 추출
-        sint32 DotPos = -1, NextDotPos = -1;
-        while((NextDotPos = key.Find(DotPos + 1, ".")) != -1) DotPos = NextDotPos;
-        const String LastKey = (DotPos == -1)? key : key.Right(key.Length() - (DotPos + 1));
-
-        // 같은 폴더내의 리소스가 최신상태가 아니면 전부 지워준다
-        if(!LastKey.Compare("updated_at"))
-        {
-            String MidPath = key;
-            MidPath.Replace(".", "/");
-            const String NewUpdate = value;
-            if(0 < NewUpdate.Length())
-            {
-                const String OldUpdate = String::FromAsset("web-cache/" + MidPath + ".txt");
-                if(!!OldUpdate.Compare(NewUpdate))
-                    Platform::File::Search(Platform::File::RootForAssetsRem() + "web-cache/" + MidPath.Left(MidPath.Length() - LastKey.Length() - 1), RemoveCB, nullptr, true);
-                NewUpdate.ToAsset("web-cache/" + MidPath + ".txt", true);
-            }
-        }
-        // 리소스 다운로드예약
-        else if(LastKey.Find(0, "_url") != -1)
-        {
-            const String Value = value;
-            String FileExt = "";
-            branch;
-            jump(!Value.Right(4).CompareNoCase(".jpg")) FileExt = ".jpg";
-            jump(!Value.Right(4).CompareNoCase(".mp4")) FileExt = ".mp4";
-            jump(!Value.Right(4).CompareNoCase(".ogg")) FileExt = ".ogg";
-            jump(!Value.Right(5).CompareNoCase(".webm")) FileExt = ".webm";
-            if(0 < FileExt.Length())
-            {
-                auto& NewReserver = mReservers.AtAdding();
-                String MidPath = key;
-                NewReserver.mHtml = !!FileExt.Compare(".jpg");
-                NewReserver.mPath = "web-cache/" + MidPath.Replace(".", "/").Left(MidPath.Length() - LastKey.Length());
-                if(NewReserver.mHtml)
-                {
-                    NewReserver.mFileName = LastKey + ".html";
-                    String NewHtml = String::FromAsset("html/movie.html");
-                    NewHtml.Replace("#####URL#####", Value);
-                    NewReserver.mContent = NewHtml;
-                }
-                else
-                {
-                    NewReserver.mFileName = LastKey + FileExt;
-                    NewReserver.mContent = Value;
-                }
-            }
-        }
-    }
-
-    void ZayWidgetDocumentP::ReserverFlush()
-    {
-        if(!mReserverTask)
-        {
-            mReserverTask = Tasking::Create(DownloadReserver::OnTask);
-            // 정보파일
-            for(sint32 i = 0, iend = mReservers.Count(); i < iend; ++i)
-            {
-                if(mReservers[i].mHtml)
-                {
-                    buffer NewQuery = Buffer::Alloc<DownloadReserver>(BOSS_DBG 1);
-                    *((DownloadReserver*) NewQuery) = mReservers[i];
-                    Tasking::SendQuery(mReserverTask, NewQuery);
-                }
-            }
-            // 실파일
-            for(sint32 i = 0, iend = mReservers.Count(); i < iend; ++i)
-            {
-                if(!mReservers[i].mHtml)
-                {
-                    buffer NewQuery = Buffer::Alloc<DownloadReserver>(BOSS_DBG 1);
-                    *((DownloadReserver*) NewQuery) = mReservers[i];
-                    Tasking::SendQuery(mReserverTask, NewQuery);
-                }
-            }
-        }
-        mReservers.Clear();
     }
 
     void ZayWidgetDocumentP::RemoveCB(chars itemname, payload data)
@@ -156,51 +43,6 @@ namespace BOSS
         if(Platform::File::ExistForDir(itemname))
             Platform::File::Search(itemname, RemoveCB, nullptr, true);
         Platform::File::Remove(WString::FromChars(itemname), true);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayWidgetDocumentP::DownloadReserver
-    ////////////////////////////////////////////////////////////////////////////////
-    ZayWidgetDocumentP::DownloadReserver::DownloadReserver()
-    {
-        mHtml = false;
-    }
-
-    ZayWidgetDocumentP::DownloadReserver::~DownloadReserver()
-    {
-    }
-
-    sint32 ZayWidgetDocumentP::DownloadReserver::OnTask(buffer& self, Queue<buffer>& query, Queue<buffer>& answer, id_common common)
-    {
-        if(Tasking::IsReleased(common))
-            return -1;
-        if(buffer CurQuery = query.Dequeue(nullptr))
-        {
-            auto& CurReserver = *((DownloadReserver*) CurQuery);
-            if(!Asset::Exist(CurReserver.mPath + CurReserver.mFileName))
-            {
-                // HTML파일
-                if(CurReserver.mHtml)
-                {
-                    auto NewAsset = Asset::OpenForWrite(CurReserver.mPath + CurReserver.mFileName, true);
-                    Asset::Write(NewAsset, (bytes)(chars) CurReserver.mContent, CurReserver.mContent.Length());
-                    Asset::Close(NewAsset);
-                }
-                // 실파일
-                else if(id_curl NewCurl = AddOn::Curl::Create(3000))
-                {
-                    sint32 BufferSize = 0;
-                    bytes DataBuffer = AddOn::Curl::GetBytes(NewCurl, CurReserver.mContent, &BufferSize);
-                    auto NewAsset = Asset::OpenForWrite(CurReserver.mPath + CurReserver.mFileName, true);
-                    Asset::Write(NewAsset, DataBuffer, BufferSize);
-                    Asset::Close(NewAsset);
-                    AddOn::Curl::Release(NewCurl);
-                }
-            }
-            Buffer::Free(CurQuery);
-            return 5;
-        }
-        return -1;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -638,8 +480,9 @@ namespace BOSS
                 auto Align = params.ParamToUIAlign(1, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, "r.", 2))
-                    CurImage = (*pcb)(((chars) ImageName) + 2);
+                if(*pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (*pcb)(ImageName.Offset(2));
+                else HasError = true;
 
                 if(CurImage)
                     panel.icon(*CurImage, Align);
@@ -662,8 +505,9 @@ namespace BOSS
                 auto Form = (params.ParamCount() < 3)? UISF_Strong : params.ParamToUIStretchForm(2, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, "r.", 2))
-                    CurImage = (*pcb)(((chars) ImageName) + 2);
+                if(*pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (*pcb)(ImageName.Offset(2));
+                else HasError = true;
 
                 if(CurImage)
                     panel.stretch(*CurImage, (Rebuild)? Image::Build::AsyncNotNull : Image::Build::Null, Form);
@@ -681,14 +525,19 @@ namespace BOSS
             {
                 if(params.ParamCount() != 1)
                     return panel._push_pass();
+                bool HasError = false;
                 auto ImageName = params.Param(0).ToText();
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, "r.", 2))
-                    CurImage = (*pcb)(((chars) ImageName) + 2);
+                if(*pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (*pcb)(ImageName.Offset(2));
+                else HasError = true;
 
                 if(CurImage)
                     panel.ninepatch(*CurImage);
+
+                if(HasError)
+                    RenderErrorBox(panel);
                 return panel._push_pass();
             },
             "[RName:r.name]");
@@ -705,8 +554,9 @@ namespace BOSS
                 auto ReversedYorder = (params.ParamCount() < 4)? false : params.ParamToBool(3, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, "r.", 2))
-                    CurImage = (*pcb)(((chars) ImageName) + 2);
+                if(*pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (*pcb)(ImageName.Offset(2));
+                else HasError = true;
 
                 if(CurImage)
                     panel.pattern(*CurImage, Align, ReversedXorder, ReversedYorder);
@@ -744,7 +594,7 @@ namespace BOSS
                 "LeftBottom|CenterBottom|RightBottom|JustifyBottom]"
             "[Elide:None|Left|Center|Right]");
 
-        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "multi_text",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "text_box",
             ZAY_DECLARE_COMPONENT(panel, params)
             {
                 if(params.ParamCount() != 2 && params.ParamCount() != 3)
@@ -764,6 +614,29 @@ namespace BOSS
             "[LineGap:10]#"
             "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "edit_box",
+            ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
+            {
+                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4)
+                    return panel._push_pass();
+                bool HasError = false;
+                auto UIName = ViewName + '.' + params.Param(0).ToText();
+                auto DOMName = params.Param(1).ToText();
+                auto Enabled = (params.ParamCount() < 3)? true : params.ParamToBool(2, HasError);
+                auto IsPassword = (params.ParamCount() < 4)? false : params.ParamToBool(3, HasError);
+
+                if(ZayControl::RenderEditBox(panel, UIName, DOMName, Enabled, IsPassword))
+                    panel.repaintOnce();
+
+                if(HasError)
+                    RenderErrorBox(panel);
+                return panel._push_pass();
+            },
+            "[UIName]"
+            "[DomName:group.name]#"
+            "[EnableFlag:true|false]"
+            "[PasswordFlag:false|true]");
+
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
             {
@@ -775,14 +648,15 @@ namespace BOSS
                 auto NinePatch = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, "r.", 2))
+                if(*pcb && !String::Compare(ImageName, strpair("r.")))
                 {
                     PanelState CurState = panel.state(UIName);
                     if(CurState & PS_Dragging) ImageName += "_p";
                     else if(CurState & PS_Focused) ImageName += "_o";
                     else ImageName += "_d";
-                    CurImage = (*pcb)(((chars) ImageName) + 2);
+                    CurImage = (*pcb)(ImageName.Offset(2));
                 }
+                else HasError = true;
 
                 if(CurImage)
                 {
@@ -843,46 +717,33 @@ namespace BOSS
         delete mDocument;
     }
 
-    void ZayWidgetDOM::Add(chars variable, chars formula)
+    bool ZayWidgetDOM::ExistValue(chars variable)
     {
         auto& Self = ST();
-        Self.mDocument->Add(variable, formula);
+        return Self.mDocument->ExistValue(variable);
     }
 
-    void ZayWidgetDOM::AddJson(const Context& json, const String nameheader)
+    SolverValue ZayWidgetDOM::GetValue(chars variable)
     {
         auto& Self = ST();
-        Self.mDocument->AddJson(json, nameheader);
+        return Self.mDocument->GetValue(variable);
     }
 
-    void ZayWidgetDOM::AddFlush()
+    void ZayWidgetDOM::SetValue(chars variable, chars formula)
     {
         auto& Self = ST();
-        Self.mDocument->AddFlush();
+        Self.mDocument->SetValue(variable, formula);
         Self.UpdateFlush();
     }
 
-    void ZayWidgetDOM::ReserverFlush()
+    void ZayWidgetDOM::SetJson(const Context& json, const String nameheader)
     {
         auto& Self = ST();
-        Self.mDocument->ReserverFlush();
-    }
-
-    void ZayWidgetDOM::Update(chars variable, chars formula)
-    {
-        auto& Self = ST();
-        Self.mDocument->Update(variable, formula);
+        Self.mDocument->SetJson(json, nameheader);
         Self.UpdateFlush();
     }
 
-    void ZayWidgetDOM::UpdateJson(const Context& json)
-    {
-        auto& Self = ST();
-        Self.mDocument->UpdateJson(json);
-        Self.UpdateFlush();
-    }
-
-    void ZayWidgetDOM::RemoveAll(chars keyword)
+    void ZayWidgetDOM::RemoveVariables(chars keyword)
     {
         auto& Self = ST();
         const Strings OldVariables = Self.mDocument->MatchedVariables(keyword);
@@ -891,12 +752,6 @@ namespace BOSS
             Self.mDocument->Remove(OldVariables[i]);
             Self.RemoveFlush(OldVariables[i]);
         }
-    }
-
-    SolverValue ZayWidgetDOM::GetValue(chars variable)
-    {
-        auto& Self = ST();
-        return Self.mDocument->GetValue(variable);
     }
 
     void ZayWidgetDOM::BindPipe(id_pipe pipe)
@@ -962,5 +817,316 @@ namespace BOSS
         Json.At("type").Set("dom_removed");
         Json.At("variable").Set(variable);
         Platform::Pipe::SendJson(pipe, Json.SaveJson());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayControl
+    ////////////////////////////////////////////////////////////////////////////////
+    bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, bool enabled, bool ispassword)
+    {
+        auto& Self = ST();
+        const sint32 CursorWidth = 4;
+        const sint32 CursorHeight = Math::Min(Platform::Graphics::GetStringHeight(), panel.h());
+        const sint32 CursorEffect = 20;
+        const PanelState UIState = panel.state(uiname);
+        const bool Captured = !!(UIState & PS_Captured);
+        const bool Focused = !!(UIState & PS_Focused);
+
+        // 비활성처리
+        if(!enabled)
+        {
+            ZAY_INNER_SCISSOR(panel, 0)
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String VisualText = Self.SecretFilter(ispassword, FieldText);
+                sint32 iCursor = 0;
+                Self.RenderText(panel, uiname, VisualText, iCursor, 0, 0);
+            }
+            return false;
+        }
+
+        // 캡쳐처리
+        if(Captured)
+        {
+            // 커서애니메이션 처리
+            Self.mFieldAni = (Self.mFieldAni + 1) % 50;
+            const double AniValue = Math::Abs(Self.mFieldAni - 25) / 25.0;
+            // 반복키 처리
+            if(Self.mLastPressCode != 0 && Self.mLastPressMsec + 40 < Platform::Utility::CurrentTimeMsec()) // 반복주기
+            {
+                Self.mLastPressMsec += 40;
+                Self.SendIme(nullptr, uiname, domname, Self.mLastPressCode, Self.mLastPressKey);
+            }
+
+            // 캡쳐된 컨트롤
+            ZAY_INNER_UI_SCISSOR(panel, 0, uiname,
+                ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
+                {
+                    if(t == GT_KeyPressed)
+                    {
+                        auto& Self = ST();
+                        Self.SendIme(v, n, domname, x, (char) y);
+                        Self.mLastPressCode = x;
+                        Self.mLastPressKey = (char) y;
+                        Self.mLastPressMsec = Platform::Utility::CurrentTimeMsec() + 300; // 첫반복
+                    }
+                    else if(t == GT_KeyReleased)
+                    {
+                        auto& Self = ST();
+                        if(Self.mLastPressCode == x)
+                            Self.mLastPressCode = 0; // 키해제
+                    }
+                    // 커서이동
+                    else if(t == GT_Pressed)
+                    {
+                        auto& Self = ST();
+                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                            Self.mFieldTextFocus = CurCursor->GetFocusBy(FieldText);
+                        else Self.mFieldTextFocus = 0;
+                    }
+                    // 구간복사
+                    else if(t == GT_ExtendPressed)
+                    {
+                        auto& Self = ST();
+                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                        {
+                            const sint32 CopyFocus = CurCursor->GetFocusBy(FieldText);
+                            if(Self.mFieldTextFocus != CopyFocus)
+                            {
+                                const sint32 FocusBegin = Math::Min(Self.mFieldTextFocus, CopyFocus);
+                                const sint32 FocusEnd = Math::Max(Self.mFieldTextFocus, CopyFocus);
+                                Self.mCopyAni = mCopyAniMax;
+                                Self.mCopyAreaX = CurCursor->GetPos(FocusBegin);
+                                Self.mCopyAreaWidth = CurCursor->GetPos(FocusEnd - 1) - Self.mCopyAreaX;
+                                // 클립보드 송신
+                                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                                Platform::Utility::SendToTextClipboard(FieldText.Middle(FocusBegin, FocusEnd - FocusBegin));
+                            }
+                        }
+                    }
+                    // 커서포커스
+                    else if(t == GT_Moving)
+                    {
+                        auto& Self = ST();
+                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                        if(CurCursor->SetFocusText(x))
+                            v->invalidate();
+                    }
+                    else if(t == GT_MovingLosed)
+                    {
+                        auto& Self = ST();
+                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                        {
+                            CurCursor->ClearFocus();
+                            v->invalidate();
+                        }
+                    }
+                })
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String VisualFrontText = Self.SecretFilter(ispassword, FieldText.Left(Self.mFieldTextFocus));
+                const String VisualRearText = Self.SecretFilter(ispassword, FieldText.Right(Math::Max(0, FieldText.Length() - Self.mFieldTextFocus)));
+                sint32 CurCursor = 0;
+                sint32 CurPos = 0;
+
+                // 커서이전 텍스트
+                if(0 < VisualFrontText.Length())
+                    CurPos = Self.RenderText(panel, uiname, VisualFrontText, CurCursor, CurPos, CursorHeight);
+
+                // 커서
+                ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
+                {
+                    ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * AniValue)
+                        panel.fill();
+
+                    for(sint32 i = 0, iend = 5; i < iend; ++i)
+                    {
+                        ZAY_RGBA(panel, 128, 128, 128, 40 * (iend - i) / iend)
+                        {
+                            ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                                panel.fill();
+                            ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                                panel.fill();
+                        }
+                    }
+                }
+
+                // 커서이후 텍스트
+                if(0 < VisualRearText.Length())
+                    Self.RenderText(panel, uiname, VisualRearText, CurCursor, CurPos + CursorWidth, CursorHeight);
+            }
+
+            // 복사애니메이션 처리
+            if(0 < Self.mCopyAni)
+            {
+                ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
+                ZAY_MOVE(panel, -panel.toview(0, 0).x, 0)
+                ZAY_XYWH(panel, Self.mCopyAreaX, (panel.h() - CursorHeight) / 2, Self.mCopyAreaWidth, CursorHeight)
+                ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect)
+                    panel.rect(CursorWidth);
+                Self.mCopyAni--;
+            }
+            return true;
+        }
+
+        // 비캡쳐처리
+        ZAY_INNER_UI_SCISSOR(panel, 0, uiname,
+            ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
+            {
+                // 캡쳐화
+                if(t == GT_Pressed)
+                {
+                    auto& Self = ST();
+                    v->setCapture(n);
+                    Self.mFieldAni = 0;
+                    const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                    if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                        Self.mFieldTextFocus = CurCursor->GetFocusBy(FieldText);
+                    else Self.mFieldTextFocus = 0;
+                    Self.mFieldTextLength = boss_strlen(FieldText);
+                    Self.mFieldSavedText = FieldText;
+                    Self.mCopyAni = 0; // 복사애니중단
+                    Self.mLastPressCode = 0; // 키해제
+                }
+                // 커서포커스
+                else if(t == GT_Moving)
+                {
+                    auto& Self = ST();
+                    if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                    if(CurCursor->SetFocusText(x))
+                        v->invalidate();
+                }
+                else if(t == GT_MovingLosed)
+                {
+                    auto& Self = ST();
+                    if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                    {
+                        CurCursor->ClearFocus();
+                        v->invalidate();
+                    }
+                }
+            })
+        {
+            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+            const String VisualText = Self.SecretFilter(ispassword, FieldText);
+            sint32 iCursor = 0;
+            Self.RenderText(panel, uiname, VisualText, iCursor, 0, CursorHeight);
+        }
+        return false;
+    }
+
+    const String ZayControl::SecretFilter(bool ispassword, chars text) const
+    {
+        if(ispassword)
+        {
+            String Collector;
+            while(*(text++)) Collector += "●";
+            return Collector;
+        }
+        return text;
+    }
+
+    sint32 ZayControl::RenderText(ZayPanel& panel, const String& uiname, chars text, sint32& cursor, sint32 pos, sint32 height)
+    {
+        auto& SavedCursor = mFieldSavedCursor(uiname);
+        while(*text)
+        {
+            // 한 글자
+            const sint32 LetterLength = String::GetLengthOfFirstLetter(text);
+            panel.text(pos, panel.h() / 2, text, LetterLength, UIFA_LeftMiddle);
+
+            const sint32 OldPos = pos;
+            pos += Platform::Graphics::GetStringWidth(text, LetterLength);
+            text += LetterLength;
+            SavedCursor.mPosArray.AtWherever(cursor) = panel.toview((OldPos + pos) / 2, 0).x;
+            SavedCursor.mPosLength = ++cursor;
+
+            // 포커싱된 커서표현
+            if(height != 0 && cursor == SavedCursor.mCursor && *text)
+            ZAY_XYWH(panel, pos - 1, (panel.h() - height) / 2, 2, height)
+            ZAY_RGBA(panel, 128, 128, 128, 32)
+                panel.fill();
+        }
+        return pos;
+    }
+
+    void ZayControl::SendIme(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key)
+    {
+        branch;
+        jump(code == 0x01000012) // Left
+            mFieldTextFocus = Math::Max(0, mFieldTextFocus - 1);
+        jump(code == 0x01000014) // Right
+            mFieldTextFocus = Math::Min(mFieldTextFocus + 1, mFieldTextLength);
+        jump(code == 0x01000010) // Home
+            mFieldTextFocus = 0;
+        jump(code == 0x01000011) // End
+            mFieldTextFocus = mFieldTextLength;
+        jump(code == 0x01000003) // BackSpace
+        {
+            if(0 < mFieldTextFocus)
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FrontText = FieldText.Left(mFieldTextFocus - 1);
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
+                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
+                mFieldTextFocus--;
+                mFieldTextLength--;
+            }
+        }
+        jump(code == 0x01000007) // Delete
+        {
+            if(mFieldTextFocus < mFieldTextLength)
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FrontText = FieldText.Left(mFieldTextFocus);
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus - 1));
+                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
+                mFieldTextLength--;
+            }
+        }
+        jump(code == 0x01000000) // Esc
+        {
+            if(view) view->clearCapture();
+            ZayWidgetDOM::SetValue(domname, '\'' + mFieldSavedText + '\'');
+            mFieldSavedCursor.Remove(uiname);
+            mCopyAni = 0; // 복사애니중단
+            mLastPressCode = 0; // 키해제
+        }
+        jump(code == 0x01000004) // Enter
+        {
+            if(view) view->clearCapture();
+            mCopyAni = 0; // 복사애니중단
+            mLastPressCode = 0; // 키해제
+        }
+        jump(code == 0x01000031) // F2
+        {
+            String PastedText = Platform::Utility::RecvFromTextClipboard();
+            if(0 < PastedText.Length())
+            {
+                PastedText.Replace('\'', '"');
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FrontText = FieldText.Left(mFieldTextFocus);
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
+                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + PastedText + RearText + '\'');
+                mFieldTextFocus += PastedText.Length();
+                mFieldTextLength += PastedText.Length();
+            }
+        }
+        jump(0 < key) // Ascii
+        {
+            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+            const String FrontText = FieldText.Left(mFieldTextFocus);
+            const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
+            ZayWidgetDOM::SetValue(domname, '\'' + FrontText + key + RearText + '\'');
+            mFieldTextFocus++;
+            mFieldTextLength++;
+        }
+        else return;
+
+        // 포커스커서 초기화
+        if(auto CurCursor = mFieldSavedCursor.Access(uiname))
+            CurCursor->ClearFocus();
     }
 }

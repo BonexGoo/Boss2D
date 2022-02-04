@@ -75,60 +75,60 @@
 					"posy":"266"
 				},
 				{
-					"addw":"0",
-					"compid":"4",
-					"compname":"color",
+					"addw":"19",
+					"comment":"화면상측을 지정",
+					"compid":"8",
+					"compname":"xywh",
 					"compvalues":
 					[
 						[
-							"255 * pos",
-							"64",
-							"64",
-							"255 * pos"
+							"pW * pos - pW",
+							"0",
+							"pW",
+							"pH / 3"
 						]
 					],
 					"expanded":"1",
-					"posx":"594",
-					"posy":"417",
+					"posx":"591",
+					"posy":"436",
 					"ui":
 					[
 						{
 							"addw":"0",
-							"compid":"5",
-							"compname":"font",
+							"compid":"4",
+							"compname":"color",
 							"compvalues":
 							[
 								[
-									"1.5",
-									"'arial black'"
+									"255 * pos",
+									"64",
+									"64",
+									"255 * pos"
 								]
 							],
 							"expanded":"1",
-							"posx":"904",
-							"posy":"420",
+							"posx":"931",
+							"posy":"451",
 							"ui":
 							[
 								{
 									"addw":"0",
-									"comment":"화면상측을 지정",
-									"compid":"8",
-									"compname":"xywh",
+									"compid":"5",
+									"compname":"font",
 									"compvalues":
 									[
 										[
-											"pW * pos - pW",
-											"0",
-											"pW",
-											"pH / 3"
+											"1.5",
+											"'arial black'"
 										]
 									],
 									"expanded":"1",
-									"posx":"1230",
-									"posy":"418",
+									"posx":"1264",
+									"posy":"452",
 									"ui":
 									[
 										{
-											"addw":"0",
+											"addw":"27",
 											"comment":"DOM으로 받은 메시지를 출력",
 											"compid":"7",
 											"compname":"text",
@@ -141,8 +141,210 @@
 												]
 											],
 											"expanded":"1",
-											"posx":"1556",
-											"posy":"429"
+											"posx":"1596",
+											"posy":"453"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"addw":"62",
+					"comment":"에디트박스1",
+					"compid":"15",
+					"compname":"xywh",
+					"compvalues":
+					[
+						[
+							"(pW - 400) / 2",
+							"(pH - 60) / 2",
+							"400",
+							"60"
+						]
+					],
+					"expanded":"1",
+					"posx":"589",
+					"posy":"645",
+					"ui":
+					[
+						{
+							"addw":"0",
+							"compid":"19",
+							"compname":"color",
+							"compvalues":
+							[
+								[
+									"0",
+									"0",
+									"0",
+									"64"
+								]
+							],
+							"expanded":"1",
+							"posx":"1005",
+							"posy":"662",
+							"ui":
+							[
+								{
+									"addw":"0",
+									"compid":"23",
+									"compname":"fill",
+									"expanded":"1",
+									"posx":"1357",
+									"posy":"686"
+								}
+							]
+						},
+						{
+							"addw":"0",
+							"compid":"22",
+							"compname":"color",
+							"compvalues":
+							[
+								[
+									"64",
+									"64",
+									"255 * pos",
+									"255 * pos"
+								]
+							],
+							"expanded":"1",
+							"posx":"1000",
+							"posy":"855",
+							"ui":
+							[
+								{
+									"addw":"0",
+									"compid":"24",
+									"compname":"font",
+									"compvalues":
+									[
+										[
+											"2.0"
+										]
+									],
+									"expanded":"1",
+									"posx":"1352",
+									"posy":"857",
+									"ui":
+									[
+										{
+											"addw":"0",
+											"compid":"18",
+											"compname":"edit_box",
+											"compvalues":
+											[
+												[
+													"edit1",
+													"text1"
+												]
+											],
+											"expanded":"1",
+											"posx":"1702",
+											"posy":"858"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"addw":"77",
+					"comment":"에디트박스2",
+					"compid":"25",
+					"compname":"xywh",
+					"compvalues":
+					[
+						[
+							"(pW - 400) / 2",
+							"(pH - 60) / 2 + 80",
+							"400",
+							"60"
+						]
+					],
+					"expanded":"1",
+					"posx":"585",
+					"posy":"1059",
+					"ui":
+					[
+						{
+							"addw":"0",
+							"compid":"26",
+							"compname":"color",
+							"compvalues":
+							[
+								[
+									"0",
+									"0",
+									"0",
+									"64"
+								]
+							],
+							"expanded":"1",
+							"posx":"1001",
+							"posy":"1076",
+							"ui":
+							[
+								{
+									"addw":"0",
+									"compid":"27",
+									"compname":"fill",
+									"expanded":"1",
+									"posx":"1353",
+									"posy":"1100"
+								}
+							]
+						},
+						{
+							"addw":"0",
+							"compid":"28",
+							"compname":"color",
+							"compvalues":
+							[
+								[
+									"64",
+									"64",
+									"255 * pos",
+									"255 * pos"
+								]
+							],
+							"expanded":"1",
+							"posx":"996",
+							"posy":"1269",
+							"ui":
+							[
+								{
+									"addw":"0",
+									"compid":"29",
+									"compname":"font",
+									"compvalues":
+									[
+										[
+											"2.0"
+										]
+									],
+									"expanded":"1",
+									"posx":"1348",
+									"posy":"1271",
+									"ui":
+									[
+										{
+											"addw":"0",
+											"compid":"30",
+											"compname":"edit_box",
+											"compvalues":
+											[
+												[
+													"edit2",
+													"text2"
+												]
+											],
+											"expanded":"1",
+											"posx":"1698",
+											"posy":"1272"
 										}
 									]
 								}

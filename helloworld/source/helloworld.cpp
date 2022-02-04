@@ -76,8 +76,7 @@ helloworldData::helloworldData()
 
     // 제이위젯에 문서를 전달
     // 제이에디터에서도 표현됩니다
-    ZayWidgetDOM::Add("message", "\"Hello World!\"");
-    ZayWidgetDOM::AddFlush();
+    ZayWidgetDOM::SetValue("message", "\"Hello World!\"");
 }
 
 helloworldData::~helloworldData()

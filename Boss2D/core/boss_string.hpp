@@ -22,9 +22,13 @@ namespace BOSS
         /// @param rhs : 이동할 인스턴스
         String(String&& rhs);
 
-        /// @brief 특수생성자(공유배열로부터)
+        /// @brief 특수생성자(공유배열로부터 복사)
         /// @param rhs : 공유배열
         String(const chararray& rhs);
+
+        /// @brief 특수생성자(공유배열로부터 이동)
+        /// @param rhs : 공유배열
+        String(chararray&& rhs);
 
         /// @brief 특수생성자(공유ID로부터)
         /// @param rhs : 복사할 인스턴스

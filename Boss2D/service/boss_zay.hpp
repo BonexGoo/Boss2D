@@ -197,13 +197,13 @@ namespace BOSS
         GT_InDragging, GT_InDraggingIdle, GT_OutDragging, GT_OutDraggingIdle, GT_InReleased, GT_OutReleased,
         GT_Dropping, GT_DroppingIdle, GT_DroppingLosed, GT_Dropped,
         // 마우스휠
-        GT_WheelUp, GT_WheelDown, GT_WheelPress, GT_WheelDragging, GT_WheelDraggingIdle, GT_WheelRelease,
+        GT_WheelUp, GT_WheelDown, GT_WheelPressed, GT_WheelDragging, GT_WheelDraggingIdle, GT_WheelRelease,
         // 마우스확장
-        GT_ExtendPress, GT_ExtendDragging, GT_ExtendDraggingIdle, GT_ExtendRelease,
+        GT_ExtendPressed, GT_ExtendDragging, GT_ExtendDraggingIdle, GT_ExtendRelease,
         // 마우스휠피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
-        GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
+        GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressedPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
         // 마우스확장피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
-        GT_ExtendPressPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
+        GT_ExtendPressedPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
         // 키보드
         GT_KeyPressed, GT_KeyReleased,
         // 특수
@@ -223,7 +223,7 @@ namespace BOSS
     class ZayObject
     {
         friend class ZayView;
-        friend class ZayController;
+        friend class ZayObjectData;
 
     public:
         typedef void (*CommandCB)(CommandType, chars, id_share, id_cloned_share*);
@@ -848,7 +848,7 @@ namespace BOSS
     private:
         const Function* m_ref_func;
         const String m_viewclass;
-        ZayObject* m_class;
+        ZayObject* m_data;
         buffer m_touch;
         bool m_agreed_quit;
     };

@@ -10,7 +10,8 @@ namespace BOSS
         Addition, Subtract, Multiply, Divide, Remainder, // +, -, *, /, %
         Variabler, RangeTarget, RangeTimer, // @, ~, :
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
-        Function_Min, Function_Max, Function_Abs, Function_Pow}; // [min], [max], [abs], [pow]
+        Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
+        Function_And, Function_Or}; // [and], [or]
 
     // 업데이트체인
     class SolverChainPair
@@ -102,6 +103,8 @@ namespace BOSS
         public: SolverValue Function_Max(const SolverValue& rhs) const;
         public: SolverValue Function_Abs(const SolverValue& rhs) const;
         public: SolverValue Function_Pow(const SolverValue& rhs) const;
+        public: SolverValue Function_And(const SolverValue& rhs) const;
+        public: SolverValue Function_Or(const SolverValue& rhs) const;
 
         // 멤버
         private: SolverValueType mType;

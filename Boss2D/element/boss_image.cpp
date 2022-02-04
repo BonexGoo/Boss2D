@@ -936,12 +936,14 @@ namespace BOSS
     id_image_read Image::Builder::GetImage(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring)
     {
         BOSS_ASSERT("잘못된 시나리오입니다", build != Build::Null);
+        if(resizing_width == -1) resizing_width = m_BitmapWidth;
+        if(resizing_height == -1) resizing_height = m_BitmapHeight;
 
         // 색상변화용 이미지루틴 재구성
         if(mRoutineColor.argb != coloring.argb)
         {
-            mRoutineResize.w = (resizing_width == -1)? m_BitmapWidth : resizing_width;
-            mRoutineResize.h = (resizing_height == -1)? m_BitmapHeight : resizing_height;
+            mRoutineResize.w = resizing_width;
+            mRoutineResize.h = resizing_height;
             mRoutineColor = coloring;
 
             Platform::Graphics::RemoveImageRoutine(mRoutine);
@@ -957,8 +959,8 @@ namespace BOSS
         // 크기변화용 이미지루틴 재구성
         else if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height)
         {
-            mRoutineResize.w = (resizing_width == -1)? m_BitmapWidth : resizing_width;
-            mRoutineResize.h = (resizing_height == -1)? m_BitmapHeight : resizing_height;
+            mRoutineResize.w = resizing_width;
+            mRoutineResize.h = resizing_height;
             mRoutineColor = coloring;
 
             // 이전 루틴의 처리

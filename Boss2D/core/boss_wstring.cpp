@@ -189,10 +189,16 @@ namespace BOSS
 
     WString::WString(WString&& rhs) : m_words(ToReference(rhs.m_words))
     {
+        rhs.m_words = NullString();
     }
 
     WString::WString(const wchararray& rhs) : m_words(rhs)
     {
+    }
+
+    WString::WString(wchararray&& rhs) : m_words(ToReference(rhs))
+    {
+        rhs = NullString();
     }
 
     WString::WString(id_share_read rhs) : m_words(rhs)
