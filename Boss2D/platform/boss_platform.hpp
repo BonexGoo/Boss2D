@@ -1830,8 +1830,24 @@ public:
         /// @param bluetooth : 블루투스ID
         /// @param data : 보낼 데이터
         /// @param size : data의 크기(바이트단위)
-        /// @return 에러여부
+        /// @return 성공여부
         static bool Write(id_bluetooth bluetooth, bytes data, const sint32 size);
+
+        ////////////////////////////////////////////////////////////////////////////////
+        /// @brief 블루투스컨텐츠지원
+        class Content
+        {
+        public:
+            /// @brief 파일창방식 뮤직컨텐츠출력
+            static void MusicPlayWithSelector();
+
+            /// @brief 뮤직컨텐츠중단
+            static void MusicStop();
+
+            /// @brief 볼륨조절
+            /// @param value : 볼륨값(0.0 ~ 1.0)
+            static void SetVolume(float value);
+        };
     };
 
     ////////////////////////////////////////////////////////////////////////////////

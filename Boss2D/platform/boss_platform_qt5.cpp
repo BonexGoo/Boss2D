@@ -4504,6 +4504,21 @@
             return false;
         }
 
+        void Platform::Bluetooth::Content::MusicPlayWithSelector()
+        {
+            BluetoothContentClass::MusicPlayWithSelector();
+        }
+
+        void Platform::Bluetooth::Content::MusicStop()
+        {
+            BluetoothContentClass::MusicStop();
+        }
+
+        void Platform::Bluetooth::Content::SetVolume(float value)
+        {
+            BluetoothContentClass::SetVolume(value);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERIAL
         ////////////////////////////////////////////////////////////////////////////////

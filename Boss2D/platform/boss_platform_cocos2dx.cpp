@@ -2437,6 +2437,21 @@
             return false;
         }
 
+        void Platform::Bluetooth::Content::MusicPlayWithSelector()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Bluetooth::Content::MusicStop()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Bluetooth::Content::SetVolume(float value)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERIAL
         ////////////////////////////////////////////////////////////////////////////////

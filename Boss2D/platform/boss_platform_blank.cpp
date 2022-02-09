@@ -2196,6 +2196,21 @@
             return false;
         }
 
+        void Platform::Bluetooth::Content::MusicPlayWithSelector()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Bluetooth::Content::MusicStop()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Bluetooth::Content::SetVolume(float value)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERIAL
         ////////////////////////////////////////////////////////////////////////////////

@@ -106,8 +106,7 @@
     #endif
 
     #if BOSS_ANDROID
-        #include <QtAndroidExtras/QAndroidJniObject>
-        #include <QtAndroidExtras/QAndroidJniEnvironment>
+        #include <QtAndroidExtras>
         #include <jni.h>
         #include <termios.h>
         #include <unistd.h>
@@ -5504,6 +5503,54 @@
         QQueue<QByteArray> mReadQueue;
         sint32 mReadCount;
     };
+
+    #if BOSS_ANDROID
+        class BluetoothContentForAndroid
+        {
+        public:
+            static void MusicPlayWithSelector()
+            {
+                QAndroidJniObject Activity = QtAndroid::androidActivity();
+                QAndroidJniObject::callStaticMethod<void>("com/boss2d/BossBluetoothSco", "init",
+                    "(Landroid/app/Activity;)V", Activity.object<jobject>());
+                QAndroidJniObject NewIntent = QAndroidJniObject::callStaticObjectMethod("com/boss2d/BossBluetoothSco", "open",
+                    "(Landroid/app/Activity;)Landroid/content/Intent;", Activity.object<jobject>());
+
+                QtAndroid::startActivity(NewIntent, 2345, [](int requestCode, int resultCode, const QAndroidJniObject& data)->void
+                {
+                    const QAndroidJniObject Context = QtAndroid::androidContext();
+                    QAndroidJniObject::callStaticMethod<void>("com/boss2d/BossBluetoothSco", "play",
+                        "(Landroid/content/Context;Landroid/content/Intent;)V", Context.object<jobject>(), data.object<jobject>());
+                });
+            }
+            static void MusicStop()
+            {
+                QAndroidJniObject::callStaticMethod<void>("com/boss2d/BossBluetoothSco", "stop", "()V");
+            }
+            static void SetVolume(float value)
+            {
+                const QAndroidJniObject Context = QtAndroid::androidContext();
+                QAndroidJniObject::callStaticMethod<void>("com/boss2d/BossBluetoothSco", "setVolume",
+                    "(Landroid/content/Context;F)V", Context.object<jobject>(), (jfloat) value);
+            }
+        };
+        typedef BluetoothContentForAndroid BluetoothContentClass;
+    #else
+        class BluetoothContentForBlank
+        {
+        public:
+            static void MusicPlayWithSelector()
+            {
+            }
+            static void MusicStop()
+            {
+            }
+            static void SetVolume(float value)
+            {
+            }
+        };
+        typedef BluetoothContentForBlank BluetoothContentClass;
+    #endif
 
     #if BOSS_ANDROID & defined(QT_HAVE_SERIALPORT)
         typedef QSerialPortInfo SerialPortInfoClass;
