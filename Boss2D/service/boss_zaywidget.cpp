@@ -849,8 +849,8 @@ namespace BOSS
         if(Captured)
         {
             // 커서애니메이션 처리
-            Self.mFieldAni = (Self.mFieldAni + 1) % 50;
-            const double AniValue = Math::Abs(Self.mFieldAni - 25) / 25.0;
+            Self.mCursorAni = (Self.mCursorAni + 1) % 50;
+            const double CursorAniValue = Math::Abs(Self.mCursorAni - 25) / 25.0;
             // 반복키 처리
             if(Self.mLastPressCode != 0 && Self.mLastPressMsec + 40 < Platform::Utility::CurrentTimeMsec()) // 반복주기
             {
@@ -895,12 +895,20 @@ namespace BOSS
                             const sint32 CopyFocus = CurCursor->GetFocusBy(FieldText);
                             if(Self.mFieldTextFocus != CopyFocus)
                             {
+                                Self.mCopyAni = mCopyAniMax;
+                                if(Self.mFieldTextFocus < Self.mFieldTextLength)
+                                {
+                                    Self.mCopyAreaA = CurCursor->GetPos(Self.mFieldTextFocus);
+                                    Self.mCopyAreaB = CurCursor->GetPos(CopyFocus);
+                                }
+                                else // FieldTextFocus가 마지막이면 커서영역의 보정이 불필요
+                                {
+                                    Self.mCopyAreaA = CurCursor->GetPos(CopyFocus);
+                                    Self.mCopyAreaB = CurCursor->GetPos(Self.mFieldTextFocus);
+                                }
+                                // 클립보드 송신
                                 const sint32 FocusBegin = Math::Min(Self.mFieldTextFocus, CopyFocus);
                                 const sint32 FocusEnd = Math::Max(Self.mFieldTextFocus, CopyFocus);
-                                Self.mCopyAni = mCopyAniMax;
-                                Self.mCopyAreaX = CurCursor->GetPos(FocusBegin);
-                                Self.mCopyAreaWidth = CurCursor->GetPos(FocusEnd - 1) - Self.mCopyAreaX;
-                                // 클립보드 송신
                                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                                 Platform::Utility::SendToTextClipboard(FieldText.Middle(FocusBegin, FocusEnd - FocusBegin));
                             }
@@ -936,9 +944,10 @@ namespace BOSS
                     CurPos = Self.RenderText(panel, uiname, VisualFrontText, CurCursor, CurPos, CursorHeight);
 
                 // 커서
+                if(Self.mCopyAni == 0)
                 ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
                 {
-                    ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * AniValue)
+                    ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
                         panel.fill();
 
                     for(sint32 i = 0, iend = 5; i < iend; ++i)
@@ -961,12 +970,19 @@ namespace BOSS
             // 복사애니메이션 처리
             if(0 < Self.mCopyAni)
             {
+                // 커서영역의 산정 및 보정
+                const sint32 CopyX = Math::Min(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom();
+                sint32 CopyWidth = Math::Max(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom() - CopyX;
+                if(Self.mCopyAreaB < Self.mCopyAreaA)
+                    CopyWidth -= CursorWidth;
+
                 ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
                 ZAY_MOVE(panel, -panel.toview(0, 0).x, 0)
-                ZAY_XYWH(panel, Self.mCopyAreaX, (panel.h() - CursorHeight) / 2, Self.mCopyAreaWidth, CursorHeight)
-                ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect)
+                ZAY_XYWH(panel, CopyX, (panel.h() - CursorHeight) / 2, CopyWidth, CursorHeight)
+                ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorWidth)
                     panel.rect(CursorWidth);
-                Self.mCopyAni--;
+                if(--Self.mCopyAni == 0)
+                    Self.mCursorAni = 0;
             }
             return true;
         }
@@ -980,13 +996,13 @@ namespace BOSS
                 {
                     auto& Self = ST();
                     v->setCapture(n);
-                    Self.mFieldAni = 0;
                     const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                     if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
                         Self.mFieldTextFocus = CurCursor->GetFocusBy(FieldText);
                     else Self.mFieldTextFocus = 0;
                     Self.mFieldTextLength = boss_strlen(FieldText);
                     Self.mFieldSavedText = FieldText;
+                    Self.mCursorAni = 0;
                     Self.mCopyAni = 0; // 복사애니중단
                     Self.mLastPressCode = 0; // 키해제
                 }
@@ -1031,17 +1047,18 @@ namespace BOSS
     sint32 ZayControl::RenderText(ZayPanel& panel, const String& uiname, chars text, sint32& cursor, sint32 pos, sint32 height)
     {
         auto& SavedCursor = mFieldSavedCursor(uiname);
+        SavedCursor.mPosArray.AtWherever(cursor) = panel.toview(pos, 0).x * panel.zoom();
         while(*text)
         {
             // 한 글자
             const sint32 LetterLength = String::GetLengthOfFirstLetter(text);
             panel.text(pos, panel.h() / 2, text, LetterLength, UIFA_LeftMiddle);
 
-            const sint32 OldPos = pos;
             pos += Platform::Graphics::GetStringWidth(text, LetterLength);
             text += LetterLength;
-            SavedCursor.mPosArray.AtWherever(cursor) = panel.toview((OldPos + pos) / 2, 0).x;
-            SavedCursor.mPosLength = ++cursor;
+            cursor++;
+            SavedCursor.mPosArray.AtWherever(cursor) = panel.toview(pos, 0).x * panel.zoom();
+            SavedCursor.mPosMax = cursor;
 
             // 포커싱된 커서표현
             if(height != 0 && cursor == SavedCursor.mCursor && *text)

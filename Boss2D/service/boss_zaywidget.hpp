@@ -103,7 +103,7 @@ namespace BOSS
         struct Cursor
         {
             sint32s mPosArray;
-            sint32 mPosLength {0};
+            sint32 mPosMax {0};
             sint32 mCursor {0};
 
             sint32 GetPos(sint32 cursor)
@@ -126,10 +126,10 @@ namespace BOSS
 
             bool SetFocusText(sint32 pos)
             {
-                sint32 NewCursor = mPosLength;
-                for(sint32 i = 0; i < mPosLength; ++i)
+                sint32 NewCursor = mPosMax;
+                for(sint32 i = 0; i < mPosMax; ++i)
                 {
-                    if(pos < mPosArray[i])
+                    if(pos < (mPosArray[i] + mPosArray[i + 1]) / 2)
                     {
                         NewCursor = i;
                         break;
@@ -146,16 +146,16 @@ namespace BOSS
 
     private:
         // 필드정보
-        sint32 mFieldAni {0};
         sint32 mFieldTextFocus {0};
         sint32 mFieldTextLength {0};
         String mFieldSavedText; // Esc를 위한 원본텍스트
         Map<Cursor> mFieldSavedCursor;
+        sint32 mCursorAni {0};
         // 복사정보
         sint32 mCopyAni {0};
         static const sint32 mCopyAniMax {20};
-        sint32 mCopyAreaX {0};
-        sint32 mCopyAreaWidth {0};
+        sint32 mCopyAreaA {0};
+        sint32 mCopyAreaB {0};
         // 키정보
         sint32 mLastPressCode {0};
         char mLastPressKey {0};
