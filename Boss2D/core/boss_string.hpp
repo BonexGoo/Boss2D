@@ -319,8 +319,14 @@ namespace BOSS
 
         /// @brief 첫 글자의 길이
         /// @param text : 조사할 스트링
-        /// @return 길이(char단위)
+        /// @return 글자의 길이(char단위)
         static sint32 GetLengthOfFirstLetter(chars text);
+
+        /// @brief 마지막 글자의 길이
+        /// @param text : 조사할 스트링
+        /// @param length : 조사할 스트링의 길이(-1이면 자동설정)
+        /// @return 글자의 길이(char단위)
+        static sint32 GetLengthOfLastLetter(chars text, sint32 length = -1);
 
         /// @brief 스트링 분할식 객체배열 생성
         /// @param text : 스트링

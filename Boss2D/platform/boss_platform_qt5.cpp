@@ -1400,6 +1400,35 @@
             return Result;
         }
 
+        bool Platform::Utility::IsWordableKey(sint32 virtualkey)
+        {
+            if(8 <= virtualkey && virtualkey <= 46) // BackSpace ~ Delete
+            {
+                if(virtualkey == 32) // Space
+                    return true;
+                else return false;
+            }
+            else if(48 <= virtualkey && virtualkey <= 57) // '0)' ~ '9('
+                return true;
+            else if(65 <= virtualkey && virtualkey <= 90) // 'aA' ~ 'zZ'
+                return true;
+            else if(virtualkey == 91) // Window
+                return false;
+            else if(96 <= virtualkey && virtualkey <= 105) // 넘버락상태의 Numpad0 ~ Numpad9
+                return true;
+            else if(106 <= virtualkey && virtualkey <= 111) // 넘패드쪽 '*', '+', ',', '-', '.', '/'
+                return true;
+            else if(112 <= virtualkey && virtualkey <= 135) // F1 ~ F24
+                return false;
+            else if(virtualkey == 144) // Num
+                return false;
+            else if(186 <= virtualkey && virtualkey <= 192) // ';:', '=+', ',<', '-_', '.>', '/?', '`~'
+                return true;
+            else if(219 <= virtualkey && virtualkey <= 222) // '[{', '\|', ']}', ''"'
+                return true;
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // CLOCK
         ////////////////////////////////////////////////////////////////////////////////

@@ -97,7 +97,10 @@ namespace BOSS
     private:
         const String SecretFilter(bool ispassword, chars text) const;
         sint32 RenderText(ZayPanel& panel, const String& uiname, chars text, sint32& cursor, sint32 pos, sint32 height);
-        void SendIme(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key);
+        void OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key);
+        String AddToIME(char key);
+        void FlushIME(const String& domname, const String added);
+        bool FlushSavedIME(const String& domname);
 
     private:
         struct Cursor
@@ -106,9 +109,17 @@ namespace BOSS
             sint32 mPosMax {0};
             sint32 mCursor {0};
 
-            sint32 GetPos(sint32 cursor)
+            sint32 GetPos(chars text, sint32 cursor)
             {
-                return (cursor < mPosArray.Count())? mPosArray[cursor] : 0;
+                sint32 Focus = 0;
+                while(0 < cursor)
+                {
+                    const sint32 Length = String::GetLengthOfFirstLetter(text);
+                    text += Length;
+                    cursor -= Length;
+                    Focus++;
+                }
+                return (Focus < mPosArray.Count())? mPosArray[Focus] : 0;
             }
 
             void ClearFocus()
@@ -148,6 +159,7 @@ namespace BOSS
         // 필드정보
         sint32 mFieldTextFocus {0};
         sint32 mFieldTextLength {0};
+        String mFieldSavedDom;
         String mFieldSavedText; // Esc를 위한 원본텍스트
         Map<Cursor> mFieldSavedCursor;
         sint32 mCursorAni {0};
@@ -160,5 +172,9 @@ namespace BOSS
         sint32 mLastPressCode {0};
         char mLastPressKey {0};
         sint64 mLastPressMsec {0};
+        // IME정보
+        enum LanguageMode {LM_English, LM_Korean, LM_Max};
+        LanguageMode mLastLanguage {LM_English};
+        wchar_t mSavedIME;
     };
 }

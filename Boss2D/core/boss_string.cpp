@@ -779,6 +779,20 @@ namespace BOSS
         return 1;
     }
 
+    sint32 String::GetLengthOfLastLetter(chars text, sint32 length)
+    {
+        if(length == -1)
+            length = boss_strlen(text);
+        sint32 CurLength = 0;
+        while(CurLength < length)
+        {
+            text += CurLength;
+            length -= CurLength;
+            CurLength = GetLengthOfFirstLetter(text);
+        }
+        return length;
+    }
+
     Strings String::Split(chars text, char comma)
     {
         Strings Collector;

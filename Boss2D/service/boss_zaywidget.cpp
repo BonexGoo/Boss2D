@@ -825,9 +825,10 @@ namespace BOSS
     bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, bool enabled, bool ispassword)
     {
         auto& Self = ST();
-        const sint32 CursorWidth = 4;
+        const sint32 CursorWidth = (Self.mLastLanguage == LM_English)? 4 : 2 + Platform::Graphics::GetStringWidth("가");
         const sint32 CursorHeight = Math::Min(Platform::Graphics::GetStringHeight(), panel.h());
         const sint32 CursorEffect = 20;
+        const sint32 CursorEffectWidth = 5;
         const PanelState UIState = panel.state(uiname);
         const bool Captured = !!(UIState & PS_Captured);
         const bool Focused = !!(UIState & PS_Focused);
@@ -855,7 +856,7 @@ namespace BOSS
             if(Self.mLastPressCode != 0 && Self.mLastPressMsec + 40 < Platform::Utility::CurrentTimeMsec()) // 반복주기
             {
                 Self.mLastPressMsec += 40;
-                Self.SendIme(nullptr, uiname, domname, Self.mLastPressCode, Self.mLastPressKey);
+                Self.OnKeyPressed(nullptr, uiname, domname, Self.mLastPressCode, Self.mLastPressKey);
             }
 
             // 캡쳐된 컨트롤
@@ -865,7 +866,7 @@ namespace BOSS
                     if(t == GT_KeyPressed)
                     {
                         auto& Self = ST();
-                        Self.SendIme(v, n, domname, x, (char) y);
+                        Self.OnKeyPressed(v, n, domname, x, (char) y);
                         Self.mLastPressCode = x;
                         Self.mLastPressKey = (char) y;
                         Self.mLastPressMsec = Platform::Utility::CurrentTimeMsec() + 300; // 첫반복
@@ -881,36 +882,56 @@ namespace BOSS
                     {
                         auto& Self = ST();
                         const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        sint32 NewTextFocus = 0;
                         if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
-                            Self.mFieldTextFocus = CurCursor->GetFocusBy(FieldText);
-                        else Self.mFieldTextFocus = 0;
+                            NewTextFocus = CurCursor->GetFocusBy(FieldText);
+                        else Self.mFieldTextFocus = 0; // 제이프로에 의한 예외상황
+
+                        if(NewTextFocus < Self.mFieldTextFocus)
+                        {
+                            Self.FlushSavedIME(domname);
+                            Self.mFieldTextFocus = NewTextFocus;
+                        }
+                        else if(Self.mFieldTextFocus < NewTextFocus)
+                        {
+                            NewTextFocus -= Self.mFieldTextFocus;
+                            Self.FlushSavedIME(domname);
+                            Self.mFieldTextFocus += NewTextFocus;
+                        }
+
+                        // 포커싱커서도 맞춤
+                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                            CurCursor->mCursor = Self.mFieldTextFocus;
                     }
                     // 구간복사
                     else if(t == GT_ExtendPressed)
                     {
                         auto& Self = ST();
-                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-                        if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
+                        if(!Self.FlushSavedIME(domname))
                         {
-                            const sint32 CopyFocus = CurCursor->GetFocusBy(FieldText);
-                            if(Self.mFieldTextFocus != CopyFocus)
+                            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                            if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
                             {
-                                Self.mCopyAni = mCopyAniMax;
-                                if(Self.mFieldTextFocus < Self.mFieldTextLength)
+                                const sint32 CopyFocus = CurCursor->GetFocusBy(FieldText);
+                                if(Self.mFieldTextFocus != CopyFocus)
                                 {
-                                    Self.mCopyAreaA = CurCursor->GetPos(Self.mFieldTextFocus);
-                                    Self.mCopyAreaB = CurCursor->GetPos(CopyFocus);
+                                    Self.mCopyAni = mCopyAniMax;
+                                    if(Self.mFieldTextFocus < Self.mFieldTextLength)
+                                    {
+                                        Self.mCopyAreaA = CurCursor->GetPos(FieldText, Self.mFieldTextFocus);
+                                        Self.mCopyAreaB = CurCursor->GetPos(FieldText, CopyFocus);
+                                    }
+                                    else // FieldTextFocus가 마지막이면 커서영역의 보정이 불필요
+                                    {
+                                        Self.mCopyAreaA = CurCursor->GetPos(FieldText, CopyFocus);
+                                        Self.mCopyAreaB = CurCursor->GetPos(FieldText, Self.mFieldTextFocus);
+                                    }
+                                    // 클립보드 송신
+                                    const sint32 FocusBegin = Math::Min(Self.mFieldTextFocus, CopyFocus);
+                                    const sint32 FocusEnd = Math::Max(Self.mFieldTextFocus, CopyFocus);
+                                    const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                                    Platform::Utility::SendToTextClipboard(FieldText.Middle(FocusBegin, FocusEnd - FocusBegin));
                                 }
-                                else // FieldTextFocus가 마지막이면 커서영역의 보정이 불필요
-                                {
-                                    Self.mCopyAreaA = CurCursor->GetPos(CopyFocus);
-                                    Self.mCopyAreaB = CurCursor->GetPos(Self.mFieldTextFocus);
-                                }
-                                // 클립보드 송신
-                                const sint32 FocusBegin = Math::Min(Self.mFieldTextFocus, CopyFocus);
-                                const sint32 FocusEnd = Math::Max(Self.mFieldTextFocus, CopyFocus);
-                                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-                                Platform::Utility::SendToTextClipboard(FieldText.Middle(FocusBegin, FocusEnd - FocusBegin));
                             }
                         }
                     }
@@ -960,6 +981,19 @@ namespace BOSS
                                 panel.fill();
                         }
                     }
+
+                    // 커서IME
+                    if(Self.mSavedIME != L'\0')
+                        panel.text(panel.w() / 2, panel.h() / 2, String::FromWChars(WString(Self.mSavedIME)));
+
+                    // 커서명칭
+                    switch(Self.mLastLanguage)
+                    {
+                    case LM_Korean:
+                        ZAY_FONT(panel, 0.3, "arial black")
+                            panel.text(panel.w() / 2, 0, "K O R", UIFA_CenterBottom);
+                        break;
+                    }
                 }
 
                 // 커서이후 텍스트
@@ -979,8 +1013,8 @@ namespace BOSS
                 ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
                 ZAY_MOVE(panel, -panel.toview(0, 0).x, 0)
                 ZAY_XYWH(panel, CopyX, (panel.h() - CursorHeight) / 2, CopyWidth, CursorHeight)
-                ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorWidth)
-                    panel.rect(CursorWidth);
+                ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorEffectWidth)
+                    panel.rect(CursorEffectWidth);
                 if(--Self.mCopyAni == 0)
                     Self.mCursorAni = 0;
             }
@@ -995,16 +1029,20 @@ namespace BOSS
                 if(t == GT_Pressed)
                 {
                     auto& Self = ST();
-                    v->setCapture(n);
+                    if(0 < Self.mFieldSavedDom.Length())
+                        Self.FlushSavedIME(Self.mFieldSavedDom);
+
                     const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                     if(auto CurCursor = Self.mFieldSavedCursor.Access(n))
                         Self.mFieldTextFocus = CurCursor->GetFocusBy(FieldText);
-                    else Self.mFieldTextFocus = 0;
+                    else Self.mFieldTextFocus = 0; // 제이프로에 의한 예외상황
                     Self.mFieldTextLength = boss_strlen(FieldText);
+                    Self.mFieldSavedDom = domname;
                     Self.mFieldSavedText = FieldText;
                     Self.mCursorAni = 0;
                     Self.mCopyAni = 0; // 복사애니중단
                     Self.mLastPressCode = 0; // 키해제
+                    v->setCapture(n);
                 }
                 // 커서포커스
                 else if(t == GT_Moving)
@@ -1069,60 +1107,93 @@ namespace BOSS
         return pos;
     }
 
-    void ZayControl::SendIme(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key)
+    void ZayControl::OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key)
     {
         branch;
-        jump(code == 0x01000012) // Left
-            mFieldTextFocus = Math::Max(0, mFieldTextFocus - 1);
-        jump(code == 0x01000014) // Right
-            mFieldTextFocus = Math::Min(mFieldTextFocus + 1, mFieldTextLength);
-        jump(code == 0x01000010) // Home
-            mFieldTextFocus = 0;
-        jump(code == 0x01000011) // End
-            mFieldTextFocus = mFieldTextLength;
-        jump(code == 0x01000003) // BackSpace
+        jump(code == 37) // Left
         {
+            FlushSavedIME(domname);
             if(0 < mFieldTextFocus)
             {
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-                const String FrontText = FieldText.Left(mFieldTextFocus - 1);
-                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
-                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
-                mFieldTextFocus--;
-                mFieldTextLength--;
+                mFieldTextFocus = Math::Min(mFieldTextFocus, FieldText.Length());
+                mFieldTextFocus = Math::Max(0, mFieldTextFocus - String::GetLengthOfLastLetter(FieldText, mFieldTextFocus));
             }
         }
-        jump(code == 0x01000007) // Delete
+        jump(code == 39) // Right
+        {
+            if(!FlushSavedIME(domname))
+            if(mFieldTextFocus < mFieldTextLength)
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                mFieldTextFocus = Math::Min(mFieldTextFocus, FieldText.Length());
+                mFieldTextFocus = Math::Min(mFieldTextFocus + String::GetLengthOfFirstLetter(chars(FieldText) + mFieldTextFocus), mFieldTextLength);
+            }
+        }
+        jump(code == 36) // Home
+        {
+            FlushSavedIME(domname);
+            mFieldTextFocus = 0;
+        }
+        jump(code == 35) // End
+        {
+            FlushSavedIME(domname);
+            mFieldTextFocus = mFieldTextLength;
+        }
+        jump(code == 8) // BackSpace
+        {
+            if(mSavedIME != L'\0')
+                mSavedIME = WString::BreakKorean(mSavedIME);
+            else if(0 < mFieldTextFocus)
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const sint32 LetterSize = String::GetLengthOfLastLetter(FieldText, mFieldTextFocus);
+                const String FrontText = FieldText.Left(mFieldTextFocus - LetterSize);
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
+                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
+                mFieldTextFocus -= LetterSize;
+                mFieldTextLength -= LetterSize;
+            }
+        }
+        jump(code == 46) // Delete
         {
             if(mFieldTextFocus < mFieldTextLength)
             {
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const sint32 LetterSize = String::GetLengthOfFirstLetter(chars(FieldText) + mFieldTextFocus);
                 const String FrontText = FieldText.Left(mFieldTextFocus);
-                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus - 1));
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus - LetterSize));
                 ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
-                mFieldTextLength--;
+                mFieldTextLength -= LetterSize;
             }
         }
-        jump(code == 0x01000000) // Esc
+        jump(code == 27) // Esc
         {
             if(view) view->clearCapture();
             ZayWidgetDOM::SetValue(domname, '\'' + mFieldSavedText + '\'');
             mFieldSavedCursor.Remove(uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
+            mSavedIME = L'\0';
         }
-        jump(code == 0x01000004) // Enter
+        jump(code == 13) // Enter
         {
+            FlushSavedIME(domname);
             if(view) view->clearCapture();
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
         }
-        jump(code == 0x01000031) // F2
+        jump(code == 21) // 한영키
+        {
+            FlushSavedIME(domname);
+            mLastLanguage = LanguageMode((mLastLanguage + 1) % LM_Max);
+        }
+        jump(code == 113) // F2
         {
             String PastedText = Platform::Utility::RecvFromTextClipboard();
             if(0 < PastedText.Length())
             {
-                PastedText.Replace('\'', '"');
+                PastedText.Replace('\'', '"'); // 예외처리
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                 const String FrontText = FieldText.Left(mFieldTextFocus);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
@@ -1131,19 +1202,96 @@ namespace BOSS
                 mFieldTextLength += PastedText.Length();
             }
         }
-        jump(0 < key) // Ascii
+        jump(Platform::Utility::IsWordableKey(code)) // 문자
         {
-            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-            const String FrontText = FieldText.Left(mFieldTextFocus);
-            const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
-            ZayWidgetDOM::SetValue(domname, '\'' + FrontText + key + RearText + '\'');
-            mFieldTextFocus++;
-            mFieldTextLength++;
+            const String IMEResult = AddToIME(key);
+            if(0 < IMEResult.Length())
+                FlushIME(domname, IMEResult);
         }
         else return;
 
         // 포커스커서 초기화
         if(auto CurCursor = mFieldSavedCursor.Access(uiname))
             CurCursor->ClearFocus();
+    }
+
+    String ZayControl::AddToIME(char key)
+    {
+        String Result;
+        if(mLastLanguage == LM_Korean)
+        {
+            wchar_t Code = L'\0';
+            switch(key)
+            {
+            case 'A': Code = L'ㅁ'; break; case 'B': Code = L'ㅠ'; break; case 'C': Code = L'ㅊ'; break; case 'D': Code = L'ㅇ'; break;
+            case 'E': Code = L'ㄸ'; break; case 'F': Code = L'ㄹ'; break; case 'G': Code = L'ㅎ'; break; case 'H': Code = L'ㅗ'; break;
+            case 'I': Code = L'ㅑ'; break; case 'J': Code = L'ㅓ'; break; case 'K': Code = L'ㅏ'; break; case 'L': Code = L'ㅣ'; break;
+            case 'M': Code = L'ㅡ'; break; case 'N': Code = L'ㅜ'; break; case 'O': Code = L'ㅒ'; break; case 'P': Code = L'ㅖ'; break;
+            case 'Q': Code = L'ㅃ'; break; case 'R': Code = L'ㄲ'; break; case 'S': Code = L'ㄴ'; break; case 'T': Code = L'ㅆ'; break;
+            case 'U': Code = L'ㅕ'; break; case 'V': Code = L'ㅍ'; break; case 'W': Code = L'ㅉ'; break; case 'X': Code = L'ㅌ'; break;
+            case 'Y': Code = L'ㅛ'; break; case 'Z': Code = L'ㅋ'; break;
+            case 'a': Code = L'ㅁ'; break; case 'b': Code = L'ㅠ'; break; case 'c': Code = L'ㅊ'; break; case 'd': Code = L'ㅇ'; break;
+            case 'e': Code = L'ㄷ'; break; case 'f': Code = L'ㄹ'; break; case 'g': Code = L'ㅎ'; break; case 'h': Code = L'ㅗ'; break;
+            case 'i': Code = L'ㅑ'; break; case 'j': Code = L'ㅓ'; break; case 'k': Code = L'ㅏ'; break; case 'l': Code = L'ㅣ'; break;
+            case 'm': Code = L'ㅡ'; break; case 'n': Code = L'ㅜ'; break; case 'o': Code = L'ㅐ'; break; case 'p': Code = L'ㅔ'; break;
+            case 'q': Code = L'ㅂ'; break; case 'r': Code = L'ㄱ'; break; case 's': Code = L'ㄴ'; break; case 't': Code = L'ㅅ'; break;
+            case 'u': Code = L'ㅕ'; break; case 'v': Code = L'ㅍ'; break; case 'w': Code = L'ㅈ'; break; case 'x': Code = L'ㅌ'; break;
+            case 'y': Code = L'ㅛ'; break; case 'z': Code = L'ㅋ'; break;
+            }
+            if(Code != L'\0')
+            {
+                if(mSavedIME != L'\0')
+                {
+                    wchars MergeResult = WString::MergeKorean(mSavedIME, Code);
+                    if(MergeResult[1] != L'\0')
+                    {
+                        mSavedIME = MergeResult[1];
+                        Result += String::FromWChars(WString(MergeResult[0]));
+                    }
+                    else mSavedIME = MergeResult[0];
+                }
+                else mSavedIME = Code;
+            }
+            else
+            {
+                if(mSavedIME != L'\0')
+                {
+                    Result += String::FromWChars(WString(mSavedIME));
+                    mSavedIME = L'\0';
+                }
+                Result += key;
+            }
+        }
+        else Result += key;
+
+        // 예외처리
+        if(!Result.Compare("'"))
+            Result = "\"";
+        else if(!Result.Compare("\\"))
+            Result = "■";
+        return Result;
+    }
+
+    void ZayControl::FlushIME(const String& domname, const String added)
+    {
+        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+        const String FrontText = FieldText.Left(mFieldTextFocus);
+        const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mFieldTextFocus));
+        ZayWidgetDOM::SetValue(domname, '\'' + FrontText + added + RearText + '\'');
+
+        const sint32 AddedLength = added.Length();
+        mFieldTextFocus += AddedLength;
+        mFieldTextLength += AddedLength;
+    }
+
+    bool ZayControl::FlushSavedIME(const String& domname)
+    {
+        if(mSavedIME != L'\0')
+        {
+            FlushIME(domname, String::FromWChars(WString(mSavedIME)));
+            mSavedIME = L'\0';
+            return true;
+        }
+        return false;
     }
 }

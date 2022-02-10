@@ -773,6 +773,12 @@
             return -1;
         }
 
+        bool Platform::Utility::IsWordableKey(sint32 virtualkey)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // CLOCK
         ////////////////////////////////////////////////////////////////////////////////

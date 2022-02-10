@@ -616,7 +616,20 @@ namespace BOSS
                     uint16 MergedKssm = 0, MergedKssm2 = 0;
                     if(FrontComplete1)
                     {
-                        if(IsRearCode2) // 중성결합
+                        if(IsRearCode1) // 초성추가
+                        {
+                            if(FrontCode1 == 2 && RearCode1 == 2) // ㄱ + ㄱ = ㄲ
+                                MergedKssm = 0x8000 | (3 << 10) | (2 << 5) | (1);
+                            else if(FrontCode1 == 5 && RearCode1 == 5) // ㄷ + ㄷ = ㄸ
+                                MergedKssm = 0x8000 | (6 << 10) | (2 << 5) | (1);
+                            else if(FrontCode1 == 9 && RearCode1 == 9) // ㅂ + ㅂ = ㅃ
+                                MergedKssm = 0x8000 | (10 << 10) | (2 << 5) | (1);
+                            else if(FrontCode1 == 11 && RearCode1 == 11) // ㅅ + ㅅ = ㅆ
+                                MergedKssm = 0x8000 | (12 << 10) | (2 << 5) | (1);
+                            else if(FrontCode1 == 14 && RearCode1 == 14) // ㅈ + ㅈ = ㅉ
+                                MergedKssm = 0x8000 | (15 << 10) | (2 << 5) | (1);
+                        }
+                        else if(IsRearCode2) // 중성결합
                             MergedKssm = 0x8000 | (FrontCode1 << 10) | (RearCode2 << 5) | (1);
                     }
                     else if(FrontComplete2)
@@ -761,6 +774,7 @@ namespace BOSS
                             }
                         }
                     }
+
                     if(MergedKssm)
                     if(wchars MergedResult = WCharFromKssmFinder((MergedKssm >> 8) & 0xFF, MergedKssm & 0xFF))
                     {
@@ -774,6 +788,45 @@ namespace BOSS
             }
         }
         return Result;
+    }
+
+    wchar_t WString::BreakKorean(wchar_t code)
+    {
+        chars_kssm Kssm = KssmFinder(code);
+        const bool IsExtended = (Kssm && (Kssm[0] & 0x80));
+        if(IsExtended)
+        {
+            const sint32 Code = ((Kssm[0] & 0x7F) << 8) | (Kssm[1] & 0xFF);
+            const sint32 Code1 = (Code >> 10) & 0x1F;
+            const sint32 Code2 = (Code >>  5) & 0x1F;
+            const sint32 Code3 = (Code >>  0) & 0x1F;
+            const bool IsKorean = (0 < Code1 && Code1 <= 20)
+                && (1 < Code2 && Code2 <= 29 && Code2 != 8 && Code2 != 9 && Code2 != 16 && Code2 != 17 && Code2 != 24 && Code2 != 25)
+                && (0 < Code3 && Code3 <= 29 && Code3 != 18);
+
+            if(IsKorean)
+            {
+                // 00  01  02  03  04  05  06  07  08  09  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31
+                // ⓧ  ●  ㄱ  ㄲ  ㄴ  ㄷ  ㄸ  ㄹ  ㅁ  ㅂ  ㅃ  ㅅ  ㅆ  ㅇ  ㅈ  ㅉ  ㅊ  ㅋ  ㅌ  ㅍ  ㅎ
+                // ⓧ  ⓧ  ●  ㅏ  ㅐ  ㅑ  ㅒ  ㅓ  ⓧ  ⓧ  ㅔ  ㅕ  ㅖ  ㅗ  ㅘ  ㅙ  ⓧ  ⓧ  ㅚ  ㅛ  ㅜ  ㅝ  ㅞ  ㅟ  ⓧ  ⓧ  ㅠ  ㅡ  ㅢ  ㅣ
+                // ⓧ  ●  ㄱ  ㄲ  ㄳ  ㄴ  ㄵ  ㄶ  ㄷ  ㄹ  ㄺ  ㄻ  ㄼ  ㄽ  ㄾ  ㄿ  ㅀ  ㅁ  ⓧ  ㅂ  ㅄ  ㅅ  ㅆ  ㅇ  ㅈ  ㅊ  ㅋ  ㅌ  ㅍ  ㅎ
+                uint16 MergedKssm = 0;
+                if(Code3 != 1) // 종성이 존재
+                    MergedKssm = 0x8000 | (Code1 << 10) | (Code2 << 5) | (1);
+                else if(Code2 != 2) // 중성이 존재
+                    MergedKssm = 0x8000 | (Code1 << 10) | (2 << 5) | (1);
+                else if(Code1 != 1) // 초성이 존재
+                    MergedKssm = 0x8000 | (1 << 10) | (2 << 5) | (1);
+
+                if(MergedKssm)
+                {
+                    if(wchars MergedResult = WCharFromKssmFinder((MergedKssm >> 8) & 0xFF, MergedKssm & 0xFF))
+                        return *MergedResult;
+                    return L'\0';
+                }
+            }
+        }
+        return code;
     }
 
     sint32 WString::Compare(wchars text, wchars other, sint32 maxlength)
@@ -806,6 +859,20 @@ namespace BOSS
                 return 2;
         }
         return 1;
+    }
+
+    sint32 WString::GetLengthOfLastLetter(wchars text, sint32 length)
+    {
+        if(length == -1)
+            length = boss_wcslen(text);
+        sint32 CurLength = 0;
+        while(CurLength < length)
+        {
+            text += CurLength;
+            length -= CurLength;
+            CurLength = GetLengthOfFirstLetter(text);
+        }
+        return length;
     }
 
     const wchararray& WString::NullString()

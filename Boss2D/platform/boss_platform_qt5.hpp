@@ -604,7 +604,7 @@
                 return;
             }
             if(!event->isAutoRepeat())
-                key(event->key(), event->text().toUtf8().constData(), true);
+                key(event->nativeVirtualKey(), event->text().toUtf8().constData(), true);
         }
 
         void keyReleaseEvent(QKeyEvent* event)
@@ -615,7 +615,7 @@
                 return;
             }
             if(!event->isAutoRepeat())
-                key(event->key(), event->text().toUtf8().constData(), false);
+                key(event->nativeVirtualKey(), event->text().toUtf8().constData(), false);
         }
 
     private:
@@ -1900,14 +1900,14 @@
 
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE
         {
-            if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+            if(event->nativeVirtualKey() == 13) // Enter
             {
                 if(m_closing == TCT_Null)
                     m_closing = TCT_Enter;
                 close();
                 m_tracker.Unlock();
             }
-            else if(event->key() == Qt::Key_Escape)
+            else if(event->nativeVirtualKey() == 27) // Esc
             {
                 if(m_closing == TCT_Null)
                     m_closing = TCT_Escape;

@@ -524,8 +524,13 @@ public:
         static float CurrentTrafficCPU();
 
         /// @brief 마지막 핫키를 반환(비워짐)
-        /// @return 키값(저장된 키값이 없으면 -1)
+        /// @return 가상키값(저장된 키값이 없으면 -1)
         static sint32 LastHotKey();
+
+        /// @brief 문자화 가능한 가상키여부
+        /// @param virtualkey : 가상키값
+        /// @return 문자화 가능여부
+        static bool IsWordableKey(sint32 virtualkey);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

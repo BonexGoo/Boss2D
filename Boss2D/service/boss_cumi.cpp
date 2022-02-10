@@ -1137,40 +1137,40 @@ void IMESystem::KeyProcess(CumiNode& cumi, CumiEditor::KeyCB key, ZayObject* vie
 {
     if(key(cumi, mRepeatCode, mRepeatKey))
         cumi.GetTopNode()->Update();
-    else if(mRepeatCode == 0x01000000 && view) // Esc
+    else if(mRepeatCode == 27 && view) // Esc
     {
         view->clearCapture();
         mRepeatCode = 0; // 키해제
     }
-    else if(mRepeatCode == 0x01000004) // Enter
+    else if(mRepeatCode == 13) // Enter
         cumi.SendCursorNotify("EnterLine");
-    else if(mRepeatCode == 0x01000013) // Up
+    else if(mRepeatCode == 38) // Up
         cumi.SendCursorNotify("CursorUp");
-    else if(mRepeatCode == 0x01000015) // Down
+    else if(mRepeatCode == 40) // Down
         cumi.SendCursorNotify("CursorDown");
-    else if(mRepeatCode == 0x01000012) // Left
+    else if(mRepeatCode == 37) // Left
     {
         if(cumi.GetTopNode()->IsCursorFront())
             cumi.SendCursorNotify("CursorUpRear");
         else cumi.CursorToLeft();
     }
-    else if(mRepeatCode == 0x01000014) // Right
+    else if(mRepeatCode == 39) // Right
     {
         if(cumi.GetTopNode()->IsCursorRear())
             cumi.SendCursorNotify("CursorDownFront");
         else cumi.CursorToRight();
     }
-    else if(mRepeatCode == 0x01000010) // Home
+    else if(mRepeatCode == 36) // Home
     {
         auto NewCursor = cumi.GetTopNode()->AddCursorToFront();
         cumi.GetTopNode()->ClearCursor(NewCursor);
     }
-    else if(mRepeatCode == 0x01000011) // End
+    else if(mRepeatCode == 35) // End
     {
         auto NewCursor = cumi.GetTopNode()->AddCursorToRear();
         cumi.GetTopNode()->ClearCursor(NewCursor);
     }
-    else if(mRepeatCode == 0x01000003) // BackSpace
+    else if(mRepeatCode == 8) // BackSpace
     {
         if(cumi.GetTopNode()->IsCursorFront())
             cumi.SendCursorNotify("MergeFrontLine");
@@ -1180,7 +1180,7 @@ void IMESystem::KeyProcess(CumiNode& cumi, CumiEditor::KeyCB key, ZayObject* vie
             cumi.GetTopNode()->Update();
         }
     }
-    else if(mRepeatCode == 0x01000007) // Delete
+    else if(mRepeatCode == 46) // Delete
     {
         if(cumi.GetTopNode()->IsCursorRear())
             cumi.SendCursorNotify("MergeRearLine");
@@ -1190,9 +1190,9 @@ void IMESystem::KeyProcess(CumiNode& cumi, CumiEditor::KeyCB key, ZayObject* vie
             cumi.GetTopNode()->Update();
         }
     }
-    else if(mRepeatCode == 0x01000031) // F2
+    else if(mRepeatCode == 113) // F2
         cumi.SendCursorNotify("Paste");
-    else if(!(mRepeatCode & 0x01000000)) // Ascii
+    else if(Platform::Utility::IsWordableKey(mRepeatCode)) // 문자
     {
         cumi.InsertWord(mRepeatKey);
         cumi.GetTopNode()->Update();

@@ -183,6 +183,11 @@ namespace BOSS
         /// @return 병합된 결과(병합성공시 스트링사이즈 1, 실패시 2)
         static wchars MergeKorean(wchar_t front, wchar_t rear);
 
+        /// @brief 코드를 후면부터 제거(BackSpace효과)
+        /// @param code : 대상 코드
+        /// @return 제거된 결과
+        static wchar_t BreakKorean(wchar_t code);
+
         /// @brief wcscmp식 비교
         /// @param text : 원본 와이드스트링
         /// @param other : 비교할 와이드스트링
@@ -199,8 +204,14 @@ namespace BOSS
 
         /// @brief 첫 글자의 길이
         /// @param text : 조사할 스트링
-        /// @return 길이(char단위)
+        /// @return 길이(wchar_t단위)
         static sint32 GetLengthOfFirstLetter(wchars text);
+
+        /// @brief 마지막 글자의 길이
+        /// @param text : 조사할 스트링
+        /// @param length : 조사할 스트링의 길이(-1이면 자동설정)
+        /// @return 글자의 길이(char단위)
+        static sint32 GetLengthOfLastLetter(wchars text, sint32 length = -1);
 
     private:
         static const wchararray& NullString();

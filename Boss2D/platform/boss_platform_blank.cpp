@@ -749,6 +749,12 @@
             return -1;
         }
 
+        bool Platform::Utility::IsWordableKey(sint32 virtualkey)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // CLOCK
         ////////////////////////////////////////////////////////////////////////////////
