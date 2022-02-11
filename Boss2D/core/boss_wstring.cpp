@@ -683,7 +683,9 @@ namespace BOSS
                     {
                         if(IsRearCode1) // 종성추가
                         {
-                            if(FrontCode3 == 2 && RearCode1 == 11) // ㄱ + ㅅ = ㄳ
+                            if(FrontCode3 == 2 && RearCode1 == 2) // ㄱ + ㄱ = ㄲ
+                                MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (3);
+                            else if(FrontCode3 == 2 && RearCode1 == 11) // ㄱ + ㅅ = ㄳ
                                 MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (4);
                             else if(FrontCode3 == 5 && RearCode1 == 14) // ㄴ + ㅈ = ㄵ
                                 MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (6);
@@ -705,6 +707,8 @@ namespace BOSS
                                 MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (16);
                             else if(FrontCode3 == 19 && RearCode1 == 11) // ㅂ + ㅅ = ㅄ
                                 MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (20);
+                            else if(FrontCode3 == 21 && RearCode1 == 11) // ㅅ + ㅅ = ㅆ
+                                MergedKssm = 0x8000 | (FrontCode1 << 10) | (FrontCode2 << 5) | (22);
                         }
                         else if(IsRearCode2) // 종성분할
                         {

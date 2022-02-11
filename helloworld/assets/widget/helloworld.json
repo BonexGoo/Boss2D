@@ -151,7 +151,7 @@
 					]
 				},
 				{
-					"addw":"62",
+					"addw":"85",
 					"comment":"에디트박스1",
 					"compid":"15",
 					"compname":"xywh",
@@ -161,7 +161,8 @@
 							"(pW - 400) / 2",
 							"(pH - 60) / 2",
 							"400",
-							"60"
+							"60",
+							"true"
 						]
 					],
 					"expanded":"1",
@@ -232,18 +233,38 @@
 									[
 										{
 											"addw":"0",
-											"compid":"18",
-											"compname":"edit_box",
+											"compid":"31",
+											"compname":"ltrb",
 											"compvalues":
 											[
 												[
-													"edit1",
-													"text1"
+													"20",
+													"0",
+													"pW - 20",
+													"pH"
 												]
 											],
 											"expanded":"1",
-											"posx":"1702",
-											"posy":"858"
+											"posx":"1704",
+											"posy":"858",
+											"ui":
+											[
+												{
+													"addw":"0",
+													"compid":"18",
+													"compname":"edit_box",
+													"compvalues":
+													[
+														[
+															"edit1",
+															"text1"
+														]
+													],
+													"expanded":"1",
+													"posx":"2059",
+													"posy":"864"
+												}
+											]
 										}
 									]
 								}
@@ -252,7 +273,7 @@
 					]
 				},
 				{
-					"addw":"77",
+					"addw":"114",
 					"comment":"에디트박스2",
 					"compid":"25",
 					"compname":"xywh",
@@ -262,7 +283,8 @@
 							"(pW - 400) / 2",
 							"(pH - 60) / 2 + 80",
 							"400",
-							"60"
+							"60",
+							"true"
 						]
 					],
 					"expanded":"1",
@@ -333,18 +355,38 @@
 									[
 										{
 											"addw":"0",
-											"compid":"30",
-											"compname":"edit_box",
+											"compid":"32",
+											"compname":"ltrb",
 											"compvalues":
 											[
 												[
-													"edit2",
-													"text2"
+													"20",
+													"0",
+													"pW - 20",
+													"pH"
 												]
 											],
 											"expanded":"1",
-											"posx":"1698",
-											"posy":"1272"
+											"posx":"1701",
+											"posy":"1267",
+											"ui":
+											[
+												{
+													"addw":"0",
+													"compid":"30",
+													"compname":"edit_box",
+													"compvalues":
+													[
+														[
+															"edit2",
+															"text2"
+														]
+													],
+													"expanded":"1",
+													"posx":"2060",
+													"posy":"1276"
+												}
+											]
 										}
 									]
 								}

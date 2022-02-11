@@ -832,22 +832,34 @@ namespace BOSS
         const PanelState UIState = panel.state(uiname);
         const bool Captured = !!(UIState & PS_Captured);
         const bool Focused = !!(UIState & PS_Focused);
+        sint32 ScrollPos = 0;
+        bool RepaintOnce = Captured;
+
+        // 스크롤처리
+        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(uiname))
+        {
+            if(Captured && 0 < Self.mCopyAni) // 캡쳐이면서 복사애니가 돌아가면 일시 스크롤멈춤
+                RepaintOnce |= CurRenderInfo->GetScroll(ScrollPos);
+            else RepaintOnce |= CurRenderInfo->UpdateScroll(ScrollPos);
+            // 캡쳐가 아니면 스크롤상태 초기화
+            if(!Captured)
+                CurRenderInfo->SetScroll(0);
+        }
 
         // 비활성처리
         if(!enabled)
         {
-            ZAY_INNER_SCISSOR(panel, 0)
+            ZAY_INNER(panel, 0)
             {
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, 0, 0);
+                Self.RenderText(panel, uiname, VisualText, iCursor, ScrollPos, 0);
             }
-            return false;
         }
 
         // 캡쳐처리
-        if(Captured)
+        else if(Captured)
         {
             // 커서애니메이션 처리
             Self.mCapturedCursorAni = (Self.mCapturedCursorAni + 1) % 50;
@@ -860,7 +872,7 @@ namespace BOSS
             }
 
             // 캡쳐된 컨트롤
-            ZAY_INNER_UI_SCISSOR(panel, 0, uiname,
+            ZAY_INNER_UI(panel, 0, uiname,
                 ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
                 {
                     if(t == GT_KeyPressed)
@@ -958,7 +970,7 @@ namespace BOSS
                 const String VisualFrontText = Self.SecretFilter(ispassword, FieldText.Left(Self.mCapturedCursorIndex));
                 const String VisualRearText = Self.SecretFilter(ispassword, FieldText.Right(Math::Max(0, FieldText.Length() - Self.mCapturedCursorIndex)));
                 sint32 CurCursor = 0;
-                sint32 CurPos = 0;
+                sint32 CurPos = ScrollPos;
 
                 // 커서이전 텍스트
                 if(0 < VisualFrontText.Length())
@@ -966,33 +978,48 @@ namespace BOSS
 
                 // 커서
                 if(Self.mCopyAni == 0)
-                ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
                 {
-                    ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
-                        panel.fill();
-
-                    for(sint32 i = 0, iend = 5; i < iend; ++i)
+                    ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
                     {
-                        ZAY_RGBA(panel, 128, 128, 128, 40 * (iend - i) / iend)
+                        ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
+                            panel.fill();
+
+                        for(sint32 i = 0, iend = 5; i < iend; ++i)
                         {
-                            ZAY_XYWH(panel, 0, i, panel.w(), 1)
-                                panel.fill();
-                            ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
-                                panel.fill();
+                            ZAY_RGBA(panel, 128, 128, 128, 40 * (iend - i) / iend)
+                            {
+                                ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                                    panel.fill();
+                                ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                                    panel.fill();
+                            }
+                        }
+
+                        // 커서IME
+                        if(Self.mCapturedIMEChar != L'\0')
+                            panel.text(panel.w() / 2, panel.h() / 2, String::FromWChars(WString(Self.mCapturedIMEChar)));
+
+                        // 커서명칭
+                        switch(Self.mLastLanguage)
+                        {
+                        case LM_Korean:
+                            ZAY_FONT(panel, 0.3, "arial black")
+                                panel.text(panel.w() / 2, 0, "K O R", UIFA_CenterBottom);
+                            break;
                         }
                     }
 
-                    // 커서IME
-                    if(Self.mCapturedIMEChar != L'\0')
-                        panel.text(panel.w() / 2, panel.h() / 2, String::FromWChars(WString(Self.mCapturedIMEChar)));
-
-                    // 커서명칭
-                    switch(Self.mLastLanguage)
+                    // 스크롤보정
+                    const sint32 LeftLimit = panel.w() * 0.1;
+                    const sint32 RightLimit = panel.w() * 0.9;
+                    const sint32 LeftMove = LeftLimit - CurPos;
+                    const sint32 RightMove = (CurPos + CursorWidth) - RightLimit;
+                    if(0 < LeftMove || 0 < RightMove)
                     {
-                    case LM_Korean:
-                        ZAY_FONT(panel, 0.3, "arial black")
-                            panel.text(panel.w() / 2, 0, "K O R", UIFA_CenterBottom);
-                        break;
+                        const sint32 ContextSize = Platform::Graphics::GetStringWidth(FieldText) + CursorWidth;
+                        const sint32 ScrollMax = Math::Max(0, ContextSize - panel.w());
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(uiname))
+                            CurRenderInfo->MoveScroll((0 < LeftMove)? LeftMove : -RightMove, ScrollMax);
                     }
                 }
 
@@ -1018,53 +1045,55 @@ namespace BOSS
                         Self.mCapturedCursorAni = 0;
                 }
             }
-            return true;
         }
 
         // 비캡쳐처리
-        ZAY_INNER_UI_SCISSOR(panel, 0, uiname,
-            ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
-            {
-                // 캡쳐화
-                if(t == GT_Pressed)
-                {
-                    auto& Self = ST();
-                    v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname); // OnReleaseCapture를 호출
-
-                    const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-                    if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
-                        Self.mCapturedCursorIndex = CurRenderInfo->GetIndex(FieldText);
-                    else Self.mCapturedCursorIndex = 0; // 제이프로에 의한 예외상황
-                    Self.mCapturedCursorAni = 0;
-                    Self.mCapturedSavedText = FieldText;
-                    Self.mCopyAni = 0; // 복사애니중단
-                    Self.mLastPressCode = 0; // 키해제
-                }
-                // 커서포커스
-                else if(t == GT_Moving)
-                {
-                    auto& Self = ST();
-                    if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
-                    if(CurRenderInfo->SetFocusByPos(x))
-                        v->invalidate();
-                }
-                else if(t == GT_MovingLosed)
-                {
-                    auto& Self = ST();
-                    if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
-                    {
-                        CurRenderInfo->ClearFocus();
-                        v->invalidate();
-                    }
-                }
-            })
+        else
         {
-            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
-            const String VisualText = Self.SecretFilter(ispassword, FieldText);
-            sint32 iCursor = 0;
-            Self.RenderText(panel, uiname, VisualText, iCursor, 0, CursorHeight);
+            ZAY_INNER_UI(panel, 0, uiname,
+                ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
+                {
+                    // 캡쳐화
+                    if(t == GT_Pressed)
+                    {
+                        auto& Self = ST();
+                        v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname); // OnReleaseCapture를 호출
+
+                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                            Self.mCapturedCursorIndex = CurRenderInfo->GetIndex(FieldText);
+                        else Self.mCapturedCursorIndex = 0; // 제이프로에 의한 예외상황
+                        Self.mCapturedCursorAni = 0;
+                        Self.mCapturedSavedText = FieldText;
+                        Self.mCopyAni = 0; // 복사애니중단
+                        Self.mLastPressCode = 0; // 키해제
+                    }
+                    // 커서포커스
+                    else if(t == GT_Moving)
+                    {
+                        auto& Self = ST();
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        if(CurRenderInfo->SetFocusByPos(x))
+                            v->invalidate();
+                    }
+                    else if(t == GT_MovingLosed)
+                    {
+                        auto& Self = ST();
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        {
+                            CurRenderInfo->ClearFocus();
+                            v->invalidate();
+                        }
+                    }
+                })
+            {
+                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String VisualText = Self.SecretFilter(ispassword, FieldText);
+                sint32 iCursor = 0;
+                Self.RenderText(panel, uiname, VisualText, iCursor, ScrollPos, CursorHeight);
+            }
         }
-        return false;
+        return RepaintOnce;
     }
 
     const String ZayControl::SecretFilter(bool ispassword, chars text) const

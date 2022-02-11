@@ -174,10 +174,53 @@ namespace BOSS
                 return false;
             }
 
+            bool GetScroll(sint32& pos) const
+            {
+                const sint32 CurScrollPos = mScrollPos;
+                pos = CurScrollPos;
+                if(mScrollTarget < CurScrollPos)
+                    return true;
+                else if(CurScrollPos < mScrollTarget)
+                    return true;
+                return false;
+            }
+
+            void SetScroll(sint32 pos)
+            {
+                mScrollTarget = pos;
+            }
+
+            void MoveScroll(sint32 add, sint32 scrollmax)
+            {
+                if(mPosMax < mPosArray.Count())
+                    mScrollTarget = Math::Clamp(sint32(mScrollPos) + add, -scrollmax, 0);
+            }
+
+            bool UpdateScroll(sint32& pos)
+            {
+                const sint32 CurScrollPos = mScrollPos;
+                if(mScrollTarget < CurScrollPos)
+                {
+                    mScrollPos = Math::MaxF(mScrollPos * 0.9 + mScrollTarget * 0.1 - 0.5, mScrollTarget);
+                    pos = sint32(mScrollPos);
+                    return true;
+                }
+                else if(CurScrollPos < mScrollTarget)
+                {
+                    mScrollPos = Math::MinF(mScrollPos * 0.9 + mScrollTarget * 0.1 + 0.5, mScrollTarget);
+                    pos = sint32(mScrollPos);
+                    return true;
+                }
+                pos = CurScrollPos;
+                return false;
+            }
+
         private:
             sint32s mPosArray;
             sint32 mPosMax {0};
             sint32 mFocus {0};
+            sint32 mScrollTarget {0};
+            float mScrollPos {0.0};
         };
 
     private:
