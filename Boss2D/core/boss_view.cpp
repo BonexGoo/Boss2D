@@ -158,6 +158,10 @@ namespace BOSS
     {
     }
 
+    void View::OnActivate(bool actived)
+    {
+    }
+
     void View::OnSize(sint32 w, sint32 h)
     {
     }

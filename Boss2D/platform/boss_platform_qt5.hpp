@@ -420,6 +420,15 @@
             }
         }
 
+        inline void sendActivate(bool actived)
+        {
+            if(m_view_manager != nullptr)
+            {
+                g_view = getWidget();
+                m_view_manager->OnActivate(actived);
+            }
+        }
+
         inline void sendSizeWhenValid()
         {
             if(0 < m_width && 0 < m_height)
@@ -493,6 +502,11 @@
                     m_update_timer.start(1000 / USER_FRAMECOUNT);
                 m_paintcount = count;
             }
+        }
+
+        void onActivateEvent(bool actived)
+        {
+            sendActivate(actived);
         }
 
         bool closeEvent(QCloseEvent* event)
@@ -1142,6 +1156,10 @@
         MainViewGL& operator=(const MainViewGL& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
 
     public:
+        void onActivateEvent(bool actived)
+        {
+            m_api->onActivateEvent(actived);
+        }
         void onCloseEvent(QCloseEvent* event)
         {
             if(m_api->closeEvent(event))
@@ -1252,6 +1270,10 @@
         MainViewMDI& operator=(const MainViewMDI& rhs) {BOSS_ASSERT("사용금지", false); return *this;}
 
     public:
+        void onActivateEvent(bool actived)
+        {
+            m_api->onActivateEvent(actived);
+        }
         void onCloseEvent(QCloseEvent* event)
         {
             if(m_api->closeEvent(event))
@@ -1435,6 +1457,14 @@
         ~MainData() {}
 
     public:
+        void onActivateEvent(bool actived)
+        {
+            if(m_viewGL)
+                m_viewGL->onActivateEvent(actived);
+            else if(m_viewMDI)
+                m_viewMDI->onActivateEvent(actived);
+        }
+
         void onCloseEvent(QCloseEvent* event)
         {
             Platform::Popup::CloseAllTracker();
@@ -1605,7 +1635,8 @@
 
         void changeEvent(QEvent* event) Q_DECL_OVERRIDE
         {
-            if(event->type() == QEvent::WindowStateChange)
+            auto EventType = event->type();
+            if(EventType == QEvent::WindowStateChange)
             {
                 switch(windowState())
                 {
@@ -1644,6 +1675,8 @@
                     break;
                 }
             }
+            else if(EventType == QEvent::ActivationChange)
+                g_data->onActivateEvent(isActiveWindow());
             QWidget::changeEvent(event);
         }
 

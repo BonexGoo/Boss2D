@@ -155,7 +155,7 @@
 #define ZAY_VIEW_API static void
 #define ZAY_DECLARE_VIEW(NAME) ZAY_DECLARE_VIEW_CLASS(NAME, ZayObject)
 #define ZAY_DECLARE_VIEW_CLASS(NAME, CLASS) \
-    ZAY_VIEW_API OnCommand(CommandType, chars, id_share, id_cloned_share*); \
+    ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*); \
     ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*); \
     ZAY_VIEW_API OnGesture(GestureType, sint32, sint32); \
     ZAY_VIEW_API OnRender(ZayPanel&); \
@@ -167,7 +167,7 @@
     static autorun _ = ZayView::_makefunc(false, "" NAME, OnCommand, OnNotify, \
         OnGesture, OnRender, _Lock, _Unlock, _Alloc, _Free);
 #define ZAY_DECLARE_VIEW_NATIVE(NAME, CLASS) \
-    ZAY_VIEW_API OnCommand(CommandType, chars, id_share, id_cloned_share*); \
+    ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*); \
     ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*); \
     ZAY_VIEW_API OnGesture(GestureType, sint32, sint32) {BOSS_ASSERT("This function should not be called directly.", false);} \
     ZAY_VIEW_API OnRender(ZayPanel&) {BOSS_ASSERT("This function should not be called directly.", false);} \
@@ -190,7 +190,7 @@
 
 namespace BOSS
 {
-    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Size, CT_Tick};
+    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Tick};
     enum GestureType {
         // 일반
         GT_Null, GT_Moving, GT_MovingIdle, GT_MovingLosed, GT_Pressed,
@@ -226,7 +226,7 @@ namespace BOSS
         friend class ZayObjectData;
 
     public:
-        typedef void (*CommandCB)(CommandType, chars, id_share, id_cloned_share*);
+        typedef void (*CommandCB)(CommandType, id_share, id_cloned_share*);
         typedef void (*NotifyCB)(NotifyType, chars, id_share, id_cloned_share*);
         typedef void (*LockCB)(ZayObject*);
         typedef void (*UnlockCB)();
@@ -709,7 +709,7 @@ namespace BOSS
         public:
             void setcapture(chars uiname, ZayObject::ReleaseCaptureCB cb_once = nullptr, payload data = nullptr);
             void clearcapture();
-            void eraseCapture(payload condition = nullptr);
+            void erasecapture(payload condition = nullptr);
             const Element* getcapture() const;
             PanelState capturetest(chars uiname) const;
 
@@ -825,6 +825,7 @@ namespace BOSS
         void OnCreate() override;
         bool OnCanQuit() override;
         void OnDestroy() override;
+        void OnActivate(bool actived) override;
         void OnSize(sint32 w, sint32 h) override;
         void OnTick() override;
         void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;

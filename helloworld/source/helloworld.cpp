@@ -5,7 +5,7 @@
 
 ZAY_DECLARE_VIEW_CLASS("helloworldView", helloworldData)
 
-ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_share* out)
+ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
     if(type == CT_Tick)
     {
@@ -15,6 +15,8 @@ ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_sha
         if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
             m->invalidate(2);
     }
+    else if(type == CT_Activate && !boolo(in).ConstValue())
+        m->clearCapture();
 }
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -23,6 +25,8 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
+    if(type == GT_Pressed)
+        m->clearCapture();
 }
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
@@ -35,7 +39,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     ZAY_INNER_UI(panel, 30, "exit",
         ZAY_GESTURE_T(type)
         {
-            if(type == GT_InReleased)
+            if(type == GT_Pressed)
+                m->clearCapture();
+            else if(type == GT_InReleased)
                 Platform::Utility::ExitProgram();
         })
     {

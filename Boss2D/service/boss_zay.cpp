@@ -2,7 +2,7 @@
 #include "boss_zay.hpp"
 
 ZAY_DECLARE_VIEW("_defaultview_")
-ZAY_VIEW_API OnCommand(CommandType, chars, id_share, id_cloned_share*) {}
+ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
 ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*) {}
 ZAY_VIEW_API OnGesture(GestureType, sint32, sint32) {}
 ZAY_VIEW_API OnRender(ZayPanel& panel)
@@ -305,7 +305,7 @@ namespace BOSS
     void ZayObject::eraseCapture(payload condition)
     {
         if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
-            CurTouch->eraseCapture(condition);
+            CurTouch->erasecapture(condition);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1720,7 +1720,7 @@ namespace BOSS
         View::Regist(m_viewclass, m_data->m_view);
 
         m_ref_func->m_lock(m_data);
-        m_ref_func->m_command(CT_Create, "", nullptr, nullptr);
+        m_ref_func->m_command(CT_Create, nullptr, nullptr);
         m_ref_func->m_unlock();
     }
 
@@ -1730,7 +1730,7 @@ namespace BOSS
         {
             m_ref_func->m_lock(m_data);
             id_cloned_share out = nullptr;
-            m_ref_func->m_command(CT_CanQuit, "(Can you quit?)", nullptr, &out);
+            m_ref_func->m_command(CT_CanQuit, nullptr, &out);
             m_ref_func->m_unlock();
 
             bool Result = true;
@@ -1747,11 +1747,18 @@ namespace BOSS
     void ZayView::OnDestroy()
     {
         m_ref_func->m_lock(m_data);
-        m_ref_func->m_command(CT_Destroy, "", nullptr, nullptr);
+        m_ref_func->m_command(CT_Destroy, nullptr, nullptr);
         m_ref_func->m_unlock();
 
         BOSS_ASSERT("브로드캐스트 해제에 실패하였습니다", m_data);
         View::Unregist(m_viewclass, m_data->m_view);
+    }
+
+    void ZayView::OnActivate(bool actived)
+    {
+        m_ref_func->m_lock(m_data);
+        m_ref_func->m_command(CT_Activate, boolo(actived), nullptr);
+        m_ref_func->m_unlock();
     }
 
     void ZayView::OnSize(sint32 w, sint32 h)
@@ -1761,14 +1768,14 @@ namespace BOSS
         WH.AtAdding() = h;
 
         m_ref_func->m_lock(m_data);
-        m_ref_func->m_command(CT_Size, "", WH, nullptr);
+        m_ref_func->m_command(CT_Size, WH, nullptr);
         m_ref_func->m_unlock();
     }
 
     void ZayView::OnTick()
     {
         m_ref_func->m_lock(m_data);
-        m_ref_func->m_command(CT_Tick, "", nullptr, nullptr);
+        m_ref_func->m_command(CT_Tick, nullptr, nullptr);
         m_ref_func->m_unlock();
 
         ((ZayObjectData*) m_data)->wakeUpCheck();
@@ -2382,7 +2389,7 @@ namespace BOSS
         m_captured_uiname.Empty();
     }
 
-    void ZayView::Touch::eraseCapture(payload condition)
+    void ZayView::Touch::erasecapture(payload condition)
     {
         if(!condition || condition == m_captured_data)
         {

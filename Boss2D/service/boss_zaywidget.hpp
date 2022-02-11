@@ -98,71 +98,95 @@ namespace BOSS
         const String SecretFilter(bool ispassword, chars text) const;
         sint32 RenderText(ZayPanel& panel, const String& uiname, chars text, sint32& cursor, sint32 pos, sint32 height);
         void OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key);
+        static void OnReleaseCapture(payload olddata, payload newdata);
         String AddToIME(char key);
         void FlushIME(const String& domname, const String added);
         bool FlushSavedIME(const String& domname);
 
     private:
-        struct Cursor
+        class RenderInfo
         {
-            sint32s mPosArray;
-            sint32 mPosMax {0};
-            sint32 mCursor {0};
-
-            sint32 GetPos(chars text, sint32 cursor)
+        public:
+            sint32 GetPos(chars text, sint32 index) const
             {
-                sint32 Focus = 0;
-                while(0 < cursor)
+                sint32 Cursor = 0;
+                while(0 < index)
                 {
                     const sint32 Length = String::GetLengthOfFirstLetter(text);
                     text += Length;
-                    cursor -= Length;
-                    Focus++;
+                    index -= Length;
+                    Cursor++;
                 }
-                return (Focus < mPosArray.Count())? mPosArray[Focus] : 0;
+                return (Cursor < mPosArray.Count())? mPosArray[Cursor] : 0;
+            }
+
+            void UpdatePos(sint32 cursor, sint32 pos)
+            {
+                mPosArray.AtWherever(cursor) = pos;
+                mPosMax = cursor;
             }
 
             void ClearFocus()
             {
-                mCursor = 0;
+                mFocus = 0;
             }
 
-            sint32 GetFocusBy(chars text)
+            sint32 GetIndex(chars text) const
             {
                 sint32 Index = 0;
-                for(sint32 i = 0; i < mCursor; ++i)
+                for(sint32 cursor = 0; cursor < mFocus; ++cursor)
                     Index += String::GetLengthOfFirstLetter(text + Index);
                 return Index;
             }
 
-            bool SetFocusText(sint32 pos)
+            inline sint32 GetFocus() const
+            {return mFocus;}
+
+            void SetFocusByIndex(chars text, sint32 index)
             {
-                sint32 NewCursor = mPosMax;
-                for(sint32 i = 0; i < mPosMax; ++i)
+                sint32 Cursor = 0;
+                while(0 < index)
                 {
-                    if(pos < (mPosArray[i] + mPosArray[i + 1]) / 2)
+                    const sint32 Length = String::GetLengthOfFirstLetter(text);
+                    text += Length;
+                    index -= Length;
+                    Cursor++;
+                }
+                mFocus = Cursor;
+            }
+
+            bool SetFocusByPos(sint32 pos)
+            {
+                sint32 NewFocus = mPosMax;
+                for(sint32 cursor = 0; cursor < mPosMax; ++cursor)
+                {
+                    if(pos < (mPosArray[cursor] + mPosArray[cursor + 1]) / 2)
                     {
-                        NewCursor = i;
+                        NewFocus = cursor;
                         break;
                     }
                 }
-                if(mCursor != NewCursor)
+                if(mFocus != NewFocus)
                 {
-                    mCursor = NewCursor;
+                    mFocus = NewFocus;
                     return true;
                 }
                 return false;
-            };
+            }
+
+        private:
+            sint32s mPosArray;
+            sint32 mPosMax {0};
+            sint32 mFocus {0};
         };
 
     private:
         // 필드정보
-        sint32 mFieldTextFocus {0};
-        sint32 mFieldTextLength {0};
-        String mFieldSavedDom;
-        String mFieldSavedText; // Esc를 위한 원본텍스트
-        Map<Cursor> mFieldSavedCursor;
-        sint32 mCursorAni {0};
+        sint32 mCapturedCursorIndex {0};
+        sint32 mCapturedCursorAni {0};
+        wchar_t mCapturedIMEChar;
+        String mCapturedSavedText; // Esc를 위한 원본텍스트
+        Map<RenderInfo> mRenderInfoMap;
         // 복사정보
         sint32 mCopyAni {0};
         static const sint32 mCopyAniMax {20};
@@ -172,9 +196,7 @@ namespace BOSS
         sint32 mLastPressCode {0};
         char mLastPressKey {0};
         sint64 mLastPressMsec {0};
-        // IME정보
         enum LanguageMode {LM_English, LM_Korean, LM_Max};
         LanguageMode mLastLanguage {LM_English};
-        wchar_t mSavedIME;
     };
 }
