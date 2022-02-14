@@ -230,12 +230,12 @@ void CProjectCreatorDlg::OnCreateClick()
         LPVOID ResBits = (LPVOID) LockResource(Res);
 
         sint32 FileCount = 0;
-        if(id_zip NewZip = AddOn::Zip::Create((bytes) ResBits, ResSize, &FileCount))
+        if(id_zip NewZip = AddOn::Zip::OpenForBuffer((bytes) ResBits, ResSize, &FileCount))
         {
             for(sint32 i = 0; i < FileCount; ++i)
             {
                 bool IsDir = false;
-                String FileName = AddOn::Zip::GetFileInfo(NewZip, i, &IsDir);
+                String FileName = AddOn::Zip::GetFileInfo(NewZip, i, nullptr, &IsDir);
                 if(!IsDir)
                 {
                     buffer LastFileName = ((Share*)(id_share) FileName)->CopiedBuffer();
@@ -245,7 +245,7 @@ void CProjectCreatorDlg::OnCreateClick()
                     const String ChangedFileName((chars) LastFileName);
                     Buffer::Free(LastFileName);
 
-                    if(buffer NewBuffer = AddOn::Zip::ToFile(NewZip, i))
+                    if(buffer NewBuffer = AddOn::Zip::ToBuffer(NewZip, i))
                     {
                         NewBuffer = ReplaceContent(NewBuffer, "[[[DISPNAME]]]", TitleName);
                         NewBuffer = ReplaceContent(NewBuffer, "[[[PROJNAME]]]", ProjectName);
@@ -258,7 +258,7 @@ void CProjectCreatorDlg::OnCreateClick()
                     }
                 }
             }
-            AddOn::Zip::Release(NewZip);
+            AddOn::Zip::Close(NewZip);
         }
 
         UnlockResource(Res);

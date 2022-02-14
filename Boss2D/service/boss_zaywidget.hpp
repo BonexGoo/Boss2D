@@ -92,7 +92,7 @@ namespace BOSS
         {return *BOSS_STORAGE(ZayControl);}
 
     public:
-        static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, bool enabled, bool ispassword);
+        static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, sint32 border, bool enabled, bool ispassword);
 
     private:
         const String SecretFilter(bool ispassword, chars text) const;
@@ -176,50 +176,73 @@ namespace BOSS
 
             bool GetScroll(sint32& pos) const
             {
+                const sint32 CurScrollTarget = mScrollTarget + mScrollWheel;
                 const sint32 CurScrollPos = mScrollPos;
                 pos = CurScrollPos;
-                if(mScrollTarget < CurScrollPos)
+                if(CurScrollTarget < CurScrollPos)
                     return true;
-                else if(CurScrollPos < mScrollTarget)
+                else if(CurScrollPos < CurScrollTarget)
                     return true;
                 return false;
-            }
-
-            void SetScroll(sint32 pos)
-            {
-                mScrollTarget = pos;
-            }
-
-            void MoveScroll(sint32 add, sint32 scrollmax)
-            {
-                if(mPosMax < mPosArray.Count())
-                    mScrollTarget = Math::Clamp(sint32(mScrollPos) + add, -scrollmax, 0);
             }
 
             bool UpdateScroll(sint32& pos)
             {
+                const sint32 CurScrollTarget = mScrollTarget + mScrollWheel;
                 const sint32 CurScrollPos = mScrollPos;
-                if(mScrollTarget < CurScrollPos)
+                if(CurScrollTarget < CurScrollPos)
                 {
-                    mScrollPos = Math::MaxF(mScrollPos * 0.9 + mScrollTarget * 0.1 - 0.5, mScrollTarget);
+                    mScrollPos = Math::MaxF(mScrollPos * 0.9 + CurScrollTarget * 0.1 - 0.5, CurScrollTarget);
                     pos = sint32(mScrollPos);
                     return true;
                 }
-                else if(CurScrollPos < mScrollTarget)
+                else if(CurScrollPos < CurScrollTarget)
                 {
-                    mScrollPos = Math::MinF(mScrollPos * 0.9 + mScrollTarget * 0.1 + 0.5, mScrollTarget);
+                    mScrollPos = Math::MinF(mScrollPos * 0.9 + CurScrollTarget * 0.1 + 0.5, CurScrollTarget);
                     pos = sint32(mScrollPos);
                     return true;
                 }
                 pos = CurScrollPos;
                 return false;
+            }
+
+            void MoveScrollTarget(sint32 add, sint32 scrollmax)
+            {
+                if(mPosMax < mPosArray.Count())
+                {
+                    mScrollMax = scrollmax;
+                    mScrollTarget = Math::Clamp(sint32(mScrollPos) + add, -scrollmax, 0);
+                }
+            }
+
+            void ZeroScrollTarget()
+            {
+                mScrollTarget = 0;
+            }
+
+            void MoveScrollWheel(sint32 add)
+            {
+                mScrollWheel += add;
+            }
+
+            void ZeroScrollWheel()
+            {
+                mScrollWheel = 0;
+            }
+
+            void FlushScrollWheel()
+            {
+                mScrollTarget = Math::Clamp(mScrollTarget + mScrollWheel, -mScrollMax, 0);
+                mScrollWheel = 0;
             }
 
         private:
             sint32s mPosArray;
             sint32 mPosMax {0};
             sint32 mFocus {0};
+            sint32 mScrollMax {0};
             sint32 mScrollTarget {0};
+            sint32 mScrollWheel {0};
             float mScrollPos {0.0};
         };
 

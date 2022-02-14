@@ -6,7 +6,7 @@
 
 ZAY_DECLARE_VIEW_CLASS("zayreviewerView", zayreviewerData)
 
-ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_share* out)
+ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
     if(type == CT_Tick)
     {
@@ -238,7 +238,7 @@ zayreviewerData::zayreviewerData()
         const Context Recent(ST_Json, SO_OnlyReference, RecentString, RecentString.Length());
         hook(Recent("ProjectPathes"))
         for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
-            mRecentProjectPathes.AtAdding() = fish[i].GetString("");
+            mRecentProjectPathes.AtAdding() = fish[i].GetText("");
     }
 }
 
@@ -1069,7 +1069,7 @@ String& zayreviewerData::GetUserName(chars author)
     auto& NewName = mUserNames(author);
     auto AssetPath = String::Format("user/%s.txt", author);
     if(Asset::Exist(AssetPath))
-        NewName = Context(ST_Json, SO_OnlyReference, String::FromAsset(AssetPath))("name").GetString("정보없음");
+        NewName = Context(ST_Json, SO_OnlyReference, String::FromAsset(AssetPath))("name").GetText("정보없음");
     else NewName = "파일없음";
     return NewName;
 }

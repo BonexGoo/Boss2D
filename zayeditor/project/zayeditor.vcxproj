@@ -28,8 +28,9 @@
     <ResourceCompile Include="..\common\windows\main.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\boss_config.h" />
-    <ClInclude Include="..\source\boss_gen_assets.hpp" />
+    <ClInclude Include="..\source-gen\boss_buildtag.hpp" />
+    <ClInclude Include="..\source-gen\boss_config.h" />
+    <ClInclude Include="..\source-gen\boss_assets.hpp" />
     <ClInclude Include="..\source\zaybox.hpp" />
     <ClInclude Include="..\source\zayeditor.hpp" />
     <ClInclude Include="..\source\resource.hpp" />

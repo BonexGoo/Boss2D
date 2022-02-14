@@ -415,7 +415,14 @@
             return nullptr;
         }
 
-        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass)
+        void Platform::SendDirectNotify(h_view view, chars topic, id_share in)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
@@ -645,7 +652,7 @@
         sint32 Platform::Utility::GetScreenCount()
         {
             BOSS_ASSERT("Further development is needed.", false);
-            return 0
+            return 0;
         }
 
         void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
@@ -671,7 +678,7 @@
             return nullptr;
         }
 
-        void Platform::Utility::SendToClipboard(chars text)
+        void Platform::Utility::SendToTextClipboard(chars text)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
@@ -2262,7 +2269,7 @@
             return -1;
         }
 
-        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return false;

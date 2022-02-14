@@ -213,6 +213,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\config\boss_assets.hpp" />
+    <ClInclude Include="..\config\boss_buildtag.hpp" />
     <ClInclude Include="..\config\boss_config.h" />
     <ClInclude Include="GetTextDlg.h" />
     <ClInclude Include="MainFrm.h" />

@@ -617,15 +617,16 @@ namespace BOSS
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "edit_box",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4)
+                if(params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
                 auto UIName = ViewName + '.' + params.Param(0).ToText();
                 auto DOMName = params.Param(1).ToText();
-                auto Enabled = (params.ParamCount() < 3)? true : params.ParamToBool(2, HasError);
-                auto IsPassword = (params.ParamCount() < 4)? false : params.ParamToBool(3, HasError);
+                auto Border = params.Param(2).ToInteger();
+                auto Enabled = (params.ParamCount() < 4)? true : params.ParamToBool(3, HasError);
+                auto IsPassword = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
 
-                if(ZayControl::RenderEditBox(panel, UIName, DOMName, Enabled, IsPassword))
+                if(ZayControl::RenderEditBox(panel, UIName, DOMName, Border, Enabled, IsPassword))
                     panel.repaintOnce();
 
                 if(HasError)
@@ -633,7 +634,8 @@ namespace BOSS
                 return panel._push_pass();
             },
             "[UIName]"
-            "[DomName:group.name]#"
+            "[DomName:group.name]"
+            "[Border:10]#"
             "[EnableFlag:true|false]"
             "[PasswordFlag:false|true]");
 
@@ -822,7 +824,7 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     // ZayControl
     ////////////////////////////////////////////////////////////////////////////////
-    bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, bool enabled, bool ispassword)
+    bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, sint32 border, bool enabled, bool ispassword)
     {
         auto& Self = ST();
         const sint32 CursorWidth = (Self.mLastLanguage == LM_English)? 4 : 2 + Platform::Graphics::GetStringWidth("가");
@@ -836,14 +838,14 @@ namespace BOSS
         bool RepaintOnce = Captured;
 
         // 스크롤처리
+        const bool ScrollDisabled = (Captured && 0 < Self.mCopyAni);
+        sint32 CalcedScrollBar = 0;
+        sint32 CalcedContentSize = 0;
         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(uiname))
         {
-            if(Captured && 0 < Self.mCopyAni) // 캡쳐이면서 복사애니가 돌아가면 일시 스크롤멈춤
+            if(ScrollDisabled) // 캡쳐이면서 복사애니가 돌아가면 일시 스크롤멈춤
                 RepaintOnce |= CurRenderInfo->GetScroll(ScrollPos);
             else RepaintOnce |= CurRenderInfo->UpdateScroll(ScrollPos);
-            // 캡쳐가 아니면 스크롤상태 초기화
-            if(!Captured)
-                CurRenderInfo->SetScroll(0);
         }
 
         // 비활성처리
@@ -854,7 +856,7 @@ namespace BOSS
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, ScrollPos, 0);
+                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0);
             }
         }
 
@@ -896,7 +898,10 @@ namespace BOSS
                         const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                         sint32 NewCursorIndex = 0;
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        {
                             NewCursorIndex = CurRenderInfo->GetIndex(FieldText);
+                            CurRenderInfo->FlushScrollWheel(); // 스크롤휠 무효화
+                        }
                         else Self.mCapturedCursorIndex = 0; // 제이프로에 의한 예외상황
 
                         if(NewCursorIndex < Self.mCapturedCursorIndex)
@@ -961,6 +966,16 @@ namespace BOSS
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
                             CurRenderInfo->ClearFocus();
+                            CurRenderInfo->ZeroScrollWheel();
+                            v->invalidate();
+                        }
+                    }
+                    else if(t == GT_WheelUp || t == GT_WheelDown)
+                    {
+                        auto& Self = ST();
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        {
+                            CurRenderInfo->MoveScrollWheel((t == GT_WheelUp)? 50 : -50);
                             v->invalidate();
                         }
                     }
@@ -970,11 +985,12 @@ namespace BOSS
                 const String VisualFrontText = Self.SecretFilter(ispassword, FieldText.Left(Self.mCapturedCursorIndex));
                 const String VisualRearText = Self.SecretFilter(ispassword, FieldText.Right(Math::Max(0, FieldText.Length() - Self.mCapturedCursorIndex)));
                 sint32 CurCursor = 0;
-                sint32 CurPos = ScrollPos;
+                sint32 CurPos = border + ScrollPos;
 
                 // 커서이전 텍스트
                 if(0 < VisualFrontText.Length())
                     CurPos = Self.RenderText(panel, uiname, VisualFrontText, CurCursor, CurPos, CursorHeight);
+                CalcedScrollBar = CurPos; // 스크롤보정용
 
                 // 커서
                 if(Self.mCopyAni == 0)
@@ -1008,24 +1024,12 @@ namespace BOSS
                             break;
                         }
                     }
-
-                    // 스크롤보정
-                    const sint32 LeftLimit = panel.w() * 0.1;
-                    const sint32 RightLimit = panel.w() * 0.9;
-                    const sint32 LeftMove = LeftLimit - CurPos;
-                    const sint32 RightMove = (CurPos + CursorWidth) - RightLimit;
-                    if(0 < LeftMove || 0 < RightMove)
-                    {
-                        const sint32 ContextSize = Platform::Graphics::GetStringWidth(FieldText) + CursorWidth;
-                        const sint32 ScrollMax = Math::Max(0, ContextSize - panel.w());
-                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(uiname))
-                            CurRenderInfo->MoveScroll((0 < LeftMove)? LeftMove : -RightMove, ScrollMax);
-                    }
                 }
 
                 // 커서이후 텍스트
                 if(0 < VisualRearText.Length())
-                    Self.RenderText(panel, uiname, VisualRearText, CurCursor, CurPos + CursorWidth, CursorHeight);
+                    CurPos = Self.RenderText(panel, uiname, VisualRearText, CurCursor, CurPos + CursorWidth, CursorHeight);
+                CalcedContentSize = CurPos - ScrollPos + border; // 스크롤보정용
 
                 // 복사애니메이션 처리
                 if(0 < Self.mCopyAni)
@@ -1061,7 +1065,10 @@ namespace BOSS
 
                         const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        {
                             Self.mCapturedCursorIndex = CurRenderInfo->GetIndex(FieldText);
+                            CurRenderInfo->FlushScrollWheel(); // 스크롤휠 무효화
+                        }
                         else Self.mCapturedCursorIndex = 0; // 제이프로에 의한 예외상황
                         Self.mCapturedCursorAni = 0;
                         Self.mCapturedSavedText = FieldText;
@@ -1082,6 +1089,16 @@ namespace BOSS
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
                             CurRenderInfo->ClearFocus();
+                            CurRenderInfo->ZeroScrollWheel();
+                            v->invalidate();
+                        }
+                    }
+                    else if(t == GT_WheelUp || t == GT_WheelDown)
+                    {
+                        auto& Self = ST();
+                        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
+                        {
+                            CurRenderInfo->MoveScrollWheel((t == GT_WheelUp)? 50 : -50);
                             v->invalidate();
                         }
                     }
@@ -1090,7 +1107,36 @@ namespace BOSS
                 const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, ScrollPos, CursorHeight);
+                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight);
+            }
+        }
+
+        // 스크롤보정
+        if(auto CurRenderInfo = Self.mRenderInfoMap.Access(uiname))
+        {
+            if(Captured)
+            {
+                if(!ScrollDisabled)
+                {
+                    const sint32 LimitValue = Math::Max(0, panel.w() / 2 - border) / 2;
+                    const sint32 LeftLimit = panel.w() / 2 - LimitValue;
+                    const sint32 RightLimit = panel.w() / 2 + LimitValue;
+                    const sint32 LeftMove = LeftLimit - CalcedScrollBar;
+                    const sint32 RightMove = (CalcedScrollBar + CursorWidth) - RightLimit;
+                    if(0 < LeftMove || 0 < RightMove)
+                    {
+                        const sint32 ScrollMax = Math::Max(0, CalcedContentSize - panel.w());
+                        CurRenderInfo->MoveScrollTarget((0 < LeftMove)? LeftMove : -RightMove, ScrollMax);
+                    }
+                }
+            }
+            // 캡쳐가 아니면
+            else
+            {
+                // 스크롤타겟 초기화
+                CurRenderInfo->ZeroScrollTarget();
+                if(!enabled) // 비활성상태는 스크롤휠도 초기화
+                    CurRenderInfo->ZeroScrollWheel();
             }
         }
         return RepaintOnce;
@@ -1237,9 +1283,11 @@ namespace BOSS
         }
         else return;
 
-        // 포커스커서 초기화
         if(auto CurRenderInfo = mRenderInfoMap.Access(uiname))
-            CurRenderInfo->ClearFocus();
+        {
+            CurRenderInfo->ClearFocus(); // 포커스커서 초기화
+            CurRenderInfo->FlushScrollWheel(); // 스크롤휠 무효화
+        }
     }
 
     void ZayControl::OnReleaseCapture(payload olddata, payload newdata)

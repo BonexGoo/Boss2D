@@ -54,9 +54,9 @@ void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB 
         hook(json[i])
         {
             String CurCompName;
-            if(auto CurName = fish("compname").GetString(nullptr))
-                CurCompName = CurName;
-            else CurCompName = fish.GetString(); // 옛날 포맷으로 쓰여진 조건문인 경우
+            if(fish("compname").HasValue())
+                CurCompName = fish("compname").GetText();
+            else CurCompName = fish.GetText(); // 옛날 포맷으로 쓰여진 조건문인 경우
 
             // 자식구성
             auto NewChildBox = cb(CurCompName);
@@ -677,9 +677,9 @@ sint32 ZEZayBox::Copy(ZEZayBoxMap& boxmap, CreatorCB cb)
     mCompID = MakeLastID();
 
     sint32 NewID = -1;
-    if(auto CurCompName = Json("compname").GetString(nullptr))
+    if(Json("compname").HasValue())
     {
-        auto NewParentBox = cb(CurCompName);
+        auto NewParentBox = cb(Json("compname").GetText());
         NewParentBox->ReadJson(Json);
         NewParentBox->mPosX = mPosX;
         NewParentBox->mPosY = mPosY;
@@ -936,8 +936,8 @@ ZEZayBox::BodyComment::~BodyComment()
 void ZEZayBox::BodyComment::ReadJson(const Context& json)
 {
     mComment.Empty();
-    if(auto OneComment = json("comment").GetString(nullptr))
-        mComment = OneComment;
+    if(json("comment").HasValue())
+        mComment = json("comment").GetText();
     CommentTag::Update(&mBox);
 }
 
@@ -1003,8 +1003,8 @@ void ZEZayBox::BodyNameComment::ReadJson(const Context& json)
 {
     BodyComment::ReadJson(json);
     mName.Empty();
-    if(auto OneName = json("uiname").GetString(nullptr))
-        mName = OneName;
+    if(json("uiname").HasValue())
+        mName = json("uiname").GetText();
 }
 
 void ZEZayBox::BodyNameComment::WriteJson(Context& json) const
@@ -1108,13 +1108,13 @@ void ZEZayBox::BodyParamGroup::ReadJson(const Context& json)
                 String ParamCollector;
                 for(sint32 j = 0; j < ParamLength; ++j)
                 {
-                    ParamCollector += fish[j].GetString();
+                    ParamCollector += fish[j].GetText();
                     if(j < ParamLength - 1)
                         ParamCollector += ", ";
                 }
                 mParams.AtAdding() = ParamCollector;
             }
-            else mParams.AtAdding() = fish.GetString();
+            else mParams.AtAdding() = fish.GetText();
         }
     }
     mBox.RecalcSize();
@@ -1384,11 +1384,11 @@ void ZEZayBox::BodyInputGroup::ReadJson(const Context& json)
                 chararray OneKey;
                 hook(fish(0, &OneKey))
                 {
-                    NewInput.mKey = OneKey;
-                    NewInput.mValue = fish.GetString();
+                    NewInput.mKey = &OneKey[0];
+                    NewInput.mValue = fish.GetText();
                 }
             }
-            else NewInput.mValue = fish.GetString();
+            else NewInput.mValue = fish.GetText();
         }
     }
     mBox.RecalcSize();
@@ -1562,8 +1562,8 @@ ZEZayBox::BodyLoopOperation::~BodyLoopOperation()
 void ZEZayBox::BodyLoopOperation::ReadJson(const Context& json)
 {
     mOperation.Empty();
-    if(auto OneLoop = json("uiloop").GetString(nullptr))
-        mOperation = OneLoop;
+    if(json("uiloop").HasValue())
+        mOperation = json("uiloop").GetText();
 }
 
 void ZEZayBox::BodyLoopOperation::WriteJson(Context& json) const
@@ -1845,8 +1845,8 @@ ZEZayBoxObject ZEZayBoxContent::Create(bool child, bool param, chars paramcommen
 
 void ZEZayBoxContent::ReadJson(const Context& json)
 {
-    if(auto CurID = json("compid").GetString(nullptr))
-        mCompID = ValidLastID(Parser::GetInt(CurID));
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
 
     mComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
@@ -1934,8 +1934,8 @@ ZEZayBoxObject ZEZayBoxLayout::Create(chars paramcomment)
 
 void ZEZayBoxLayout::ReadJson(const Context& json)
 {
-    if(auto CurID = json("compid").GetString(nullptr))
-        mCompID = ValidLastID(Parser::GetInt(CurID));
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
 
     mNameComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
@@ -2031,8 +2031,8 @@ ZEZayBoxObject ZEZayBoxLoop::Create()
 
 void ZEZayBoxLoop::ReadJson(const Context& json)
 {
-    if(auto CurID = json("compid").GetString(nullptr))
-        mCompID = ValidLastID(Parser::GetInt(CurID));
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
 
     mNameComment.ReadJson(json);
     mOperation.ReadJson(json);
@@ -2125,8 +2125,8 @@ void ZEZayBoxCondition::WriteJson(Context& json) const
     if(mHasElseAndOperation)
     {
         if(mOperation.mWithElse)
-            json.At("compname").Set("el" + OneType + +'(' + mOperation.mOperation + ')');
-        else json.At("compname").Set(OneType + +'(' + mOperation.mOperation + ')');
+            json.At("compname").Set("el" + OneType + '(' + mOperation.mOperation + ')');
+        else json.At("compname").Set(OneType + '(' + mOperation.mOperation + ')');
     }
     else json.At("compname").Set(OneType);
 }
@@ -2183,8 +2183,8 @@ ZEZayBoxObject ZEZayBoxError::Create()
 
 void ZEZayBoxError::ReadJson(const Context& json)
 {
-    if(auto CurID = json("compid").GetString(nullptr))
-        mCompID = ValidLastID(Parser::GetInt(CurID));
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
 
     mNameComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));

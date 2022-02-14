@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="source-gen">
+      <UniqueIdentifier>{2d0233b3-2d3f-4ab1-b623-c0c3e94c8fe5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source">
       <UniqueIdentifier>{5c61e721-a50e-4103-9859-c4c48d6b4d42}</UniqueIdentifier>
     </Filter>
@@ -24,16 +27,19 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\boss_config.h">
-      <Filter>source</Filter>
+    <ClInclude Include="..\source-gen\boss_config.h">
+      <Filter>source-gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source-gen\boss_assets.hpp">
+      <Filter>source-gen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source-gen\boss_buildtag.hpp">
+      <Filter>source-gen</Filter>
     </ClInclude>
     <ClInclude Include="..\source\zayreviewer.hpp">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source\resource.hpp">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\boss_gen_assets.hpp">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source\source.hpp">

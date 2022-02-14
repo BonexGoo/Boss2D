@@ -233,38 +233,19 @@
 									[
 										{
 											"addw":"0",
-											"compid":"31",
-											"compname":"ltrb",
+											"compid":"18",
+											"compname":"edit_box",
 											"compvalues":
 											[
 												[
-													"20",
-													"0",
-													"pW - 20",
-													"pH"
+													"edit1",
+													"text1",
+													"20"
 												]
 											],
 											"expanded":"1",
-											"posx":"1704",
-											"posy":"858",
-											"ui":
-											[
-												{
-													"addw":"0",
-													"compid":"18",
-													"compname":"edit_box",
-													"compvalues":
-													[
-														[
-															"edit1",
-															"text1"
-														]
-													],
-													"expanded":"1",
-													"posx":"2059",
-													"posy":"864"
-												}
-											]
+											"posx":"1715",
+											"posy":"858"
 										}
 									]
 								}
@@ -315,8 +296,8 @@
 									"compid":"27",
 									"compname":"fill",
 									"expanded":"1",
-									"posx":"1353",
-									"posy":"1100"
+									"posx":"1349",
+									"posy":"1083"
 								}
 							]
 						},
@@ -355,38 +336,19 @@
 									[
 										{
 											"addw":"0",
-											"compid":"32",
-											"compname":"ltrb",
+											"compid":"30",
+											"compname":"edit_box",
 											"compvalues":
 											[
 												[
-													"20",
-													"0",
-													"pW - 20",
-													"pH"
+													"edit2",
+													"text2",
+													"20"
 												]
 											],
 											"expanded":"1",
-											"posx":"1701",
-											"posy":"1267",
-											"ui":
-											[
-												{
-													"addw":"0",
-													"compid":"30",
-													"compname":"edit_box",
-													"compvalues":
-													[
-														[
-															"edit2",
-															"text2"
-														]
-													],
-													"expanded":"1",
-													"posx":"2060",
-													"posy":"1276"
-												}
-											]
+											"posx":"1715",
+											"posy":"1272"
 										}
 									]
 								}

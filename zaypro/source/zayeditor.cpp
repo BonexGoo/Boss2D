@@ -5,7 +5,7 @@
 
 ZAY_DECLARE_VIEW_CLASS("zayeditorView", zayeditorData)
 
-ZAY_VIEW_API OnCommand(CommandType type, chars topic, id_share in, id_cloned_share* out)
+ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
     if(type == CT_Tick)
     {
@@ -40,15 +40,15 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
     {
         const sint32 KeyCode = sint32o(in).ConstValue();
         branch;
-        jump(KeyCode == 0x01000012) // Left
+        jump(KeyCode == 37) // Left
             m->mWorkViewDrag = Point(300, 0);
-        jump(KeyCode == 0x01000013) // Up
+        jump(KeyCode == 38) // Up
             m->mWorkViewDrag = Point(0, 300);
-        jump(KeyCode == 0x01000014) // Right
+        jump(KeyCode == 39) // Right
             m->mWorkViewDrag = Point(-300, 0);
-        jump(KeyCode == 0x01000015) // Down
+        jump(KeyCode == 40) // Down
             m->mWorkViewDrag = Point(0, -300);
-        jump(KeyCode == 0x01000034) // F5: 간단세이브
+        jump(KeyCode == 116) // F5: 간단세이브
             m->FastSave();
     }
     else if(type == NT_FileContent)
