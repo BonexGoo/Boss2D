@@ -956,6 +956,13 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Graphics::SetShader(ShaderRole role)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::Graphics::SetFont(chars name, float size)
         {
             BOSS_ASSERT("Qt5플랫폼처럼 CurCanvas()로의 통합이 필요!!!", false);

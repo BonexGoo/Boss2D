@@ -187,13 +187,12 @@
         inline float zoom() const {return mPainter.transform().m11();}
         inline const QRect& scissor() const {return mScissor;}
         inline const QColor& color() const {return mColor;}
+        inline const ShaderRole& shader() const {return mShader;}
         // Setter
         inline void SetFont(chars name, sint32 size)
         {mUseFontFT = false; mPainter.setFont(QFont(name, size));}
         inline void SetFontFT(chars nickname, sint32 height)
         {mUseFontFT = true; mFontFT.mNickName = nickname; mFontFT.mHeight = height;}
-        inline void SetMask(QPainter::CompositionMode mask)
-        {mPainter.setCompositionMode(mask);}
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
         {
             mScissor = QRect(l, t, r - l, b - t);
@@ -201,20 +200,27 @@
         }
         inline void SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
         {mColor.setRgb(r, g, b, a);}
+        inline void SetMask(QPainter::CompositionMode mask)
+        {mPainter.setCompositionMode(mask);}
+        inline void SetShader(ShaderRole role)
+        {mShader = role;}
     private:
         static inline CanvasClass*& ST() {static CanvasClass* _ = nullptr; return _;}
-    private:
+    private: // 서피스관련
         const bool mIsTypeSurface;
         bool mIsSurfaceBinded;
+    private: // 페인터관련
         CanvasClass* mSavedCanvas;
         float mSavedZoom;
-        bool mUseFontFT;
-        FTFontClass mFontFT;
         QFont mSavedFont;
         QPainter::CompositionMode mSavedMask;
         QPainter mPainter;
+    private: // 오리지널옵션
+        bool mUseFontFT;
+        FTFontClass mFontFT;
         QRect mScissor;
         QColor mColor;
+        ShaderRole mShader;
     };
 
     class ViewAPI : public QObject
@@ -2035,12 +2041,7 @@
     private:
         OpenGLClass()
         {
-            mVShader[0] = mVShader[1] = 0;
-            mFShader[0] = mFShader[1] = 0;
-            mProgram[0] = mProgram[1] = 0;
-            if(QOpenGLContext::currentContext()->isOpenGLES())
-                InitShaderGLES30();
-            else InitShaderGL();
+            InitAllShaders(QOpenGLContext::currentContext()->isOpenGLES());
             const uint08 SampleBGRA[4] = {255, 255, 255, 255};
             mFillTexture = Platform::Graphics::CreateTexture(false, false, 1, 1, SampleBGRA);
         }
@@ -2086,16 +2087,19 @@
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
+            const sint32 CurProgram = CanvasClass::get()->shader();
+            const GLfloat CurResolution[2] {1, 1};
+            f->glUseProgram(mPrograms[CurProgram]); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-            f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Vertice); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Color); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::TexCoords); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Vertice, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mUniformMatrices[CurProgram], 1, GL_FALSE, (const GLfloat*) &mMatrix[0][0]); TestGL(BOSS_DBG 0);
+            f->glUniform2fv(mUniformResolutions[CurProgram], 1, (const GLfloat*) &CurResolution[0]); TestGL(BOSS_DBG 0);
 
             f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
             f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
@@ -2172,16 +2176,19 @@
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            f->glUseProgram(mProgram[0]); TestGL(BOSS_DBG 0);
+            const sint32 CurProgram = CanvasClass::get()->shader();
+            const GLfloat CurResolution[2] {(GLfloat) pixmap.width(), (GLfloat) pixmap.height()};
+            f->glUseProgram(mPrograms[CurProgram]); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-            f->glUniformMatrix4fv(mMatrix[0], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Vertice); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Color); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::TexCoords); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Vertice, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mUniformMatrices[CurProgram], 1, GL_FALSE, (const GLfloat*) &mMatrix[0][0]); TestGL(BOSS_DBG 0);
+            f->glUniform2fv(mUniformResolutions[CurProgram], 1, (const GLfloat*) &CurResolution[0]); TestGL(BOSS_DBG 0);
 
             f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
             f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
@@ -2242,15 +2249,15 @@
             NewRect.r = 2 * rect.r / DstWidth - 1;
             NewRect.b = 1 - 2 * rect.b / DstHeight;
 
-            const bool IsNV21 = (mProgram[1] && Platform::Graphics::IsTextureNV21(tex));
+            const bool IsNV21 = (mPrograms[SR_Nv21] && Platform::Graphics::IsTextureNV21(tex));
             if(IsNV21)
             {
                 f->glActiveTexture(GL_TEXTURE0);
                 f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 0));
-                f->glUniform1i(mTextureY, 0);
+                f->glUniform1i(mUniformTextureY, 0);
                 f->glActiveTexture(GL_TEXTURE1);
                 f->glBindTexture(GL_TEXTURE_2D, Platform::Graphics::GetTextureID(tex, 1));
-                f->glUniform1i(mTextureUV, 1);
+                f->glUniform1i(mUniformTextureUV, 1);
             }
             else
             {
@@ -2272,17 +2279,21 @@
                 f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             }
 
-            const sint32 SelectedProgram = (IsNV21)? 1 : 0;
-            f->glUseProgram(mProgram[SelectedProgram]); TestGL(BOSS_DBG 0);
+            const sint32 CurProgram = (IsNV21)? SR_Nv21 : CanvasClass::get()->shader();
+            const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
+            const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
+            const GLfloat CurResolution[2] {(GLfloat) SrcWidth, (GLfloat) SrcHeight};
+            f->glUseProgram(mPrograms[CurProgram]); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
             f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-            f->glEnableVertexAttribArray(TexCoordsID); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-            f->glVertexAttribPointer(TexCoordsID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
-            f->glUniformMatrix4fv(mMatrix[SelectedProgram], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Vertice); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::Color); TestGL(BOSS_DBG 0);
+            f->glEnableVertexAttribArray(AttribID::TexCoords); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Vertice, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::Color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
+            f->glVertexAttribPointer(AttribID::TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].texcoords[0]); TestGL(BOSS_DBG 0);
+            f->glUniformMatrix4fv(mUniformMatrices[CurProgram], 1, GL_FALSE, (const GLfloat*) &mMatrix[0][0]); TestGL(BOSS_DBG 0);
+            f->glUniform2fv(mUniformResolutions[CurProgram], 1, (const GLfloat*) &CurResolution[0]); TestGL(BOSS_DBG 0);
 
             f->glDisable(GL_CULL_FACE); TestGL(BOSS_DBG 0);
             f->glDisable(GL_DEPTH_TEST); TestGL(BOSS_DBG 0);
@@ -2323,8 +2334,6 @@
             case orientationtype_fliped270: UV[0] = 1; UV[1] = 3; UV[2] = 2; UV[3] = 0; break;
             }
 
-            const GLint SrcWidth = Platform::Graphics::GetTextureWidth(tex);
-            const GLint SrcHeight = Platform::Graphics::GetTextureHeight(tex);
             mAttrib[UV[0]].texcoords[0] = texrect.l / SrcWidth; // 좌측상단
             mAttrib[UV[0]].texcoords[1] = (SrcHeight - texrect.b) / SrcHeight;
             mAttrib[UV[1]].texcoords[0] = texrect.r / SrcWidth; // 우측상단
@@ -2343,60 +2352,47 @@
         }
 
     private:
-        void InitShader(chars vsource_rgb, chars fsource_rgb, chars vsource_nv21 = nullptr, chars fsource_nv21 = nullptr)
+        void InitShader(ShaderRole role, chars vsource, chars fsource)
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
 
-            chars VSources[2] = {vsource_rgb, vsource_nv21};
-            chars FSources[2] = {fsource_rgb, fsource_nv21};
-            for(sint32 i = 0, iend = (vsource_nv21 && fsource_nv21)? 2 : 1; i < iend; ++i)
+            mVShaders[role] = f->glCreateShader(GL_VERTEX_SHADER); TestGL(BOSS_DBG 0);
+            f->glShaderSource(mVShaders[role], 1, &vsource, NULL); TestGL(BOSS_DBG 0);
+            f->glCompileShader(mVShaders[role]); TestShader(BOSS_DBG mVShaders[role]);
+
+            mFShaders[role] = f->glCreateShader(GL_FRAGMENT_SHADER); TestGL(BOSS_DBG 0);
+            f->glShaderSource(mFShaders[role], 1, &fsource, NULL); TestGL(BOSS_DBG 0);
+            f->glCompileShader(mFShaders[role]); TestShader(BOSS_DBG mFShaders[role]);
+
+            mPrograms[role] = f->glCreateProgram(); TestGL(BOSS_DBG 0);
+            f->glAttachShader(mPrograms[role], mVShaders[role]); TestShader(BOSS_DBG mVShaders[role]);
+            f->glAttachShader(mPrograms[role], mFShaders[role]); TestShader(BOSS_DBG mFShaders[role]);
+
+            f->glLinkProgram(mPrograms[role]); TestProgram(BOSS_DBG mPrograms[role]);
+            f->glValidateProgram(mPrograms[role]); TestProgram(BOSS_DBG mPrograms[role]);
+
+            LoadIdentity();
+            f->glUseProgram(mPrograms[role]); TestProgram(BOSS_DBG mPrograms[role]);
+            mUniformMatrices[role] = f->glGetUniformLocation(mPrograms[role], "u_matrix"); TestGL(BOSS_DBG 0);
+            mUniformResolutions[role] = f->glGetUniformLocation(mPrograms[role], "u_resolution"); TestGL(BOSS_DBG 0);
+            if(role == SR_Nv21)
             {
-                mVShader[i] = f->glCreateShader(GL_VERTEX_SHADER); TestGL(BOSS_DBG 0);
-                f->glShaderSource(mVShader[i], 1, &VSources[i], NULL); TestGL(BOSS_DBG 0);
-                f->glCompileShader(mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
-
-                mFShader[i] = f->glCreateShader(GL_FRAGMENT_SHADER); TestGL(BOSS_DBG 0);
-                f->glShaderSource(mFShader[i], 1, &FSources[i], NULL); TestGL(BOSS_DBG 0);
-                f->glCompileShader(mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
-
-                mProgram[i] = f->glCreateProgram(); TestGL(BOSS_DBG 0);
-                f->glAttachShader(mProgram[i], mVShader[i]); TestShader(BOSS_DBG mVShader[i]);
-                f->glAttachShader(mProgram[i], mFShader[i]); TestShader(BOSS_DBG mFShader[i]);
-
-                f->glEnableVertexAttribArray(VerticeID); TestGL(BOSS_DBG 0);
-                f->glEnableVertexAttribArray(ColorID); TestGL(BOSS_DBG 0);
-                f->glBindAttribLocation(mProgram[i], VerticeID, "a_position"); TestGL(BOSS_DBG 0);
-                f->glBindAttribLocation(mProgram[i], ColorID, "a_color"); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(VerticeID, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), &mAttrib[0].vertices[0]); TestGL(BOSS_DBG 0);
-                f->glVertexAttribPointer(ColorID, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Attrib), &mAttrib[0].colors[0]); TestGL(BOSS_DBG 0);
-
-                f->glLinkProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-                f->glValidateProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-
-                LoadIdentity();
-                f->glUseProgram(mProgram[i]); TestProgram(BOSS_DBG mProgram[i]);
-                mMatrix[i] = f->glGetUniformLocation(mProgram[i], "u_matrix"); TestGL(BOSS_DBG 0);
-                f->glUniformMatrix4fv(mMatrix[i], 1, GL_FALSE, (const GLfloat*) &mM[0][0]); TestGL(BOSS_DBG 0);
-                if(i == 1)
-                {
-                    mTextureY = f->glGetUniformLocation(mProgram[i], "u_texture_y"); TestGL(BOSS_DBG 0);
-                    mTextureUV = f->glGetUniformLocation(mProgram[i], "u_texture_uv"); TestGL(BOSS_DBG 0);
-                }
+                mUniformTextureY = f->glGetUniformLocation(mPrograms[role], "u_texture_y"); TestGL(BOSS_DBG 0);
+                mUniformTextureUV = f->glGetUniformLocation(mPrograms[role], "u_texture_uv"); TestGL(BOSS_DBG 0);
             }
         }
-        void InitShaderGLES30()
+        void InitAllShaders(bool es)
         {
-            InitShader(
-                ////////////////////////////////////////////////////////////
-                // RGB
-                ////////////////////////////////////////////////////////////
+            chars VersionCode = (es)? "300 es" : "330 core";
+            InitShader(SR_Normal,
                 String::Format(
-                    "#version 300 es\n"
+                    "#version %s\n"
                     "layout (location = %d) in highp vec2 a_position;\n"
                     "layout (location = %d) in highp vec4 a_color;\n"
                     "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
                     "out mediump vec4 v_fragmentColor;\n"
                     "out mediump vec2 v_texCoord;\n"
                     "\n"
@@ -2405,27 +2401,29 @@
                     "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
                     "    v_fragmentColor = a_color;\n"
                     "    v_texCoord = a_texcoord;\n"
-                    "}", VerticeID, ColorID, TexCoordsID),
-                "#version 300 es\n"
-                "layout (location = 0) out highp vec4 oColour;\n"
-                "uniform highp mat4 u_matrix;\n"
-                "uniform highp sampler2D u_texture;\n"
-                "in mediump vec4 v_fragmentColor;\n"
-                "in mediump vec2 v_texCoord;\n"
-                "\n"
-                "void main()\n"
-                "{\n"
-                "    oColour = v_fragmentColor * texture(u_texture, v_texCoord);\n"
-                "}",
-                ////////////////////////////////////////////////////////////
-                // NV21
-                ////////////////////////////////////////////////////////////
+                    "}", VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
                 String::Format(
-                    "#version 300 es\n"
+                    "#version %s\n"
+                    "layout (location = 0) out highp vec4 oColour;\n"
+                    "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
+                    "uniform highp sampler2D u_texture;\n"
+                    "in mediump vec4 v_fragmentColor;\n"
+                    "in mediump vec2 v_texCoord;\n"
+                    "\n"
+                    "void main()\n"
+                    "{\n"
+                    "    oColour = v_fragmentColor * texture(u_texture, v_texCoord);\n"
+                    "}", VersionCode));
+
+            InitShader(SR_Nv21,
+                String::Format(
+                    "#version %s\n"
                     "layout (location = %d) in highp vec2 a_position;\n"
                     "layout (location = %d) in highp vec4 a_color;\n"
                     "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
                     "uniform highp sampler2D u_texture_y;\n"
                     "uniform highp sampler2D u_texture_uv;\n"
                     "out mediump vec4 v_fragmentColor;\n"
@@ -2436,35 +2434,36 @@
                     "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
                     "    v_fragmentColor = a_color;\n"
                     "    v_texCoord = a_texcoord;\n"
-                    "}", VerticeID, ColorID, TexCoordsID),
-                "#version 300 es\n"
-                "layout (location = 0) out highp vec4 oColour;\n"
-                "uniform highp mat4 u_matrix;\n"
-                "uniform highp sampler2D u_texture_y;\n"
-                "uniform highp sampler2D u_texture_uv;\n"
-                "in mediump vec4 v_fragmentColor;\n"
-                "in mediump vec2 v_texCoord;\n"
-                "\n"
-                "void main()\n"
-                "{\n"
-                "    highp float y = texture(u_texture_y, v_texCoord).r;\n"
-                "    highp float u = texture(u_texture_uv, v_texCoord).a - 0.5;\n"
-                "    highp float v = texture(u_texture_uv, v_texCoord).r - 0.5;\n"
-                "    highp float r = y + 1.403 * v;\n"
-                "    highp float g = y - 0.344 * u - 0.714 * v;\n"
-                "    highp float b = y + 1.770 * u;\n"
-                "    oColour = v_fragmentColor * vec4(r, g, b, 1.0);\n"
-                "}");
-        }
-        void InitShaderGL()
-        {
-            InitShader(
+                    "}", VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
                 String::Format(
-                    "#version 330 core\n"
+                    "#version %s\n"
+                    "layout (location = 0) out highp vec4 oColour;\n"
+                    "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
+                    "uniform highp sampler2D u_texture_y;\n"
+                    "uniform highp sampler2D u_texture_uv;\n"
+                    "in mediump vec4 v_fragmentColor;\n"
+                    "in mediump vec2 v_texCoord;\n"
+                    "\n"
+                    "void main()\n"
+                    "{\n"
+                    "    highp float y = texture(u_texture_y, v_texCoord).r;\n"
+                    "    highp float u = texture(u_texture_uv, v_texCoord).a - 0.5;\n"
+                    "    highp float v = texture(u_texture_uv, v_texCoord).r - 0.5;\n"
+                    "    highp float r = y + 1.403 * v;\n"
+                    "    highp float g = y - 0.344 * u - 0.714 * v;\n"
+                    "    highp float b = y + 1.770 * u;\n"
+                    "    oColour = v_fragmentColor * vec4(r, g, b, 1.0);\n"
+                    "}", VersionCode));
+
+            InitShader(SR_Blur,
+                String::Format(
+                    "#version %s\n"
                     "layout (location = %d) in highp vec2 a_position;\n"
                     "layout (location = %d) in highp vec4 a_color;\n"
                     "layout (location = %d) in highp vec2 a_texcoord;\n"
                     "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
                     "out mediump vec4 v_fragmentColor;\n"
                     "out mediump vec2 v_texCoord;\n"
                     "\n"
@@ -2473,42 +2472,47 @@
                     "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
                     "    v_fragmentColor = a_color;\n"
                     "    v_texCoord = a_texcoord;\n"
-                    "}", VerticeID, ColorID, TexCoordsID),
-                "#version 330 core\n"
-                "layout (location = 0) out highp vec4 oColour;\n"
-                "uniform highp mat4 u_matrix;\n"
-                "uniform highp sampler2D u_texture;\n"
-                "in mediump vec4 v_fragmentColor;\n"
-                "in mediump vec2 v_texCoord;\n"
-                "\n"
-                "void main()\n"
-                "{\n"
-                "    oColour = v_fragmentColor * texture2D(u_texture, v_texCoord);\n"
-                //"    float Pi2 = 6.28318530718;\n"
-                //"    float Direction = 16.0;\n"
-                //"    float Quality = 3.0;\n"
-                //"    vec2 Radius = vec2(8.0);\n"
-                //"    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
-                //"    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
-                //"    {\n"
-                //"        for(float i = 1.0 / Quality; i <= 1.0; i += 1.0 / Quality)\n"
-                //"        {\n"
-                //"            Sum += texture2D(u_texture, v_texCoord + vec2(cos(d), sin(d)) * Radius * i);\n"
-                //"        }\n"
-                //"    }\n"
-                //"    oColour = v_fragmentColor * (Sum / (Quality * Direction - 15.0));\n"
-                "}");
+                    "}", VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
+                String::Format(
+                    "#version %s\n"
+                    "layout (location = 0) out highp vec4 oColour;\n"
+                    "uniform highp mat4 u_matrix;\n"
+                    "uniform highp vec2 u_resolution;\n"
+                    "uniform highp sampler2D u_texture;\n"
+                    "in mediump vec4 v_fragmentColor;\n"
+                    "in mediump vec2 v_texCoord;\n"
+                    "\n"
+                    "void main()\n"
+                    "{\n"
+                    "    float Pi2 = 6.28318530718;\n"
+                    "    float Direction = %f;\n"
+                    "    float Quality = %f;\n"
+                    "    vec2 Radius = %f / u_resolution.xy;\n"
+                    "    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
+                    "    float SumRate = 1.0;\n"
+                    "    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
+                    "    {\n"
+                    "        for(float i = 1.0 / Quality; i < 1.0; i += 1.0 / Quality)\n"
+                    "        {\n"
+                    "            Sum += texture2D(u_texture, v_texCoord + vec2(cos(d), sin(d)) * Radius * i) * (1.0 - i);\n"
+                    "            SumRate += 1.0 - i;\n"
+                    "        }\n"
+                    "    }\n"
+                    "    oColour = v_fragmentColor * (Sum / SumRate);\n"
+                    "}", VersionCode, 128.0, 32.0, 64.0));
+                    // 약-블러 : 16.0, 4.0, 8.0 // 16 x 4 = 64회 반복
+                    // 강-블러 : 128.0, 32.0, 64.0 // 128 x 32 = 4096회 반복
         }
         void TermShader()
         {
             if(QOpenGLContext* ctx = QOpenGLContext::currentContext())
             {
                 QOpenGLFunctions* f = ctx->functions();
-                for(sint32 i = 0; i < 2; ++i)
+                for(sint32 i = 0; i < SR_Max; ++i)
                 {
-                    if(mProgram[i]) {f->glDeleteProgram(mProgram[i]); TestGL(BOSS_DBG 0); mProgram[i] = 0;}
-                    if(mVShader[i]) {f->glDeleteShader(mVShader[i]); TestGL(BOSS_DBG 0); mVShader[i] = 0;}
-                    if(mFShader[i]) {f->glDeleteShader(mFShader[i]); TestGL(BOSS_DBG 0); mFShader[i] = 0;}
+                    if(mPrograms[i]) {f->glDeleteProgram(mPrograms[i]); TestGL(BOSS_DBG 0); mPrograms[i] = 0;}
+                    if(mVShaders[i]) {f->glDeleteShader(mVShaders[i]); TestGL(BOSS_DBG 0); mVShaders[i] = 0;}
+                    if(mFShaders[i]) {f->glDeleteShader(mFShaders[i]); TestGL(BOSS_DBG 0); mFShaders[i] = 0;}
                 }
             }
         }
@@ -2561,10 +2565,10 @@
     private:
         void LoadIdentity()
         {
-            mM[0][0] = 1; mM[0][1] = 0; mM[0][2] = 0; mM[0][3] = 0;
-            mM[1][0] = 0; mM[1][1] = 1; mM[1][2] = 0; mM[1][3] = 0;
-            mM[2][0] = 0; mM[2][1] = 0; mM[2][2] = 1; mM[2][3] = 0;
-            mM[3][0] = 0; mM[3][1] = 0; mM[3][2] = 0; mM[3][3] = 1;
+            mMatrix[0][0] = 1; mMatrix[0][1] = 0; mMatrix[0][2] = 0; mMatrix[0][3] = 0;
+            mMatrix[1][0] = 0; mMatrix[1][1] = 1; mMatrix[1][2] = 0; mMatrix[1][3] = 0;
+            mMatrix[2][0] = 0; mMatrix[2][1] = 0; mMatrix[2][2] = 1; mMatrix[2][3] = 0;
+            mMatrix[3][0] = 0; mMatrix[3][1] = 0; mMatrix[3][2] = 0; mMatrix[3][3] = 1;
         }
         void Multiply(
             const float m00, const float m01, const float m02, const float m03,
@@ -2573,33 +2577,37 @@
             const float m30, const float m31, const float m32, const float m33)
         {
             GLfloat m[4][4];
-            Memory::Copy(&m[0][0], &mM[0][0], sizeof(GLfloat) * 16);
-            mM[0][0] = m[0][0] * m00 + m[0][1] * m10 + m[0][2] * m20 + m[0][3] * m30;
-            mM[0][1] = m[0][0] * m01 + m[0][1] * m11 + m[0][2] * m21 + m[0][3] * m31;
-            mM[0][2] = m[0][0] * m02 + m[0][1] * m12 + m[0][2] * m22 + m[0][3] * m32;
-            mM[0][3] = m[0][0] * m03 + m[0][1] * m13 + m[0][2] * m23 + m[0][3] * m33;
-            mM[1][0] = m[1][0] * m00 + m[1][1] * m10 + m[1][2] * m20 + m[1][3] * m30;
-            mM[1][1] = m[1][0] * m01 + m[1][1] * m11 + m[1][2] * m21 + m[1][3] * m31;
-            mM[1][2] = m[1][0] * m02 + m[1][1] * m12 + m[1][2] * m22 + m[1][3] * m32;
-            mM[1][3] = m[1][0] * m03 + m[1][1] * m13 + m[1][2] * m23 + m[1][3] * m33;
-            mM[2][0] = m[2][0] * m00 + m[2][1] * m10 + m[2][2] * m20 + m[2][3] * m30;
-            mM[2][1] = m[2][0] * m01 + m[2][1] * m11 + m[2][2] * m21 + m[2][3] * m31;
-            mM[2][2] = m[2][0] * m02 + m[2][1] * m12 + m[2][2] * m22 + m[2][3] * m32;
-            mM[2][3] = m[2][0] * m03 + m[2][1] * m13 + m[2][2] * m23 + m[2][3] * m33;
-            mM[3][0] = m[3][0] * m00 + m[3][1] * m10 + m[3][2] * m20 + m[3][3] * m30;
-            mM[3][1] = m[3][0] * m01 + m[3][1] * m11 + m[3][2] * m21 + m[3][3] * m31;
-            mM[3][2] = m[3][0] * m02 + m[3][1] * m12 + m[3][2] * m22 + m[3][3] * m32;
-            mM[3][3] = m[3][0] * m03 + m[3][1] * m13 + m[3][2] * m23 + m[3][3] * m33;
+            Memory::Copy(&m[0][0], &mMatrix[0][0], sizeof(GLfloat) * 16);
+            mMatrix[0][0] = m[0][0] * m00 + m[0][1] * m10 + m[0][2] * m20 + m[0][3] * m30;
+            mMatrix[0][1] = m[0][0] * m01 + m[0][1] * m11 + m[0][2] * m21 + m[0][3] * m31;
+            mMatrix[0][2] = m[0][0] * m02 + m[0][1] * m12 + m[0][2] * m22 + m[0][3] * m32;
+            mMatrix[0][3] = m[0][0] * m03 + m[0][1] * m13 + m[0][2] * m23 + m[0][3] * m33;
+            mMatrix[1][0] = m[1][0] * m00 + m[1][1] * m10 + m[1][2] * m20 + m[1][3] * m30;
+            mMatrix[1][1] = m[1][0] * m01 + m[1][1] * m11 + m[1][2] * m21 + m[1][3] * m31;
+            mMatrix[1][2] = m[1][0] * m02 + m[1][1] * m12 + m[1][2] * m22 + m[1][3] * m32;
+            mMatrix[1][3] = m[1][0] * m03 + m[1][1] * m13 + m[1][2] * m23 + m[1][3] * m33;
+            mMatrix[2][0] = m[2][0] * m00 + m[2][1] * m10 + m[2][2] * m20 + m[2][3] * m30;
+            mMatrix[2][1] = m[2][0] * m01 + m[2][1] * m11 + m[2][2] * m21 + m[2][3] * m31;
+            mMatrix[2][2] = m[2][0] * m02 + m[2][1] * m12 + m[2][2] * m22 + m[2][3] * m32;
+            mMatrix[2][3] = m[2][0] * m03 + m[2][1] * m13 + m[2][2] * m23 + m[2][3] * m33;
+            mMatrix[3][0] = m[3][0] * m00 + m[3][1] * m10 + m[3][2] * m20 + m[3][3] * m30;
+            mMatrix[3][1] = m[3][0] * m01 + m[3][1] * m11 + m[3][2] * m21 + m[3][3] * m31;
+            mMatrix[3][2] = m[3][0] * m02 + m[3][1] * m12 + m[3][2] * m22 + m[3][3] * m32;
+            mMatrix[3][3] = m[3][0] * m03 + m[3][1] * m13 + m[3][2] * m23 + m[3][3] * m33;
         }
 
     private:
-        GLuint mVShader[2];
-        GLuint mFShader[2];
-        GLuint mProgram[2];
-        id_texture mFillTexture;
+        GLuint mPrograms[SR_Max] {0,};
+        GLuint mVShaders[SR_Max] {0,};
+        GLuint mFShaders[SR_Max] {0,};
+        GLint mUniformMatrices[SR_Max] {-1,};
+        GLint mUniformResolutions[SR_Max] {-1,};
+        GLint mUniformTextureY {-1};
+        GLint mUniformTextureUV {-1};
+        id_texture mFillTexture {nullptr};
 
     private:
-        enum {VerticeID = 0, ColorID = 1, TexCoordsID = 2};
+        enum AttribID {Vertice = 0, Color, TexCoords, Resolution};
         struct Attrib
         {
             GLfloat vertices[2];
@@ -2609,12 +2617,10 @@
                 GLuint color32;
             };
             GLfloat texcoords[2];
+            GLfloat resolution[2];
         };
         Attrib mAttrib[4];
-        GLint mMatrix[2];
-        GLfloat mM[4][4];
-        GLint mTextureY;
-        GLint mTextureUV;
+        GLfloat mMatrix[4][4];
     };
 
     class TextureClass

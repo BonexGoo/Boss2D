@@ -42,16 +42,18 @@
         mIsSurfaceBinded = false;
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
-        mUseFontFT = false;
         mSavedMask = QPainter::CompositionMode_SourceOver;
+        mUseFontFT = false;
+        mShader = SR_Normal;
     }
     CanvasClass::CanvasClass(QPaintDevice* device) : mIsTypeSurface(false)
     {
         mIsSurfaceBinded = false;
         mSavedCanvas = nullptr;
         mSavedZoom = 1.0f;
-        mUseFontFT = false;
         mSavedMask = QPainter::CompositionMode_SourceOver;
+        mUseFontFT = false;
+        mShader = SR_Normal;
         BindCore(device);
     }
     CanvasClass::~CanvasClass()
@@ -1597,6 +1599,12 @@
             case MR_DstAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationAtop); break;
             case MR_Xor: CanvasClass::get()->SetMask(QPainter::CompositionMode_Xor); break;
             }
+        }
+
+        void Platform::Graphics::SetShader(ShaderRole role)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            CanvasClass::get()->SetShader(role);
         }
 
         void Platform::Graphics::SetFont(chars name, float size)

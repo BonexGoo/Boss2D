@@ -29,6 +29,7 @@ enum UIStack {UIS_PushPop, UIS_Push, UIS_Current, UIS_Pop};
 enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst,
     MR_SrcIn, MR_DstIn, MR_SrcOut, MR_DstOut,
     MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Default = MR_SrcOver};
+enum ShaderRole {SR_Normal, SR_Nv21, SR_Blur, SR_Max};
 enum CursorRole {CR_Arrow, CR_UpArrow, CR_Cross, CR_Wait, CR_IBeam, CR_Blank,
     CR_SizeVer, CR_SizeHor, CR_SizeBDiag, CR_SizeFDiag, CR_SizeAll,
     CR_PointingHand, CR_OpenHand, CR_ClosedHand, CR_Forbidden, CR_Busy, CR_WhatsThis};
@@ -673,6 +674,10 @@ public:
         /// @brief 마스크지정
         /// @param role : 마스크방식
         static void SetMask(MaskRole role);
+
+        /// @brief 쉐이더지정
+        /// @param role : 쉐이더방식
+        static void SetShader(ShaderRole role);
 
         /// @brief 폰트지정
         /// @param name : 폰트명
