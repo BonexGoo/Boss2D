@@ -11,7 +11,7 @@
     bool g_event_blocked = false;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
-    static bool g_isBeginGL = false;
+    static sint32 g_stackBeginGL = 0;
     static bool g_isPopupAssert = false;
 
     bool g_setEventBlocked(bool blocked)
@@ -302,10 +302,10 @@
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
         static bool gSavedFrameless = false;
-        void Platform::InitForGL(bool frameless, bool topmost)
+        void Platform::InitForGL(bool frameless, bool topmost, chars url)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
-            g_data->initForGL(frameless, topmost);
+            g_data->initForGL(frameless, topmost, url);
             gSavedFrameless = frameless;
         }
 
@@ -337,6 +337,12 @@
             h_view NewViewHandle = h_view::create_by_ptr(BOSS_DBG g_data->getMainAPI());
             g_data->getMainAPI()->setViewAndCreateAndSize(NewViewHandle);
             return NewViewHandle;
+        }
+
+        void Platform::SetWindowUrl(chars url)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            g_data->setWindowUrl(url);
         }
 
         void Platform::SetWindowPos(sint32 x, sint32 y)
@@ -1650,7 +1656,7 @@
         void Platform::Graphics::FillRectToFBO(float x, float y, float w, float h, Color color, uint32 fbo)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", 0 < g_stackBeginGL);
             OpenGLClass::ST().FillRect(fbo, Rect(x, y, x + w, y + h), color);
         }
 
@@ -1800,7 +1806,7 @@
             orientationtype ori, bool antialiasing, float x, float y, float w, float h, Color color, uint32 fbo)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", 0 < g_stackBeginGL);
             if(texture == nullptr) return;
 
             OpenGLClass::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
@@ -2167,7 +2173,7 @@
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", 0 < g_stackBeginGL);
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
             if(image == nullptr) return;
 
@@ -2764,9 +2770,14 @@
         bool Platform::Graphics::BeginGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            if(0 < g_stackBeginGL)
+            {
+                g_stackBeginGL++;
+                return true;
+            }
             if(QOpenGLContext::currentContext())
             {
-                g_isBeginGL = true;
+                g_stackBeginGL = 1;
                 SurfaceClass::LockForGL();
                 CanvasClass::get()->painter().beginNativePainting();
                 return true;
@@ -2777,9 +2788,14 @@
         void Platform::Graphics::EndGL()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            g_isBeginGL = false;
-            CanvasClass::get()->painter().endNativePainting();
-            SurfaceClass::UnlockForGL();
+            if(1 < g_stackBeginGL)
+                g_stackBeginGL--;
+            else if(g_stackBeginGL == 1)
+            {
+                g_stackBeginGL = 0;
+                CanvasClass::get()->painter().endNativePainting();
+                SurfaceClass::UnlockForGL();
+            }
         }
 
         id_texture Platform::Graphics::CreateTexture(bool nv21, bool bitmapcache, sint32 width, sint32 height, const void* bits)
@@ -2913,7 +2929,7 @@
             orientationtype ori, bool antialiasing, float x, float y, float w, float h, Color color, uint32 fbo)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", g_isBeginGL);
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", 0 < g_stackBeginGL);
             if(!surface) return;
 
             OpenGLClass::ST().DrawTexture(fbo, Rect(x, y, x + w, y + h),
@@ -4293,7 +4309,7 @@
         h_web Platform::Web::Create(chars url, sint32 width, sint32 height, bool clearcookies, EventCB cb, payload data)
         {
             BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
-                g_data->getGLWidget() == nullptr || g_isBeginGL);
+                (g_data && g_data->getGLWidget() == nullptr) || 0 < g_stackBeginGL);
 
             auto NewWeb = (WebClass*) Buffer::Alloc<WebClass>(BOSS_DBG 1);
             if(clearcookies) NewWeb->ClearCookies();
@@ -4309,7 +4325,7 @@
         void Platform::Web::Release(h_web web)
         {
             BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
-                (g_data && g_data->getGLWidget() == nullptr) || g_isBeginGL);
+                (g_data && g_data->getGLWidget() == nullptr) || 0 < g_stackBeginGL);
 
             web.set_buf(nullptr);
         }
@@ -4355,7 +4371,7 @@
         id_texture_read Platform::Web::GetPageTexture(h_web web)
         {
             BOSS_ASSERT("GL모드에서는 본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다",
-                g_data->getGLWidget() == nullptr || g_isBeginGL);
+                (g_data && g_data->getGLWidget() == nullptr) || 0 < g_stackBeginGL);
 
             if(auto CurWeb = (WebClass*) web.get())
                 return CurWeb->GetTexture();

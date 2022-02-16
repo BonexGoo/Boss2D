@@ -52,9 +52,14 @@ class Platform
 {
 public:
     /// @brief 플랫폼초기화(GL뷰)
-    static void InitForGL(bool frameless = false, bool topmost = false);
+    /// @param frameless : 프레임보더가 없는 스타일
+    /// @param topmost : 항상 최상위에 올려진 스타일
+    /// @param url : 윈도우배경으로 쓸 URL
+    static void InitForGL(bool frameless = false, bool topmost = false, chars url = nullptr);
 
     /// @brief 플랫폼초기화(MDI뷰)
+    /// @param frameless : 프레임보더가 없는 스타일
+    /// @param topmost : 항상 최상위에 올려진 스타일
     static void InitForMDI(bool frameless = false, bool topmost = false);
 
     /// @brief 뷰생성기 설정
@@ -69,6 +74,10 @@ public:
     /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _defaultview_)
     /// @return 뷰핸들
     static h_view SetWindowView(chars viewclass = nullptr);
+
+    /// @brief 윈도우배경 설정
+    /// @param url : 윈도우배경으로 쓸 URL
+    static void SetWindowUrl(chars url);
 
     /// @brief 윈도우위치 설정
     /// @param x : 가로위치(px)

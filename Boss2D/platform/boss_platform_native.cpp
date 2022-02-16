@@ -189,7 +189,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
-        void Platform::InitForGL(bool frameless, bool topmost)
+        void Platform::InitForGL(bool frameless, bool topmost, chars url)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
@@ -232,6 +232,13 @@
             NewViewManager->SetView(NewViewHandle);
             g_view->sendCreate();
             return NewViewHandle;
+        }
+
+        void Platform::SetWindowUrl(chars url)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
         }
 
         void Platform::SetWindowPos(sint32 x, sint32 y)

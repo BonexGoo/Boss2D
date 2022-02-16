@@ -164,7 +164,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
-        void Platform::InitForGL(bool frameless, bool topmost)
+        void Platform::InitForGL(bool frameless, bool topmost, chars url)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
@@ -196,6 +196,13 @@
 
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return h_view::null();
+        }
+
+        void Platform::SetWindowUrl(chars url)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
         void Platform::SetWindowPos(sint32 x, sint32 y)

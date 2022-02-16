@@ -1125,7 +1125,7 @@
         Q_OBJECT
 
     public:
-        MainViewGL(QWidget* parent) : QOpenGLWidget(parent)
+        MainViewGL(QWidget* parent, bool webpaper) : QOpenGLWidget(parent)
         {
             BOSS_DECLARE_BUFFERED_CLASS(BufferedViewAPI, ViewAPI, PT_Null, nullptr, nullptr, nullptr, nullptr, nullptr);
             buffer NewAPI = Buffer::AllocNoConstructorOnce<BufferedViewAPI>(BOSS_DBG 1);
@@ -1138,7 +1138,8 @@
             m_fbo_width = 0;
             m_fbo_height = 0;
 
-            // setAttribute(Qt::WA_PaintOnScreen); 이 항목이 있으면 update()가 안먹힘
+            if(webpaper)
+                setAttribute(Qt::WA_AlwaysStackOnTop);
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
@@ -1459,6 +1460,7 @@
             m_parent = parent;
             m_viewGL = nullptr;
             m_viewMDI = nullptr;
+            m_webPaper = nullptr;
         }
         ~MainData() {}
 
@@ -1486,17 +1488,33 @@
         }
 
     public:
-        void initForGL(bool frameless, bool topmost)
+        void initForGL(bool frameless, bool topmost, chars url)
         {
-            m_viewGL = new MainViewGL(m_parent);
+            m_viewGL = new MainViewGL(m_parent, url != nullptr);
             m_viewGL->m_api->renewParent(m_viewGL);
+
+            auto MainWidget = new QWidget();
+            if(url)
+            {
+                m_webPaper = new QWebEngineView(m_parent);
+                m_webPaper->load(QUrl(QString::fromUtf8(url)));
+                auto MainLayout = new QStackedLayout();
+                MainLayout->setStackingMode(QStackedLayout::StackAll);
+                MainLayout->setMargin(0);
+                MainLayout->addWidget(m_webPaper);
+                MainLayout->addWidget(m_viewGL);
+                MainWidget->setLayout(MainLayout);
+            }
+            else
+            {
+                auto MainLayout = new QHBoxLayout();
+                MainLayout->setMargin(0);
+                MainLayout->addWidget(m_viewGL);
+                MainWidget->setLayout(MainLayout);
+            }
+
             // Qt5.9.1부터는 m_parent->setCentralWidget(m_viewGL)식의 접합은
             // 윈도우즈OS에서 다중 모니터상황에서 레이아웃의 정렬불량 문제가 발생
-            QWidget* MainWidget = new QWidget();
-            QHBoxLayout* MainLayout = new QHBoxLayout();
-            MainLayout->setMargin(0);
-            MainLayout->addWidget(m_viewGL);
-            MainWidget->setLayout(MainLayout);
             m_parent->setCentralWidget(MainWidget);
 
             Qt::WindowFlags TypeCollector = Qt::Widget;
@@ -1540,6 +1558,12 @@
                 TypeCollector |= Qt::WindowStaysOnTopHint;
             if(TypeCollector != Qt::Widget)
                 m_parent->setWindowFlags(TypeCollector);
+        }
+
+        void setWindowUrl(chars url)
+        {
+            if(m_webPaper)
+                m_webPaper->load(QUrl(QString::fromUtf8(url)));
         }
 
         ViewAPI* getMainAPI()
@@ -1588,6 +1612,7 @@
         QMainWindow* m_parent;
         MainViewGL* m_viewGL;
         MainViewMDI* m_viewMDI;
+        QWebEngineView* m_webPaper;
         Map<QMenu*> m_menuMap;
         Map<QToolBar*> m_toolbarMap;
     };
@@ -4273,7 +4298,7 @@
             }
             void Reload(chars url)
             {
-                mView.load(QUrl(QString(url)));
+                mView.load(QUrl(QString::fromUtf8(url)));
             }
             bool NowLoading(float* rate)
             {
