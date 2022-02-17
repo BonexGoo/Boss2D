@@ -155,7 +155,7 @@ namespace BOSS
             case SolverOperatorType::Divide:         collector += "/ "; break;
             case SolverOperatorType::Remainder:      collector += "% "; break;
             case SolverOperatorType::Variabler:      collector += "@ "; break;
-            case SolverOperatorType::Commenter:      collector += "#"; break;
+            case SolverOperatorType::Commenter:      collector += "?"; break;
             case SolverOperatorType::RangeTarget:    collector += "~ "; break;
             case SolverOperatorType::RangeTimer:     collector += ": "; break;
             case SolverOperatorType::Greater:        collector += "< "; break;
@@ -891,7 +891,7 @@ namespace BOSS
             case SolverOperatorType::Variabler: // 5순위> @
                 NewPriority += PriorityCount - 5;
                 break;
-            case SolverOperatorType::Commenter: // 9순위> #
+            case SolverOperatorType::Commenter: // 9순위> ?
                 NewPriority += PriorityCount - 9;
                 break;
             case SolverOperatorType::RangeTarget: // 3순위> ~
@@ -964,7 +964,7 @@ namespace BOSS
                 jump(*formula == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
                 jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
                 jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
-                jump(*formula == '#') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
+                jump(*formula == '?') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
                 jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
                 jump(*formula == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
                 jump(*formula == '<')
@@ -1041,7 +1041,7 @@ namespace BOSS
                 }
 
                 // 주석처리
-                if(*formula == '#')
+                if(*formula == '?')
                 {
                     chars End = formula;
                     while(*(++End));
@@ -1089,7 +1089,7 @@ namespace BOSS
                         switch(*End)
                         {
                         case ' ': case '\t': case '\r': case '\n':
-                        case '+': case '-': case '*': case '/': case '%': case '@': case '#': case '~': case ':':
+                        case '+': case '-': case '*': case '/': case '%': case '@': case '?': case '~': case ':':
                         case '!': case '=': case '<': case '>': case '[': case ']': case '(': case ')': break;
                         default: continue;
                         }

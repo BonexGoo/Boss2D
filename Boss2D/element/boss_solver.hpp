@@ -8,7 +8,7 @@ namespace BOSS
     enum class SolverOperandType {Unknown, Literal, Variable, Formula, Comment};
     enum class SolverOperatorType {Unknown,
         Addition, Subtract, Multiply, Divide, Remainder, // +, -, *, /, %
-        Variabler, Commenter, RangeTarget, RangeTimer, // @, #, ~, :
+        Variabler, Commenter, RangeTarget, RangeTimer, // @, ?, ~, :
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or}; // [and], [or]

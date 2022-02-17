@@ -49,7 +49,7 @@ namespace BOSS
         if(auto CurSolver = Solver::Find(mChain, variable))
         {
             auto& CurComment = CurSolver->parsed_formula();
-            if(0 < CurComment.Length() && CurComment[0] == '#')
+            if(0 < CurComment.Length() && CurComment[0] == '?')
                 return CurComment.Offset(1);
         }
         return String();
@@ -58,7 +58,7 @@ namespace BOSS
     void ZaySonDocument::SetComment(chars variable, chars text)
     {
         auto& CurSolver = LinkedSolver(variable);
-        CurSolver.Parse(String('#') + text);
+        CurSolver.Parse(String('?') + text);
         CurSolver.Execute(true);
     }
 
