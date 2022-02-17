@@ -688,10 +688,11 @@ bool ZEWidgetPipe::TickOnce()
     }
     else while(auto NewJson = Platform::Pipe::RecvJson(mPipe))
     {
-        chars Type = (*NewJson)("type").GetText();
+        const String Type = (*NewJson)("type").GetText();
         if(!String::Compare(Type, "dom_updated"))
         {
-            auto& CurDOM = mDOM((*NewJson)("variable").GetText());
+            const String CurVariable = (*NewJson)("variable").GetText();
+            auto& CurDOM = mDOM(CurVariable);
             CurDOM.mResult = (*NewJson)("result").GetText();
             CurDOM.mFormula = (*NewJson)("formula").GetText();
             CurDOM.mUpdateMsec = Platform::Utility::CurrentTimeMsec();
@@ -1261,13 +1262,13 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                                     ZAY_MOVE_IF(*Data.panel, 1, 1, Data.panel->state(UIName) & PS_Pressed)
                                     {
                                         // 계산결과
-                                        ZAY_RGB(*Data.panel, 255, CurAni, CurAni)
+                                        ZAY_RGB(*Data.panel, 255, 255, CurAni)
                                             Data.panel->text(FullTextFront, UIFA_LeftMiddle, UIFE_Right);
                                         // 계산식
                                         if(0 < FormulaTextRearSize && FullTextFrontSize < Data.panel->w())
                                         {
                                             ZAY_LTRB(*Data.panel, FullTextFrontSize, 0, Data.panel->w(), Data.panel->h())
-                                            ZAY_RGB(*Data.panel, 128, CurAni, CurAni)
+                                            ZAY_RGB(*Data.panel, 255 - CurAni, 255, CurAni)
                                                 Data.panel->text(FormulaTextRear, UIFA_LeftMiddle, UIFE_Right);
                                         }
                                     }

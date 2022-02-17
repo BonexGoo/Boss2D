@@ -57,6 +57,8 @@ namespace BOSS
         static bool ExistValue(chars variable);
         static SolverValue GetValue(chars variable);
         static void SetValue(chars variable, chars formula);
+        static String GetComment(chars variable);
+        static void SetComment(chars variable, chars text);
         static void SetJson(const Context& json, const String nameheader = "");
         static void RemoveVariables(chars keyword = nullptr);
         static void BindPipe(id_pipe pipe);
@@ -72,11 +74,11 @@ namespace BOSS
         class Pipe
         {
         public:
-            Pipe() {mRefPipe = nullptr; mMsec = 0;}
+            Pipe() {mRefPipe = nullptr; mUpdatedMsec = 0;}
             ~Pipe() {}
         public:
             id_pipe mRefPipe;
-            uint64 mMsec;
+            uint64 mUpdatedMsec;
         };
 
     private:

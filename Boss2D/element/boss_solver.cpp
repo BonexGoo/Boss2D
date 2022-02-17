@@ -117,11 +117,11 @@ namespace BOSS
 
         // 멤버
         private: const String mName; // 이름
-        private: Solver* mSolver; // 자기계산식
+        private: Solver* mSolver; // 자기연산식
         private: SolverChain* mChain; // 검색체인
     };
 
-    // 계산항
+    // 연산항
     class SolverFormula : public SolverOperand
     {
         BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(SolverFormula, mOperatorType(SolverOperatorType::Unknown), mOperatorPriority(0))
@@ -140,30 +140,39 @@ namespace BOSS
                 if(operand->type() == SolverOperandType::Formula) collector += ")";
             };
 
+            // 좌항
+            const sint32 OldLength = collector.Length();
             PrintOperand(mOperandL, collector);
+            if(OldLength < collector.Length())
+                collector += " ";
+
+            // 연산항
             switch(mOperatorType)
             {
-            case SolverOperatorType::Addition:       collector += " + "; break;
-            case SolverOperatorType::Subtract:       collector += " - "; break;
-            case SolverOperatorType::Multiply:       collector += " * "; break;
-            case SolverOperatorType::Divide:         collector += " / "; break;
-            case SolverOperatorType::Remainder:      collector += " % "; break;
-            case SolverOperatorType::Variabler:      collector += " @ "; break;
-            case SolverOperatorType::RangeTarget:    collector += " ~ "; break;
-            case SolverOperatorType::RangeTimer:     collector += " : "; break;
-            case SolverOperatorType::Greater:        collector += " < "; break;
-            case SolverOperatorType::GreaterOrEqual: collector += " <= "; break;
-            case SolverOperatorType::Less:           collector += " > "; break;
-            case SolverOperatorType::LessOrEqual:    collector += " >= "; break;
-            case SolverOperatorType::Equal:          collector += " == "; break;
-            case SolverOperatorType::Different:      collector += " != "; break;
-            case SolverOperatorType::Function_Min:   collector += " [min] "; break;
-            case SolverOperatorType::Function_Max:   collector += " [max] "; break;
-            case SolverOperatorType::Function_Abs:   collector += " [abs] "; break;
-            case SolverOperatorType::Function_Pow:   collector += " [pow] "; break;
-            case SolverOperatorType::Function_And:   collector += " [and] "; break;
-            case SolverOperatorType::Function_Or:    collector += " [or] "; break;
+            case SolverOperatorType::Addition:       collector += "+ "; break;
+            case SolverOperatorType::Subtract:       collector += "- "; break;
+            case SolverOperatorType::Multiply:       collector += "* "; break;
+            case SolverOperatorType::Divide:         collector += "/ "; break;
+            case SolverOperatorType::Remainder:      collector += "% "; break;
+            case SolverOperatorType::Variabler:      collector += "@ "; break;
+            case SolverOperatorType::Commenter:      collector += "#"; break;
+            case SolverOperatorType::RangeTarget:    collector += "~ "; break;
+            case SolverOperatorType::RangeTimer:     collector += ": "; break;
+            case SolverOperatorType::Greater:        collector += "< "; break;
+            case SolverOperatorType::GreaterOrEqual: collector += "<= "; break;
+            case SolverOperatorType::Less:           collector += "> "; break;
+            case SolverOperatorType::LessOrEqual:    collector += ">= "; break;
+            case SolverOperatorType::Equal:          collector += "== "; break;
+            case SolverOperatorType::Different:      collector += "!= "; break;
+            case SolverOperatorType::Function_Min:   collector += "[min] "; break;
+            case SolverOperatorType::Function_Max:   collector += "[max] "; break;
+            case SolverOperatorType::Function_Abs:   collector += "[abs] "; break;
+            case SolverOperatorType::Function_Pow:   collector += "[pow] "; break;
+            case SolverOperatorType::Function_And:   collector += "[and] "; break;
+            case SolverOperatorType::Function_Or:    collector += "[or] "; break;
             }
+
+            // 우항
             PrintOperand(mOperandR, collector);
         }
         public: void PrintVariables(Strings& collector, bool targetless_only) const override
@@ -196,6 +205,7 @@ namespace BOSS
             case SolverOperatorType::Divide:         return mOperandL->result(Zero).Divide(mOperandR->result(One));
             case SolverOperatorType::Remainder:      return mOperandL->result(Zero).Remainder(mOperandR->result(One));
             case SolverOperatorType::Variabler:      return mOperandL->result(Zero).Variabler(mOperandR->result(One), mChain);
+            case SolverOperatorType::Commenter:      return mOperandL->result(Zero);
             case SolverOperatorType::RangeTarget:    return mOperandL->result(Zero).RangeTarget(mOperandR->result(Zero));
             case SolverOperatorType::RangeTimer:     return mOperandL->result(Zero).RangeTimer(mOperandR->result(Zero));
             case SolverOperatorType::Greater:        return mOperandL->result(Zero).Greater(mOperandR->result(Zero));
@@ -230,6 +240,31 @@ namespace BOSS
         public: SolverOperandObject mOperandR; // R항
         public: SolverOperandObject* mOperandP; // 부모항
         private: const SolverChain* mChain; // 검색체인
+    };
+
+    // 주석항
+    class SolverComment : public SolverOperand
+    {
+        BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(SolverComment, mComment(rhs.mComment))
+        public: SolverComment(const String& comment = String()) : SolverOperand(SolverOperandType::Comment), mComment(comment) {}
+        public: ~SolverComment() {}
+
+        // 가상 인터페이스
+        public: void PrintFormula(String& collector) const override
+        {collector += mComment;}
+        public: void PrintVariables(Strings& collector, bool targetless_only) const override {}
+        public: void UpdateChain(Solver* solver, SolverChain* chain) override {}
+        public: float reliable() const override {return 1;}
+        public: SolverValue result(SolverValue zero) const override {return zero;}
+        public: buffer clone() const override
+        {
+            buffer NewBuffer = Buffer::AllocNoConstructorOnce<SolverComment>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewBuffer, 0, SolverComment, mComment);
+            return NewBuffer;
+        }
+
+        // 멤버
+        public: const String mComment; // 주석
     };
 
     void SolverChainPair::ResetTarget(Solver* solver, bool updateobservers)
@@ -343,8 +378,15 @@ namespace BOSS
     {
         if(mBeginMsec == 0 && mEndMsec == 0)
             return String::FromFloat(GetValue());
-        return "@R" + String::FromFloat(mValue1) + '_' + String::FromFloat(mValue2) + '_' +
-            String::FromInteger((sint64) mBeginMsec) + '_' + String::FromInteger((sint64) mEndMsec) + '@';
+        return "$R" + String::FromFloat(mValue1) + '_' + String::FromFloat(mValue2) + '_' +
+            String::FromInteger((sint64) mBeginMsec) + '_' + String::FromInteger((sint64) mEndMsec) + '$';
+    }
+
+    SolverValue::SolverValue()
+    {
+        mType = SolverValueType::Null;
+        mInteger = 0;
+        mFloat = 0;
     }
 
     SolverValue::SolverValue(SolverValueType type)
@@ -438,13 +480,13 @@ namespace BOSS
     SolverValue SolverValue::MakeByRangeTime(chars code)
     {
         SolverValue Result(SolverValueType::Range);
-        if(*(code++) == '@' && *(code++) == 'R') // @R0_0_0_0@
+        if(*(code++) == '$' && *(code++) == 'R') // $R0_0_0_0$
         {
             sint32 FindStep = 0;
             chars BeginPos = code;
             while(*code != '\0')
             {
-                if(*code == '_' || *code == '@')
+                if(*code == '_' || *code == '$')
                 {
                     switch(FindStep++)
                     {
@@ -463,48 +505,50 @@ namespace BOSS
 
     SolverValue::Integer SolverValue::ToInteger() const
     {
-        if(mType == SolverValueType::Range)
-            return (Integer) mRange.GetValue();
-        if(mType == SolverValueType::Integer)
-            return mInteger;
-        if(mType == SolverValueType::Float)
-            return (Integer) mFloat;
-        return Parser::GetInt<Integer>(mText);
+        switch(mType)
+        {
+        case SolverValueType::Range: return (Integer) mRange.GetValue();
+        case SolverValueType::Integer: return mInteger;
+        case SolverValueType::Float: return (Integer) mFloat;
+        case SolverValueType::Text: return Parser::GetInt<Integer>(mText);
+        }
+        return 0;
     }
 
     SolverValue::Float SolverValue::ToFloat() const
     {
-        if(mType == SolverValueType::Range)
-            return mRange.GetValue();
-        if(mType == SolverValueType::Integer)
-            return (Float) mInteger;
-        if(mType == SolverValueType::Float)
-            return mFloat;
-        return Parser::GetFloat<Float>(mText);
+        switch(mType)
+        {
+        case SolverValueType::Range: return mRange.GetValue();
+        case SolverValueType::Integer: return (Float) mInteger;
+        case SolverValueType::Float: return mFloat;
+        case SolverValueType::Text: return Parser::GetFloat<Float>(mText);
+        }
+        return 0.0f;
     }
 
     SolverValue::Text SolverValue::ToText(bool quotes) const
     {
-        if(mType == SolverValueType::Range)
-            return mRange.GetCode();
-        if(mType == SolverValueType::Integer)
-            return String::FromInteger(mInteger);
-        if(mType == SolverValueType::Float)
-            return String::FromFloat(mFloat);
-        if(quotes)
-            return '\'' + mText + '\'';
-        return mText;
+        switch(mType)
+        {
+        case SolverValueType::Range: return mRange.GetCode();
+        case SolverValueType::Integer: return String::FromInteger(mInteger);
+        case SolverValueType::Float: return String::FromFloat(mFloat);
+        case SolverValueType::Text: return (quotes)? '\'' + mText + '\'' : mText;
+        }
+        return String();
     }
 
     SolverValue::Range SolverValue::ToRange() const
     {
-        if(mType == SolverValueType::Range)
-            return mRange;
-        if(mType == SolverValueType::Integer)
-            return Range((Float) mInteger);
-        if(mType == SolverValueType::Float)
-            return Range(mFloat);
-        return Range(Parser::GetFloat<Float>(mText));
+        switch(mType)
+        {
+        case SolverValueType::Range: return mRange;
+        case SolverValueType::Integer: return Range((Float) mInteger);
+        case SolverValueType::Float: return Range(mFloat);
+        case SolverValueType::Text: return Range(Parser::GetFloat<Float>(mText));
+        }
+        return Range();
     }
 
     SolverValueType SolverValue::GetMergedType(const SolverValue& rhs) const
@@ -721,7 +765,8 @@ namespace BOSS
         mLinkedChain = nullptr;
         mReliable = 0;
         mResult = SolverValue::MakeByInteger(0);
-        mResultMsec = 0;
+        mUpdatedFormulaMsec = 0;
+        mUpdatedResultMsec = 0;
     }
 
     Solver::~Solver()
@@ -744,7 +789,8 @@ namespace BOSS
         mOperandTop = ToReference(rhs.mOperandTop);
         mReliable = rhs.mReliable; rhs.mReliable = 0;
         mResult = ToReference(rhs.mResult);
-        mResultMsec = rhs.mResultMsec; rhs.mResultMsec = 0;
+        mUpdatedFormulaMsec = rhs.mUpdatedFormulaMsec; rhs.mUpdatedFormulaMsec = 0;
+        mUpdatedResultMsec = rhs.mUpdatedResultMsec; rhs.mUpdatedResultMsec = 0;
 
         if(mLinkedChain)
         {
@@ -832,7 +878,7 @@ namespace BOSS
         auto AddOperator = [](SolverOperandObject*& focus, SolverOperatorType type, sint32 deep)->void
         {
             BOSS_ASSERT("잘못된 시나리오입니다", focus);
-            const sint32 PriorityCount = 8;
+            const sint32 PriorityCount = 9;
             sint32 NewPriority = deep * PriorityCount;
             switch(type)
             {
@@ -844,6 +890,9 @@ namespace BOSS
                 break;
             case SolverOperatorType::Variabler: // 5순위> @
                 NewPriority += PriorityCount - 5;
+                break;
+            case SolverOperatorType::Commenter: // 9순위> #
+                NewPriority += PriorityCount - 9;
                 break;
             case SolverOperatorType::RangeTarget: // 3순위> ~
                 NewPriority += PriorityCount - 3;
@@ -865,7 +914,7 @@ namespace BOSS
             }
 
             SolverFormula NewFormula(type, NewPriority);
-            if(focus->ConstPtr()->type() != SolverOperandType::Formula) // 최초의 계산항이거나
+            if(focus->ConstPtr()->type() != SolverOperandType::Formula) // 최초의 연산항이거나
             {
                 NewFormula.mOperandL = *focus;
                 *focus = NewFormula.clone();
@@ -907,7 +956,7 @@ namespace BOSS
             jump(*formula == ')') deep--;
             jump(OperatorTurn) // 연산기호턴
             {
-                // 계산항 밀어넣기
+                // 연산항 밀어넣기
                 branch;
                 jump(*formula == '+') AddOperator(OperandFocus, SolverOperatorType::Addition, deep);
                 jump(*formula == '-') AddOperator(OperandFocus, SolverOperatorType::Subtract, deep);
@@ -915,6 +964,7 @@ namespace BOSS
                 jump(*formula == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
                 jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
                 jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
+                jump(*formula == '#') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
                 jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
                 jump(*formula == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
                 jump(*formula == '<')
@@ -989,19 +1039,30 @@ namespace BOSS
                     BOSS_ASSERT(String::Format("알 수 없는 연산기호입니다(%c)", *formula), false);
                     continue;
                 }
-                OperatorTurn = false;
+
+                // 주석처리
+                if(*formula == '#')
+                {
+                    chars End = formula;
+                    while(*(++End));
+                    ((SolverFormula*) OperandFocus->Ptr())->mOperandR =
+                        SolverComment(String(formula + 1, End - (formula + 1))).clone();
+                    formula = End - 1;
+                }
+                else OperatorTurn = false;
             }
             else // 피연산항턴
             {
-                // 상수와 변수
                 buffer NewOperand = nullptr;
-                if(('0' <= *formula && *formula <= '9') || *formula == '+' || *formula == '-')
+                // 상수
+                branch;
+                jump(('0' <= *formula && *formula <= '9') || *formula == '+' || *formula == '-')
                 {
                     sint32 WordSize = 0;
                     NewOperand = SolverLiteral(SolverValue::MakeByFloat(Parser::GetFloat<SolverValue::Float>(formula, -1, &WordSize))).clone();
                     formula += WordSize - 1;
                 }
-                else if(*formula == '\'' || *formula == '\"')
+                jump(*formula == '\'' || *formula == '\"')
                 {
                     chars End = formula;
                     while(*(++End))
@@ -1012,31 +1073,33 @@ namespace BOSS
                     NewOperand = SolverLiteral(SolverValue::MakeByText(String(formula + 1, End - formula - 1))).clone();
                     formula += (End - formula - 1 + 2) - 1;
                 }
-                else if(*formula == '@')
+                jump(*formula == '$')
                 {
                     chars End = formula;
                     while(*(++End)) if(*End == *formula) break;
                     NewOperand = SolverLiteral(SolverValue::MakeByRangeTime(String(formula, End - formula + 1))).clone();
                     formula += (End - formula - 1 + 2) - 1;
                 }
+                // 변수
                 else
                 {
-                    chars End = formula;
+                    chars End = formula - 1;
                     while(*(++End))
                     {
                         switch(*End)
                         {
                         case ' ': case '\t': case '\r': case '\n':
-                        case '+': case '-': case '*': case '/': case '%': case '@': case '~': case ':':
+                        case '+': case '-': case '*': case '/': case '%': case '@': case '#': case '~': case ':':
                         case '!': case '=': case '<': case '>': case '[': case ']': case '(': case ')': break;
                         default: continue;
                         }
                         break;
                     }
-                    NewOperand = SolverVariable(String(formula, End - formula)).clone();
+                    if(0 < End - formula)
+                        NewOperand = SolverVariable(String(formula, End - formula)).clone();
+                    else NewOperand = SolverLiteral().clone();
                     formula += (End - formula) - 1;
                 }
-                OperatorTurn = true;
 
                 // 피연산항 밀어넣기
                 if(OperandFocus)
@@ -1046,12 +1109,17 @@ namespace BOSS
                     CurFormula->mOperandR = NewOperand;
                 }
                 else OperandFocus = &(mOperandTop = NewOperand);
+                OperatorTurn = true;
             }
         }
 
         // 파싱결과를 기록
+        const String OldFormula = mParsedFormula;
         mParsedFormula.Empty();
         mOperandTop->PrintFormula(mParsedFormula);
+        if(OldFormula != mParsedFormula)
+            mUpdatedFormulaMsec = Platform::Utility::CurrentTimeMsec();
+
         // 링크가 된 경우 새로 생긴 하위의 변수들에게 체인정보 전달
         if(mLinkedChain)
             mOperandTop->UpdateChain(this, mLinkedChain);
@@ -1067,7 +1135,7 @@ namespace BOSS
 
         if(OldReliable != mReliable || OldResult.Different(mResult).ToInteger() != 0)
         {
-            mResultMsec = Platform::Utility::CurrentTimeMsec();
+            mUpdatedResultMsec = Platform::Utility::CurrentTimeMsec();
             if(mLinkedChain && 0 < mLinkedVariable.Length())
                 (*mLinkedChain)(mLinkedVariable).ResetTarget(this, updateobservers);
         }

@@ -738,6 +738,19 @@ namespace BOSS
         Self.UpdateFlush();
     }
 
+    String ZayWidgetDOM::GetComment(chars variable)
+    {
+        auto& Self = ST();
+        return Self.mDocument->GetComment(variable);
+    }
+
+    void ZayWidgetDOM::SetComment(chars variable, chars text)
+    {
+        auto& Self = ST();
+        Self.mDocument->SetComment(variable, text);
+        Self.UpdateFlush();
+    }
+
     void ZayWidgetDOM::SetJson(const Context& json, const String nameheader)
     {
         auto& Self = ST();
@@ -761,7 +774,7 @@ namespace BOSS
         auto& Self = ST();
         auto& NewPipe = Self.mPipeMap[PtrToUint64(pipe)];
         NewPipe.mRefPipe = pipe;
-        NewPipe.mMsec = Platform::Utility::CurrentTimeMsec();
+        NewPipe.mUpdatedMsec = Platform::Utility::CurrentTimeMsec();
 
         // 최초 전달
         Self.mDocument->CheckUpdatedSolvers(0, [pipe](const Solver* solver)->void
@@ -782,13 +795,13 @@ namespace BOSS
         const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
         for(sint32 i = 0, iend = mPipeMap.Count(); i < iend; ++i)
         {
-            auto CurPipe = *mPipeMap.AccessByOrder(i);
-            if(CurPipe.mMsec < CurMsec)
+            if(auto CurPipe = mPipeMap.AccessByOrder(i))
+            if(CurPipe->mUpdatedMsec < CurMsec)
             {
-                CurPipe.mMsec = CurMsec;
-                id_pipe PipeID = CurPipe.mRefPipe;
-                mDocument->CheckUpdatedSolvers(CurMsec, [PipeID](const Solver* solver)->void
-                {UpdateToPipe(PipeID, solver);});
+                id_pipe CurPipeID = CurPipe->mRefPipe;
+                mDocument->CheckUpdatedSolvers(CurPipe->mUpdatedMsec, [CurPipeID](const Solver* solver)->void
+                {UpdateToPipe(CurPipeID, solver);});
+                CurPipe->mUpdatedMsec = CurMsec;
             }
         }
     }
@@ -853,7 +866,7 @@ namespace BOSS
         {
             ZAY_INNER(panel, 0)
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
                 Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0);
@@ -895,7 +908,7 @@ namespace BOSS
                     else if(t == GT_Pressed)
                     {
                         auto& Self = ST();
-                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        const String FieldText = ZayWidgetDOM::GetComment(domname);
                         sint32 NewCursorIndex = 0;
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
@@ -928,7 +941,7 @@ namespace BOSS
                         {
                             if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                             {
-                                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                                const String FieldText = ZayWidgetDOM::GetComment(domname);
                                 const sint32 FieldTextLength = FieldText.Length();
                                 const sint32 CopyFocus = CurRenderInfo->GetIndex(FieldText);
                                 if(Self.mCapturedCursorIndex != CopyFocus)
@@ -981,7 +994,7 @@ namespace BOSS
                     }
                 })
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualFrontText = Self.SecretFilter(ispassword, FieldText.Left(Self.mCapturedCursorIndex));
                 const String VisualRearText = Self.SecretFilter(ispassword, FieldText.Right(Math::Max(0, FieldText.Length() - Self.mCapturedCursorIndex)));
                 sint32 CurCursor = 0;
@@ -1063,7 +1076,7 @@ namespace BOSS
                         auto& Self = ST();
                         v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname); // OnReleaseCapture를 호출
 
-                        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                        const String FieldText = ZayWidgetDOM::GetComment(domname);
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
                             Self.mCapturedCursorIndex = CurRenderInfo->GetIndex(FieldText);
@@ -1104,7 +1117,7 @@ namespace BOSS
                     }
                 })
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
                 Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight);
@@ -1185,7 +1198,7 @@ namespace BOSS
             FlushSavedIME(domname);
             if(0 < mCapturedCursorIndex)
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
                 mCapturedCursorIndex = Math::Max(0, mCapturedCursorIndex - String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex));
             }
@@ -1194,7 +1207,7 @@ namespace BOSS
         {
             if(!FlushSavedIME(domname))
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const sint32 FieldTextLength = FieldText.Length();
                 if(mCapturedCursorIndex < FieldTextLength)
                 {
@@ -1211,7 +1224,7 @@ namespace BOSS
         jump(code == 35) // End
         {
             FlushSavedIME(domname);
-            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+            const String FieldText = ZayWidgetDOM::GetComment(domname);
             const sint32 FieldTextLength = FieldText.Length();
             mCapturedCursorIndex = FieldTextLength;
         }
@@ -1221,31 +1234,31 @@ namespace BOSS
                 mCapturedIMEChar = WString::BreakKorean(mCapturedIMEChar);
             else if(0 < mCapturedCursorIndex)
             {
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const sint32 LetterSize = String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex);
                 const String FrontText = FieldText.Left(mCapturedCursorIndex - LetterSize);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
+                ZayWidgetDOM::SetComment(domname, FrontText + RearText);
                 mCapturedCursorIndex -= LetterSize;
             }
         }
         jump(code == 46) // Delete
         {
-            const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+            const String FieldText = ZayWidgetDOM::GetComment(domname);
             const sint32 FieldTextLength = FieldText.Length();
             if(mCapturedCursorIndex < FieldTextLength)
             {
                 const sint32 LetterSize = String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex);
                 const String FrontText = FieldText.Left(mCapturedCursorIndex);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex - LetterSize));
-                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + RearText + '\'');
+                ZayWidgetDOM::SetComment(domname, FrontText + RearText);
             }
         }
         jump(code == 27) // Esc
         {
             if(view) view->clearCapture();
             mCapturedIMEChar = L'\0';
-            ZayWidgetDOM::SetValue(domname, '\'' + mCapturedSavedText + '\'');
+            ZayWidgetDOM::SetComment(domname, mCapturedSavedText);
             mRenderInfoMap.Remove(uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
@@ -1267,11 +1280,10 @@ namespace BOSS
             String PastedText = Platform::Utility::RecvFromTextClipboard();
             if(0 < PastedText.Length())
             {
-                PastedText.Replace('\'', '"'); // 예외처리
-                const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String FrontText = FieldText.Left(mCapturedCursorIndex);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                ZayWidgetDOM::SetValue(domname, '\'' + FrontText + PastedText + RearText + '\'');
+                ZayWidgetDOM::SetComment(domname, FrontText + PastedText + RearText);
                 mCapturedCursorIndex += PastedText.Length();
             }
         }
@@ -1345,21 +1357,15 @@ namespace BOSS
             }
         }
         else Result += key;
-
-        // 예외처리
-        if(!Result.Compare("'"))
-            Result = "\"";
-        else if(!Result.Compare("\\"))
-            Result = "■";
         return Result;
     }
 
     void ZayControl::FlushIME(const String& domname, const String added)
     {
-        const String FieldText = (ZayWidgetDOM::ExistValue(domname))? ZayWidgetDOM::GetValue(domname).ToText() : String();
+        const String FieldText = ZayWidgetDOM::GetComment(domname);
         const String FrontText = FieldText.Left(mCapturedCursorIndex);
         const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-        ZayWidgetDOM::SetValue(domname, '\'' + FrontText + added + RearText + '\'');
+        ZayWidgetDOM::SetComment(domname, FrontText + added + RearText);
 
         const sint32 AddedLength = added.Length();
         mCapturedCursorIndex += AddedLength;

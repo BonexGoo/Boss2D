@@ -44,6 +44,24 @@ namespace BOSS
         CurSolver.Execute(true);
     }
 
+    String ZaySonDocument::GetComment(chars variable) const
+    {
+        if(auto CurSolver = Solver::Find(mChain, variable))
+        {
+            auto& CurComment = CurSolver->parsed_formula();
+            if(0 < CurComment.Length() && CurComment[0] == '#')
+                return CurComment.Offset(1);
+        }
+        return String();
+    }
+
+    void ZaySonDocument::SetComment(chars variable, chars text)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.Parse(String('#') + text);
+        CurSolver.Execute(true);
+    }
+
     void ZaySonDocument::SetJson(const Context& json, const String nameheader)
     {
         if(auto Length = json.LengthOfNamable())
@@ -99,7 +117,7 @@ namespace BOSS
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
     {
         for(sint32 i = 0, iend = mSolvers.Count(); i < iend; ++i)
-            if(msec <= mSolvers[i].resultmsec())
+            if(msec < mSolvers[i].updated_msec())
                 cb(&mSolvers[i]);
     }
 

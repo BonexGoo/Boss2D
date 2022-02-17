@@ -4,11 +4,11 @@
 namespace BOSS
 {
     class Solver;
-    enum class SolverValueType {Range, Integer, Float, Text};
-    enum class SolverOperandType {Unknown, Literal, Variable, Formula};
+    enum class SolverValueType {Null, Range, Integer, Float, Text};
+    enum class SolverOperandType {Unknown, Literal, Variable, Formula, Comment};
     enum class SolverOperatorType {Unknown,
         Addition, Subtract, Multiply, Divide, Remainder, // +, -, *, /, %
-        Variabler, RangeTarget, RangeTimer, // @, ~, :
+        Variabler, Commenter, RangeTarget, RangeTimer, // @, #, ~, :
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or}; // [and], [or]
@@ -64,7 +64,8 @@ namespace BOSS
             public: uint64 mEndMsec;
         };
 
-        public: SolverValue(SolverValueType type = SolverValueType::Integer);
+        public: SolverValue();
+        public: SolverValue(SolverValueType type);
         public: SolverValue(const SolverValue& rhs);
         public: SolverValue(SolverValue&& rhs);
         public: ~SolverValue();
@@ -125,7 +126,7 @@ namespace BOSS
         // 인터페이스
         public: inline SolverOperandType type() const {return mOperandType;}
         // 가상 인터페이스
-        public: virtual void PrintFormula(String& collector) const = 0; // 계산식출력
+        public: virtual void PrintFormula(String& collector) const = 0; // 연산식출력
         public: virtual void PrintVariables(Strings& collector, bool targetless_only) const = 0; // 변수리스트출력
         public: virtual void UpdateChain(Solver* solver, SolverChain* chain) = 0; // 체인업데이트
         public: virtual float reliable() const = 0; // 신뢰도
@@ -177,7 +178,7 @@ namespace BOSS
             if(mResult.GetType() == SolverValueType::Text)
             {
                 chars Sample = mResult.ToText();
-                if(Sample[0] == '@')
+                if(Sample[0] == '$')
                 {
                     if(Sample[1] == 'R')
                         return SolverValue::MakeByRangeTime(Sample);
@@ -185,7 +186,8 @@ namespace BOSS
             }
             return mResult;
         }
-        public: inline uint64 resultmsec() const {return mResultMsec;}
+        public: inline uint64 updated_msec() const
+        {return (mUpdatedFormulaMsec > mUpdatedResultMsec)? mUpdatedFormulaMsec : mUpdatedResultMsec;}
 
         // 멤버
         private: SolverChain* mLinkedChain;
@@ -194,7 +196,8 @@ namespace BOSS
         private: SolverOperandObject mOperandTop;
         private: float mReliable;
         private: SolverValue mResult;
-        private: uint64 mResultMsec;
+        private: uint64 mUpdatedFormulaMsec;
+        private: uint64 mUpdatedResultMsec;
     };
     typedef Array<Solver> Solvers;
 }

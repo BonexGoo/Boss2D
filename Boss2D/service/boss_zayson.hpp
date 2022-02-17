@@ -21,6 +21,8 @@ namespace BOSS
         bool ExistValue(chars variable) const;
         SolverValue GetValue(chars variable) const;
         void SetValue(chars variable, chars formula);
+        String GetComment(chars variable) const;
+        void SetComment(chars variable, chars text);
         void SetJson(const Context& json, const String nameheader = "");
         Strings MatchedVariables(chars keyword = nullptr);
         void Remove(chars variable);
