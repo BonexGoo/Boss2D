@@ -261,6 +261,12 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 }
             })
         {
+            // 버전
+            ZAY_INNER(panel, 10)
+            ZAY_FONT(panel, 1.5)
+            ZAY_RGBA(panel, 0, 0, 0, 32)
+                panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
+
             m->mWorkViewSize = Size(panel.w(), panel.h());
             if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
             {
@@ -904,6 +910,16 @@ void ZEWidgetPipe::SetDOMCount(sint32 count)
 
 zayeditorData::zayeditorData() : mEasySaveEffect(updater())
 {
+    String DateText = __DATE__;
+    DateText.Replace("Jan", "01"); DateText.Replace("Feb", "02"); DateText.Replace("Mar", "03");
+    DateText.Replace("Apr", "04"); DateText.Replace("May", "05"); DateText.Replace("Jun", "06");
+    DateText.Replace("Jul", "07"); DateText.Replace("Aug", "08"); DateText.Replace("Sep", "09");
+    DateText.Replace("Oct", "10"); DateText.Replace("Nov", "11"); DateText.Replace("Dec", "12");
+    DateText = DateText.Middle(6, 4) + DateText.Middle(0, 2) + DateText.Middle(3, 2);
+    String TimeText = __TIME__;
+    TimeText.Replace(":", "");
+    mBuildTag = String::Format("BUILD_%s_%s_KST", (chars) DateText, (chars) TimeText);
+
     mResourceCB = [](chars name)->const Image* {return &((const Image&) R(name));};
     mEasySaveEffect.Reset(0);
 
@@ -915,7 +931,7 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithOperation, "if → Conditional", nullptr);
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "iffocused → MouseFocus", nullptr);
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifhovered → MouseHover", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifpressed → Click(Touch)", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifpressed → MousePress", nullptr);
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "else → ConditionalElse", nullptr);
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "endif → ConditionalExit", nullptr);
 
