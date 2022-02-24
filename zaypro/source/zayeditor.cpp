@@ -94,7 +94,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 const sint32 CurZayBoxID = Values[0];
                 const sint32 GroupIndex = Values[1];
                 ZEZayBox::TOP()[CurZayBoxID]->AddChild(ZEZayBox::TOP()[m->mDraggingHook].Value(), GroupIndex);
-                ZEZayBox::TOP()[CurZayBoxID]->Sort(GroupIndex);
+                ZEZayBox::TOP()[CurZayBoxID]->Sort();
             }
         }
         jump(!String::Compare(topic, "HookClear")) // 부모가 자식 전부와 연결해제
@@ -131,12 +131,12 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             const sint32 ParentZayBoxID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(NewZayBoxID != -1 && ParentZayBoxID != -1)
                 ZEZayBox::TOP()[ParentZayBoxID]->ChangeChild(
-                    ZEZayBox::TOP()[CurZayBoxID].Value(), ZEZayBox::TOP()[NewZayBoxID].Value(), 0);
+                    ZEZayBox::TOP()[CurZayBoxID].Value(), ZEZayBox::TOP()[NewZayBoxID].Value());
         }
         jump(!String::Compare(topic, "ZayBoxSort"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            ZEZayBox::TOP()[CurZayBoxID]->Sort(0);
+            ZEZayBox::TOP()[CurZayBoxID]->Sort();
         }
         jump(!String::Compare(topic, "ZayBoxRemove")) // 제이박스 삭제(0-remove)
         {
@@ -144,7 +144,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(0);
             const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
-                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value(), 0);
+                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value());
             ZEZayBox::TOP().Remove(CurZayBoxID);
         }
         jump(!String::Compare(topic, "ZayBoxHookRemove"))
@@ -158,7 +158,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             ZEZayBox::TOP()[CurZayBoxID]->RemoveChildren(0);
             const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
-                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value(), 0);
+                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value());
             ZEZayBox::TOP().Remove(CurZayBoxID);
         }
         jump(!String::Compare(topic, "ZayBoxParamRemove")) // 제이박스 파라미터 삭제(0-param-0-remove)

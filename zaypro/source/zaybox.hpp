@@ -48,8 +48,8 @@ public:
 public:
     void Init(sint32 id, chars type, Color color, chars colorres, bool expand, sint32 x, sint32 y);
     void AddChild(ZEZayBox& child, sint32 group);
-    void SubChild(ZEZayBox& child, sint32 group);
-    void ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild, sint32 group);
+    void SubChild(ZEZayBox& child);
+    void ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild);
     inline sint32 id() const {return mID;}
     inline sint32 parent() const {return mParent;}
     inline sint32s& children() {return mChildren;}
@@ -76,7 +76,7 @@ public:
     void FlushTitleDrag();
     void FlushTitleDragWith(bool withhook);
     sint32 Copy();
-    void Sort(sint32 group);
+    void Sort();
     Rect GetRect() const;
     void RemoveChildren(sint32 group);
     void ClearParentHook();

@@ -198,39 +198,37 @@ void ZEZayBox::AddChild(ZEZayBox& child, sint32 group)
     }
 }
 
-void ZEZayBox::SubChild(ZEZayBox& child, sint32 group)
+void ZEZayBox::SubChild(ZEZayBox& child)
 {
-    if(auto CurChildren = GetChildrenGroup(group))
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
     {
-        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
+        if((*CurChildren)[j] == child.mID)
         {
-            if((*CurChildren)[i] == child.mID)
-            {
-                CurChildren->SubtractionSection(i);
-                break;
-            }
+            CurChildren->SubtractionSection(j);
+            child.ClearMyHook();
+            return;
         }
-        child.ClearMyHook();
     }
 }
 
-void ZEZayBox::ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild, sint32 group)
+void ZEZayBox::ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild)
 {
-    if(auto CurChildren = GetChildrenGroup(group))
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
     {
-        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
+        if((*CurChildren)[j] == oldchild.mID)
         {
-            if((*CurChildren)[i] == oldchild.mID)
-            {
-                newchild.mParent = mID;
-                newchild.mDebugOrder = i;
-                newchild.mHooked = true;
-                newchild.mHookPos = GetBallPos(group) - Point(newchild.mPosX, newchild.mPosY + TitleBarHeight / 2);
-                CurChildren->At(i) = newchild.mID;
-                break;
-            }
+            newchild.mParent = mID;
+            newchild.mDebugOrder = j;
+            newchild.mHooked = true;
+            newchild.mHookPos = GetBallPos(i) - Point(newchild.mPosX, newchild.mPosY + TitleBarHeight / 2);
+            CurChildren->At(j) = newchild.mID;
+            oldchild.ClearMyHook();
+            return;
         }
-        oldchild.ClearMyHook();
     }
 }
 
@@ -807,24 +805,25 @@ sint32 ZEZayBox::Copy()
     return NewID;
 }
 
-void ZEZayBox::Sort(sint32 group)
+void ZEZayBox::Sort()
 {
-    if(auto CurChildren = GetChildrenGroup(group))
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
     {
-        for(sint32 i = 0, iend = CurChildren->Count() - 1; i < iend; ++i)
+        for(sint32 j = 0, jend = CurChildren->Count() - 1; j < jend; ++j)
         {
-            auto CurBox = TOP().Access((*CurChildren)[i]);
-            auto NextBox = TOP().Access((*CurChildren)[i + 1]);
+            auto CurBox = TOP().Access((*CurChildren)[j]);
+            auto NextBox = TOP().Access((*CurChildren)[j + 1]);
             if(NextBox->ConstValue().mPosY < CurBox->ConstValue().mPosY)
             {
-                const sint32 Temp = (*CurChildren)[i];
-                CurChildren->At(i) = (*CurChildren)[i + 1];
-                CurChildren->At(i + 1) = Temp;
-                i = Math::Max(-1, i - 2);
+                const sint32 Temp = (*CurChildren)[j];
+                CurChildren->At(j) = (*CurChildren)[j + 1];
+                CurChildren->At(j + 1) = Temp;
+                j = Math::Max(-1, j - 2);
             }
         }
-        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
-            TOP().Access((*CurChildren)[i])->Value().mDebugOrder = i;
+        for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+            TOP().Access((*CurChildren)[j])->Value().mDebugOrder = j;
     }
 }
 
@@ -857,8 +856,8 @@ void ZEZayBox::ClearParentHook()
     {
         if(auto ParentBox = TOP().Access(mParent))
         {
-            for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
-            if(auto CurChildren = GetChildrenGroup(i))
+            for(sint32 i = 0, iend = (*ParentBox)->GetChildrenGroupCount(); i < iend; ++i)
+            if(auto CurChildren = (*ParentBox)->GetChildrenGroup(i))
             for(sint32 j = CurChildren->Count() - 1; 0 <= j; --j)
                 if((*CurChildren)[j] == mID)
                     CurChildren->SubtractionSection(j);
@@ -2020,6 +2019,7 @@ void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
     }
 
     // 인사이더들
+    sint32 FocusedBall = -1;
     for(sint32 i = 0, iend = mBalls.Count(); i < iend; ++i)
     {
         const String UIRemove = String::Format("%d-insider-%d-remove", mBox.mID, i);
@@ -2032,6 +2032,7 @@ void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
                 const String UIInsiderBall = String::Format("%d-insider-%d-ball", mBox.mID, i);
                 const bool IsDropping = !!(panel.state(UIInsiderBall) & PS_Dropping);
                 const bool IsFocused = !!(panel.state(UIInsiderBall) & PS_Focused);
+                if(IsFocused) FocusedBall = i;
                 ZAY_RGB_IF(panel, 0, 0, 0, !IsDropping)
                 ZAY_RGB_IF(panel, 255, 64, 0, IsDropping)
                 ZAY_RGB_IF(panel, 192, 192, 192, !IsDropping && IsFocused)
@@ -2081,6 +2082,15 @@ void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
             mBalls.At(i).mBallPos = Point(panel.w() + CurNameWidth + 4, 25 * (i + 1) - 4);
         }
     }
+
+    // 디버그용 자식ID 표시
+    #if !BOSS_NDEBUG
+        if(FocusedBall != -1)
+        ZAY_RGB(panel, 0, 0, 0)
+        for(sint32 i = 0, iend = mBalls[FocusedBall].mChildren.Count(); i < iend; ++i)
+            panel.text(panel.w(), 25 * mBalls.Count() + 4 + 20 + 15 * i,
+                String::Format(" <id%d>", mBalls[FocusedBall].mChildren[i]), UIFA_LeftTop);
+    #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

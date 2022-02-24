@@ -244,6 +244,45 @@
 												]
 											],
 											"expanded":"1",
+											"insiders":
+											[
+												{
+													"ballposx":"68",
+													"ballposy":"21",
+													"name":"cursor",
+													"ui":
+													[
+														{
+															"addw":"0",
+															"compid":"31",
+															"compname":"color",
+															"compvalues":
+															[
+																[
+																	"255",
+																	"0",
+																	"0",
+																	"128"
+																]
+															],
+															"expanded":"1",
+															"posx":"2087",
+															"posy":"863",
+															"ui":
+															[
+																{
+																	"addw":"0",
+																	"compid":"32",
+																	"compname":"fill",
+																	"expanded":"1",
+																	"posx":"2431",
+																	"posy":"888"
+																}
+															]
+														}
+													]
+												}
+											],
 											"posx":"1715",
 											"posy":"858"
 										}
@@ -347,6 +386,45 @@
 												]
 											],
 											"expanded":"1",
+											"insiders":
+											[
+												{
+													"ballposx":"68",
+													"ballposy":"21",
+													"name":"cursor",
+													"ui":
+													[
+														{
+															"addw":"0",
+															"compid":"33",
+															"compname":"color",
+															"compvalues":
+															[
+																[
+																	"255",
+																	"0",
+																	"255",
+																	"128"
+																]
+															],
+															"expanded":"1",
+															"posx":"2088",
+															"posy":"1274",
+															"ui":
+															[
+																{
+																	"addw":"0",
+																	"compid":"34",
+																	"compname":"fill",
+																	"expanded":"1",
+																	"posx":"2432",
+																	"posy":"1299"
+																}
+															]
+														}
+													]
+												}
+											],
 											"posx":"1715",
 											"posy":"1272"
 										}
