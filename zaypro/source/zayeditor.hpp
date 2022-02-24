@@ -19,7 +19,8 @@ public:
         String mName;
         Color mColor;
         String mColorRes;
-        String mParamComment;
+        String mParamComments;
+        String mInsideSamples;
     };
 
 public:
@@ -32,18 +33,17 @@ public:
 public:
     void ResetBoxInfo();
     const String& ViewName() const override;
-    ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb, chars paramcomment = nullptr) override;
+    ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
+        ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
     ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
 
 public:
     sint32 GetComponentCount() const;
     const Component& GetComponent(sint32 i) const;
     const Component* GetComponent(chars name) const;
-    ZEZayBox::CreatorCB GetCreator() const;
 
 private:
     Array<Component> mComponents;
-    ZEZayBox::CreatorCB mCreator;
 
 public:
     sint32 mLastBoxID;
@@ -245,7 +245,6 @@ public:
 public:
     ZayWidget::ResourceCB mResourceCB;
     ZEFakeZaySon mZaySonAPI;
-    ZEZayBoxMap mBoxMap;
     sint32 mDraggingHook;
     Tween1D mEasySaveEffect;
     ZEWidgetPipe mPipe;

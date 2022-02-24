@@ -23,9 +23,9 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         if(1 <= Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y))
         {
             Point Drag = Point(m->mWorkViewDrag.x / 20, m->mWorkViewDrag.y / 20);
-            for(sint32 i = 0, iend = m->mBoxMap.Count(); i < iend; ++i)
+            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
             {
-                auto CurBox = m->mBoxMap.AccessByOrder(i);
+                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
                 (*CurBox)->Move(Drag);
             }
             m->mWorkViewDrag -= Drag;
@@ -68,8 +68,8 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
 
         const String JsonText = String::FromAsset(ContentName);
         const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-        m->mBoxMap[0]->ReadJson(Json);
-        m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
+        ZEZayBox::TOP()[0]->ReadJson(Json);
+        ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), Json("ui"), ZEZayBox::TOP()[0].ConstValue(), 0);
     }
     else if(type == NT_Normal)
     {
@@ -90,26 +90,30 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         {
             if(m->mDraggingHook != -1)
             {
-                const sint32 CurZayBoxID = sint32o(in).ConstValue();
-                m->mBoxMap[CurZayBoxID]->AddChild(m->mBoxMap[m->mDraggingHook].Value());
-                m->mBoxMap[CurZayBoxID]->Sort(m->mBoxMap);
+                const sint32s Values(in);
+                const sint32 CurZayBoxID = Values[0];
+                const sint32 GroupIndex = Values[1];
+                ZEZayBox::TOP()[CurZayBoxID]->AddChild(ZEZayBox::TOP()[m->mDraggingHook].Value(), GroupIndex);
+                ZEZayBox::TOP()[CurZayBoxID]->Sort(GroupIndex);
             }
         }
         jump(!String::Compare(topic, "HookClear")) // 부모가 자식 전부와 연결해제
         {
-            const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->ClearChildrenHook(m->mBoxMap);
+            const sint32s Values(in);
+            const sint32 CurZayBoxID = Values[0];
+            const sint32 GroupIndex = Values[1];
+            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(GroupIndex);
         }
         jump(!String::Compare(topic, "ZayBoxMove"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->FlushTitleDrag(m->mBoxMap);
+            ZEZayBox::TOP()[CurZayBoxID]->FlushTitleDrag();
             m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
         }
         jump(!String::Compare(topic, "ZayBoxMoveWith"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->FlushTitleDragWith(m->mBoxMap, true);
+            ZEZayBox::TOP()[CurZayBoxID]->FlushTitleDragWith(true);
             m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
         }
         jump(!String::Compare(topic, "ZayBoxResize"))
@@ -117,67 +121,73 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             const sint32s Values(in);
             const sint32 CurZayBoxID = Values[0];
             const sint32 AddValue = Values[1];
-            m->mBoxMap[CurZayBoxID]->Resize(m->mBoxMap, AddValue);
+            ZEZayBox::TOP()[CurZayBoxID]->Resize(AddValue);
             m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
         }
         jump(!String::Compare(topic, "ZayBoxCopy"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            const sint32 NewZayBoxID = m->mBoxMap[CurZayBoxID]->Copy(m->mBoxMap, m->mZaySonAPI.GetCreator());
-            const sint32 ParentZayBoxID = m->mBoxMap[CurZayBoxID]->parent();
+            const sint32 NewZayBoxID = ZEZayBox::TOP()[CurZayBoxID]->Copy();
+            const sint32 ParentZayBoxID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(NewZayBoxID != -1 && ParentZayBoxID != -1)
-                m->mBoxMap[ParentZayBoxID]->ChangeChild(
-                    m->mBoxMap[CurZayBoxID].Value(), m->mBoxMap[NewZayBoxID].Value());
-            m->mBoxMap[CurZayBoxID]->ClearMyHook();
+                ZEZayBox::TOP()[ParentZayBoxID]->ChangeChild(
+                    ZEZayBox::TOP()[CurZayBoxID].Value(), ZEZayBox::TOP()[NewZayBoxID].Value(), 0);
         }
         jump(!String::Compare(topic, "ZayBoxSort"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->Sort(m->mBoxMap);
+            ZEZayBox::TOP()[CurZayBoxID]->Sort(0);
         }
         jump(!String::Compare(topic, "ZayBoxRemove")) // 제이박스 삭제(0-remove)
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->ClearChildrenHook(m->mBoxMap);
-            const sint32 ParentID = m->mBoxMap[CurZayBoxID]->parent();
+            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(0);
+            const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
-                m->mBoxMap[ParentID]->SubChild(m->mBoxMap[CurZayBoxID].Value());
-            m->mBoxMap.Remove(CurZayBoxID);
+                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value(), 0);
+            ZEZayBox::TOP().Remove(CurZayBoxID);
         }
         jump(!String::Compare(topic, "ZayBoxHookRemove"))
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->ClearParentHook(m->mBoxMap);
+            ZEZayBox::TOP()[CurZayBoxID]->ClearParentHook();
         }
         jump(!String::Compare(topic, "ZayBoxRemoveGroup")) // 제이박스 및 자식들 삭제(0-remove)
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            m->mBoxMap[CurZayBoxID]->RemoveChildren(m->mBoxMap);
-            const sint32 ParentID = m->mBoxMap[CurZayBoxID]->parent();
+            ZEZayBox::TOP()[CurZayBoxID]->RemoveChildren(0);
+            const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
-                m->mBoxMap[ParentID]->SubChild(m->mBoxMap[CurZayBoxID].Value());
-            m->mBoxMap.Remove(CurZayBoxID);
+                ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value(), 0);
+            ZEZayBox::TOP().Remove(CurZayBoxID);
         }
         jump(!String::Compare(topic, "ZayBoxParamRemove")) // 제이박스 파라미터 삭제(0-param-0-remove)
         {
             sint32s Args(in);
             const sint32 CurZayBoxID = Args[0];
             const sint32 CurParamID = Args[1];
-            m->mBoxMap[CurZayBoxID]->SubParam(CurParamID);
+            ZEZayBox::TOP()[CurZayBoxID]->SubParam(CurParamID);
         }
         jump(!String::Compare(topic, "ZayBoxValueRemove")) // 제이박스 밸류 삭제(0-value-0-remove)
         {
             sint32s Args(in);
             const sint32 CurZayBoxID = Args[0];
             const sint32 CurValueID = Args[1];
-            m->mBoxMap[CurZayBoxID]->SubInput(CurValueID);
+            ZEZayBox::TOP()[CurZayBoxID]->SubInput(CurValueID);
         }
         jump(!String::Compare(topic, "ZayBoxExtValueRemove")) // 제이박스 확장밸류 삭제(0-extvalue-0-remove)
         {
             sint32s Args(in);
             const sint32 CurZayBoxID = Args[0];
             const sint32 CurExtValueID = Args[1];
-            m->mBoxMap[CurZayBoxID]->SubExtInput(CurExtValueID);
+            ZEZayBox::TOP()[CurZayBoxID]->SubExtInput(CurExtValueID);
+        }
+        jump(!String::Compare(topic, "ZayBoxInsiderRemove")) // 제이박스 확장밸류 삭제(0-insider-0-remove)
+        {
+            sint32s Args(in);
+            const sint32 CurZayBoxID = Args[0];
+            const sint32 GroupIndex = Args[1] + 1;
+            ZEZayBox::TOP()[CurZayBoxID]->SubInsiderBall(GroupIndex);
         }
         jump(!String::Compare(topic, "Pipe:", 5))
         {
@@ -230,9 +240,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 {
                     auto& OldPos = v->oldxy(n);
                     const Point Drag(x - OldPos.x, y - OldPos.y);
-                    for(sint32 i = 0, iend = m->mBoxMap.Count(); i < iend; ++i)
+                    for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
                     {
-                        auto CurBox = m->mBoxMap.AccessByOrder(i);
+                        auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
                         (*CurBox)->Move(Drag);
                     }
                     v->invalidate();
@@ -246,9 +256,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
                     // 컴포넌트 추가
                     auto& CurComponent = m->mZaySonAPI.GetComponent(m->mZaySonAPI.mDraggingComponentID);
-                    ZEZayBoxObject NewZayBox = m->mZaySonAPI.GetCreator()(CurComponent.mName);
-                    NewZayBox->InitCompID();
-                    m->mBoxMap[NewZayBox->id()] = NewZayBox;
+                    ZEZayBoxObject NewZayBox = ZEZayBox::CREATOR()(CurComponent.mName);
+                    ZEZayBox::TOP()[NewZayBox->id()] = NewZayBox;
                 }
             })
         {
@@ -261,9 +270,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
 
             // 박스
-            for(sint32 i = 0, iend = m->mBoxMap.Count(); i < iend; ++i)
+            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
             {
-                auto CurBox = m->mBoxMap.AccessByOrder(i);
+                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
                 (*CurBox)->Render(panel);
             }
 
@@ -357,8 +366,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
                                     const String JsonText = String::FromFile(JsonPath);
                                     const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-                                    m->mBoxMap[0]->ReadJson(Json);
-                                    m->mBoxMap[0]->LoadChildren(Json("ui"), m->mBoxMap, m->mZaySonAPI.GetCreator());
+                                    ZEZayBox::TOP()[0]->ReadJson(Json);
+                                    ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), Json("ui"), ZEZayBox::TOP()[0].ConstValue(), 0);
                                 }
                             }
                         };
@@ -391,8 +400,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                                     Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
                                 }
                                 Context Json;
-                                m->mBoxMap[0]->WriteJson(Json);
-                                m->mBoxMap[0]->SaveChildren(Json.At("ui"), m->mBoxMap);
+                                ZEZayBox::TOP()[0]->WriteJson(Json, true);
+                                if(0 < ZEZayBox::TOP()[0]->children().Count())
+                                    ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
                                 Json.SaveJson().ToFile(JsonPath, true);
                             }
                         }
@@ -457,7 +467,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 ZEFakeZaySon::ZEFakeZaySon()
 {
-    mCreator = [this](chars compname)->ZEZayBoxObject
+    ZEZayBox::CREATOR() = [this](chars compname)->ZEZayBoxObject
     {
         ZEZayBoxObject NewZayBox;
         String NewName = compname;
@@ -469,16 +479,22 @@ ZEFakeZaySon::ZEFakeZaySon()
             switch(CurComponent->mType)
             {
             case ZayExtend::ComponentType::Content:
-                NewZayBox = ZEZayBoxContent::Create(false, false, CurComponent->mParamComment);
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::None, false, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
             case ZayExtend::ComponentType::ContentWithParameter:
-                NewZayBox = ZEZayBoxContent::Create(false, true, CurComponent->mParamComment);
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::None, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
+                break;
+            case ZayExtend::ComponentType::ContentWithInsider:
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
+                break;
+            case ZayExtend::ComponentType::ContentWithParamAndInsider:
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
             case ZayExtend::ComponentType::Option:
-                NewZayBox = ZEZayBoxContent::Create(true, true, CurComponent->mParamComment);
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Inner, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
             case ZayExtend::ComponentType::Layout:
-                NewZayBox = ZEZayBoxLayout::Create(CurComponent->mParamComment);
+                NewZayBox = ZEZayBoxLayout::Create(CurComponent->mParamComments);
                 break;
             case ZayExtend::ComponentType::Code:
                 NewZayBox = ZEZayBoxCode::Create();
@@ -522,6 +538,8 @@ Color ZEFakeZaySon::GetComponentColor(ZayExtend::ComponentType type, String& col
     {
     case ZayExtend::ComponentType::Content:
     case ZayExtend::ComponentType::ContentWithParameter:
+    case ZayExtend::ComponentType::ContentWithInsider:
+    case ZayExtend::ComponentType::ContentWithParamAndInsider:
         colorres = "box_title_d";
         return Color(0, 181, 240, 192);
     case ZayExtend::ComponentType::Option:
@@ -556,13 +574,15 @@ const String& ZEFakeZaySon::ViewName() const
     return _;
 }
 
-ZaySonInterface& ZEFakeZaySon::AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb, chars paramcomment)
+ZaySonInterface& ZEFakeZaySon::AddComponent(ZayExtend::ComponentType type, chars name,
+    ZayExtend::ComponentCB cb, chars comments, chars samples)
 {
     auto& NewComponent = mComponents.AtAdding();
     NewComponent.mType = type;
     NewComponent.mName = name;
     NewComponent.mColor = GetComponentColor(type, NewComponent.mColorRes);
-    NewComponent.mParamComment = (paramcomment)? paramcomment : "";
+    NewComponent.mParamComments = (comments)? comments : "";
+    NewComponent.mInsideSamples = (samples)? samples : "";
     return *this;
 }
 
@@ -596,11 +616,6 @@ const ZEFakeZaySon::Component* ZEFakeZaySon::GetComponent(chars name) const
         if(!String::CompareNoCase(mComponents[i].mName, FindName, FindName.Length()))
             return &mComponents[i];
     return nullptr;
-}
-
-ZEZayBox::CreatorCB ZEFakeZaySon::GetCreator() const
-{
-    return mCreator;
 }
 
 ZEWidgetPipe::ZEWidgetPipe()
@@ -915,13 +930,13 @@ zayeditorData::~zayeditorData()
 void zayeditorData::ResetBoxes()
 {
     mZaySonAPI.ResetBoxInfo();
-    mBoxMap.Reset();
+    ZEZayBox::TOP().Reset();
 
     // 스타터 입력
     ZEZayBoxObject NewZayBox;
     NewZayBox = ZEZayBoxStarter::Create();
     NewZayBox->Init(0, "widget", Color(255, 255, 255, 192), "box_title_first", true, 10, 10);
-    mBoxMap[0] = NewZayBox;
+    ZEZayBox::TOP()[0] = NewZayBox;
     mDraggingHook = -1;
     mShowCommentTagMsec = 0;
     mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
@@ -946,8 +961,9 @@ void zayeditorData::FastSave()
             Platform::File::Rename(WString::FromChars(mPipe.jsonpath()), WString::FromChars(OldPath));
         }
         Context Json;
-        mBoxMap[0]->WriteJson(Json);
-        mBoxMap[0]->SaveChildren(Json.At("ui"), mBoxMap);
+        ZEZayBox::TOP()[0]->WriteJson(Json, true);
+        if(0 < ZEZayBox::TOP()[0]->children().Count())
+            ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
         Json.SaveJson().ToFile(mPipe.jsonpath(), true);
         // 애니효과
         mEasySaveEffect.Reset(1);
@@ -1300,9 +1316,9 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
     // 최대최소 검사
     Rect ScreenRect(0, 0, panel.w(), panel.h());
     Rect SumRect = ScreenRect;
-    for(sint32 i = 0, iend = mBoxMap.Count(); i < iend; ++i)
+    for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
     {
-        auto CurBox = mBoxMap.AccessByOrder(i);
+        auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
         auto CurRect = (*CurBox)->GetRect();
         SumRect.l = Math::MinF(SumRect.l, CurRect.l);
         SumRect.t = Math::MinF(SumRect.t, CurRect.t);
@@ -1346,9 +1362,9 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
             // 출력
             const Point BeginPos(SumRect.l, SumRect.t);
             const float Rate = panel.w() / SumRect.Width();
-            for(sint32 i = 0, iend = mBoxMap.Count(); i < iend; ++i)
+            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
             {
-                auto CurBox = mBoxMap.AccessByOrder(i);
+                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
                 auto CurRect = (*CurBox)->GetRect();
                 CurRect -= BeginPos;
                 CurRect *= Rate;

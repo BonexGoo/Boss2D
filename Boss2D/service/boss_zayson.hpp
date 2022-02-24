@@ -46,7 +46,8 @@ namespace BOSS
 
     public:
         virtual const String& ViewName() const = 0;
-        virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb, chars paramcomment = nullptr) = 0;
+        virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
+            ZayExtend::ComponentCB cb, chars paramcomments = nullptr, chars insidenames = nullptr) = 0;
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) = 0;
     };
 
@@ -79,7 +80,8 @@ namespace BOSS
         void Reload(const Context& context);
         void SetLogger(LoggerCB cb);
         const String& ViewName() const override;
-        ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb, chars paramcomment = nullptr) override;
+        ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
+            ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
         const ZayExtend* FindComponent(chars name) const;
         const ZayExtend* FindGlue(chars name) const;

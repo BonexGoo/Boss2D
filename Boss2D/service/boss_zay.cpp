@@ -1606,7 +1606,8 @@ namespace BOSS
 
     bool ZayExtend::HasContentComponent() const
     {
-        return (mComponentType == ComponentType::Content || mComponentType == ComponentType::ContentWithParameter);
+        return (mComponentType == ComponentType::Content || mComponentType == ComponentType::ContentWithParameter ||
+            mComponentType == ComponentType::ContentWithInsider || mComponentType == ComponentType::ContentWithParamAndInsider);
     }
 
     bool ZayExtend::HasGlue() const

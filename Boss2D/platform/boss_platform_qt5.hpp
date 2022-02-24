@@ -1138,13 +1138,12 @@
             m_fbo_width = 0;
             m_fbo_height = 0;
 
-            if(webpaper)
-                setAttribute(Qt::WA_AlwaysStackOnTop);
-            setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
             setFocusPolicy(Qt::ClickFocus);
             setAutoFillBackground(false);
+            if(webpaper)
+                setAttribute(Qt::WA_AlwaysStackOnTop);
         }
 
         virtual ~MainViewGL()

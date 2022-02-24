@@ -1091,7 +1091,8 @@ namespace BOSS
         return mViewName;
     }
 
-    ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb, chars paramcomment)
+    ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name,
+        ZayExtend::ComponentCB cb, chars comments, chars samples)
     {
         String OneName = name;
         const sint32 Pos = OneName.Find(0, ' ');

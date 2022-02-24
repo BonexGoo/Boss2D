@@ -11,6 +11,7 @@ typedef Map<ZEZayBoxObject> ZEZayBoxMap;
 class ZEZayBox
 {
 public:
+    enum class ChildType {None, Inner, Insider};
     typedef std::function<ZEZayBoxObject(chars compname)> CreatorCB;
 
 public:
@@ -18,39 +19,48 @@ public:
     virtual ~ZEZayBox();
 
 public:
+    static ZEZayBoxMap& TOP() {static ZEZayBoxMap _; return _;}
+    static CreatorCB& CREATOR() {static CreatorCB _; return _;}
     static void ResetLastID();
+
 protected:
     static sint32 MakeLastID();
     static sint32 ValidLastID(sint32 id);
 
 public:
-    void LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB cb);
-    void SaveChildren(Context& json, const ZEZayBoxMap& boxmap) const;
+    static void Load(sint32s& children, const Context& json, const ZEZayBox& self, sint32 group);
+    static void Save(const sint32s& children, Context& json);
 
 public:
     virtual void ReadJson(const Context& json);
-    virtual void WriteJson(Context& json) const;
+    virtual void WriteJson(Context& json, bool makeid) const;
     virtual void Render(ZayPanel& panel);
     virtual void RecalcSize();
+    virtual sint32 GetChildrenGroupCount() const;
+    virtual sint32s* GetChildrenGroup(sint32 group);
     virtual void SubParam(sint32 i);
     virtual void SubInput(sint32 i);
     virtual void SubExtInput(sint32 i);
+    virtual void SubInsiderBall(sint32 group);
     virtual chars GetComment() const;
+    virtual Point GetBallPos(sint32 group) const;
 
 public:
     void Init(sint32 id, chars type, Color color, chars colorres, bool expand, sint32 x, sint32 y);
-    void InitCompID();
-    void AddChild(ZEZayBox& child);
-    void SubChild(ZEZayBox& child);
-    void ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild);
+    void AddChild(ZEZayBox& child, sint32 group);
+    void SubChild(ZEZayBox& child, sint32 group);
+    void ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild, sint32 group);
     inline sint32 id() const {return mID;}
     inline sint32 parent() const {return mParent;}
+    inline sint32s& children() {return mChildren;}
+    inline const sint32s& children() const {return mChildren;}
     inline Color color() const {return mColor;}
     inline bool hooked() const {return mHooked;}
     inline Point hookpos() const {return mHookPos;}
 
 public:
-    void RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, bool copy, bool expand, bool resize, bool remove);
+    void RenderTitle(ZayPanel& panel, chars title, bool hook,
+        ChildType childtype, bool copy, bool expand, bool resize, bool remove);
     void RenderHook(ZayPanel& panel, chars uiname);
     void RenderBall(ZayPanel& panel, chars uiname);
     void RenderGroupMoveButton(ZayPanel& panel, chars uiname);
@@ -62,24 +72,24 @@ public:
 
 public:
     void Move(Point drag);
-    void Resize(ZEZayBoxMap& boxmap, sint32 add);
-    void FlushTitleDrag(ZEZayBoxMap& boxmap);
-    void FlushTitleDragWith(ZEZayBoxMap& boxmap, bool withhook);
-    sint32 Copy(ZEZayBoxMap& boxmap, CreatorCB cb);
-    void Sort(ZEZayBoxMap& boxmap);
+    void Resize(sint32 add);
+    void FlushTitleDrag();
+    void FlushTitleDragWith(bool withhook);
+    sint32 Copy();
+    void Sort(sint32 group);
     Rect GetRect() const;
-    Point GetBallPos() const;
-    void RemoveChildren(ZEZayBoxMap& boxmap);
-    void ClearParentHook(ZEZayBoxMap& boxmap);
-    void ClearChildrenHook(ZEZayBoxMap& boxmap);
+    void RemoveChildren(sint32 group);
+    void ClearParentHook();
+    void ClearChildrenHook(sint32 group);
     void ClearMyHook();
+    void MoveMyHook(sint32 addx, sint32 addy);
 
 protected: // 데이터
-    sint32 mID; // 인스턴스ID
+    sint32 mID; // 나의 인스턴스ID
     String mCompType;
     mutable sint32 mCompID;
-    sint32 mParent;
-    sint32 mOrder;
+    sint32 mParent; // 부모의 인스턴스ID
+    sint32 mDebugOrder; // 디버깅시 보여질 나의 순번
     sint32s mChildren;
 
 protected: // UI정보
@@ -193,10 +203,10 @@ protected:
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderParamGroup(ZayPanel& panel);
         void RenderParamEditor(ZayPanel& panel, chars uiname, sint32 i);
-        void RenderParamComment(ZayPanel& panel, chars uiname, chars comment);
+        void RenderParamComments(ZayPanel& panel, chars uiname, chars comments);
     public:
         Strings mParams;
-        String mParamComment;
+        String mComments;
         sint32s mParamCommentDefaults;
     };
 
@@ -264,6 +274,37 @@ protected:
         String mOperation;
         bool mEventFlag;
     };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // BodyInsideGroup
+    ////////////////////////////////////////////////////////////////////////////////
+    class BodyInsideGroup : public BodyElement
+    {
+    public:
+        BodyInsideGroup(ZEZayBox& box);
+        ~BodyInsideGroup();
+    public:
+        static ZEZayBox*& BOX() {static ZEZayBox* _ = nullptr; return _;}
+    public:
+        void AddBall();
+        void SubBall(sint32 i);
+    public:
+        void ReadJson(const Context& json) override;
+        void WriteJson(Context& json) const override;
+        sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
+        void RenderBalls(ZayPanel& panel);
+    public:
+        class Ball
+        {
+        public:
+            String mName;
+            Point mBallPos;
+            sint32s mChildren;
+        };
+        typedef Array<Ball> Balls;
+        Balls mBalls;
+        String mSamples;
+    };
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +321,7 @@ public:
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
     void SubInput(sint32 i) override;
@@ -301,20 +342,25 @@ public:
     ~ZEZayBoxContent() override;
 
 public:
-    static ZEZayBoxObject Create(bool child, bool param, chars paramcomment);
+    static ZEZayBoxObject Create(ChildType childtype, bool param, chars comments, chars samples);
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
+    sint32 GetChildrenGroupCount() const override;
+    sint32s* GetChildrenGroup(sint32 group) override;
     void SubParam(sint32 i) override;
+    void SubInsiderBall(sint32 group) override;
     chars GetComment() const override;
+    Point GetBallPos(sint32 group) const override;
 
 protected: // 데이터
     BodyComment mComment;
     BodyParamGroup mParamGroup;
-    bool mHasChild;
+    BodyInsideGroup mInsideGroup;
+    ChildType mChildType;
     bool mHasParam;
 };
 
@@ -328,11 +374,11 @@ public:
     ~ZEZayBoxLayout() override;
 
 public:
-    static ZEZayBoxObject Create(chars paramcomment);
+    static ZEZayBoxObject Create(chars comments);
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
     void SubParam(sint32 i) override;
@@ -361,7 +407,7 @@ public:
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
     void SubInput(sint32 i) override;
@@ -386,7 +432,7 @@ public:
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
     chars GetComment() const override;
@@ -410,7 +456,7 @@ public:
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
 
@@ -433,7 +479,7 @@ public:
 
 public:
     void ReadJson(const Context& json) override;
-    void WriteJson(Context& json) const override;
+    void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
     chars GetComment() const override;

@@ -12,7 +12,7 @@ ZEZayBox::ZEZayBox()
     mCompType = "null";
     mCompID = -2;
     mParent = -1;
-    mOrder = -1;
+    mDebugOrder = -1;
     mExpanded = true;
     mHooked = false;
     mHookPos = Point(-BallX, 0);
@@ -40,16 +40,16 @@ sint32 ZEZayBox::ValidLastID(sint32 id)
     return id;
 }
 
-void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB cb)
+void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox& self, sint32 group)
 {
     double TopPosX = 0, TopPosY = 0;
-    if(const auto TopBox = boxmap.Access(0))
+    if(const auto TopBox = TOP().Access(0))
     {
         TopPosX = TopBox->ConstValue().mPosX;
         TopPosY = TopBox->ConstValue().mPosY;
     }
 
-    mChildren.Clear();
+    children.Clear();
     for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
     {
         hook(json[i])
@@ -60,42 +60,50 @@ void ZEZayBox::LoadChildren(const Context& json, ZEZayBoxMap& boxmap, CreatorCB 
             else CurCompName = fish.GetText(); // 옛날 포맷으로 쓰여진 조건문인 경우
 
             // 자식구성
-            auto NewChildBox = cb(CurCompName);
-            NewChildBox->ReadJson(fish);
-            NewChildBox->mExpanded = (fish("expanded").GetInt(1) != 0);
-            NewChildBox->mPosX = TopPosX + fish("posx").GetFloat(mPosX + mBodySize.w + mAddW + 30 - TopPosX);
-            NewChildBox->mPosY = TopPosY + fish("posy").GetFloat(mPosY + (TitleBarHeight + 20) * i - TopPosY);
-            NewChildBox->mAddW = fish("addw").GetInt(0);
-            AddChild(NewChildBox.Value()); // 자식의 HookPos설정
+            auto NewBoxObject = CREATOR()(CurCompName);
+            auto& CurBox = NewBoxObject.Value();
+            CurBox.mExpanded = (fish("expanded").GetInt(1) != 0);
+            CurBox.mPosX = TopPosX + fish("posx").GetFloat(self.mPosX + self.mBodySize.w + self.mAddW + 30 - TopPosX);
+            CurBox.mPosY = TopPosY + fish("posy").GetFloat(self.mPosY + (TitleBarHeight + 20.0) * i - TopPosY);
+            CurBox.mAddW = fish("addw").GetInt(0);
+
+            // 자식의 HookPos설정
+            CurBox.mParent = self.mID;
+            CurBox.mDebugOrder = children.Count();
+            CurBox.mHooked = true;
+            CurBox.mHookPos = self.GetBallPos(group) - Point(CurBox.mPosX, CurBox.mPosY + TitleBarHeight / 2);
+            CurBox.ReadJson(fish);
+            children.AtAdding() = CurBox.mID;
 
             // 자식재귀 및 박스추가
-            NewChildBox->LoadChildren(fish("ui"), boxmap, cb);
-            boxmap[NewChildBox->mID] = NewChildBox;
+            CurBox.Load(CurBox.children(), fish("ui"), CurBox, 0);
+            TOP()[CurBox.mID] = NewBoxObject;
         }
     }
 }
 
-void ZEZayBox::SaveChildren(Context& json, const ZEZayBoxMap& boxmap) const
+void ZEZayBox::Save(const sint32s& children, Context& json)
 {
     double TopPosX = 0, TopPosY = 0;
-    if(const auto TopBox = boxmap.Access(0))
+    if(const auto TopBox = TOP().Access(0))
     {
         TopPosX = TopBox->ConstValue().mPosX;
         TopPosY = TopBox->ConstValue().mPosY;
     }
 
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+    for(sint32 i = 0, iend = children.Count(); i < iend; ++i)
     {
         hook(json.At(i))
-        if(auto CurBox = boxmap.Access(mChildren[i]))
+        if(auto CurBoxObject = TOP().Access(children[i]))
         {
-            CurBox->ConstValue().WriteJson(fish);
-            fish.At("expanded").Set(String::FromInteger((CurBox->ConstValue().mExpanded)? 1 : 0));
-            fish.At("posx").Set(String::FromInteger(sint32(CurBox->ConstValue().mPosX - TopPosX + 0.5)));
-            fish.At("posy").Set(String::FromInteger(sint32(CurBox->ConstValue().mPosY - TopPosY + 0.5)));
-            fish.At("addw").Set(String::FromInteger(CurBox->ConstValue().mAddW));
-            if(0 < CurBox->ConstValue().mChildren.Count())
-                CurBox->ConstValue().SaveChildren(fish.At("ui"), boxmap);
+            auto& CurBox = CurBoxObject->ConstValue();
+            CurBox.WriteJson(fish, true);
+            fish.At("expanded").Set(String::FromInteger((CurBox.mExpanded)? 1 : 0));
+            fish.At("posx").Set(String::FromInteger(sint32(CurBox.mPosX - TopPosX + 0.5)));
+            fish.At("posy").Set(String::FromInteger(sint32(CurBox.mPosY - TopPosY + 0.5)));
+            fish.At("addw").Set(String::FromInteger(CurBox.mAddW));
+            if(0 < CurBox.children().Count())
+                ZEZayBox::Save(CurBox.children(), fish.At("ui"));
         }
     }
 }
@@ -105,7 +113,7 @@ void ZEZayBox::ReadJson(const Context& json)
     BOSS_ASSERT("잘못된 시나리오입니다", false);
 }
 
-void ZEZayBox::WriteJson(Context& json) const
+void ZEZayBox::WriteJson(Context& json, bool makeid) const
 {
     BOSS_ASSERT("잘못된 시나리오입니다", false);
 }
@@ -118,6 +126,17 @@ void ZEZayBox::Render(ZayPanel& panel)
 void ZEZayBox::RecalcSize()
 {
     BOSS_ASSERT("잘못된 시나리오입니다", false);
+}
+
+sint32 ZEZayBox::GetChildrenGroupCount() const
+{
+    return 1;
+}
+
+sint32s* ZEZayBox::GetChildrenGroup(sint32 group)
+{
+    BOSS_ASSERT("잘못된 시나리오입니다", group == 0);
+    return &mChildren;
 }
 
 void ZEZayBox::SubParam(sint32 i)
@@ -135,10 +154,21 @@ void ZEZayBox::SubExtInput(sint32 i)
     BOSS_ASSERT("잘못된 시나리오입니다", false);
 }
 
+void ZEZayBox::SubInsiderBall(sint32 group)
+{
+    BOSS_ASSERT("잘못된 시나리오입니다", false);
+}
+
 chars ZEZayBox::GetComment() const
 {
     BOSS_ASSERT("잘못된 시나리오입니다", false);
     return "error";
+}
+
+Point ZEZayBox::GetBallPos(sint32 group) const
+{
+    BOSS_ASSERT("잘못된 시나리오입니다", group == 0);
+    return Point(sint32(mPosX), sint32(mPosY)) + Size(mBodySize.w + mAddW + BallX, TitleBarHeight / 2);
 }
 
 void ZEZayBox::Init(sint32 id, chars type, Color color, chars colorres, bool expand, sint32 x, sint32 y)
@@ -156,51 +186,56 @@ void ZEZayBox::Init(sint32 id, chars type, Color color, chars colorres, bool exp
     RecalcSize();
 }
 
-void ZEZayBox::InitCompID()
+void ZEZayBox::AddChild(ZEZayBox& child, sint32 group)
 {
-    mCompID = MakeLastID();
-}
-
-void ZEZayBox::AddChild(ZEZayBox& child)
-{
-    child.mParent = mID;
-    child.mOrder = mChildren.Count();
-    child.mHooked = true;
-    child.mHookPos = GetBallPos() - Point(child.mPosX, child.mPosY + TitleBarHeight / 2);
-    mChildren.AtAdding() = child.mID;
-}
-
-void ZEZayBox::SubChild(ZEZayBox& child)
-{
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(group))
     {
-        if(mChildren[i] == child.mID)
-        {
-            mChildren.SubtractionSection(i);
-            break;
-        }
+        child.mParent = mID;
+        child.mDebugOrder = CurChildren->Count();
+        child.mHooked = true;
+        child.mHookPos = GetBallPos(group) - Point(child.mPosX, child.mPosY + TitleBarHeight / 2);
+        CurChildren->AtAdding() = child.mID;
     }
-    child.ClearMyHook();
 }
 
-void ZEZayBox::ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild)
+void ZEZayBox::SubChild(ZEZayBox& child, sint32 group)
 {
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(group))
     {
-        if(mChildren[i] == oldchild.mID)
+        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
         {
-            newchild.mParent = mID;
-            newchild.mOrder = i;
-            newchild.mHooked = true;
-            newchild.mHookPos = GetBallPos() - Point(newchild.mPosX, newchild.mPosY + TitleBarHeight / 2);
-            mChildren.At(i) = newchild.mID;
-            break;
+            if((*CurChildren)[i] == child.mID)
+            {
+                CurChildren->SubtractionSection(i);
+                break;
+            }
         }
+        child.ClearMyHook();
     }
-    oldchild.ClearMyHook();
 }
 
-void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, bool copy, bool expand, bool resize, bool remove)
+void ZEZayBox::ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild, sint32 group)
+{
+    if(auto CurChildren = GetChildrenGroup(group))
+    {
+        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
+        {
+            if((*CurChildren)[i] == oldchild.mID)
+            {
+                newchild.mParent = mID;
+                newchild.mDebugOrder = i;
+                newchild.mHooked = true;
+                newchild.mHookPos = GetBallPos(group) - Point(newchild.mPosX, newchild.mPosY + TitleBarHeight / 2);
+                CurChildren->At(i) = newchild.mID;
+                break;
+            }
+        }
+        oldchild.ClearMyHook();
+    }
+}
+
+void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
+    ChildType childtype, bool copy, bool expand, bool resize, bool remove)
 {
     const String UITitle = String::Format("%d-title", mID);
     const String UIGroupMove = String::Format("%d-groupmove", mID);
@@ -216,7 +251,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
     const bool IsDropping = !!(panel.state(UITitle) & PS_Dropping);
 
     // 타이틀
-    ZAY_XYWH_UI(panel, 0, 0, panel.w(), TitleBarHeight, UITitle,
+    ZAY_LTRB_UI(panel, 0, 2, panel.w() - 4, TitleBarHeight - 2, UITitle,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             if(t == GT_Moving)
@@ -233,16 +268,17 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
                 Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(mParent));
         })
+    ZAY_LTRB(panel, 0, -2, panel.w() + 4, panel.h() + 2)
     {
         // L로프(후크)
         if(hook)
             RenderHook(panel, UIHook);
 
         // R로프(볼)
-        if(ball)
+        if(childtype == ChildType::Inner)
             RenderBall(panel, UIBall);
 
-        ZAY_LTRB(panel, 6, 4, panel.w() - 4, panel.h() - 4)
+        ZAY_LTRB(panel, 2 + 4, 4, panel.w() - 4, panel.h() - 4)
         {
             // 타이틀배경
             ZAY_RGB_IF(panel, 160, 160, 160, IsFocusing && !IsDropping)
@@ -285,7 +321,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
                     RenderResizeButton(panel, UIResize);
             }
             // 그룹이동버튼
-            if(hook && ball)
+            if(hook && childtype != ChildType::None)
             {
                 TitleEndX -= ButtonWidth - 1;
                 ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
@@ -295,12 +331,12 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook, bool ball, b
             // 타이틀
             ZAY_LTRB(panel, 5 + 3, 0, TitleEndX + 3, panel.h())
             {
-                String TitleText((IsFocusing && mOrder != -1)?
-                    (chars) String::Format("[%d] %s", mOrder, title) : title);
+                String TitleText((IsFocusing && mDebugOrder != -1)?
+                    (chars) String::Format("[%d] %s", mDebugOrder, title) : title);
 
                 // 디버그용 자기ID 표시
                 #if !BOSS_NDEBUG
-                    TitleText += String::Format(" <%d>", mID);
+                    TitleText += String::Format((mCompID == -2)? " <id%d>" : " <id%d/comp%d>", mID, mCompID);
                 #endif
 
                 ZAY_RGB(panel, 255, 255, 255)
@@ -411,11 +447,17 @@ void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
             {
                 if(t == GT_Dropped)
                 {
-                    Platform::SendNotify(v->view(), "HookDropped", sint32o(mID));
+                    sint32s Values;
+                    Values.AtAdding() = mID;
+                    Values.AtAdding() = 0;
+                    Platform::SendNotify(v->view(), "HookDropped", Values);
                 }
                 else if(t == GT_InReleased)
                 {
-                    Platform::SendNotify(v->view(), "HookClear", sint32o(mID));
+                    sint32s Values;
+                    Values.AtAdding() = mID;
+                    Values.AtAdding() = 0;
+                    Platform::SendNotify(v->view(), "HookClear", Values);
                 }
             })
         ZAY_INNER(panel, 5)
@@ -426,14 +468,14 @@ void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
     #if !BOSS_NDEBUG
         ZAY_RGB(panel, 0, 0, 0)
         for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-            panel.text(panel.w(), 20 + 15 * i, String::Format(" <%d>", mChildren[i]), UIFA_LeftTop);
+            panel.text(panel.w(), 20 + 15 * i, String::Format(" <id%d>", mChildren[i]), UIFA_LeftTop);
     #endif
 }
 
 void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
 {
     const bool IsFocusing = !!(panel.state(uiname) & (PS_Focused | PS_Dragging));
-    ZAY_INNER_UI(panel, 0, uiname,
+    ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             if(t == GT_InDragging || t == GT_OutDragging)
@@ -446,6 +488,7 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
             else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
                 Platform::SendNotify(v->view(), "ZayBoxSort", sint32o(mParent));
         })
+    ZAY_INNER(panel, 2)
     {
         if(IsFocusing)
             panel.icon(R("wid_move_o"), UIA_CenterMiddle);
@@ -456,7 +499,7 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
 void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
 {
     const bool IsFocusing = !!(panel.state(uiname) & (PS_Focused | PS_Dragging));
-    ZAY_INNER_UI(panel, 0, uiname,
+    ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             static bool Created = false;
@@ -483,6 +526,7 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
                 }
             }
         })
+    ZAY_INNER(panel, 2)
     {
         if(IsFocusing)
             panel.icon(R("wid_copy_o"), UIA_CenterMiddle);
@@ -493,13 +537,13 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
 void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
 {
     const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
-    ZAY_INNER_UI(panel, 0, uiname,
+    ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_T(t, this)
         {
             if(t == GT_InReleased)
                 mExpanded ^= true;
         })
-    ZAY_INNER(panel, 3)
+    ZAY_INNER(panel, 2 + 3)
     {
         ZAY_RGBA(panel, 0, 0, 0, 32)
         ZAY_RGBA_IF(panel, 128, 128, 128, 144, IsFocused)
@@ -514,7 +558,7 @@ void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
 void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
 {
     const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
-    ZAY_INNER_UI(panel, 0, uiname,
+    ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
             if(t == GT_InDragging || t == GT_OutDragging)
@@ -527,7 +571,7 @@ void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
                 v->invalidate();
             }
         })
-    ZAY_INNER(panel, 3)
+    ZAY_INNER(panel, 2 + 3)
     {
         ZAY_RGBA(panel, 0, 0, 0, 32)
         ZAY_RGBA_IF(panel, 128, 128, 128, 144, IsFocused)
@@ -550,7 +594,7 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
 
     const bool IsFocused = ((panel.state(uiname) & (PS_Focused | PS_Dropping)) == PS_Focused);
     const bool IsPressed = ((panel.state(uiname) & (PS_Pressed | PS_Dragging)) != 0);
-    ZAY_INNER_UI(panel, 0, uiname,
+    ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNT(v, n, t, this, group, AniCount)
         {
             if(t == GT_Pressed)
@@ -559,7 +603,7 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                 mRemovingCount = AniCount;
                 Platform::SendNotify(v->view(), "Update", sint32o(mRemovingCount));
             }
-            else if(t == GT_InReleased || t == GT_OutReleased)
+            else if(t == GT_InReleased)
             {
                 if(mRemovingCount == 0)
                 {
@@ -567,6 +611,7 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                     const sint32 ParamPos = UIName.Find(0, "-param-");
                     const sint32 ValuePos = UIName.Find(0, "-value-");
                     const sint32 ExtValuePos = UIName.Find(0, "-extvalue-");
+                    const sint32 InsiderPos = UIName.Find(0, "-insider-");
                     const sint32 BoxID = Parser::GetInt(UIName);
 
                     // 파라미터 삭제(0-param-0-remove)
@@ -599,6 +644,16 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                         Platform::SendNotify(v->view(), "ZayBoxExtValueRemove", Args);
                         mRemovingUIName.Empty();
                     }
+                    // 인사이더 삭제(0-insider-0-remove)
+                    else if(InsiderPos != -1)
+                    {
+                        const sint32 InsiderID = Parser::GetInt(((chars) UIName) + InsiderPos + 9); // "-insider-"
+                        sint32s Args;
+                        Args.AtAdding() = BoxID;
+                        Args.AtAdding() = InsiderID;
+                        Platform::SendNotify(v->view(), "ZayBoxInsiderRemove", Args);
+                        mRemovingUIName.Empty();
+                    }
                     // 제이박스 삭제(0-remove)
                     else Platform::SendNotify(v->view(), (group)? "ZayBoxRemoveGroup" : "ZayBoxRemove", sint32o(BoxID));
                 }
@@ -608,11 +663,19 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                     mRemovingCount = 0;
                 }
             }
+            else if(t == GT_OutReleased)
+            {
+                mRemovingUIName.Empty();
+                mRemovingCount = 0;
+            }
         })
+    ZAY_INNER(panel, 2)
     {
         if(!Enable)
         {
-            ZAY_RGBA(panel, 192, 64, 64, 128)
+            if(!IsFocused)
+                panel.icon(R("wid_x_o"), UIA_CenterMiddle);
+            else ZAY_RGBA(panel, 192, 64, 64, 128)
                 panel.icon(R("wid_x_n"), UIA_CenterMiddle);
         }
         else if(IsPressed)
@@ -654,60 +717,68 @@ void ZEZayBox::Move(Point drag)
     mPosY += drag.y;
 }
 
-void ZEZayBox::Resize(ZEZayBoxMap& boxmap, sint32 add)
+void ZEZayBox::Resize(sint32 add)
 {
     add = Math::Max(-mAddW, add);
     if(add != 0)
     {
         mAddW += add;
-        for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-            if(auto CurBox = boxmap.Access(mChildren[i]))
+        for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+        if(auto CurChildren = GetChildrenGroup(i))
+        for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+            if(auto CurBox = TOP().Access((*CurChildren)[j]))
                 (*CurBox)->mHookPos.x += add;
     }
 }
 
-void ZEZayBox::FlushTitleDrag(ZEZayBoxMap& boxmap)
+void ZEZayBox::FlushTitleDrag()
 {
     mPosX += mTitleDrag.x;
     mPosY += mTitleDrag.y;
     if(mHooked)
         mHookPos -= mTitleDrag;
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-        if(auto CurBox = boxmap.Access(mChildren[i]))
+
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+        if(auto CurBox = TOP().Access((*CurChildren)[j]))
             (*CurBox)->mHookPos += mTitleDrag;
     mTitleDrag = Point(0, 0);
 }
 
-void ZEZayBox::FlushTitleDragWith(ZEZayBoxMap& boxmap, bool withhook)
+void ZEZayBox::FlushTitleDragWith(bool withhook)
 {
     mPosX += mTitleDrag.x;
     mPosY += mTitleDrag.y;
     if(mHooked && withhook)
         mHookPos -= mTitleDrag;
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-        if(auto CurBox = boxmap.Access(mChildren[i]))
+
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+        if(auto CurBox = TOP().Access((*CurChildren)[j]))
         {
             (*CurBox)->mTitleDrag = mTitleDrag;
-            (*CurBox)->FlushTitleDragWith(boxmap, false);
+            (*CurBox)->FlushTitleDragWith(false);
         }
     mTitleDrag = Point(0, 0);
 }
 
-sint32 ZEZayBox::Copy(ZEZayBoxMap& boxmap, CreatorCB cb)
+sint32 ZEZayBox::Copy()
 {
     Context Json;
-    WriteJson(Json);
+    WriteJson(Json, false);
 
     // 복사버튼을 누른채 드래그하면 자연스러운 전개를 위해
     // 원래 드래그하던 것이 새로운 컴포넌트가 되고
     // 새로 만든 것이 기존의 컴포넌트가 되어야 함
-    // 따라서 입장이 바뀌므로 자신이 컴포넌트ID를 신규발급
-    mCompID = MakeLastID();
+    // 따라서 입장이 바뀌므로 자신의 컴포넌트ID를 초기화
+    mCompID = -2;
 
     sint32 NewID = -1;
     if(Json("compname").HasValue())
     {
-        auto NewParentBox = cb(Json("compname").GetText());
+        auto NewParentBox = CREATOR()(Json("compname").GetText());
         NewParentBox->ReadJson(Json);
         NewParentBox->mExpanded = mExpanded;
         NewParentBox->mPosX = mPosX;
@@ -716,38 +787,45 @@ sint32 ZEZayBox::Copy(ZEZayBoxMap& boxmap, CreatorCB cb)
         NewParentBox->mHookPos = mHookPos;
         // 박스추가
         NewID = NewParentBox->mID;
-        boxmap[NewID] = NewParentBox;
+        TOP()[NewID] = NewParentBox;
     }
 
     // 자식재귀
     if(NewID != -1)
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-        if(auto CurBox = boxmap.Access(mChildren[i]))
-        {
-            const sint32 NewChildBoxID = CurBox->Value().Copy(boxmap, cb);
-            if(NewChildBoxID != -1)
-            if(auto CurChildBox = boxmap.Access(NewChildBoxID))
-                boxmap[NewID]->AddChild(CurChildBox->Value());
-        }
+    {
+        for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+        if(auto CurChildren = GetChildrenGroup(i))
+        for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+            if(auto CurBox = TOP().Access((*CurChildren)[j]))
+            {
+                const sint32 NewChildBoxID = CurBox->Value().Copy();
+                if(NewChildBoxID != -1)
+                if(auto CurChildBox = TOP().Access(NewChildBoxID))
+                    TOP()[NewID]->AddChild(CurChildBox->Value(), i);
+            }
+    }
     return NewID;
 }
 
-void ZEZayBox::Sort(ZEZayBoxMap& boxmap)
+void ZEZayBox::Sort(sint32 group)
 {
-    for(sint32 i = 0, iend = mChildren.Count() - 1; i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(group))
     {
-        auto CurBox = boxmap.Access(mChildren[i]);
-        auto NextBox = boxmap.Access(mChildren[i + 1]);
-        if(NextBox->ConstValue().mPosY < CurBox->ConstValue().mPosY)
+        for(sint32 i = 0, iend = CurChildren->Count() - 1; i < iend; ++i)
         {
-            const sint32 Temp = mChildren[i];
-            mChildren.At(i) = mChildren[i + 1];
-            mChildren.At(i + 1) = Temp;
-            i = Math::Max(-1, i - 2);
+            auto CurBox = TOP().Access((*CurChildren)[i]);
+            auto NextBox = TOP().Access((*CurChildren)[i + 1]);
+            if(NextBox->ConstValue().mPosY < CurBox->ConstValue().mPosY)
+            {
+                const sint32 Temp = (*CurChildren)[i];
+                CurChildren->At(i) = (*CurChildren)[i + 1];
+                CurChildren->At(i + 1) = Temp;
+                i = Math::Max(-1, i - 2);
+            }
         }
+        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
+            TOP().Access((*CurChildren)[i])->Value().mDebugOrder = i;
     }
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-        boxmap.Access(mChildren[i])->Value().mOrder = i;
 }
 
 Rect ZEZayBox::GetRect() const
@@ -756,50 +834,61 @@ Rect ZEZayBox::GetRect() const
         Size(mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0)));
 }
 
-Point ZEZayBox::GetBallPos() const
+void ZEZayBox::RemoveChildren(sint32 group)
 {
-    return Point(sint32(mPosX), sint32(mPosY)) + Size(mBodySize.w + mAddW + BallX, TitleBarHeight / 2);
-}
-
-void ZEZayBox::RemoveChildren(ZEZayBoxMap& boxmap)
-{
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(group))
     {
-        if(auto CurBox = boxmap.Access(mChildren[i]))
+        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
         {
-            CurBox->Value().RemoveChildren(boxmap);
-            boxmap.Remove(mChildren[i]);
+            if(auto CurBox = TOP().Access((*CurChildren)[i]))
+            {
+                for(sint32 j = 0, jend = CurBox->Value().GetChildrenGroupCount(); j < jend; ++j)
+                    CurBox->Value().RemoveChildren(j);
+                TOP().Remove((*CurChildren)[i]);
+            }
         }
+        CurChildren->Clear();
     }
-    mChildren.Clear();
 }
 
-void ZEZayBox::ClearParentHook(ZEZayBoxMap& boxmap)
+void ZEZayBox::ClearParentHook()
 {
     if(mParent != -1)
     {
-        if(auto ParentBox = boxmap.Access(mParent))
-        for(sint32 i = (*ParentBox)->mChildren.Count() - 1; 0 <= i; --i)
-            if((*ParentBox)->mChildren[i] == mID)
-                (*ParentBox)->mChildren.SubtractionSection(i);
+        if(auto ParentBox = TOP().Access(mParent))
+        {
+            for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+            if(auto CurChildren = GetChildrenGroup(i))
+            for(sint32 j = CurChildren->Count() - 1; 0 <= j; --j)
+                if((*CurChildren)[j] == mID)
+                    CurChildren->SubtractionSection(j);
+        }
         ClearMyHook();
     }
 }
 
-void ZEZayBox::ClearChildrenHook(ZEZayBoxMap& boxmap)
+void ZEZayBox::ClearChildrenHook(sint32 group)
 {
-    for(sint32 i = 0, iend = mChildren.Count(); i < iend; ++i)
-        if(auto CurBox = boxmap.Access(mChildren[i]))
-            (*CurBox)->ClearMyHook();
-    mChildren.Clear();
+    if(auto CurChildren = GetChildrenGroup(group))
+    {
+        for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
+            if(auto CurBox = TOP().Access((*CurChildren)[i]))
+                (*CurBox)->ClearMyHook();
+        CurChildren->Clear();
+    }
 }
 
 void ZEZayBox::ClearMyHook()
 {
     mParent = -1;
-    mOrder = -1;
+    mDebugOrder = -1;
     mHooked = false;
     mHookPos = Point(-BallX, 0);
+}
+
+void ZEZayBox::MoveMyHook(sint32 addx, sint32 addy)
+{
+    mHookPos += Point(addx, addy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1156,12 +1245,12 @@ void ZEZayBox::BodyParamGroup::WriteJson(Context& json) const
     for(sint32 i = 0, iend = mParams.Count(); i < iend; ++i)
     {
         if(ZaySonUtility::ToCondition(mParams[i]) != ZaySonInterface::ConditionType::Unknown)
-            json.At(i).Set(mParams[i]);
+            json.At("compvalues").At(i).Set(mParams[i]);
         else
         {
             Strings SubParams = ZaySonUtility::GetCommaStrings(mParams[i]);
             for(sint32 j = 0; j < SubParams.Count(); ++j)
-                json.At(i).At(j).Set(SubParams[j]);
+                json.At("compvalues").At(i).At(j).Set(SubParams[j]);
         }
     }
 }
@@ -1254,11 +1343,11 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
     {
         if(mParams[i].Length() == 0)
         {
-            if(0 < mParamComment.Length())
+            if(0 < mComments.Length())
             {
                 ZAY_LTRB_SCISSOR(panel, 10, 3, panel.w(), panel.h() - 3)
                 ZAY_INNER(panel, 1)
-                    RenderParamComment(panel, uiname, mParamComment);
+                    RenderParamComments(panel, uiname, mComments);
             }
             else ZAY_RGBA(panel, 0, 0, 0, 64)
                 panel.text("(Write your parameter here)", UIFA_LeftMiddle, UIFE_Right);
@@ -1274,7 +1363,7 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
         mBox.RenderRemoveButton(panel, UIRemove, false);
 }
 
-void ZEZayBox::BodyParamGroup::RenderParamComment(ZayPanel& panel, chars uiname, chars comment)
+void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname, chars comments)
 {
     sint32 PosX = 0;
     sint32 ParamID = 0;
@@ -1283,8 +1372,8 @@ void ZEZayBox::BodyParamGroup::RenderParamComment(ZayPanel& panel, chars uiname,
     bool HasSharp = false;
 
     ZAY_FONT(panel, 0.8)
-    for(sint32 i = 0; comment[i] != '\0'; ++i)
-    switch(comment[i])
+    for(sint32 i = 0; comments[i] != '\0'; ++i)
+    switch(comments[i])
     {
     case '[':
         if(ParamBegin == -1)
@@ -1313,14 +1402,14 @@ void ZEZayBox::BodyParamGroup::RenderParamComment(ZayPanel& panel, chars uiname,
             // 코멘트형 파라미터
             if(OptionBegins.Count() == 0)
             {
-                const sint32 TextWidth = 4 + Platform::Graphics::GetStringWidth(&comment[ParamBegin], ParamEnd - ParamBegin);
+                const sint32 TextWidth = 4 + Platform::Graphics::GetStringWidth(&comments[ParamBegin], ParamEnd - ParamBegin);
                 ZAY_XYWH(panel, PosX, 0, TextWidth, panel.h())
                 {
                     ZAY_RGBA_IF(panel, 128, 128, 128, 64, !HasSharp)
                     ZAY_RGBA_IF(panel, 128, 0, 128, 64, HasSharp)
                         panel.fill();
                     ZAY_RGB(panel, 128, 128, 128)
-                        panel.text(&comment[ParamBegin], ParamEnd - ParamBegin);
+                        panel.text(&comments[ParamBegin], ParamEnd - ParamBegin);
                     ZAY_RGBA_IF(panel, 128, 128, 128, 128, !HasSharp)
                     ZAY_RGBA_IF(panel, 128, 0, 128, 128, HasSharp)
                         panel.rect(1);
@@ -1339,9 +1428,9 @@ void ZEZayBox::BodyParamGroup::RenderParamComment(ZayPanel& panel, chars uiname,
                 const sint32 CurOptionDefault = mParamCommentDefaults[ParamID];
                 const sint32 CurOptionBegin = OptionBegins[CurOptionDefault];
                 const sint32 CurOptionEnd = OptionBegins[CurOptionDefault + 1] - 1;
-                const sint32 TextWidth = 4 + Platform::Graphics::GetStringWidth(&comment[CurOptionBegin], CurOptionEnd - CurOptionBegin);
+                const sint32 TextWidth = 4 + Platform::Graphics::GetStringWidth(&comments[CurOptionBegin], CurOptionEnd - CurOptionBegin);
                 const String UIComment = String::Format("%s-comment-%d", uiname, ParamID);
-                const String ToolTipText(&comment[ParamBegin], ParamEnd - ParamBegin);
+                const String ToolTipText(&comments[ParamBegin], ParamEnd - ParamBegin);
                 const bool IsOnlyOne = (OptionBegins.Count() == 2);
                 ZAY_XYWH_UI(panel, PosX, 0, TextWidth, panel.h(), UIComment,
                     ZAY_GESTURE_T(t, this, ParamID, ToolTipText)
@@ -1358,7 +1447,7 @@ void ZEZayBox::BodyParamGroup::RenderParamComment(ZayPanel& panel, chars uiname,
                     ZAY_RGB_IF(panel, 0, 0, 0, IsOnlyOne)
                     ZAY_RGB_IF(panel, 0, 0, 255, !IsOnlyOne && CurOptionDefault == 0)
                     ZAY_RGB_IF(panel, 0, 128, 0, !IsOnlyOne && CurOptionDefault != 0)
-                        panel.text(&comment[CurOptionBegin], CurOptionEnd - CurOptionBegin);
+                        panel.text(&comments[CurOptionBegin], CurOptionEnd - CurOptionBegin);
                     ZAY_RGBA_IF(panel, 128, 128, 128, 128, !HasSharp)
                     ZAY_RGBA_IF(panel, 128, 0, 128, 128, HasSharp)
                         panel.rect(1);
@@ -1829,6 +1918,172 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ZEZayBox::BodyInsideGroup
+////////////////////////////////////////////////////////////////////////////////
+ZEZayBox::BodyInsideGroup::BodyInsideGroup(ZEZayBox& box) : BodyElement(box)
+{
+}
+
+ZEZayBox::BodyInsideGroup::~BodyInsideGroup()
+{
+}
+
+void ZEZayBox::BodyInsideGroup::AddBall()
+{
+    const Strings Samples = String::Split(mSamples, '|');
+    for(sint32 i = 0, iend = Samples.Count(); i < iend; ++i)
+    {
+        bool Matched = false;
+        if(i < iend - 1)
+        for(sint32 j = 0, jend = mBalls.Count(); j < jend && !Matched; ++j)
+            if(!mBalls[j].mName.Compare(Samples[i]))
+                Matched = true;
+        if(!Matched)
+        {
+            auto& NewBall = mBalls.AtAdding();
+            NewBall.mName = Samples[i];
+            break;
+        }
+    }
+}
+
+void ZEZayBox::BodyInsideGroup::SubBall(sint32 i)
+{
+    mBalls.SubtractionSection(i);
+}
+
+void ZEZayBox::BodyInsideGroup::ReadJson(const Context& json)
+{
+    mBalls.Clear();
+    ZEZayBox* Self = BOX();
+    for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
+    {
+        hook(json[i])
+        {
+            auto& NewBall = mBalls.AtAdding();
+            NewBall.mName = fish("name").GetText();
+            NewBall.mBallPos.x = fish("ballposx").GetFloat();
+            NewBall.mBallPos.y = fish("ballposy").GetFloat();
+            ZEZayBox::Load(NewBall.mChildren, fish("ui"), *Self, i + 1);
+        }
+    }
+}
+
+void ZEZayBox::BodyInsideGroup::WriteJson(Context& json) const
+{
+    for(sint32 i = 0, iend = mBalls.Count(); i < iend; ++i)
+    {
+        hook(json.At("insiders").At(i))
+        {
+            fish.At("name").Set(mBalls[i].mName);
+            fish.At("ballposx").Set(String::FromFloat(mBalls[i].mBallPos.x));
+            fish.At("ballposy").Set(String::FromFloat(mBalls[i].mBallPos.y));
+            if(0 < mBalls[i].mChildren.Count())
+                ZEZayBox::Save(mBalls[i].mChildren, fish.At("ui"));
+        }
+    }
+}
+
+sint32 ZEZayBox::BodyInsideGroup::GetCalcedSize(const BodyElement* sub) const
+{
+    return 0;
+}
+
+void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
+{
+    ZAY_RGB(panel, 0, 0, 0)
+        panel.line(Point(panel.w() - 5, panel.h() / 2), Point(panel.w() + BallX, panel.h() / 2), 2);
+
+    // 인사이더 추가버튼
+    const String UIInsiderAdd = String::Format("%d-insider-add", mBox.mID);
+    ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, UIInsiderAdd,
+        ZAY_GESTURE_VNT(v, n, t, this)
+        {
+            if(t == GT_InReleased)
+                AddBall();
+        })
+    ZAY_INNER(panel, 2)
+    {
+        ZAY_RGB(panel, 0, 0, 0)
+            panel.fill();
+
+        const bool IsDropping = !!(panel.state(UIInsiderAdd) & PS_Dropping);
+        const bool IsFocused = !!(panel.state(UIInsiderAdd) & PS_Focused);
+        ZAY_INNER(panel, 2)
+        ZAY_RGB(panel, 76, 97, 117)
+        ZAY_RGB_IF(panel, 160, 160, 160, !IsDropping && IsFocused)
+            panel.fill();
+        ZAY_RGB(panel, 0, 0, 0)
+        for(sint32 y = 0; y < 2; ++y)
+        for(sint32 x = 0; x < 2; ++x)
+            panel.text(panel.w() / 2 - 1 + x, panel.h() / 2 - 2 + y, "＋");
+    }
+
+    // 인사이더들
+    for(sint32 i = 0, iend = mBalls.Count(); i < iend; ++i)
+    {
+        const String UIRemove = String::Format("%d-insider-%d-remove", mBox.mID, i);
+        ZAY_XYRR(panel, panel.w() + BallX, panel.h() / 2 + 25 * (i + 1) - 4, 9, 9)
+        {
+            const String CurName = mBalls[i].mName;
+            const sint32 CurNameWidth = Platform::Graphics::GetStringWidth(CurName) + 10;
+            ZAY_LTRB(panel, -2, -2, panel.w() + CurNameWidth - 2, panel.h() + 2)
+            {
+                const String UIInsiderBall = String::Format("%d-insider-%d-ball", mBox.mID, i);
+                const bool IsDropping = !!(panel.state(UIInsiderBall) & PS_Dropping);
+                const bool IsFocused = !!(panel.state(UIInsiderBall) & PS_Focused);
+                ZAY_RGB_IF(panel, 0, 0, 0, !IsDropping)
+                ZAY_RGB_IF(panel, 255, 64, 0, IsDropping)
+                ZAY_RGB_IF(panel, 192, 192, 192, !IsDropping && IsFocused)
+                {
+                    // 인사이더볼
+                    panel.line(Point(panel.w() + 1, panel.h() / 2), Point(panel.w() + BallX, panel.h() / 2), 2);
+                    ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, UIInsiderBall,
+                        ZAY_GESTURE_VNT(v, n, t, this, i)
+                        {
+                            if(t == GT_Dropped)
+                            {
+                                sint32s Values;
+                                Values.AtAdding() = mBox.mID;
+                                Values.AtAdding() = i + 1;
+                                Platform::SendNotify(v->view(), "HookDropped", Values);
+                            }
+                            else if(t == GT_InReleased)
+                            {
+                                sint32s Values;
+                                Values.AtAdding() = mBox.mID;
+                                Values.AtAdding() = i + 1;
+                                Platform::SendNotify(v->view(), "HookClear", Values);
+                            }
+                        })
+                    ZAY_INNER(panel, 5)
+                        panel.fill();
+
+                    // 인사이더명칭
+                    ZAY_INNER(panel, 1)
+                    {
+                        panel.rect(1);
+                        ZAY_RGBA(panel, -76, -97, -117, -128)
+                        ZAY_RGB_IF(panel, 160, 160, 160, !IsDropping && IsFocused)
+                            panel.fill();
+                    }
+                    ZAY_RGB(panel, 0, 0, 0)
+                        panel.text(panel.w() - 5 - 1, panel.h() / 2, CurName, UIFA_RightMiddle);
+                }
+            }
+            // 연결라인
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.line(Point(panel.w() / 2, -4), Point(panel.w() / 2, -3), 2);
+            // 제거버튼
+            mBox.RenderRemoveButton(panel, UIRemove, false);
+
+            // 볼의 위치계산
+            mBalls.At(i).mBallPos = Point(panel.w() + CurNameWidth + 4, 25 * (i + 1) - 4);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxStarter
 ////////////////////////////////////////////////////////////////////////////////
 ZEZayBoxStarter::ZEZayBoxStarter() : mComment(*this), mCreateGroup(*this)
@@ -1854,7 +2109,7 @@ void ZEZayBoxStarter::ReadJson(const Context& json)
     mCreateGroup.ReadJson(json("oncreate"));
 }
 
-void ZEZayBoxStarter::WriteJson(Context& json) const
+void ZEZayBoxStarter::WriteJson(Context& json, bool makeid) const
 {
     json.At("expanded").Set(String::FromInteger((mExpanded)? 1 : 0));
     json.At("addw").Set(String::FromInteger(mAddW));
@@ -1873,7 +2128,7 @@ void ZEZayBoxStarter::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, false, true, false, true, true, false);
+        RenderTitle(panel, mCompType, false, ChildType::Inner, false, true, true, false);
 
         // 바디
         if(mExpanded)
@@ -1912,9 +2167,9 @@ chars ZEZayBoxStarter::GetComment() const
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxContent
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxContent::ZEZayBoxContent() : mComment(*this), mParamGroup(*this)
+ZEZayBoxContent::ZEZayBoxContent() : mComment(*this), mParamGroup(*this), mInsideGroup(*this)
 {
-    mHasChild = false;
+    mChildType = ChildType::None;
     mHasParam = false;
 }
 
@@ -1922,13 +2177,14 @@ ZEZayBoxContent::~ZEZayBoxContent()
 {
 }
 
-ZEZayBoxObject ZEZayBoxContent::Create(bool child, bool param, chars paramcomment)
+ZEZayBoxObject ZEZayBoxContent::Create(ChildType childtype, bool param, chars comments, chars samples)
 {
     buffer NewZayBox = Buffer::Alloc<ZEZayBoxContent>(BOSS_DBG 1);
     if(param)
         ((ZEZayBoxContent*) NewZayBox)->mParamGroup.AddParam("");
-    ((ZEZayBoxContent*) NewZayBox)->mParamGroup.mParamComment = paramcomment;
-    ((ZEZayBoxContent*) NewZayBox)->mHasChild = child;
+    ((ZEZayBoxContent*) NewZayBox)->mParamGroup.mComments = comments;
+    ((ZEZayBoxContent*) NewZayBox)->mInsideGroup.mSamples = samples;
+    ((ZEZayBoxContent*) NewZayBox)->mChildType = childtype;
     ((ZEZayBoxContent*) NewZayBox)->mHasParam = param;
     return ZEZayBoxObject(NewZayBox);
 }
@@ -1940,21 +2196,27 @@ void ZEZayBoxContent::ReadJson(const Context& json)
 
     mComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
+
+    BodyInsideGroup::BOX() = this;
+    {
+        mInsideGroup.ReadJson(json("insiders"));
+    }
+    BodyInsideGroup::BOX() = nullptr;
 }
 
-void ZEZayBoxContent::WriteJson(Context& json) const
+void ZEZayBoxContent::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
     if(Pos != -1) OneType = OneType.Left(Pos);
     json.At("compname").Set(OneType);
 
-    if(mCompID < 0) mCompID = MakeLastID();
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mComment.WriteJson(json);
-    if(0 < mParamGroup.mParams.Count())
-        mParamGroup.WriteJson(json.At("compvalues"));
+    mParamGroup.WriteJson(json);
+    mInsideGroup.WriteJson(json);
 }
 
 void ZEZayBoxContent::Render(ZayPanel& panel)
@@ -1965,8 +2227,13 @@ void ZEZayBoxContent::Render(ZayPanel& panel)
     {
         panel.ninepatch(R("box_bg"));
 
+        // 인사이드볼
+        if(mChildType == ChildType::Insider)
+        ZAY_XYWH(panel, 0, 0, panel.w(), TitleBarHeight)
+            mInsideGroup.RenderBalls(panel);
+
         // 타이틀
-        RenderTitle(panel, mCompType, true, mHasChild, true, true, true, true);
+        RenderTitle(panel, mCompType, true, mChildType, true, true, true, true);
 
         // 바디
         if(mExpanded)
@@ -1995,14 +2262,47 @@ void ZEZayBoxContent::RecalcSize()
         mBodySize.h += mParamGroup.GetCalcedSize();
 }
 
+sint32 ZEZayBoxContent::GetChildrenGroupCount() const
+{
+    return 1 + mInsideGroup.mBalls.Count();
+}
+
+sint32s* ZEZayBoxContent::GetChildrenGroup(sint32 group)
+{
+    if(group == 0)
+        return ZEZayBox::GetChildrenGroup(group);
+    return &mInsideGroup.mBalls.At(group - 1).mChildren;
+}
+
 void ZEZayBoxContent::SubParam(sint32 i)
 {
     mParamGroup.SubParam(i);
 }
 
+void ZEZayBoxContent::SubInsiderBall(sint32 group)
+{
+    // 해당 그룹의 자식을 제거
+    RemoveChildren(group);
+    // 다음 그룹들의 자식들 후크위치 조정
+    for(sint32 i = group + 1, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+        if(auto CurBox = TOP().Access((*CurChildren)[j]))
+            (*CurBox)->MoveMyHook(0, -25);
+    // 해당 그룹의 볼을 제거
+    mInsideGroup.SubBall(group - 1);
+}
+
 chars ZEZayBoxContent::GetComment() const
 {
     return mComment.mComment;
+}
+
+Point ZEZayBoxContent::GetBallPos(sint32 group) const
+{
+    if(group == 0)
+        return ZEZayBox::GetBallPos(group);
+    return ZEZayBox::GetBallPos(0) + mInsideGroup.mBalls[group - 1].mBallPos;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2016,11 +2316,11 @@ ZEZayBoxLayout::~ZEZayBoxLayout()
 {
 }
 
-ZEZayBoxObject ZEZayBoxLayout::Create(chars paramcomment)
+ZEZayBoxObject ZEZayBoxLayout::Create(chars comments)
 {
     buffer NewZayBox = Buffer::Alloc<ZEZayBoxLayout>(BOSS_DBG 1);
     ((ZEZayBoxLayout*) NewZayBox)->mParamGroup.AddParam("");
-    ((ZEZayBoxLayout*) NewZayBox)->mParamGroup.mParamComment = paramcomment;
+    ((ZEZayBoxLayout*) NewZayBox)->mParamGroup.mComments = comments;
     return ZEZayBoxObject(NewZayBox);
 }
 
@@ -2035,19 +2335,18 @@ void ZEZayBoxLayout::ReadJson(const Context& json)
     mClickGroup.ReadJson(json("onclick"));
 }
 
-void ZEZayBoxLayout::WriteJson(Context& json) const
+void ZEZayBoxLayout::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
     if(Pos != -1) OneType = OneType.Left(Pos);
     json.At("compname").Set(OneType);
 
-    if(mCompID < 0) mCompID = MakeLastID();
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mNameComment.WriteJson(json);
-    if(0 < mParamGroup.mParams.Count())
-        mParamGroup.WriteJson(json.At("compvalues"));
+    mParamGroup.WriteJson(json);
     if(0 < mTouchGroup.mInputs.Count())
         mTouchGroup.WriteJson(json.At("ontouch"));
     if(0 < mClickGroup.mInputs.Count())
@@ -2063,7 +2362,7 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, true, true, true, true, true, true);
+        RenderTitle(panel, mCompType, true, ChildType::Inner, true, true, true, true);
 
         // 바디
         if(mExpanded)
@@ -2141,14 +2440,14 @@ void ZEZayBoxCode::ReadJson(const Context& json)
     mCodeGroup.ReadJson(json("compinputs"));
 }
 
-void ZEZayBoxCode::WriteJson(Context& json) const
+void ZEZayBoxCode::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
     if(Pos != -1) OneType = OneType.Left(Pos);
     json.At("compname").Set(OneType);
 
-    if(mCompID < 0) mCompID = MakeLastID();
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mComment.WriteJson(json);
@@ -2165,7 +2464,7 @@ void ZEZayBoxCode::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, true, true, true, true, true, true);
+        RenderTitle(panel, mCompType, true, ChildType::Inner, true, true, true, true);
 
         // 바디
         if(mExpanded)
@@ -2227,14 +2526,14 @@ void ZEZayBoxLoop::ReadJson(const Context& json)
     mOperation.ReadJson(json);
 }
 
-void ZEZayBoxLoop::WriteJson(Context& json) const
+void ZEZayBoxLoop::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
     if(Pos != -1) OneType = OneType.Left(Pos);
     json.At("compname").Set(OneType);
 
-    if(mCompID < 0) mCompID = MakeLastID();
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mNameComment.WriteJson(json);
@@ -2251,7 +2550,7 @@ void ZEZayBoxLoop::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, true, true, true, true, true, true);
+        RenderTitle(panel, mCompType, true, ChildType::Inner, true, true, true, true);
 
         // 바디
         if(mExpanded)
@@ -2307,7 +2606,7 @@ void ZEZayBoxCondition::ReadJson(const Context& json)
 {
 }
 
-void ZEZayBoxCondition::WriteJson(Context& json) const
+void ZEZayBoxCondition::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
@@ -2332,8 +2631,8 @@ void ZEZayBoxCondition::Render(ZayPanel& panel)
 
         // 타이틀
         if(mOperation.mWithElse)
-            RenderTitle(panel, "el" + mCompType, true, false, true, mHasElseAndOperation, true, true);
-        else RenderTitle(panel, mCompType, true, false, true, mHasElseAndOperation, true, true);
+            RenderTitle(panel, "el" + mCompType, true, ChildType::None, true, mHasElseAndOperation, true, true);
+        else RenderTitle(panel, mCompType, true, ChildType::None, true, mHasElseAndOperation, true, true);
 
         // 바디
         if(mExpanded && mHasElseAndOperation)
@@ -2385,16 +2684,15 @@ void ZEZayBoxError::ReadJson(const Context& json)
     mClickGroup.ReadJson(json("onclick"));
 }
 
-void ZEZayBoxError::WriteJson(Context& json) const
+void ZEZayBoxError::WriteJson(Context& json, bool makeid) const
 {
     json.At("compname").Set(mCompType);
 
-    if(mCompID < 0) mCompID = MakeLastID();
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mNameComment.WriteJson(json);
-    if(0 < mParamGroup.mParams.Count())
-        mParamGroup.WriteJson(json.At("compvalues"));
+    mParamGroup.WriteJson(json);
     if(0 < mTouchGroup.mInputs.Count())
         mTouchGroup.WriteJson(json.At("ontouch"));
     if(0 < mClickGroup.mInputs.Count())
@@ -2410,7 +2708,7 @@ void ZEZayBoxError::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, true, true, true, false, true, true);
+        RenderTitle(panel, mCompType, true, ChildType::Inner, true, false, true, true);
     }
 }
 

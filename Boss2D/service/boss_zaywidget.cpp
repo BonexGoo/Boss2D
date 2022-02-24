@@ -520,7 +520,7 @@ namespace BOSS
             "[RebuildFlag:true|false]#"
             "[Form:Strong|Inner|Outer|Width|Height]");
 
-        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "ninepatch",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "ninepatch",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
             {
                 if(params.ParamCount() != 1)
@@ -614,7 +614,7 @@ namespace BOSS
             "[LineGap:10]#"
             "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
-        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "edit_box",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "edit_box",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
             {
                 if(params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
@@ -637,7 +637,8 @@ namespace BOSS
             "[DomName:group.name]"
             "[Border:10]#"
             "[EnableFlag:true|false]"
-            "[PasswordFlag:false|true]");
+            "[PasswordFlag:false|true]",
+            "cursor|selection|ime_popup|area_N_N");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)

@@ -162,6 +162,12 @@
                 g_isPopupAssert = true;
             #endif
             {
+                // 깜빡임 제거
+                QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+                auto CurFormat = QSurfaceFormat::defaultFormat();
+                CurFormat.setSwapInterval(0);
+                QSurfaceFormat::setDefaultFormat(CurFormat);
+                // DPI배율 무시
                 QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
                 QApplication app(argc, argv);
 
