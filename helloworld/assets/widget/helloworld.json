@@ -396,7 +396,7 @@
 													[
 														{
 															"addw":"0",
-															"compid":"33",
+															"compid":"35",
 															"compname":"color",
 															"compvalues":
 															[
@@ -408,17 +408,17 @@
 																]
 															],
 															"expanded":"1",
-															"posx":"2088",
-															"posy":"1274",
+															"posx":"2091",
+															"posy":"1275",
 															"ui":
 															[
 																{
 																	"addw":"0",
-																	"compid":"34",
+																	"compid":"36",
 																	"compname":"fill",
 																	"expanded":"1",
-																	"posx":"2432",
-																	"posy":"1299"
+																	"posx":"2435",
+																	"posy":"1300"
 																}
 															]
 														}

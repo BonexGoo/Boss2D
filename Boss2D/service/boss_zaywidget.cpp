@@ -540,7 +540,8 @@ namespace BOSS
                     RenderErrorBox(panel);
                 return panel._push_pass();
             },
-            "[RName:r.name]");
+            "[RName:r.name]",
+            "child|at:X/Y|section:X/Y/XC/YC");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "pattern",
             ZAY_DECLARE_COMPONENT(panel, params, pcb)
@@ -638,7 +639,7 @@ namespace BOSS
             "[Border:10]#"
             "[EnableFlag:true|false]"
             "[PasswordFlag:false|true]",
-            "cursor|selection|ime_popup|area_N_N");
+            "cursor|focus|coping");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
             ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)

@@ -1933,7 +1933,6 @@ void ZEZayBox::BodyInsideGroup::AddBall()
     for(sint32 i = 0, iend = Samples.Count(); i < iend; ++i)
     {
         bool Matched = false;
-        if(i < iend - 1)
         for(sint32 j = 0, jend = mBalls.Count(); j < jend && !Matched; ++j)
             if(!mBalls[j].mName.Compare(Samples[i]))
                 Matched = true;

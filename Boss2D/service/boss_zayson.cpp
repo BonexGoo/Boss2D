@@ -281,7 +281,7 @@ namespace BOSS
     {
         BOSS_DECLARE_STANDARD_CLASS(ZayUIElement)
     public:
-        enum class Type {Unknown, Condition, Asset, Param, Request, Component, View};
+        enum class Type {Unknown, Condition, Param, Request, Inside, Component, View};
 
     public:
         ZayUIElement(Type type = Type::Unknown) : mType(type)
@@ -319,8 +319,9 @@ namespace BOSS
             NewSolver.Execute();
             return NewSolver.result();
         }
+        static buffer Create(Type type);
 
-    protected:
+    public:
         virtual void Load(const ZaySon& root, const Context& context)
         {
             mRefRoot = &root;
@@ -423,16 +424,16 @@ namespace BOSS
         {
             if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
             {
-                Object<ZayConditionElement> NewCondition(ObjectAllocType::Now);
-                NewCondition->Load(root, src);
-                dest.AtAdding() = (id_share) NewCondition;
+                ZayUI NewUI(ZayUIElement::Create(Type::Condition));
+                NewUI->Load(root, src);
+                dest.AtAdding() = (id_share) NewUI;
                 return true;
             }
             else if(ZaySonUtility::ToCondition(src("compname").GetText()) != ZaySonInterface::ConditionType::Unknown) // compname의 경우
             {
-                Object<ZayConditionElement> NewCondition(ObjectAllocType::Now);
-                NewCondition->Load(root, src("compname"));
-                dest.AtAdding() = (id_share) NewCondition;
+                ZayUI NewUI(ZayUIElement::Create(Type::Condition));
+                NewUI->Load(root, src("compname"));
+                dest.AtAdding() = (id_share) NewUI;
                 return true;
             }
             return false;
@@ -526,38 +527,6 @@ namespace BOSS
         ZaySonInterface::ConditionType mConditionType;
         bool mWithElse;
         Solver mConditionSolver;
-    };
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayAssetElement
-    ////////////////////////////////////////////////////////////////////////////////
-    class ZayAssetElement : public ZayUIElement
-    {
-    public:
-        ZayAssetElement() : ZayUIElement(Type::Asset)
-        {mDataType = ZaySonInterface::DataType::Unknown;}
-        ~ZayAssetElement() override {}
-
-    public:
-        void Load(const ZaySon& root, const Context& context) override
-        {
-            ZayUIElement::Load(root, context);
-
-            mDataName = context("dataname").GetText();
-            const String Type = context("datatype").GetText();
-            if(!Type.Compare("viewscript"))
-                mDataType = ZaySonInterface::DataType::ViewScript;
-            else if(!Type.Compare("imagemap"))
-                mDataType = ZaySonInterface::DataType::ImageMap;
-            mFilePath = context("filepath").GetText();
-            mUrl = context("url").GetText();
-        }
-
-    public:
-        String mDataName;
-        ZaySonInterface::DataType mDataType;
-        String mFilePath;
-        String mUrl;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -706,6 +675,39 @@ namespace BOSS
     };
 
     ////////////////////////////////////////////////////////////////////////////////
+    // ZayInsideElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayInsideElement : public ZayUIElement
+    {
+    public:
+        ZayInsideElement() : ZayUIElement(Type::Inside) {}
+        ~ZayInsideElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("name"))
+                mName = fish.GetText();
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+        }
+
+    public:
+        String mName;
+        ZayUIs mChildren;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
     // ZayComponentElement
     ////////////////////////////////////////////////////////////////////////////////
     class ZayComponentElement : public ZayUIElement
@@ -730,20 +732,20 @@ namespace BOSS
             {
                 if(ZayConditionElement::Test(root, mCompValues, fish[i]))
                     continue;
-                Object<ZayParamElement> NewParam(ObjectAllocType::Now);
-                NewParam->Load(root, fish[i]);
-                mCompValues.AtAdding() = (id_share) NewParam;
+                ZayUI NewUI(ZayUIElement::Create(Type::Param));
+                NewUI->Load(root, fish[i]);
+                mCompValues.AtAdding() = (id_share) NewUI;
             }
 
-            hook(context("compinputs"))
+            hook(context("compinputs")) // 코드문
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
             {
-                if(ZayConditionElement::Test(root, mCompCodes, fish[i]))
+                if(ZayConditionElement::Test(root, mInputCodes, fish[i]))
                     continue;
-                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
-                NewRequest->Load(root, fish[i]);
-                NewRequest->InitForInput();
-                mCompCodes.AtAdding() = (id_share) NewRequest;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, fish[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForInput();
+                mInputCodes.AtAdding() = (id_share) NewUI;
             }
 
             hook(context("ontouch"))
@@ -752,14 +754,22 @@ namespace BOSS
             hook(context("onclick"))
                 LoadCode(root, fish, 1);
 
+            hook(context("insiders"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                ZayUI NewUI(ZayUIElement::Create(Type::Inside));
+                NewUI->Load(root, fish[i]);
+                mInsiders.AtAdding() = (id_share) NewUI;
+            }
+
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
             {
                 if(ZayConditionElement::Test(root, mChildren, fish[i]))
                     continue;
-                Object<ZayComponentElement> NewRenderer(ObjectAllocType::Now);
-                NewRenderer->Load(root, fish[i]);
-                mChildren.AtAdding() = (id_share) NewRenderer;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
             }
         }
 
@@ -771,14 +781,14 @@ namespace BOSS
             {
                 if(ZayConditionElement::Test(root, mTouchCodes[id], json[i]))
                     continue;
-                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
-                NewRequest->Load(root, json[i]);
-                NewRequest->InitForClick(CaptureCollector);
-                mTouchCodes[id].AtAdding() = (id_share) NewRequest;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, json[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForClick(CaptureCollector);
+                mTouchCodes[id].AtAdding() = (id_share) NewUI;
             }
             // 캡쳐목록 정리
             for(sint32 i = 0, iend = CaptureCollector.Count(); i < iend; ++i)
-                mTouchCodeCaptures[id].AtAdding() = *CaptureCollector.AccessByOrder(i);
+                mTouchCaptures[id].AtAdding() = *CaptureCollector.AccessByOrder(i);
         }
 
     private:
@@ -800,7 +810,7 @@ namespace BOSS
                 const String UIName((mUINameSolver.is_blank())? "" : (chars) mUINameSolver.ExecuteVariableName());
                 if(mCompValues.Count() == 0)
                 {
-                    if(0 < mCompCodes.Count()) // 코드문
+                    if(0 < mInputCodes.Count()) // 코드문
                     {
                         // 지역변수 수집
                         Solvers LocalSolvers;
@@ -810,10 +820,10 @@ namespace BOSS
                         LocalSolvers.AtAdding().Link(ViewName, "pW").Parse(String::FromFloat(panel.w())).Execute();
                         LocalSolvers.AtAdding().Link(ViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
 
-                        sint32s CollectedCompCodes = ZayConditionElement::Collect(ViewName, mCompCodes);
-                        for(sint32 i = 0, iend = CollectedCompCodes.Count(); i < iend; ++i)
+                        sint32s CollectedCodes = ZayConditionElement::Collect(ViewName, mInputCodes);
+                        for(sint32 i = 0, iend = CollectedCodes.Count(); i < iend; ++i)
                         {
-                            auto CurCompCode = (ZayRequestElement*) mCompCodes.At(CollectedCompCodes[i]).Ptr();
+                            auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
                             CurCompCode->Transaction();
                         }
                         RenderChildren(panel, nullptr, defaultname, logs);
@@ -901,13 +911,13 @@ namespace BOSS
         {
             // 클릭코드를 위한 변수를 사전 캡쳐
             for(sint32 i = 0; i < 2; ++i)
-            if(uiname != nullptr && 0 < mTouchCodeCaptures[i].Count())
+            if(uiname != nullptr && 0 < mTouchCaptures[i].Count())
             {
                 const Point ViewPos = panel.toview(0, 0);
-                hook(mTouchCodeCaptureValues[i](uiname))
-                for(sint32 j = 0, jend = mTouchCodeCaptures[i].Count(); j < jend; ++j)
+                hook(mTouchCapturedValues[i](uiname))
+                for(sint32 j = 0, jend = mTouchCaptures[i].Count(); j < jend; ++j)
                 {
-                    chars CurVariable = mTouchCodeCaptures[i][j];
+                    chars CurVariable = mTouchCaptures[i][j];
                     branch;
                     jump(!String::Compare(CurVariable, "pX")) fish(CurVariable) = String::FromFloat(ViewPos.x);
                     jump(!String::Compare(CurVariable, "pY")) fish(CurVariable) = String::FromFloat(ViewPos.y);
@@ -938,7 +948,7 @@ namespace BOSS
             {
                 // 사전 캡쳐된 변수를 지역변수화
                 Solvers LocalSolvers;
-                hook(mTouchCodeCaptureValues[id](uiname))
+                hook(mTouchCapturedValues[id](uiname))
                 for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
                 {
                     chararray Variable;
@@ -962,11 +972,12 @@ namespace BOSS
         String mCompName;
         sint32 mCompID;
         ZayUIs mCompValues;
-        mutable ZayUIs mCompCodes;
+        mutable ZayUIs mInputCodes;
         ZayUIs mTouchCodes[2];
-        Strings mTouchCodeCaptures[2];
+        Strings mTouchCaptures[2];
         typedef Map<String> CaptureValue;
-        mutable Map<CaptureValue> mTouchCodeCaptureValues[2];
+        mutable Map<CaptureValue> mTouchCapturedValues[2];
+        ZayUIs mInsiders;
         ZayUIs mChildren;
     };
 
@@ -984,25 +995,15 @@ namespace BOSS
         {
             ZayUIElement::Load(root, context);
 
-            hook(context("asset"))
-            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
-            {
-                if(ZayConditionElement::Test(root, mAssets, fish[i]))
-                    continue;
-                Object<ZayAssetElement> NewResource(ObjectAllocType::Now);
-                NewResource->Load(root, fish[i]);
-                mAssets.AtAdding() = (id_share) NewResource;
-            }
-
             hook(context("oncreate"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
             {
                 if(ZayConditionElement::Test(root, mCreateCodes, fish[i]))
                     continue;
-                Object<ZayRequestElement> NewRequest(ObjectAllocType::Now);
-                NewRequest->Load(root, fish[i]);
-                NewRequest->InitForCreate();
-                mCreateCodes.AtAdding() = (id_share) NewRequest;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, fish[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForCreate();
+                mCreateCodes.AtAdding() = (id_share) NewUI;
             }
 
             hook(context("ui"))
@@ -1010,9 +1011,9 @@ namespace BOSS
             {
                 if(ZayConditionElement::Test(root, mChildren, fish[i]))
                     continue;
-                Object<ZayComponentElement> NewLayer(ObjectAllocType::Now);
-                NewLayer->Load(root, fish[i]);
-                mChildren.AtAdding() = (id_share) NewLayer;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
             }
         }
 
@@ -1028,10 +1029,26 @@ namespace BOSS
         }
 
     public:
-        ZayUIs mAssets;
         ZayUIs mCreateCodes;
         ZayUIs mChildren;
     };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayUIElement::Create
+    ////////////////////////////////////////////////////////////////////////////////
+    buffer ZayUIElement::Create(Type type)
+    {
+        switch(type)
+        {
+        case Type::Condition: return Buffer::Alloc<ZayConditionElement>(BOSS_DBG 1);
+        case Type::Param: return Buffer::Alloc<ZayParamElement>(BOSS_DBG 1);
+        case Type::Request: return Buffer::Alloc<ZayRequestElement>(BOSS_DBG 1);
+        case Type::Inside: return Buffer::Alloc<ZayInsideElement>(BOSS_DBG 1);
+        case Type::Component: return Buffer::Alloc<ZayComponentElement>(BOSS_DBG 1);
+        case Type::View: return Buffer::Alloc<ZayViewElement>(BOSS_DBG 1);
+        }
+        return nullptr;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////
     // ZaySon

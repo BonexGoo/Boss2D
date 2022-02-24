@@ -41,7 +41,6 @@ namespace BOSS
     {
     public:
         enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed, Else, Endif};
-        enum class DataType {Unknown, ViewScript, ImageMap};
         enum class RequestType {Unknown, Function, Variable};
 
     public:
