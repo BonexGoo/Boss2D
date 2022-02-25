@@ -710,7 +710,7 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     // ZayComponentElement
     ////////////////////////////////////////////////////////////////////////////////
-    class ZayComponentElement : public ZayUIElement
+    class ZayComponentElement : public ZayUIElement, ZayExtend::Renderer
     {
     public:
         ZayComponentElement() : ZayUIElement(Type::Component) {mCompID = -2;}
@@ -754,14 +754,6 @@ namespace BOSS
             hook(context("onclick"))
                 LoadCode(root, fish, 1);
 
-            hook(context("insiders"))
-            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
-            {
-                ZayUI NewUI(ZayUIElement::Create(Type::Inside));
-                NewUI->Load(root, fish[i]);
-                mInsiders.AtAdding() = (id_share) NewUI;
-            }
-
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
             {
@@ -770,6 +762,14 @@ namespace BOSS
                 ZayUI NewUI(ZayUIElement::Create(Type::Component));
                 NewUI->Load(root, fish[i]);
                 mChildren.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("insiders"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                ZayUI NewUI(ZayUIElement::Create(Type::Inside));
+                NewUI->Load(root, fish[i]);
+                mInsiders.AtAdding() = (id_share) NewUI;
             }
         }
 
@@ -826,7 +826,7 @@ namespace BOSS
                             auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
                             CurCompCode->Transaction();
                         }
-                        RenderChildren(panel, nullptr, defaultname, logs);
+                        RenderChildren(mChildren, panel, nullptr, defaultname, logs);
                     }
                     else if(!mUILoopSolver.is_blank()) // 반복문
                     {
@@ -840,7 +840,7 @@ namespace BOSS
                                 LocalSolvers.AtAdding().Link(ViewName, UIName + "V").Parse(String::FromInteger(i)).Execute();
                                 LocalSolvers.AtAdding().Link(ViewName, UIName + "N").Parse(String::FromInteger(LoopCount)).Execute();
                             }
-                            RenderChildren(panel, nullptr, defaultname + String::Format("_%d", i), logs);
+                            RenderChildren(mChildren, panel, nullptr, defaultname + String::Format("_%d", i), logs);
                         }
                     }
                     else
@@ -853,12 +853,16 @@ namespace BOSS
                             ComponentName = defaultname;
 
                         // 파라미터 없음
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID);
+                        mInsidersLogs = &logs;
+                        mInsidersComponent = CurComponent;
+                        mInsidersComponentName = ComponentName;
+                        mInsidersDefaultName = defaultname;
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID, this);
                         ZAY_EXTEND(ParamCollector >> panel)
                         {
                             if(mCompID == mRefRoot->debugFocusedCompID())
                                 AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
-                            RenderChildren(panel, ComponentName, defaultname, logs);
+                            RenderChildren(mChildren, panel, ComponentName, defaultname, logs);
                         }
                     }
                 }
@@ -890,7 +894,11 @@ namespace BOSS
                         }
 
                         // 파라미터 수집
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID);
+                        mInsidersLogs = &logs;
+                        mInsidersComponent = CurComponent;
+                        mInsidersComponentName = ComponentName;
+                        mInsidersDefaultName = DefaultName;
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID, this);
                         if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
                         {
                             for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
@@ -900,14 +908,14 @@ namespace BOSS
                         {
                             if(mCompID == mRefRoot->debugFocusedCompID())
                                 AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
-                            RenderChildren(panel, ComponentName, DefaultName, logs);
+                            RenderChildren(mChildren, panel, ComponentName, DefaultName, logs);
                         }
                     }
                 }
             }
             else mRefRoot->SendWarningLog("컴포넌트 랜더링실패", String::Format("컴포넌트함수를 찾을 수 없습니다(%s, Render)", (chars) mCompName));
         }
-        void RenderChildren(ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
+        void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
         {
             // 클릭코드를 위한 변수를 사전 캡쳐
             for(sint32 i = 0; i < 2; ++i)
@@ -928,12 +936,12 @@ namespace BOSS
             }
 
             // 자식으로 재귀
-            if(0 < mChildren.Count())
+            if(0 < children.Count())
             {
-                sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren, &panel);
+                sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), children, &panel);
                 for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
                 {
-                    auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
+                    auto CurChildren = (const ZayUIElement*) children[CollectedChildren[i]].ConstPtr();
                     CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
                 }
             }
@@ -968,6 +976,33 @@ namespace BOSS
             return false;
         }
 
+    public: // ZayExtend::Renderer 구현부
+        bool RenderInsider(chars name, ZayPanel& panel) const override
+        {
+            // 디버깅 정보수집
+            auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
+            {
+                auto& NewLog = logs.AtAdding();
+                NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h()));
+                NewLog.mRect *= panel.zoom();
+                NewLog.mFill = fill;
+                NewLog.mUIName = uiname;
+            };
+
+            for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
+            {
+                auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
+                if(!CurInsider->mName.Compare(name))
+                {
+                    if(mCompID == mRefRoot->debugFocusedCompID())
+                        AddDebugLog(*mInsidersLogs, panel, mInsidersComponent->HasContentComponent(), mInsidersComponentName);
+                    RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                    return true;
+                }
+            }
+            return false;
+        }
+
     public:
         String mCompName;
         sint32 mCompID;
@@ -977,8 +1012,14 @@ namespace BOSS
         Strings mTouchCaptures[2];
         typedef Map<String> CaptureValue;
         mutable Map<CaptureValue> mTouchCapturedValues[2];
-        ZayUIs mInsiders;
         ZayUIs mChildren;
+
+    public:
+        ZayUIs mInsiders;
+        mutable DebugLogs* mInsidersLogs {nullptr};
+        mutable const ZayExtend* mInsidersComponent {nullptr};
+        mutable chars mInsidersComponentName {nullptr};
+        mutable chars mInsidersDefaultName {nullptr};
     };
 
     ////////////////////////////////////////////////////////////////////////////////

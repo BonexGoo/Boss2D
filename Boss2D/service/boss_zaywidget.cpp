@@ -221,31 +221,31 @@ namespace BOSS
         };
 
         interface.AddComponent(ZayExtend::ComponentType::Code, "code → Input",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'code'", false);
                 return panel._push_pass();
             });
 
         interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'loop'", false);
                 return panel._push_pass();
             });
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "ltrb",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto L = params.Param(0).ToInteger();
-                auto T = params.Param(1).ToInteger();
-                auto R = params.Param(2).ToInteger();
-                auto B = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
-                return panel._push_clip_ui(L, T, R, B, Scissor, params.UIName(), params.MakeGesture());
+                auto L = pay.Param(0).ToInteger();
+                auto T = pay.Param(1).ToInteger();
+                auto R = pay.Param(2).ToInteger();
+                auto B = pay.Param(3).ToInteger();
+                auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
+                return panel._push_clip_ui(L, T, R, B, Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[Left]"
             "[Top]"
@@ -254,17 +254,17 @@ namespace BOSS
             "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "xywh",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = params.Param(0).ToInteger();
-                auto Y = params.Param(1).ToInteger();
-                auto W = params.Param(2).ToInteger();
-                auto H = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
-                return panel._push_clip_ui(X, Y, X + W, Y + H, Scissor, params.UIName(), params.MakeGesture());
+                auto X = pay.Param(0).ToInteger();
+                auto Y = pay.Param(1).ToInteger();
+                auto W = pay.Param(2).ToInteger();
+                auto H = pay.Param(3).ToInteger();
+                auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
+                return panel._push_clip_ui(X, Y, X + W, Y + H, Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[X]"
             "[Y]"
@@ -273,17 +273,17 @@ namespace BOSS
             "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "xyrr",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = params.Param(0).ToInteger();
-                auto Y = params.Param(1).ToInteger();
-                auto RX = params.Param(2).ToInteger();
-                auto RY = params.Param(3).ToInteger();
-                auto Scissor = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
-                return panel._push_clip_ui(X - RX, Y - RY, X + RX, Y + RY, Scissor, params.UIName(), params.MakeGesture());
+                auto X = pay.Param(0).ToInteger();
+                auto Y = pay.Param(1).ToInteger();
+                auto RX = pay.Param(2).ToInteger();
+                auto RY = pay.Param(3).ToInteger();
+                auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
+                return panel._push_clip_ui(X - RX, Y - RY, X + RX, Y + RY, Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[X]"
             "[Y]"
@@ -292,43 +292,43 @@ namespace BOSS
             "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "inner",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1 && params.ParamCount() != 2)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
                 bool HasError = false;
-                auto V = params.Param(0).ToInteger();
-                auto Scissor = (params.ParamCount() < 2)? false : params.ParamToBool(1, HasError);
-                return panel._push_clip_ui(V, V, panel.w() - V, panel.h() - V, Scissor, params.UIName(), params.MakeGesture());
+                auto V = pay.Param(0).ToInteger();
+                auto Scissor = (pay.ParamCount() < 2)? false : pay.ParamToBool(1, HasError);
+                return panel._push_clip_ui(V, V, panel.w() - V, panel.h() - V, Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[Value:1]#"
             "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Layout, "move",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = params.Param(0).ToInteger();
-                auto Y = params.Param(1).ToInteger();
-                auto Scissor = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
-                return panel._push_clip_ui(X, Y, panel.w() + X, panel.h() + Y, Scissor, params.UIName(), params.MakeGesture());
+                auto X = pay.Param(0).ToInteger();
+                auto Y = pay.Param(1).ToInteger();
+                auto Scissor = (pay.ParamCount() < 3)? false : pay.ParamToBool(2, HasError);
+                return panel._push_clip_ui(X, Y, panel.w() + X, panel.h() + Y, Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[X:0]"
             "[Y:0]#"
             "[ScissorFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "hscroll",
-            ZAY_DECLARE_COMPONENT(panel, params, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3 && pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
-                auto UIName = ViewName + '.' + params.Param(0).ToText();
-                auto ContentSize = params.Param(1).ToInteger();
-                auto Sensitive = (params.ParamCount() < 3)? 0 : params.Param(2).ToInteger();
-                auto SenseBorder = (params.ParamCount() < 4)? 0 : params.Param(3).ToInteger();
-                auto LoopingSize = (params.ParamCount() < 5)? 0 : params.Param(4).ToInteger();
+                auto UIName = ViewName + '.' + pay.Param(0).ToText();
+                auto ContentSize = pay.Param(1).ToInteger();
+                auto Sensitive = (pay.ParamCount() < 3)? 0 : pay.Param(2).ToInteger();
+                auto SenseBorder = (pay.ParamCount() < 4)? 0 : pay.Param(3).ToInteger();
+                auto LoopingSize = (pay.ParamCount() < 5)? 0 : pay.Param(4).ToInteger();
                 return panel._push_scroll_ui(ContentSize, 0, UIName,
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
@@ -351,15 +351,15 @@ namespace BOSS
             "[LoopingSize:0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "vscroll",
-            ZAY_DECLARE_COMPONENT(panel, params, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3 && pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
-                auto UIName = ViewName + '.' + params.Param(0).ToText();
-                auto ContentSize = params.Param(1).ToInteger();
-                auto Sensitive = (params.ParamCount() < 3)? 0 : params.Param(2).ToInteger();
-                auto SenseBorder = (params.ParamCount() < 4)? 0 : params.Param(3).ToInteger();
-                auto LoopingSize = (params.ParamCount() < 5)? 0 : params.Param(4).ToInteger();
+                auto UIName = ViewName + '.' + pay.Param(0).ToText();
+                auto ContentSize = pay.Param(1).ToInteger();
+                auto Sensitive = (pay.ParamCount() < 3)? 0 : pay.Param(2).ToInteger();
+                auto SenseBorder = (pay.ParamCount() < 4)? 0 : pay.Param(3).ToInteger();
+                auto LoopingSize = (pay.ParamCount() < 5)? 0 : pay.Param(4).ToInteger();
                 return panel._push_scroll_ui(0, ContentSize, UIName,
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
@@ -382,14 +382,14 @@ namespace BOSS
             "[LoopingSize:0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "color",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 3 && params.ParamCount() != 4)
+                if(pay.ParamCount() != 3 && pay.ParamCount() != 4)
                     return panel._push_pass();
-                auto R = params.Param(0).ToInteger();
-                auto G = params.Param(1).ToInteger();
-                auto B = params.Param(2).ToInteger();
-                auto A = (params.ParamCount() < 4)? 255 : params.Param(3).ToInteger();
+                auto R = pay.Param(0).ToInteger();
+                auto G = pay.Param(1).ToInteger();
+                auto B = pay.Param(2).ToInteger();
+                auto A = (pay.ParamCount() < 4)? 255 : pay.Param(3).ToInteger();
                 return panel._push_color(R, G, B, A);
             },
             "[Red:0~255]"
@@ -398,12 +398,12 @@ namespace BOSS
             "[Opacity:0~255]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "hexcolor",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1 && params.ParamCount() != 2)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
-                auto HexColor = params.Param(0).ToText();
-                auto Alpha = (params.ParamCount() < 2)? 1.0 : params.Param(1).ToFloat();
+                auto HexColor = pay.Param(0).ToText();
+                auto Alpha = (pay.ParamCount() < 2)? 1.0 : pay.Param(1).ToFloat();
                 if(!String::Compare(HexColor, "#", 1))
                     return panel._push_color(Color(HexColor, Alpha));
                 return panel._push_pass();
@@ -412,72 +412,72 @@ namespace BOSS
             "[OpacityRate:1.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "font",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1 && params.ParamCount() != 2)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
-                auto Size = params.Param(0).ToFloat();
-                chars Name = (params.ParamCount() < 2)? nullptr : (chars) params.Param(1).ToText();
+                auto Size = pay.Param(0).ToFloat();
+                chars Name = (pay.ParamCount() < 2)? nullptr : (chars) pay.Param(1).ToText();
                 return panel._push_sysfont(Size, Name);
             },
             "[SizeRate:1.0]#"
             "[FontName]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "freefont",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1 && params.ParamCount() != 2)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
-                auto Height = (sint32) params.Param(0).ToInteger();
-                chars NickName = (params.ParamCount() < 2)? nullptr : (chars) params.Param(1).ToText();
+                auto Height = (sint32) pay.Param(0).ToInteger();
+                chars NickName = (pay.ParamCount() < 2)? nullptr : (chars) pay.Param(1).ToText();
                 return panel._push_freefont(Height, NickName);
             },
             "[Height:10]#"
             "[FontNick]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "zoom",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1)
+                if(pay.ParamCount() != 1)
                     return panel._push_pass();
-                auto Zoom = params.Param(0).ToFloat();
+                auto Zoom = pay.Param(0).ToFloat();
                 return panel._push_zoom(Zoom);
             },
             "[ZoomRate:1.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Content, "fill",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 panel.fill();
                 return panel._push_pass();
             });
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "rect",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1)
+                if(pay.ParamCount() != 1)
                     return panel._push_pass();
-                auto Thick = params.Param(0).ToFloat();
+                auto Thick = pay.Param(0).ToFloat();
                 panel.rect(Thick);
                 return panel._push_pass();
             },
             "[Thick:1]");
 
         interface.AddComponent(ZayExtend::ComponentType::Content, "circle",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 panel.circle();
                 return panel._push_pass();
             });
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "icon",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
-                if(params.ParamCount() != 2)
+                if(pay.ParamCount() != 2)
                     return panel._push_pass();
                 bool HasError = false;
-                auto ImageName = params.Param(0).ToText();
-                auto Align = params.ParamToUIAlign(1, HasError);
+                auto ImageName = pay.Param(0).ToText();
+                auto Align = pay.ParamToUIAlign(1, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -495,14 +495,14 @@ namespace BOSS
             "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "stretch",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto ImageName = params.Param(0).ToText();
-                auto Rebuild = params.ParamToBool(1, HasError);
-                auto Form = (params.ParamCount() < 3)? UISF_Strong : params.ParamToUIStretchForm(2, HasError);
+                auto ImageName = pay.Param(0).ToText();
+                auto Rebuild = pay.ParamToBool(1, HasError);
+                auto Form = (pay.ParamCount() < 3)? UISF_Strong : pay.ParamToUIStretchForm(2, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -521,12 +521,12 @@ namespace BOSS
             "[Form:Strong|Inner|Outer|Width|Height]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "ninepatch",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
-                if(params.ParamCount() != 1)
+                if(pay.ParamCount() != 1)
                     return panel._push_pass();
                 bool HasError = false;
-                auto ImageName = params.Param(0).ToText();
+                auto ImageName = pay.Param(0).ToText();
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -544,15 +544,15 @@ namespace BOSS
             "child|at:X/Y|section:X/Y/XC/YC");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "pattern",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3 && params.ParamCount() != 4)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3 && pay.ParamCount() != 4)
                     return panel._push_pass();
                 bool HasError = false;
-                auto ImageName = params.Param(0).ToText();
-                auto Align = params.ParamToUIAlign(1, HasError);
-                auto ReversedXorder = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
-                auto ReversedYorder = (params.ParamCount() < 4)? false : params.ParamToBool(3, HasError);
+                auto ImageName = pay.Param(0).ToText();
+                auto Align = pay.ParamToUIAlign(1, HasError);
+                auto ReversedXorder = (pay.ParamCount() < 3)? false : pay.ParamToBool(2, HasError);
+                auto ReversedYorder = (pay.ParamCount() < 4)? false : pay.ParamToBool(3, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -572,14 +572,14 @@ namespace BOSS
             "[YReverseFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "text",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 1 && params.ParamCount() != 2 && params.ParamCount() != 3)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto Text = params.Param(0).ToText();
-                auto Align = (params.ParamCount() < 2)? UIFA_CenterMiddle : params.ParamToUIFontAlign(1, HasError);
-                auto Elide = (params.ParamCount() < 3)? UIFE_None : params.ParamToUIFontElide(2, HasError);
+                auto Text = pay.Param(0).ToText();
+                auto Align = (pay.ParamCount() < 2)? UIFA_CenterMiddle : pay.ParamToUIFontAlign(1, HasError);
+                auto Elide = (pay.ParamCount() < 3)? UIFE_None : pay.ParamToUIFontElide(2, HasError);
 
                 panel.text(Text, Align, Elide);
 
@@ -596,14 +596,14 @@ namespace BOSS
             "[Elide:None|Left|Center|Right]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "text_box",
-            ZAY_DECLARE_COMPONENT(panel, params)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto Text = params.Param(0).ToText();
-                auto LineGap = params.Param(1).ToInteger();
-                auto Align = (params.ParamCount() < 3)? UIA_LeftTop : params.ParamToUIAlign(2, HasError);
+                auto Text = pay.Param(0).ToText();
+                auto LineGap = pay.Param(1).ToInteger();
+                auto Align = (pay.ParamCount() < 3)? UIA_LeftTop : pay.ParamToUIAlign(2, HasError);
 
                 panel.textbox(Text, LineGap, Align);
 
@@ -616,18 +616,18 @@ namespace BOSS
             "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "edit_box",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
             {
-                if(params.ParamCount() != 3 && params.ParamCount() != 4 && params.ParamCount() != 5)
+                if(pay.ParamCount() != 3 && pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto UIName = ViewName + '.' + params.Param(0).ToText();
-                auto DOMName = params.Param(1).ToText();
-                auto Border = params.Param(2).ToInteger();
-                auto Enabled = (params.ParamCount() < 4)? true : params.ParamToBool(3, HasError);
-                auto IsPassword = (params.ParamCount() < 5)? false : params.ParamToBool(4, HasError);
+                auto UIName = ViewName + '.' + pay.Param(0).ToText();
+                auto DOMName = pay.Param(1).ToText();
+                auto Border = pay.Param(2).ToInteger();
+                auto Enabled = (pay.ParamCount() < 4)? true : pay.ParamToBool(3, HasError);
+                auto IsPassword = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
 
-                if(ZayControl::RenderEditBox(panel, UIName, DOMName, Border, Enabled, IsPassword))
+                if(ZayControl::RenderEditBox(panel, UIName, DOMName, Border, Enabled, IsPassword, pay.TakeRenderer()))
                     panel.repaintOnce();
 
                 if(HasError)
@@ -639,17 +639,17 @@ namespace BOSS
             "[Border:10]#"
             "[EnableFlag:true|false]"
             "[PasswordFlag:false|true]",
-            "cursor|focus|coping");
+            "cursor|focus|copying");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
             {
-                if(params.ParamCount() != 2 && params.ParamCount() != 3)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto UIName = ViewName + '.' + params.Param(0).ToText();
-                auto ImageName = params.Param(1).ToText();
-                auto NinePatch = (params.ParamCount() < 3)? false : params.ParamToBool(2, HasError);
+                auto UIName = ViewName + '.' + pay.Param(0).ToText();
+                auto ImageName = pay.Param(1).ToText();
+                auto NinePatch = (pay.ParamCount() < 3)? false : pay.ParamToBool(2, HasError);
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -678,7 +678,7 @@ namespace BOSS
             "[NinepatchFlag:false|true]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "user_content",
-            ZAY_DECLARE_COMPONENT(panel, params, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
                 BOSS_ASSERT("Register 'AddComponent' as 'user_content' once more and use it for replacement", false);
                 return panel._push_pass();
@@ -689,19 +689,19 @@ namespace BOSS
     void ZayWidget::BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)
     {
         interface.AddGlue("exit",
-            ZAY_DECLARE_GLUE(params)
+            ZAY_DECLARE_GLUE(pay)
             {
                 Platform::Utility::ExitProgram();
             });
 
         interface.AddGlue("minimize",
-            ZAY_DECLARE_GLUE(params)
+            ZAY_DECLARE_GLUE(pay)
             {
                 Platform::Utility::SetMinimize();
             });
 
         interface.AddGlue("maximize",
-            ZAY_DECLARE_GLUE(params)
+            ZAY_DECLARE_GLUE(pay)
             {
                 if(Platform::Utility::IsFullScreen())
                     Platform::Utility::SetNormalWindow();
@@ -839,7 +839,8 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     // ZayControl
     ////////////////////////////////////////////////////////////////////////////////
-    bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname, sint32 border, bool enabled, bool ispassword)
+    bool ZayControl::RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname,
+        sint32 border, bool enabled, bool ispassword, const ZayExtend::Renderer* renderer)
     {
         auto& Self = ST();
         const sint32 CursorWidth = (Self.mLastLanguage == LM_English)? 4 : 2 + Platform::Graphics::GetStringWidth("가");
@@ -871,7 +872,7 @@ namespace BOSS
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0);
+                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0, renderer);
             }
         }
 
@@ -1004,7 +1005,7 @@ namespace BOSS
 
                 // 커서이전 텍스트
                 if(0 < VisualFrontText.Length())
-                    CurPos = Self.RenderText(panel, uiname, VisualFrontText, CurCursor, CurPos, CursorHeight);
+                    CurPos = Self.RenderText(panel, uiname, VisualFrontText, CurCursor, CurPos, CursorHeight, renderer);
                 CalcedScrollBar = CurPos; // 스크롤보정용
 
                 // 커서
@@ -1012,38 +1013,41 @@ namespace BOSS
                 {
                     ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
                     {
-                        ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
-                            panel.fill();
-
-                        for(sint32 i = 0, iend = 5; i < iend; ++i)
+                        if(!renderer || !renderer->RenderInsider("cursor", panel))
                         {
-                            ZAY_RGBA(panel, 128, 128, 128, 40 * (iend - i) / iend)
+                            ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
+                                panel.fill();
+
+                            for(sint32 i = 0, iend = 5; i < iend; ++i)
                             {
-                                ZAY_XYWH(panel, 0, i, panel.w(), 1)
-                                    panel.fill();
-                                ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
-                                    panel.fill();
+                                ZAY_RGBA(panel, 128, 128, 128, 40 * (iend - i) / iend)
+                                {
+                                    ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                                        panel.fill();
+                                    ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                                        panel.fill();
+                                }
                             }
-                        }
 
-                        // 커서IME
-                        if(Self.mCapturedIMEChar != L'\0')
-                            panel.text(panel.w() / 2, panel.h() / 2, String::FromWChars(WString(Self.mCapturedIMEChar)));
+                            // 커서IME
+                            if(Self.mCapturedIMEChar != L'\0')
+                                panel.text(panel.w() / 2, panel.h() / 2, String::FromWChars(WString(Self.mCapturedIMEChar)));
 
-                        // 커서명칭
-                        switch(Self.mLastLanguage)
-                        {
-                        case LM_Korean:
-                            ZAY_FONT(panel, 0.3, "arial black")
-                                panel.text(panel.w() / 2, 0, "K O R", UIFA_CenterBottom);
-                            break;
+                            // 커서명칭
+                            switch(Self.mLastLanguage)
+                            {
+                            case LM_Korean:
+                                ZAY_FONT(panel, 0.3, "arial black")
+                                    panel.text(panel.w() / 2, 0, "K O R", UIFA_CenterBottom);
+                                break;
+                            }
                         }
                     }
                 }
 
                 // 커서이후 텍스트
                 if(0 < VisualRearText.Length())
-                    CurPos = Self.RenderText(panel, uiname, VisualRearText, CurCursor, CurPos + CursorWidth, CursorHeight);
+                    CurPos = Self.RenderText(panel, uiname, VisualRearText, CurCursor, CurPos + CursorWidth, CursorHeight, renderer);
                 CalcedContentSize = CurPos - ScrollPos + border; // 스크롤보정용
 
                 // 복사애니메이션 처리
@@ -1055,11 +1059,14 @@ namespace BOSS
                     if(Self.mCopyAreaB < Self.mCopyAreaA)
                         CopyWidth -= CursorWidth;
 
-                    ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
                     ZAY_MOVE(panel, -panel.toview(0, 0).x, 0)
                     ZAY_XYWH(panel, CopyX, (panel.h() - CursorHeight) / 2, CopyWidth, CursorHeight)
-                    ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorEffectWidth)
-                        panel.rect(CursorEffectWidth);
+                    {
+                        if(!renderer || !renderer->RenderInsider("copying", panel))
+                        ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
+                        ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorEffectWidth)
+                            panel.rect(CursorEffectWidth);
+                    }
                     if(--Self.mCopyAni == 0)
                         Self.mCapturedCursorAni = 0;
                 }
@@ -1122,7 +1129,7 @@ namespace BOSS
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight);
+                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight, renderer);
             }
         }
 
@@ -1168,7 +1175,8 @@ namespace BOSS
         return text;
     }
 
-    sint32 ZayControl::RenderText(ZayPanel& panel, const String& uiname, chars text, sint32& cursor, sint32 pos, sint32 height)
+    sint32 ZayControl::RenderText(ZayPanel& panel, const String& uiname, chars text,
+        sint32& cursor, sint32 pos, sint32 height, const ZayExtend::Renderer* renderer)
     {
         auto& CurRenderInfo = mRenderInfoMap(uiname);
         CurRenderInfo.UpdatePos(cursor, panel.toview(pos, 0).x * panel.zoom());
@@ -1186,8 +1194,11 @@ namespace BOSS
             // 포커싱된 커서표현
             if(height != 0 && cursor == CurRenderInfo.GetFocus() && *text)
             ZAY_XYWH(panel, pos - 1, (panel.h() - height) / 2, 2, height)
-            ZAY_RGBA(panel, 128, 128, 128, 32)
-                panel.fill();
+            {
+                if(!renderer || !renderer->RenderInsider("focus", panel))
+                ZAY_RGBA(panel, 128, 128, 128, 32)
+                    panel.fill();
+            }
         }
         return pos;
     }

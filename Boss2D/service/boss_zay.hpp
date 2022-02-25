@@ -137,9 +137,9 @@
 // ZayExtend B가 파라미터가 하나인 경우 : ZAY_EXTEND(B(1) >> panel) {...}
 // ZayExtend C가 파라미터가 다양한 경우 : ZAY_EXTEND(C(1)(2.5)("abc") >> panel) {...}
 // ZayExtend D가 하위옵션이 필요없는 경우 : ZAY_EXTEND(D(1)(2.5)("abc") >> panel);
-#define ZAY_EXTEND(...)                           if(auto _ = (__VA_ARGS__))
-#define ZAY_DECLARE_COMPONENT(PANEL, PARAMS, ...) [__VA_ARGS__](ZayPanel& PANEL, const ZayExtend::Payload& PARAMS)->ZayPanel::StackBinder
-#define ZAY_DECLARE_GLUE(PARAMS, ...)             [__VA_ARGS__](const ZayExtend::Payload& PARAMS)->void
+#define ZAY_EXTEND(...)                        if(auto _ = (__VA_ARGS__))
+#define ZAY_DECLARE_COMPONENT(PANEL, PAY, ...) [__VA_ARGS__](ZayPanel& PANEL, const ZayExtend::Payload& PAY)->ZayPanel::StackBinder
+#define ZAY_DECLARE_GLUE(PAY, ...)             [__VA_ARGS__](const ZayExtend::Payload& PAY)->void
 
 // 서브패널
 #define ZAY_MAKE_SUB(PANEL, SURFACE) \
@@ -488,20 +488,27 @@ namespace BOSS
         class Payload;
         enum class ComponentType {Unknown, Content, ContentWithParameter, ContentWithInsider, ContentWithParamAndInsider,
             Option, Layout, Code, Loop, Condition, ConditionWithOperation, ConditionWithEvent};
-        typedef std::function<ZayPanel::StackBinder(ZayPanel& panel, const Payload& params)> ComponentCB;
-        typedef std::function<void(const Payload& params)> GlueCB;
+        typedef std::function<ZayPanel::StackBinder(ZayPanel& panel, const Payload& pay)> ComponentCB;
+        typedef std::function<void(const Payload& pay)> GlueCB;
 
     public:
         ZayExtend(ComponentType type = ComponentType::Unknown, ComponentCB ccb = nullptr, GlueCB gcb = nullptr);
         ~ZayExtend();
 
-    public: // 함수파라미터
+    public: // 랜더러
+        class Renderer
+        {
+        public:
+            virtual bool RenderInsider(chars name, ZayPanel& panel) const = 0;
+        };
+
+    public: // 페이로드
         class Payload
         {
-            BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(Payload, mElementID(-1))
+            BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(Payload, mElementID(-1), mRefRenderer(nullptr))
         public:
-            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1);
-            Payload(const ZayExtend* owner, const SolverValue& param, chars uiname = nullptr, sint32 elementid = -1);
+            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr);
+            Payload(const ZayExtend* owner, const SolverValue& param);
             ~Payload();
 
         public:
@@ -522,6 +529,7 @@ namespace BOSS
             UIStretchForm ParamToUIStretchForm(sint32 i, bool& error) const;
             UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
+            const Renderer* TakeRenderer() const;
 
         private:
             void AddParam(const SolverValue& value);
@@ -531,6 +539,7 @@ namespace BOSS
             chars mUIName;
             const sint32 mElementID;
             SolverValues mParams;
+            const Renderer* const mRefRenderer;
         };
         const Payload operator()() const;
         Payload operator()(const SolverValue& value) const;
@@ -545,7 +554,7 @@ namespace BOSS
         bool HasGlue() const;
         void ResetForComponent(ComponentType type, ComponentCB cb);
         void ResetForGlue(GlueCB cb);
-        Payload MakePayload(chars uiname = nullptr, sint32 elementid = -1) const;
+        Payload MakePayload(chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr) const;
 
     private:
         ComponentType mComponentType;
