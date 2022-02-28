@@ -499,7 +499,7 @@ namespace BOSS
         class Renderer
         {
         public:
-            virtual bool RenderInsider(chars name, ZayPanel& panel) const = 0;
+            virtual bool RenderInsider(chars name, ZayPanel& panel, sint32 pv = -1) const = 0;
         };
 
     public: // 페이로드
@@ -525,6 +525,7 @@ namespace BOSS
             sint32 ParamCount() const;
             const SolverValue& Param(sint32 i) const;
             bool ParamToBool(sint32 i, bool& error) const;
+            UILayout ParamToUILayout(sint32 i, bool& error) const;
             UIAlign ParamToUIAlign(sint32 i, bool& error) const;
             UIStretchForm ParamToUIStretchForm(sint32 i, bool& error) const;
             UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;

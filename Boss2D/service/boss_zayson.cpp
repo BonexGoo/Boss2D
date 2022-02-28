@@ -977,7 +977,7 @@ namespace BOSS
         }
 
     public: // ZayExtend::Renderer 구현부
-        bool RenderInsider(chars name, ZayPanel& panel) const override
+        bool RenderInsider(chars name, ZayPanel& panel, sint32 pv) const override
         {
             // 디버깅 정보수집
             auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
@@ -996,7 +996,13 @@ namespace BOSS
                 {
                     if(mCompID == mRefRoot->debugFocusedCompID())
                         AddDebugLog(*mInsidersLogs, panel, mInsidersComponent->HasContentComponent(), mInsidersComponentName);
-                    RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                    if(pv != -1)
+                    {
+                        Solvers LocalSolvers;
+                        LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").Parse(String::FromInteger(pv)).Execute();
+                        RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                    }
+                    else RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
                     return true;
                 }
             }

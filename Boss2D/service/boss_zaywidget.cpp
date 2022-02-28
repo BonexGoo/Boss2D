@@ -641,41 +641,151 @@ namespace BOSS
             "[PasswordFlag:false|true]",
             "cursor|focus|copying");
 
-        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "button_pod",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "button",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
             {
-                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
+                if(pay.ParamCount() != 1)
                     return panel._push_pass();
-                bool HasError = false;
                 auto UIName = ViewName + '.' + pay.Param(0).ToText();
-                auto ImageName = pay.Param(1).ToText();
-                auto NinePatch = (pay.ParamCount() < 3)? false : pay.ParamToBool(2, HasError);
+                PanelState CurState = panel.state(UIName);
+                chars InsiderName = "normal";
+                if(CurState & PS_Pressed) InsiderName = "press";
+                else if(CurState & (PS_Focused | PS_Dragging)) InsiderName = "focus";
 
-                const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, strpair("r.")))
-                {
-                    PanelState CurState = panel.state(UIName);
-                    if(CurState & PS_Dragging) ImageName += "_p";
-                    else if(CurState & PS_Focused) ImageName += "_o";
-                    else ImageName += "_d";
-                    CurImage = (*pcb)(ImageName.Offset(2));
-                }
-                else HasError = true;
-
-                if(CurImage)
-                {
-                    if(NinePatch)
-                        panel.ninepatch(*CurImage);
-                    else panel.stretch(*CurImage, Image::Build::AsyncNotNull);
-                }
-
-                if(HasError)
+                ZAY_INNER_UI(panel, 0, UIName)
+                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(InsiderName, panel))
                     RenderErrorBox(panel);
                 return panel._push_pass();
             },
+            "[UIName]",
+            "normal|focus|press");
+
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "scroll_view",
+            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
+            {
+                if(pay.ParamCount() < 3 || 8 <= pay.ParamCount())
+                    return panel._push_pass();
+                bool HasError = false;
+                auto UIName = ViewName + '.' + pay.Param(0).ToText();
+                auto ContentSize = pay.Param(1).ToInteger();
+                auto ContentCount = pay.Param(2).ToInteger();
+                auto Layout = (pay.ParamCount() < 4)? UIL_Vertical : pay.ParamToUILayout(3, HasError);
+                auto StageCount = (pay.ParamCount() < 5)? 1 : Math::Max(1, pay.Param(4).ToInteger());
+                auto ScrollBorder = (pay.ParamCount() < 6)? 0 : pay.Param(5).ToInteger();
+                auto ContentBorder = (pay.ParamCount() < 7)? 0 : pay.Param(6).ToInteger();
+
+                if(HasError)
+                    RenderErrorBox(panel);
+                else
+                {
+                    // 스크롤정보
+                    class ScrollInfo
+                    {
+                    public:
+                        float mScrollPos {0};
+                    };
+                    static Map<ScrollInfo> ScrollInfoMap;
+                    auto UIScroll = UIName + ".scroll";
+                    float CurScrollRate = 0;
+                    if(auto CurScrollInfo = ScrollInfoMap.Access(UIScroll))
+                        CurScrollRate = CurScrollInfo->mScrollPos;
+                    const sint32 TotalContentSize = ContentBorder * 2 + ContentSize * ((ContentCount + StageCount - 1) / StageCount);
+
+                    if(Layout == UIL_Vertical)
+                    {
+                        // 컨텐츠
+                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w() - ScrollBorder, panel.h())
+                        {
+                            const sint32 ScrollPos = (panel.h() < TotalContentSize)? (TotalContentSize - panel.h()) * CurScrollRate : 0;
+                            for(sint32 y = 0, i = 0; i < ContentCount; ++y)
+                            for(sint32 x = 0; x < StageCount && i < ContentCount; ++x, ++i)
+                            {
+                                ZAY_LTRB_SCISSOR(panel, panel.w() * x / StageCount, ContentBorder + ContentSize * y - ScrollPos,
+                                    panel.w() * (x + 1) / StageCount, ContentBorder + ContentSize * (y + 1) - ScrollPos)
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
+                                        RenderErrorBox(panel);
+                            }
+                        }
+                        // 스크롤바
+                        if(0 < ScrollBorder)
+                        {
+                            ZAY_LTRB_UI(panel, panel.w() - ScrollBorder, 0, panel.w(), panel.h(), UIScroll,
+                                ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                                {
+                                    if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
+                                    {
+                                        auto CurRect = v->rect(n);
+                                        ScrollInfoMap(n).mScrollPos = Math::ClampF((y - CurRect.t) / float(CurRect.b - CurRect.t), 0, 1);
+                                        v->invalidate();
+                                    }
+                                })
+                            {
+                                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                                    RenderErrorBox(panel);
+                                const sint32 ScrollSize = Math::Max(20, panel.h() * panel.h() / TotalContentSize);
+                                if(ScrollSize < panel.h())
+                                {
+                                    const sint32 ScrollPos = (panel.h() - ScrollSize) * CurScrollRate;
+                                    ZAY_XYWH(panel, 0, ScrollPos, panel.w(), ScrollSize)
+                                        if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                            RenderErrorBox(panel);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 컨텐츠
+                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h() - ScrollBorder)
+                        {
+                            const sint32 ScrollPos = (panel.w() < TotalContentSize)? (TotalContentSize - panel.w()) * CurScrollRate : 0;
+                            for(sint32 x = 0, i = 0; i < ContentCount; ++x)
+                            for(sint32 y = 0; y < StageCount && i < ContentCount; ++y, ++i)
+                            {
+                                ZAY_LTRB_SCISSOR(panel, ContentBorder + ContentSize * x - ScrollPos, panel.h() * y / StageCount,
+                                    ContentBorder + ContentSize * (x + 1) - ScrollPos, panel.h() * (y + 1) / StageCount)
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
+                                        RenderErrorBox(panel);
+                            }
+                        }
+                        // 스크롤바
+                        if(0 < ScrollBorder)
+                        {
+                            ZAY_LTRB_UI(panel, 0, panel.h() - ScrollBorder, panel.w(), panel.h(), UIScroll,
+                                ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                                {
+                                    if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
+                                    {
+                                        auto CurRect = v->rect(n);
+                                        ScrollInfoMap(n).mScrollPos = Math::ClampF((x - CurRect.l) / float(CurRect.r - CurRect.l), 0, 1);
+                                        v->invalidate();
+                                    }
+                                })
+                            {
+                                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                                    RenderErrorBox(panel);
+                                const sint32 ScrollSize = Math::Max(20, panel.w() * panel.w() / TotalContentSize);
+                                if(ScrollSize < panel.w())
+                                {
+                                    const sint32 ScrollPos = (panel.w() - ScrollSize) * CurScrollRate;
+                                    ZAY_XYWH(panel, ScrollPos, 0, ScrollSize, panel.h())
+                                        if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                            RenderErrorBox(panel);
+                                }
+                            }
+                        }
+                    }
+                }
+                return panel._push_pass();
+            },
             "[UIName]"
-            "[RName:r.name]#"
-            "[NinepatchFlag:false|true]");
+            "[ContentSize:100]"
+            "[ContentCount:5]#"
+            "[Layout:vertical|horizontal]"
+            "[StageCount:1]"
+            "[ScrollBorder:0]"
+            "[ContentBorder:0]",
+            "scrollbg|scrollbar|content");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "user_content",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb)

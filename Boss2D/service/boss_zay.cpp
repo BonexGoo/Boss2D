@@ -1486,6 +1486,19 @@ namespace BOSS
         return (mParams[i].ToInteger() != 0);
     }
 
+    UILayout ZayExtend::Payload::ParamToUILayout(sint32 i, bool& error) const
+    {
+        String Result = mParams[i].ToText();
+        if(!String::CompareNoCase(Result, "UIL_", 4))
+            Result = Result.Right(Result.Length() - 4);
+
+        branch;
+        jump(!Result.CompareNoCase("Vertical")) return UIL_Vertical;
+        jump(!Result.CompareNoCase("Horizontal")) return UIL_Horizontal;
+        error = true;
+        return UIL_Vertical;
+    }
+
     UIAlign ZayExtend::Payload::ParamToUIAlign(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
