@@ -908,7 +908,7 @@ namespace BOSS
         m_RefBitmap = nullptr;
         m_BitmapWidth = 0;
         m_BitmapHeight = 0;
-        mRoutineResize.w = mRoutineResize.h = 0;
+        mRoutineResize.w = mRoutineResize.h = -1;
         mRoutineColor.argb = Color::ColoringDefault;
         Platform::Graphics::RemoveImageRoutine(mRoutine);
         Platform::Graphics::RemoveImageRoutine(mRoutineOld);
