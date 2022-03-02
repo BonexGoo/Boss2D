@@ -502,8 +502,14 @@ ZEFakeZaySon::ZEFakeZaySon()
             case ZayExtend::ComponentType::Layout:
                 NewZayBox = ZEZayBoxLayout::Create(CurComponent->mParamComments);
                 break;
-            case ZayExtend::ComponentType::Code:
+            case ZayExtend::ComponentType::CodeInput:
                 NewZayBox = ZEZayBoxCode::Create();
+                break;
+            case ZayExtend::ComponentType::JumpCall:
+                NewZayBox = ZEZayBoxJump::Create(false);
+                break;
+            case ZayExtend::ComponentType::JumpMethod:
+                NewZayBox = ZEZayBoxJump::Create(true);
                 break;
             case ZayExtend::ComponentType::Loop:
                 NewZayBox = ZEZayBoxLoop::Create();

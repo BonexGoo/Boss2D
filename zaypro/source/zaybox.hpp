@@ -419,6 +419,30 @@ protected: // 데이터
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// ZEZayBoxJump
+////////////////////////////////////////////////////////////////////////////////
+class ZEZayBoxJump : public ZEZayBox
+{
+public:
+    ZEZayBoxJump();
+    ~ZEZayBoxJump() override;
+
+public:
+    static ZEZayBoxObject Create(bool gate);
+
+public:
+    void ReadJson(const Context& json) override;
+    void WriteJson(Context& json, bool makeid) const override;
+    void Render(ZayPanel& panel) override;
+    void RecalcSize() override;
+    chars GetComment() const override;
+
+protected: // 데이터
+    BodyNameComment mNameComment;
+    bool mGate;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxLoop
 ////////////////////////////////////////////////////////////////////////////////
 class ZEZayBoxLoop : public ZEZayBox

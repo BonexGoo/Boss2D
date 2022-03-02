@@ -319,7 +319,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
                     RenderResizeButton(panel, UIResize);
             }
             // 그룹이동버튼
-            if(hook && childtype != ChildType::None)
+            if(childtype != ChildType::None && mID != 0)
             {
                 TitleEndX -= ButtonWidth - 1;
                 ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
@@ -2507,6 +2507,84 @@ void ZEZayBoxCode::SubInput(sint32 i)
 chars ZEZayBoxCode::GetComment() const
 {
     return mComment.mComment;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ZEZayBoxJump
+////////////////////////////////////////////////////////////////////////////////
+ZEZayBoxJump::ZEZayBoxJump() : mNameComment(*this)
+{
+    mGate = false;
+}
+
+ZEZayBoxJump::~ZEZayBoxJump()
+{
+}
+
+ZEZayBoxObject ZEZayBoxJump::Create(bool gate)
+{
+    buffer NewZayBox = Buffer::Alloc<ZEZayBoxJump>(BOSS_DBG 1);
+    ((ZEZayBoxJump*) NewZayBox)->mGate = gate;
+    return ZEZayBoxObject(NewZayBox);
+}
+
+void ZEZayBoxJump::ReadJson(const Context& json)
+{
+    if(json("compid").HasValue())
+        mCompID = ValidLastID(json("compid").GetInt());
+
+    mNameComment.ReadJson(json);
+    mGate = (json("gate").GetInt(0) != 0);
+}
+
+void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
+{
+    String OneType = mCompType;
+    const sint32 Pos = OneType.Find(0, ' ');
+    if(Pos != -1) OneType = OneType.Left(Pos);
+    json.At("compname").Set(OneType);
+
+    if(mCompID < 0 && makeid) mCompID = MakeLastID();
+    json.At("compid").Set(String::FromInteger(mCompID));
+
+    mNameComment.WriteJson(json);
+    json.At("gate").Set(String::FromInteger((mGate)? 1 : 0));
+}
+
+void ZEZayBoxJump::Render(ZayPanel& panel)
+{
+    const String UIBody = String::Format("%d-body", mID);
+    const String UINameComment = String::Format("%d-namecomment", mID);
+    ZAY_XYWH(panel, sint32(mPosX), sint32(mPosY), mBodySize.w + mAddW, TitleBarHeight + ((mExpanded)? mBodySize.h : 0))
+    {
+        panel.ninepatch(R("box_bg"));
+
+        // 타이틀
+        RenderTitle(panel, mCompType, (mGate)? false : true, (mGate)? ChildType::Inner : ChildType::None, true, true, true, true);
+
+        // 바디
+        if(mExpanded)
+        ZAY_XYWH_UI_SCISSOR(panel, 0, TitleBarHeight, panel.w(), mBodySize.h, UIBody)
+        {
+            ZAY_INNER(panel, 4)
+            {
+                // 함수명칭주석에디터
+                ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
+                ZAY_INNER(panel, 4)
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
+            }
+        }
+    }
+}
+
+void ZEZayBoxJump::RecalcSize()
+{
+    mBodySize.h = 8 + mNameComment.GetCalcedSize();
+}
+
+chars ZEZayBoxJump::GetComment() const
+{
+    return mNameComment.mComment;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
