@@ -63,13 +63,9 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         }
 
         m->mPipe.ResetJsonPath(ContentName);
-        m->ResetBoxes();
-        ZEZayBox::ResetLastID(); // ID발급기 초기화
-
         const String JsonText = String::FromAsset(ContentName);
         const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-        ZEZayBox::TOP()[0]->ReadJson(Json);
-        ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), Json("ui"), ZEZayBox::TOP()[0].ConstValue(), 0);
+        m->LoadCore(Json);
     }
     else if(type == NT_Normal)
     {
@@ -367,13 +363,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                                 if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
                                 {
                                     m->mPipe.ResetJsonPath(JsonPath);
-                                    m->ResetBoxes();
-                                    ZEZayBox::ResetLastID(); // ID발급기 초기화
-
                                     const String JsonText = String::FromFile(JsonPath);
                                     const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-                                    ZEZayBox::TOP()[0]->ReadJson(Json);
-                                    ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), Json("ui"), ZEZayBox::TOP()[0].ConstValue(), 0);
+                                    m->LoadCore(Json);
                                 }
                             }
                         };
@@ -405,11 +397,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                                         OldPath = JsonPath + ".old" + String::FromInteger(i);
                                     Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
                                 }
-                                Context Json;
-                                ZEZayBox::TOP()[0]->WriteJson(Json, true);
-                                if(0 < ZEZayBox::TOP()[0]->children().Count())
-                                    ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
-                                Json.SaveJson().ToFile(JsonPath, true);
+                                m->SaveCore(JsonPath);
                             }
                         }
                     })
@@ -982,15 +970,50 @@ void zayeditorData::FastSave()
             Platform::File::Remove(WString::FromChars(OldPath));
             Platform::File::Rename(WString::FromChars(mPipe.jsonpath()), WString::FromChars(OldPath));
         }
-        Context Json;
-        ZEZayBox::TOP()[0]->WriteJson(Json, true);
-        if(0 < ZEZayBox::TOP()[0]->children().Count())
-            ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
-        Json.SaveJson().ToFile(mPipe.jsonpath(), true);
+        SaveCore(mPipe.jsonpath());
         // 애니효과
         mEasySaveEffect.Reset(1);
         mEasySaveEffect.MoveTo(0, 1.0);
     }
+}
+
+void zayeditorData::LoadCore(const Context& json)
+{
+    // 박스리셋 및 ID발급기 초기화
+    ResetBoxes();
+    ZEZayBox::ResetLastID();
+
+    // 위젯 및 위젯과 연결된 박스로드
+    ZEZayBox::TOP()[0]->ReadJson(json);
+    ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), json("ui"), ZEZayBox::TOP()[0].ConstPtr(), 0);
+
+    // 기타 박스로드
+    sint32s ExtendIDs;
+    ZEZayBox::Load(ExtendIDs, json("extends"), nullptr, 0);
+}
+
+void zayeditorData::SaveCore(chars filename) const
+{
+    Context Json;
+    // 위젯 및 위젯과 연결된 박스저장
+    ZEZayBox::TOP()[0]->WriteJson(Json, true);
+    if(0 < ZEZayBox::TOP()[0]->children().Count())
+        ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
+    // 기타 박스저장
+    sint32s ExtendIDs;
+    for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
+    {
+        chararray GetID;
+        if(auto CurBox = ZEZayBox::TOP().AccessByOrder(i, &GetID))
+        {
+            const sint32 CurID = MapPath::ToInt(GetID);
+            if(CurID != 0 && (*CurBox)->parent() == -1)
+                ExtendIDs.AtAdding() = CurID;
+        }
+    }
+    if(0 < ExtendIDs.Count())
+        ZEZayBox::Save(ExtendIDs, Json.At("extends"));
+    Json.SaveJson().ToFile(filename, true);
 }
 
 void zayeditorData::RenderButton(ZayPanel& panel, chars name, Color color, ZayPanel::SubGestureCB cb)

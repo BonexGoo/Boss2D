@@ -234,6 +234,8 @@ public:
     void ResetBoxes();
     void NewProject();
     void FastSave();
+    void LoadCore(const Context& json);
+    void SaveCore(chars filename) const;
 
 public:
     void RenderButton(ZayPanel& panel, chars name, Color color, ZayPanel::SubGestureCB cb);

@@ -28,7 +28,7 @@ protected:
     static sint32 ValidLastID(sint32 id);
 
 public:
-    static void Load(sint32s& children, const Context& json, const ZEZayBox& self, sint32 group);
+    static void Load(sint32s& children, const Context& json, const ZEZayBox* self, sint32 group);
     static void Save(const sint32s& children, Context& json);
 
 public:
@@ -439,7 +439,7 @@ public:
 
 protected: // 데이터
     BodyNameComment mNameComment;
-    bool mGate;
+    bool mIsGate;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

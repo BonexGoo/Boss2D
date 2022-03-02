@@ -40,7 +40,7 @@ sint32 ZEZayBox::ValidLastID(sint32 id)
     return id;
 }
 
-void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox& self, sint32 group)
+void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox* self, sint32 group)
 {
     double TopPosX = 0, TopPosY = 0;
     if(const auto TopBox = TOP().Access(0))
@@ -63,20 +63,30 @@ void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox& self
             auto NewBoxObject = CREATOR()(CurCompName);
             auto& CurBox = NewBoxObject.Value();
             CurBox.mExpanded = (fish("expanded").GetInt(1) != 0);
-            CurBox.mPosX = TopPosX + fish("posx").GetFloat(self.mPosX + self.mBodySize.w + self.mAddW + 30 - TopPosX);
-            CurBox.mPosY = TopPosY + fish("posy").GetFloat(self.mPosY + (TitleBarHeight + 20.0) * i - TopPosY);
+            CurBox.mPosX = TopPosX + fish("posx").GetFloat((self)? self->mPosX + self->mBodySize.w + self->mAddW + 30 - TopPosX : 0);
+            CurBox.mPosY = TopPosY + fish("posy").GetFloat((self)? self->mPosY + (TitleBarHeight + 20.0) * i - TopPosY : 0);
             CurBox.mAddW = fish("addw").GetInt(0);
 
             // 자식의 HookPos설정
-            CurBox.mParent = self.mID;
-            CurBox.mDebugOrder = children.Count();
-            CurBox.mHooked = true;
-            CurBox.mHookPos = self.GetBallPos(group) - Point(CurBox.mPosX, CurBox.mPosY + TitleBarHeight / 2);
+            if(self)
+            {
+                CurBox.mParent = self->mID;
+                CurBox.mDebugOrder = children.Count();
+                CurBox.mHooked = true;
+                CurBox.mHookPos = self->GetBallPos(group) - Point(CurBox.mPosX, CurBox.mPosY + TitleBarHeight / 2);
+            }
+            else
+            {
+                CurBox.mParent = -1;
+                CurBox.mDebugOrder = -1;
+                CurBox.mHooked = false;
+                CurBox.mHookPos = Point(-BallX, 0);
+            }
             CurBox.ReadJson(fish);
             children.AtAdding() = CurBox.mID;
 
             // 자식재귀 및 박스추가
-            CurBox.Load(CurBox.children(), fish("ui"), CurBox, 0);
+            CurBox.Load(CurBox.children(), fish("ui"), &CurBox, 0);
             TOP()[CurBox.mID] = NewBoxObject;
         }
     }
@@ -1962,7 +1972,7 @@ void ZEZayBox::BodyInsideGroup::ReadJson(const Context& json)
             NewBall.mName = fish("name").GetText();
             NewBall.mBallPos.x = fish("ballposx").GetFloat();
             NewBall.mBallPos.y = fish("ballposy").GetFloat();
-            ZEZayBox::Load(NewBall.mChildren, fish("ui"), *Self, i + 1);
+            ZEZayBox::Load(NewBall.mChildren, fish("ui"), Self, i + 1);
         }
     }
 }
@@ -2514,7 +2524,7 @@ chars ZEZayBoxCode::GetComment() const
 ////////////////////////////////////////////////////////////////////////////////
 ZEZayBoxJump::ZEZayBoxJump() : mNameComment(*this)
 {
-    mGate = false;
+    mIsGate = false;
 }
 
 ZEZayBoxJump::~ZEZayBoxJump()
@@ -2524,7 +2534,7 @@ ZEZayBoxJump::~ZEZayBoxJump()
 ZEZayBoxObject ZEZayBoxJump::Create(bool gate)
 {
     buffer NewZayBox = Buffer::Alloc<ZEZayBoxJump>(BOSS_DBG 1);
-    ((ZEZayBoxJump*) NewZayBox)->mGate = gate;
+    ((ZEZayBoxJump*) NewZayBox)->mIsGate = gate;
     return ZEZayBoxObject(NewZayBox);
 }
 
@@ -2534,7 +2544,7 @@ void ZEZayBoxJump::ReadJson(const Context& json)
         mCompID = ValidLastID(json("compid").GetInt());
 
     mNameComment.ReadJson(json);
-    mGate = (json("gate").GetInt(0) != 0);
+    mIsGate = (!String::Compare(mCompType, "gate", 4));
 }
 
 void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
@@ -2548,7 +2558,6 @@ void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
     json.At("compid").Set(String::FromInteger(mCompID));
 
     mNameComment.WriteJson(json);
-    json.At("gate").Set(String::FromInteger((mGate)? 1 : 0));
 }
 
 void ZEZayBoxJump::Render(ZayPanel& panel)
@@ -2560,7 +2569,7 @@ void ZEZayBoxJump::Render(ZayPanel& panel)
         panel.ninepatch(R("box_bg"));
 
         // 타이틀
-        RenderTitle(panel, mCompType, (mGate)? false : true, (mGate)? ChildType::Inner : ChildType::None, true, true, true, true);
+        RenderTitle(panel, mCompType, (mIsGate)? false : true, (mIsGate)? ChildType::Inner : ChildType::None, true, true, true, true);
 
         // 바디
         if(mExpanded)
