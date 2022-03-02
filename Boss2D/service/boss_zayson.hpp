@@ -84,6 +84,7 @@ namespace BOSS
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
         const ZayExtend* FindComponent(chars name) const;
         const ZayExtend* FindGlue(chars name) const;
+        const void* FindGate(chars name) const;
         void Render(ZayPanel& panel);
 
     private:

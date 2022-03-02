@@ -281,7 +281,7 @@ namespace BOSS
     {
         BOSS_DECLARE_STANDARD_CLASS(ZayUIElement)
     public:
-        enum class Type {Unknown, Condition, Param, Request, Inside, Component, View};
+        enum class Type {Unknown, Condition, Param, Request, Inside, Gate, Component, View};
 
     public:
         ZayUIElement(Type type = Type::Unknown) : mType(type)
@@ -708,6 +708,35 @@ namespace BOSS
     };
 
     ////////////////////////////////////////////////////////////////////////////////
+    // ZayGateElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayGateElement : public ZayUIElement
+    {
+    public:
+        ZayGateElement() : ZayUIElement(Type::Gate) {}
+        ~ZayGateElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+        }
+
+    public:
+        ZayUIs mChildren;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
     // ZayComponentElement
     ////////////////////////////////////////////////////////////////////////////////
     class ZayComponentElement : public ZayUIElement, ZayExtend::Renderer
@@ -842,6 +871,17 @@ namespace BOSS
                             }
                             RenderChildren(mChildren, panel, nullptr, defaultname + String::Format("_%d", i), logs);
                         }
+                    }
+                    else if(!mCompName.Compare("jump")) // 호출문
+                    {
+                        if(auto CurGate = (ZayGateElement*)(ZayUIElement*) mRefRoot->FindGate(UIName))
+                        {
+                            if(mCompID == mRefRoot->debugFocusedCompID())
+                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "jump to '" + UIName + "'");
+                            RenderChildren(CurGate->mChildren, panel, defaultname, defaultname, logs);
+                        }
+                        else if(mCompID == mRefRoot->debugFocusedCompID())
+                            AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "no gate called '" + UIName + "'");
                     }
                     else
                     {
@@ -1062,6 +1102,21 @@ namespace BOSS
                 NewUI->Load(root, fish[i]);
                 mChildren.AtAdding() = (id_share) NewUI;
             }
+
+            hook(context("extends"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(!fish[i]("compname").GetText().Compare("gate"))
+                {
+                    const String GateName = fish[i]("uiname").GetText();
+                    if(0 < GateName.Length())
+                    {
+                        ZayUI NewUI(ZayUIElement::Create(Type::Gate));
+                        NewUI->Load(root, fish[i]);
+                        mGates(GateName) = (id_share) NewUI;
+                    }
+                }
+            }
         }
 
     private:
@@ -1078,6 +1133,7 @@ namespace BOSS
     public:
         ZayUIs mCreateCodes;
         ZayUIs mChildren;
+        Map<ZayUI> mGates;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1091,6 +1147,7 @@ namespace BOSS
         case Type::Param: return Buffer::Alloc<ZayParamElement>(BOSS_DBG 1);
         case Type::Request: return Buffer::Alloc<ZayRequestElement>(BOSS_DBG 1);
         case Type::Inside: return Buffer::Alloc<ZayInsideElement>(BOSS_DBG 1);
+        case Type::Gate: return Buffer::Alloc<ZayGateElement>(BOSS_DBG 1);
         case Type::Component: return Buffer::Alloc<ZayComponentElement>(BOSS_DBG 1);
         case Type::View: return Buffer::Alloc<ZayViewElement>(BOSS_DBG 1);
         }
@@ -1199,6 +1256,14 @@ namespace BOSS
             return Result;
         }
         BOSS_ASSERT(String::Format("\"%s\"으로 등록된 ZayExtend를 찾을 수 없습니다", name), false);
+        return nullptr;
+    }
+
+    const void* ZaySon::FindGate(chars name) const
+    {
+        if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
+        if(auto GateElement = TopElement->mGates.Access(name))
+            return (*GateElement).ConstPtr();
         return nullptr;
     }
 

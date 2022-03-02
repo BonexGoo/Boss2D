@@ -1,6 +1,50 @@
 ﻿{
 	"addw":"0",
 	"expanded":"1",
+	"extends":
+	[
+		{
+			"addw":"0",
+			"comment":"뒷배경",
+			"compid":"44",
+			"compname":"gate",
+			"expanded":"1",
+			"posx":"624",
+			"posy":"1501",
+			"ui":
+			[
+				{
+					"addw":"0",
+					"compid":"19",
+					"compname":"color",
+					"compvalues":
+					[
+						[
+							"0",
+							"0",
+							"0",
+							"128"
+						]
+					],
+					"expanded":"1",
+					"posx":"991",
+					"posy":"1514",
+					"ui":
+					[
+						{
+							"addw":"0",
+							"compid":"23",
+							"compname":"fill",
+							"expanded":"1",
+							"posx":"1343",
+							"posy":"1538"
+						}
+					]
+				}
+			],
+			"uiname":"back"
+		}
+	],
 	"oncreate":
 	[
 		{
@@ -172,31 +216,12 @@
 					[
 						{
 							"addw":"0",
-							"compid":"19",
-							"compname":"color",
-							"compvalues":
-							[
-								[
-									"0",
-									"0",
-									"0",
-									"64"
-								]
-							],
+							"compid":"42",
+							"compname":"jump",
 							"expanded":"1",
-							"posx":"1005",
-							"posy":"662",
-							"ui":
-							[
-								{
-									"addw":"0",
-									"compid":"23",
-									"compname":"fill",
-									"expanded":"1",
-									"posx":"1357",
-									"posy":"686"
-								}
-							]
+							"posx":"1028",
+							"posy":"665",
+							"uiname":"ba + ck"
 						},
 						{
 							"addw":"0",
@@ -275,31 +300,12 @@
 					[
 						{
 							"addw":"0",
-							"compid":"26",
-							"compname":"color",
-							"compvalues":
-							[
-								[
-									"0",
-									"0",
-									"0",
-									"64"
-								]
-							],
+							"compid":"43",
+							"compname":"jump",
 							"expanded":"1",
-							"posx":"1001",
-							"posy":"1076",
-							"ui":
-							[
-								{
-									"addw":"0",
-									"compid":"27",
-									"compname":"fill",
-									"expanded":"1",
-									"posx":"1349",
-									"posy":"1083"
-								}
-							]
+							"posx":"1022",
+							"posy":"1080",
+							"uiname":"back"
 						},
 						{
 							"addw":"0",

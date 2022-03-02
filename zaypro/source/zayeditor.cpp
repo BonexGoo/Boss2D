@@ -909,7 +909,8 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     DateText.Replace("Apr", "04"); DateText.Replace("May", "05"); DateText.Replace("Jun", "06");
     DateText.Replace("Jul", "07"); DateText.Replace("Aug", "08"); DateText.Replace("Sep", "09");
     DateText.Replace("Oct", "10"); DateText.Replace("Nov", "11"); DateText.Replace("Dec", "12");
-    DateText = DateText.Middle(6, 4) + DateText.Middle(0, 2) + DateText.Middle(3, 2);
+    const String Day = String::Format("%02d", Parser::GetInt(DateText.Middle(2, DateText.Length() - 6).Trim()));
+    DateText = DateText.Right(4) + DateText.Left(2) + Day;
     String TimeText = __TIME__;
     TimeText.Replace(":", "");
     mBuildTag = String::Format("BUILD_%s_%s_KST", (chars) DateText, (chars) TimeText);
