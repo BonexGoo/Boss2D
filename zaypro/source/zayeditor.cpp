@@ -137,7 +137,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         jump(!String::Compare(topic, "ZayBoxRemove")) // 제이박스 삭제(0-remove)
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(0);
+            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHookAll();
             const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
                 ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value());
@@ -151,7 +151,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
         jump(!String::Compare(topic, "ZayBoxRemoveGroup")) // 제이박스 및 자식들 삭제(0-remove)
         {
             const sint32 CurZayBoxID = sint32o(in).ConstValue();
-            ZEZayBox::TOP()[CurZayBoxID]->RemoveChildren(0);
+            ZEZayBox::TOP()[CurZayBoxID]->RemoveChildrenAll();
             const sint32 ParentID = ZEZayBox::TOP()[CurZayBoxID]->parent();
             if(ParentID != -1)
                 ZEZayBox::TOP()[ParentID]->SubChild(ZEZayBox::TOP()[CurZayBoxID].Value());
@@ -999,7 +999,7 @@ void zayeditorData::SaveCore(chars filename) const
     // 위젯 및 위젯과 연결된 박스저장
     ZEZayBox::TOP()[0]->WriteJson(Json, true);
     if(0 < ZEZayBox::TOP()[0]->children().Count())
-        ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"));
+        ZEZayBox::Save(ZEZayBox::TOP()[0]->children(), Json.At("ui"), true);
     // 기타 박스저장
     sint32s ExtendIDs;
     for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
@@ -1013,7 +1013,7 @@ void zayeditorData::SaveCore(chars filename) const
         }
     }
     if(0 < ExtendIDs.Count())
-        ZEZayBox::Save(ExtendIDs, Json.At("extends"));
+        ZEZayBox::Save(ExtendIDs, Json.At("extends"), true);
     Json.SaveJson().ToFile(filename, true);
 }
 

@@ -29,7 +29,7 @@ protected:
 
 public:
     static void Load(sint32s& children, const Context& json, const ZEZayBox* self, sint32 group);
-    static void Save(const sint32s& children, Context& json);
+    static void Save(const sint32s& children, Context& json, bool makeid);
 
 public:
     virtual void ReadJson(const Context& json);
@@ -79,8 +79,11 @@ public:
     void Sort();
     Rect GetRect() const;
     void RemoveChildren(sint32 group);
+    void RemoveChildrenAll();
+    void ClearCompID();
     void ClearParentHook();
     void ClearChildrenHook(sint32 group);
+    void ClearChildrenHookAll();
     void ClearMyHook();
     void MoveMyHook(sint32 addx, sint32 addy);
 
@@ -146,7 +149,7 @@ protected:
         {BOSS_ASSERT("잘못된 시나리오입니다", false); return *this;}
     public:
         virtual void ReadJson(const Context& json) = 0;
-        virtual void WriteJson(Context& json) const = 0;
+        virtual void WriteJson(Context& json, bool makeid) const = 0;
         virtual sint32 GetCalcedSize(const BodyElement* sub = nullptr) const = 0;
     protected:
         ZEZayBox& mBox;
@@ -162,7 +165,7 @@ protected:
         ~BodyComment();
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderCommentEditor(ZayPanel& panel, chars uiname);
     public:
@@ -179,7 +182,7 @@ protected:
         ~BodyNameComment();
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderNameCommentEditor(ZayPanel& panel, chars uiname);
     public:
@@ -199,7 +202,7 @@ protected:
         void SubParam(sint32 i);
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderParamGroup(ZayPanel& panel);
         void RenderParamEditor(ZayPanel& panel, chars uiname, sint32 i);
@@ -223,7 +226,7 @@ protected:
         void SubValue(sint32 i);
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub = nullptr);
         void RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i, sint32 extmode);
@@ -248,7 +251,7 @@ protected:
         ~BodyLoopOperation();
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname, chars itname);
     public:
@@ -266,7 +269,7 @@ protected:
     public:
         void Init(chars operation, bool withelse, bool eventflag);
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname);
     public:
@@ -290,7 +293,7 @@ protected:
         void SubBall(sint32 i);
     public:
         void ReadJson(const Context& json) override;
-        void WriteJson(Context& json) const override;
+        void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderBalls(ZayPanel& panel);
     public:

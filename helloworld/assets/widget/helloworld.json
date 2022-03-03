@@ -9,8 +9,8 @@
 			"compid":"44",
 			"compname":"gate",
 			"expanded":"1",
-			"posx":"624",
-			"posy":"1501",
+			"posx":"2031",
+			"posy":"658",
 			"ui":
 			[
 				{
@@ -27,8 +27,8 @@
 						]
 					],
 					"expanded":"1",
-					"posx":"991",
-					"posy":"1514",
+					"posx":"2398",
+					"posy":"671",
 					"ui":
 					[
 						{
@@ -36,8 +36,8 @@
 							"compid":"23",
 							"compname":"fill",
 							"expanded":"1",
-							"posx":"1343",
-							"posy":"1538"
+							"posx":"2750",
+							"posy":"695"
 						}
 					]
 				}
@@ -458,6 +458,48 @@
 																	"expanded":"1",
 																	"posx":"2554",
 																	"posy":"1530"
+																}
+															]
+														}
+													]
+												},
+												{
+													"ballposx":"70",
+													"ballposy":"96",
+													"name":"default",
+													"ui":
+													[
+														{
+															"addw":"0",
+															"compid":"45",
+															"compname":"color",
+															"compvalues":
+															[
+																[
+																	"0",
+																	"0",
+																	"64",
+																	"-128"
+																]
+															],
+															"expanded":"1",
+															"posx":"2212",
+															"posy":"1660",
+															"ui":
+															[
+																{
+																	"addw":"0",
+																	"compid":"46",
+																	"compname":"text",
+																	"compvalues":
+																	[
+																		[
+																			"'(글자없음)'"
+																		]
+																	],
+																	"expanded":"1",
+																	"posx":"2554",
+																	"posy":"1683"
 																}
 															]
 														}

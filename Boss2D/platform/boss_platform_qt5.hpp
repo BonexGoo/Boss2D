@@ -2509,9 +2509,9 @@
                     "void main()\n"
                     "{\n"
                     "    float Pi2 = 6.28318530718;\n"
-                    "    float Direction = %f;\n"
-                    "    float Quality = %f;\n"
-                    "    vec2 Radius = %f / u_resolution.xy;\n"
+                    "    float Direction = %lf;\n"
+                    "    float Quality = %lf;\n"
+                    "    vec2 Radius = %lf / u_resolution.xy;\n"
                     "    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
                     "    float SumRate = 1.0;\n"
                     "    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
@@ -2524,7 +2524,8 @@
                     "    }\n"
                     "    oColour = v_fragmentColor * (Sum / SumRate);\n"
                     "}", VersionCode, 128.0, 32.0, 64.0));
-                    // 약-블러 : 16.0, 4.0, 8.0 // 16 x 4 = 64회 반복
+                    // 약-블러 : 8.0, 2.0, 4.0 // 8 x 2 = 16회 반복
+                    // 중-블러 : 16.0, 4.0, 8.0 // 16 x 4 = 64회 반복
                     // 강-블러 : 128.0, 32.0, 64.0 // 128 x 32 = 4096회 반복
         }
         void TermShader()

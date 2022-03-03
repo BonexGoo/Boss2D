@@ -2473,8 +2473,8 @@
                         if(CurCodeData)
                         {
                             Platform::Graphics::DrawTextureToFBO((id_texture_read) CurCodeData->mRefTexture,
-                                CurCodeData->mUVPos.x, CurCodeData->mUVPos.y, CurCodeData->mUVSize.w, CurCodeData->mUVSize.h, orientationtype_normal0,
-                                false, x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
+                                CurCodeData->mUVPos.x, CurCodeData->mUVPos.y, CurCodeData->mUVSize.w, CurCodeData->mUVSize.h, orientationtype_normal0, false,
+                                x + CurCodeData->mRenderPos.x * justifyrate, y + CurCodeData->mRenderPos.y, CurCodeData->mUVSize.w * justifyrate, CurCodeData->mUVSize.h, CurColor);
                             x += CurCodeData->mSavedWidth * justifyrate;
                         }
                     }

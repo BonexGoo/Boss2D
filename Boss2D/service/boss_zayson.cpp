@@ -1038,11 +1038,14 @@ namespace BOSS
                         AddDebugLog(*mInsidersLogs, panel, mInsidersComponent->HasContentComponent(), mInsidersComponentName);
                     if(pv != -1)
                     {
+                        const String PV = String::FromInteger(pv);
                         Solvers LocalSolvers;
-                        LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").Parse(String::FromInteger(pv)).Execute();
-                        RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                        LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").Parse(PV).Execute();
+                        RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
+                            mInsidersDefaultName + ("." + CurInsider->mName + "." + PV), *mInsidersLogs);
                     }
-                    else RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName, mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                    else RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
+                        mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
                     return true;
                 }
             }

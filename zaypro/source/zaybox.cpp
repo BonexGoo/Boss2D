@@ -92,7 +92,7 @@ void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox* self
     }
 }
 
-void ZEZayBox::Save(const sint32s& children, Context& json)
+void ZEZayBox::Save(const sint32s& children, Context& json, bool makeid)
 {
     double TopPosX = 0, TopPosY = 0;
     if(const auto TopBox = TOP().Access(0))
@@ -107,13 +107,13 @@ void ZEZayBox::Save(const sint32s& children, Context& json)
         if(auto CurBoxObject = TOP().Access(children[i]))
         {
             auto& CurBox = CurBoxObject->ConstValue();
-            CurBox.WriteJson(fish, true);
+            CurBox.WriteJson(fish, makeid);
             fish.At("expanded").Set(String::FromInteger((CurBox.mExpanded)? 1 : 0));
             fish.At("posx").Set(String::FromInteger(sint32(CurBox.mPosX - TopPosX + 0.5)));
             fish.At("posy").Set(String::FromInteger(sint32(CurBox.mPosY - TopPosY + 0.5)));
             fish.At("addw").Set(String::FromInteger(CurBox.mAddW));
             if(0 < CurBox.children().Count())
-                ZEZayBox::Save(CurBox.children(), fish.At("ui"));
+                ZEZayBox::Save(CurBox.children(), fish.At("ui"), makeid);
         }
     }
 }
@@ -296,9 +296,14 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
             // 제거버튼
             if(remove)
             {
+                bool HasChildren = false;
+                for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend && !HasChildren; ++i)
+                    if(auto CurChildren = GetChildrenGroup(i))
+                        HasChildren = (0 < CurChildren->Count());
+
                 TitleEndX -= ButtonWidth;
                 ZAY_XYWH(panel, TitleEndX, 0, ButtonWidth, panel.h())
-                    RenderRemoveButton(panel, UIRemove, mParent == -1 && 0 < mChildren.Count());
+                    RenderRemoveButton(panel, UIRemove, mParent == -1 && HasChildren);
             }
             else
             {
@@ -787,12 +792,12 @@ sint32 ZEZayBox::Copy()
     if(Json("compname").HasValue())
     {
         auto NewParentBox = CREATOR()(Json("compname").GetText());
-        NewParentBox->ReadJson(Json);
         NewParentBox->mExpanded = mExpanded;
         NewParentBox->mPosX = mPosX;
         NewParentBox->mPosY = mPosY;
         NewParentBox->mAddW = mAddW;
         NewParentBox->mHookPos = mHookPos;
+        NewParentBox->ReadJson(Json);
         // 박스추가
         NewID = NewParentBox->mID;
         TOP()[NewID] = NewParentBox;
@@ -801,16 +806,23 @@ sint32 ZEZayBox::Copy()
     // 자식재귀
     if(NewID != -1)
     {
-        for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
-        if(auto CurChildren = GetChildrenGroup(i))
+        // 일반자식은 복사
+        if(auto CurChildren = GetChildrenGroup(0))
         for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
             if(auto CurBox = TOP().Access((*CurChildren)[j]))
             {
                 const sint32 NewChildBoxID = CurBox->Value().Copy();
                 if(NewChildBoxID != -1)
                 if(auto CurChildBox = TOP().Access(NewChildBoxID))
-                    TOP()[NewID]->AddChild(CurChildBox->Value(), i);
+                    TOP()[NewID]->AddChild(CurChildBox->Value(), 0);
             }
+
+        // 인사이더측 자식은 CompID초기화
+        for(sint32 i = 1, iend = GetChildrenGroupCount(); i < iend; ++i)
+        if(auto CurChildren = GetChildrenGroup(i))
+        for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+            if(auto CurBox = TOP().Access((*CurChildren)[j]))
+                CurBox->Value().ClearCompID();
     }
     return NewID;
 }
@@ -860,6 +872,22 @@ void ZEZayBox::RemoveChildren(sint32 group)
     }
 }
 
+void ZEZayBox::RemoveChildrenAll()
+{
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+        RemoveChildren(i);
+}
+
+void ZEZayBox::ClearCompID()
+{
+    mCompID = -2;
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+    if(auto CurChildren = GetChildrenGroup(i))
+    for(sint32 j = 0, jend = CurChildren->Count(); j < jend; ++j)
+        if(auto CurBox = TOP().Access((*CurChildren)[j]))
+            CurBox->Value().ClearCompID();
+}
+
 void ZEZayBox::ClearParentHook()
 {
     if(mParent != -1)
@@ -885,6 +913,12 @@ void ZEZayBox::ClearChildrenHook(sint32 group)
                 (*CurBox)->ClearMyHook();
         CurChildren->Clear();
     }
+}
+
+void ZEZayBox::ClearChildrenHookAll()
+{
+    for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
+        ClearChildrenHook(i);
 }
 
 void ZEZayBox::ClearMyHook()
@@ -1070,7 +1104,7 @@ void ZEZayBox::BodyComment::ReadJson(const Context& json)
     CommentTag::Update(&mBox);
 }
 
-void ZEZayBox::BodyComment::WriteJson(Context& json) const
+void ZEZayBox::BodyComment::WriteJson(Context& json, bool makeid) const
 {
     if(0 < mComment.Length())
         json.At("comment").Set(mComment);
@@ -1136,9 +1170,9 @@ void ZEZayBox::BodyNameComment::ReadJson(const Context& json)
         mName = json("uiname").GetText();
 }
 
-void ZEZayBox::BodyNameComment::WriteJson(Context& json) const
+void ZEZayBox::BodyNameComment::WriteJson(Context& json, bool makeid) const
 {
-    BodyComment::WriteJson(json);
+    BodyComment::WriteJson(json, makeid);
     if(0 < mName.Length())
         json.At("uiname").Set(mName);
 }
@@ -1249,7 +1283,7 @@ void ZEZayBox::BodyParamGroup::ReadJson(const Context& json)
     mBox.RecalcSize();
 }
 
-void ZEZayBox::BodyParamGroup::WriteJson(Context& json) const
+void ZEZayBox::BodyParamGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mParams.Count(); i < iend; ++i)
     {
@@ -1524,7 +1558,7 @@ void ZEZayBox::BodyInputGroup::ReadJson(const Context& json)
     mBox.RecalcSize();
 }
 
-void ZEZayBox::BodyInputGroup::WriteJson(Context& json) const
+void ZEZayBox::BodyInputGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mInputs.Count(); i < iend; ++i)
     {
@@ -1746,7 +1780,7 @@ void ZEZayBox::BodyLoopOperation::ReadJson(const Context& json)
         mOperation = json("uiloop").GetText();
 }
 
-void ZEZayBox::BodyLoopOperation::WriteJson(Context& json) const
+void ZEZayBox::BodyLoopOperation::WriteJson(Context& json, bool makeid) const
 {
     if(0 < mOperation.Length())
         json.At("uiloop").Set(mOperation);
@@ -1848,7 +1882,7 @@ void ZEZayBox::BodyConditionOperation::ReadJson(const Context& json)
 {
 }
 
-void ZEZayBox::BodyConditionOperation::WriteJson(Context& json) const
+void ZEZayBox::BodyConditionOperation::WriteJson(Context& json, bool makeid) const
 {
 }
 
@@ -1977,7 +2011,7 @@ void ZEZayBox::BodyInsideGroup::ReadJson(const Context& json)
     }
 }
 
-void ZEZayBox::BodyInsideGroup::WriteJson(Context& json) const
+void ZEZayBox::BodyInsideGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mBalls.Count(); i < iend; ++i)
     {
@@ -1987,7 +2021,7 @@ void ZEZayBox::BodyInsideGroup::WriteJson(Context& json) const
             fish.At("ballposx").Set(String::FromFloat(mBalls[i].mBallPos.x));
             fish.At("ballposy").Set(String::FromFloat(mBalls[i].mBallPos.y));
             if(0 < mBalls[i].mChildren.Count())
-                ZEZayBox::Save(mBalls[i].mChildren, fish.At("ui"));
+                ZEZayBox::Save(mBalls[i].mChildren, fish.At("ui"), makeid);
         }
     }
 }
@@ -2133,9 +2167,9 @@ void ZEZayBoxStarter::WriteJson(Context& json, bool makeid) const
     json.At("expanded").Set(String::FromInteger((mExpanded)? 1 : 0));
     json.At("addw").Set(String::FromInteger(mAddW));
 
-    mComment.WriteJson(json);
+    mComment.WriteJson(json, makeid);
     if(0 < mCreateGroup.mInputs.Count())
-        mCreateGroup.WriteJson(json.At("oncreate"));
+        mCreateGroup.WriteJson(json.At("oncreate"), makeid);
 }
 
 void ZEZayBoxStarter::Render(ZayPanel& panel)
@@ -2216,11 +2250,12 @@ void ZEZayBoxContent::ReadJson(const Context& json)
     mComment.ReadJson(json);
     mParamGroup.ReadJson(json("compvalues"));
 
+    ZEZayBox* OldBox = BodyInsideGroup::BOX();
     BodyInsideGroup::BOX() = this;
     {
         mInsideGroup.ReadJson(json("insiders"));
     }
-    BodyInsideGroup::BOX() = nullptr;
+    BodyInsideGroup::BOX() = OldBox;
 }
 
 void ZEZayBoxContent::WriteJson(Context& json, bool makeid) const
@@ -2233,9 +2268,9 @@ void ZEZayBoxContent::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mComment.WriteJson(json);
-    mParamGroup.WriteJson(json);
-    mInsideGroup.WriteJson(json);
+    mComment.WriteJson(json, makeid);
+    mParamGroup.WriteJson(json, makeid);
+    mInsideGroup.WriteJson(json, makeid);
 }
 
 void ZEZayBoxContent::Render(ZayPanel& panel)
@@ -2364,12 +2399,12 @@ void ZEZayBoxLayout::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mNameComment.WriteJson(json);
-    mParamGroup.WriteJson(json);
+    mNameComment.WriteJson(json, makeid);
+    mParamGroup.WriteJson(json, makeid);
     if(0 < mTouchGroup.mInputs.Count())
-        mTouchGroup.WriteJson(json.At("ontouch"));
+        mTouchGroup.WriteJson(json.At("ontouch"), makeid);
     if(0 < mClickGroup.mInputs.Count())
-        mClickGroup.WriteJson(json.At("onclick"));
+        mClickGroup.WriteJson(json.At("onclick"), makeid);
 }
 
 void ZEZayBoxLayout::Render(ZayPanel& panel)
@@ -2469,9 +2504,9 @@ void ZEZayBoxCode::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mComment.WriteJson(json);
+    mComment.WriteJson(json, makeid);
     if(0 < mCodeGroup.mInputs.Count())
-        mCodeGroup.WriteJson(json.At("compinputs"));
+        mCodeGroup.WriteJson(json.At("compinputs"), makeid);
 }
 
 void ZEZayBoxCode::Render(ZayPanel& panel)
@@ -2557,7 +2592,7 @@ void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mNameComment.WriteJson(json);
+    mNameComment.WriteJson(json, makeid);
 }
 
 void ZEZayBoxJump::Render(ZayPanel& panel)
@@ -2632,8 +2667,8 @@ void ZEZayBoxLoop::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mNameComment.WriteJson(json);
-    mOperation.WriteJson(json);
+    mNameComment.WriteJson(json, makeid);
+    mOperation.WriteJson(json, makeid);
 }
 
 void ZEZayBoxLoop::Render(ZayPanel& panel)
@@ -2787,12 +2822,12 @@ void ZEZayBoxError::WriteJson(Context& json, bool makeid) const
     if(mCompID < 0 && makeid) mCompID = MakeLastID();
     json.At("compid").Set(String::FromInteger(mCompID));
 
-    mNameComment.WriteJson(json);
-    mParamGroup.WriteJson(json);
+    mNameComment.WriteJson(json, makeid);
+    mParamGroup.WriteJson(json, makeid);
     if(0 < mTouchGroup.mInputs.Count())
-        mTouchGroup.WriteJson(json.At("ontouch"));
+        mTouchGroup.WriteJson(json.At("ontouch"), makeid);
     if(0 < mClickGroup.mInputs.Count())
-        mClickGroup.WriteJson(json.At("onclick"));
+        mClickGroup.WriteJson(json.At("onclick"), makeid);
 }
 
 void ZEZayBoxError::Render(ZayPanel& panel)

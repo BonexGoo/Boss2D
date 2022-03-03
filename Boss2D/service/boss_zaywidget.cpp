@@ -653,7 +653,7 @@ namespace BOSS
             "[Border:10]#"
             "[EnableFlag:true|false]"
             "[PasswordFlag:false|true]",
-            "cursor|focus|copying");
+            "cursor|focus|copying|default");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "button",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
@@ -708,13 +708,13 @@ namespace BOSS
                     if(Layout == UIL_Vertical)
                     {
                         // 컨텐츠
-                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w() - ScrollBorder, panel.h())
+                        ZAY_LTRB(panel, 0, 0, panel.w() - ScrollBorder, panel.h())
                         {
                             const sint32 ScrollPos = (panel.h() < TotalContentSize)? (TotalContentSize - panel.h()) * CurScrollRate : 0;
                             for(sint32 y = 0, i = 0; i < ContentCount; ++y)
                             for(sint32 x = 0; x < StageCount && i < ContentCount; ++x, ++i)
                             {
-                                ZAY_LTRB_SCISSOR(panel, panel.w() * x / StageCount, ContentBorder + ContentSize * y - ScrollPos,
+                                ZAY_LTRB(panel, panel.w() * x / StageCount, ContentBorder + ContentSize * y - ScrollPos,
                                     panel.w() * (x + 1) / StageCount, ContentBorder + ContentSize * (y + 1) - ScrollPos)
                                     if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
                                         RenderErrorBox(panel);
@@ -750,13 +750,13 @@ namespace BOSS
                     else
                     {
                         // 컨텐츠
-                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h() - ScrollBorder)
+                        ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() - ScrollBorder)
                         {
                             const sint32 ScrollPos = (panel.w() < TotalContentSize)? (TotalContentSize - panel.w()) * CurScrollRate : 0;
                             for(sint32 x = 0, i = 0; i < ContentCount; ++x)
                             for(sint32 y = 0; y < StageCount && i < ContentCount; ++y, ++i)
                             {
-                                ZAY_LTRB_SCISSOR(panel, ContentBorder + ContentSize * x - ScrollPos, panel.h() * y / StageCount,
+                                ZAY_LTRB(panel, ContentBorder + ContentSize * x - ScrollPos, panel.h() * y / StageCount,
                                     ContentBorder + ContentSize * (x + 1) - ScrollPos, panel.h() * (y + 1) / StageCount)
                                     if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
                                         RenderErrorBox(panel);
@@ -1253,7 +1253,8 @@ namespace BOSS
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight, renderer);
+                if(0 < VisualText.Length() || !renderer || !renderer->RenderInsider("default", panel))
+                    Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight, renderer);
             }
         }
 
