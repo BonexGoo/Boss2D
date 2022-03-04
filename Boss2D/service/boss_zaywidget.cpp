@@ -241,13 +241,6 @@ namespace BOSS
                 return panel._push_pass();
             });
 
-        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
-            ZAY_DECLARE_COMPONENT(panel, pay)
-            {
-                BOSS_ASSERT("No conditional expression for 'loop'", false);
-                return panel._push_pass();
-            });
-
         interface.AddComponent(ZayExtend::ComponentType::Layout, "ltrb",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
@@ -424,6 +417,19 @@ namespace BOSS
             },
             "[HexColor:#ffffff]#"
             "[OpacityRate:1.0]");
+
+        interface.AddComponent(ZayExtend::ComponentType::Option, "shader",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                if(pay.ParamCount() != 1)
+                    return panel._push_pass();
+                bool HasError = false;
+                auto Shader = pay.ParamToShader(0, HasError);
+                if(!HasError)
+                    return panel._push_shader(Shader);
+                return panel._push_pass();
+            },
+            "[Shader:Normal|Nv21|BlurWeak|BlurMedium|BlurStrong]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "font",
             ZAY_DECLARE_COMPONENT(panel, pay)
@@ -630,7 +636,7 @@ namespace BOSS
             "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "edit_box",
-            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
             {
                 if(pay.ParamCount() != 3 && pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
@@ -656,7 +662,7 @@ namespace BOSS
             "cursor|focus|copying|default");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "button",
-            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
             {
                 if(pay.ParamCount() != 1)
                     return panel._push_pass();
@@ -675,7 +681,7 @@ namespace BOSS
             "normal|focus|press");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "scroll_view",
-            ZAY_DECLARE_COMPONENT(panel, pay, pcb, ViewName)
+            ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
             {
                 if(pay.ParamCount() < 3 || 8 <= pay.ParamCount())
                     return panel._push_pass();
@@ -698,10 +704,11 @@ namespace BOSS
                     public:
                         float mScrollPos {0};
                     };
-                    static Map<ScrollInfo> ScrollInfoMap;
+                    Map<ScrollInfo>* ScrollInfoMap = BOSS_STORAGE(Map<ScrollInfo>);
+
                     auto UIScroll = UIName + ".scroll";
                     float CurScrollRate = 0;
-                    if(auto CurScrollInfo = ScrollInfoMap.Access(UIScroll))
+                    if(auto CurScrollInfo = ScrollInfoMap->Access(UIScroll))
                         CurScrollRate = CurScrollInfo->mScrollPos;
                     const sint32 TotalContentSize = ContentBorder * 2 + ContentSize * ((ContentCount + StageCount - 1) / StageCount);
 
@@ -724,12 +731,12 @@ namespace BOSS
                         if(0 < ScrollBorder)
                         {
                             ZAY_LTRB_UI(panel, panel.w() - ScrollBorder, 0, panel.w(), panel.h(), UIScroll,
-                                ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                                ZAY_GESTURE_VNTXY(v, n, t, x, y, ScrollInfoMap)
                                 {
                                     if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
                                     {
                                         auto CurRect = v->rect(n);
-                                        ScrollInfoMap(n).mScrollPos = Math::ClampF((y - CurRect.t) / float(CurRect.b - CurRect.t), 0, 1);
+                                        (*ScrollInfoMap)(n).mScrollPos = Math::ClampF((y - CurRect.t) / float(CurRect.b - CurRect.t), 0, 1);
                                         v->invalidate();
                                     }
                                 })
@@ -766,12 +773,12 @@ namespace BOSS
                         if(0 < ScrollBorder)
                         {
                             ZAY_LTRB_UI(panel, 0, panel.h() - ScrollBorder, panel.w(), panel.h(), UIScroll,
-                                ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                                ZAY_GESTURE_VNTXY(v, n, t, x, y, ScrollInfoMap)
                                 {
                                     if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
                                     {
                                         auto CurRect = v->rect(n);
-                                        ScrollInfoMap(n).mScrollPos = Math::ClampF((x - CurRect.l) / float(CurRect.r - CurRect.l), 0, 1);
+                                        (*ScrollInfoMap)(n).mScrollPos = Math::ClampF((x - CurRect.l) / float(CurRect.r - CurRect.l), 0, 1);
                                         v->invalidate();
                                     }
                                 })
@@ -801,13 +808,85 @@ namespace BOSS
             "[ContentBorder:0]",
             "scrollbg|scrollbar|content");
 
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithInsider, "back_buffer",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                // 백버퍼정보
+                class BackBufferInfo
+                {
+                public:
+                    BackBufferInfo() {}
+                    ~BackBufferInfo() {Platform::Graphics::RemoveSurface(mSurface);}
+                public:
+                    id_surface mSurface {nullptr};
+                    Image mLastImage;
+                };
+                Map<BackBufferInfo>& BackBufferMap = *BOSS_STORAGE(Map<BackBufferInfo>);
+
+                const String UIName = String::Format("back_buffer_%d", pay.ElementID());
+                hook(BackBufferMap(UIName))
+                {
+                    if(!fish.mSurface ||
+                        Platform::Graphics::GetSurfaceWidth(fish.mSurface) != panel.w() ||
+                        Platform::Graphics::GetSurfaceHeight(fish.mSurface) != panel.h())
+                    {
+                        fish.mSurface = Platform::Graphics::CreateSurface(panel.w(), panel.h());
+                        fish.mLastImage.Clear();
+                    }
+
+                    if(pay.TakeRenderer())
+                    {
+                        if(pay.TakeRenderer()->HasInsider("always"))
+                        {
+                            ZAY_MAKE_SUBPANEL(panel, fish.mSurface)
+                            {
+                                pay.TakeRenderer()->RenderInsider("always", panel);
+                                auto LastBitmap = Platform::Graphics::GetBitmapFromSurface(fish.mSurface);
+                                fish.mLastImage.LoadBitmap(LastBitmap);
+                            }
+                        }
+                        else if(pay.TakeRenderer()->HasInsider("once"))
+                        {
+                            ZAY_MAKE_SUBPANEL_UI(panel, fish.mSurface, UIName)
+                            {
+                                pay.TakeRenderer()->RenderInsider("once", panel);
+                                auto LastBitmap = Platform::Graphics::GetBitmapFromSurface(fish.mSurface);
+                                fish.mLastImage.LoadBitmap(LastBitmap);
+                            }
+                        }
+                        else
+                        {
+                            RenderErrorBox(panel);
+                            return panel._push_pass();
+                        }
+                        const Point PSA[3] = {Point(0, 0), Point(panel.w(), 0), Point(panel.w(), panel.h())};
+                        const Point IPSA[3] = {Point(0, 0), Point(1, 0), Point(1, 1)};
+                        panel.polyimage(PSA, fish.mLastImage, Image::Build::Null, IPSA);
+                        const Point PSB[3] = {Point(panel.w(), panel.h()), Point(0, panel.h()), Point(0, 0)};
+                        const Point IPSB[3] = {Point(1, 1), Point(0, 1), Point(0, 0)};
+                        panel.polyimage(PSB, fish.mLastImage, Image::Build::Null, IPSB);
+                    }
+                    else RenderErrorBox(panel);
+                }
+                return panel._push_pass();
+            },
+            nullptr,
+            "once|always");
+
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "user_content",
-            ZAY_DECLARE_COMPONENT(panel, pay, pcb)
+            ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("Register 'AddComponent' as 'user_content' once more and use it for replacement", false);
                 return panel._push_pass();
             },
             "[According to customization]");
+
+        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                BOSS_ASSERT("No conditional expression for 'loop'", false);
+                return panel._push_pass();
+            });
     }
 
     void ZayWidget::BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)

@@ -184,7 +184,7 @@ protected:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
-        void RenderNameCommentEditor(ZayPanel& panel, chars uiname);
+        void RenderNameCommentEditor(ZayPanel& panel, chars uiname, chars nametype);
     public:
         String mName;
     };

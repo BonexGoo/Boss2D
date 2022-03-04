@@ -1141,7 +1141,7 @@ void ZEZayBox::BodyComment::RenderCommentEditor(ZayPanel& panel, chars uiname)
         if(mComment.Length() == 0)
         {
             ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text("(Write your comment here)", UIFA_LeftMiddle, UIFE_Right);
+                panel.text("(Write your comment)", UIFA_LeftMiddle, UIFE_Right);
         }
         else ZAY_RGB(panel, 0, 128, 0)
             panel.text(mComment, UIFA_LeftMiddle, UIFE_Right);
@@ -1182,7 +1182,7 @@ sint32 ZEZayBox::BodyNameComment::GetCalcedSize(const BodyElement* sub) const
     return EditorHeight;
 }
 
-void ZEZayBox::BodyNameComment::RenderNameCommentEditor(ZayPanel& panel, chars uiname)
+void ZEZayBox::BodyNameComment::RenderNameCommentEditor(ZayPanel& panel, chars uiname, chars nametype)
 {
     ZAY_RGB(panel, 255, 255, 255)
         panel.fill();
@@ -1218,7 +1218,7 @@ void ZEZayBox::BodyNameComment::RenderNameCommentEditor(ZayPanel& panel, chars u
         if(mName.Length() == 0 && mComment.Length() == 0)
         {
             ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text("(Write your name#comment here)", UIFA_LeftMiddle, UIFE_Right);
+                panel.text(String::Format("(Write %s name#comment)", nametype), UIFA_LeftMiddle, UIFE_Right);
         }
         else if(0 < mComment.Length())
         {
@@ -1393,7 +1393,7 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
                     RenderParamComments(panel, uiname, mComments);
             }
             else ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text("(Write your parameter here)", UIFA_LeftMiddle, UIFE_Right);
+                panel.text("(Write your parameter)", UIFA_LeftMiddle, UIFE_Right);
         }
         else ZAY_RGB(panel, 0, 0, 0)
             panel.text(mParams[i], UIFA_LeftMiddle, UIFE_Right);
@@ -2427,7 +2427,7 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
                 // UI명칭주석에디터
                 ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
                 ZAY_INNER(panel, 4)
-                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment, "UI");
 
                 // 파라미터그룹
                 const sint32 ParamGroupHeight = (ParamHeight + 4) * (mParamGroup.mParams.Count() + 1) + 9;
@@ -2615,7 +2615,7 @@ void ZEZayBoxJump::Render(ZayPanel& panel)
                 // 함수명칭주석에디터
                 ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
                 ZAY_INNER(panel, 4)
-                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment, "GATE");
             }
         }
     }
@@ -2692,7 +2692,7 @@ void ZEZayBoxLoop::Render(ZayPanel& panel)
                 // UI명칭주석에디터
                 ZAY_LTRB(panel, 0, 0, panel.w(), EditorHeight)
                 ZAY_INNER(panel, 4)
-                    mNameComment.RenderNameCommentEditor(panel, UINameComment);
+                    mNameComment.RenderNameCommentEditor(panel, UINameComment, "LOOP");
 
                 // 연산에디터
                 ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + EditorHeight)

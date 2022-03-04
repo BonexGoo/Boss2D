@@ -479,7 +479,7 @@ ZEFakeZaySon::ZEFakeZaySon()
                 NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::None, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
             case ZayExtend::ComponentType::ContentWithInsider:
-                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, false, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
             case ZayExtend::ComponentType::ContentWithParamAndInsider:
                 NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, true, CurComponent->mParamComments, CurComponent->mInsideSamples);

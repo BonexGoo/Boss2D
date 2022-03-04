@@ -324,6 +324,7 @@ namespace BOSS
         m_stack_scissor.AtAdding() = Rect(0, 0, m_width, m_height);
         m_stack_color.AtAdding() = Color(Color::ColoringDefault);
         m_stack_mask.AtAdding() = MR_Default;
+        m_stack_shader.AtAdding() = SR_Normal;
         m_stack_font.AtAdding();
         m_stack_zoom.AtAdding() = 1;
 
@@ -376,6 +377,7 @@ namespace BOSS
             m_stack_scissor.AtAdding() = Rect(0, 0, m_width, m_height);
             m_stack_color.AtAdding() = Color(Color::ColoringDefault);
             m_stack_mask.AtAdding() = MR_Default;
+            m_stack_shader.AtAdding() = SR_Normal;
             m_stack_font.AtAdding();
             m_stack_zoom.AtAdding() = 1;
 
@@ -896,29 +898,32 @@ namespace BOSS
         return UsedElide;
     }
 
-    void ZayPanel::sub(chars uigroup, id_surface surface) const
+    void ZayPanel::subpanel(id_surface surface, chars uigroup) const
     {
-        auto CurCollector = TouchCollector::ST(uigroup);
-        bool DirtyTest = CurCollector->mDirty;
-        if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
+        if(uigroup)
         {
-            const Clip& LastClip = m_stack_clip[-1];
-            const float& LastZoom = m_stack_zoom[-1];
-            const float HRate = LastClip.Width() / CurCollector->mWidth;
-            const float VRate = LastClip.Height() / CurCollector->mHeight;
-            for(sint32 i = 0, iend = CurCollector->mTouchRects.Count(); i < iend; ++i)
+            auto CurCollector = TouchCollector::ST(uigroup);
+            bool DirtyTest = CurCollector->mDirty;
+            if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
             {
-                const TouchRect& CurTouchRect = CurCollector->mTouchRects[i].ConstValue();
-                CurTouch->update(CurTouchRect.mName,
-                    LastClip.l + CurTouchRect.mL * CurTouchRect.mZoom * HRate,
-                    LastClip.t + CurTouchRect.mT * CurTouchRect.mZoom * VRate,
-                    LastClip.l + CurTouchRect.mR * CurTouchRect.mZoom * HRate,
-                    LastClip.t + CurTouchRect.mB * CurTouchRect.mZoom * VRate,
-                    LastZoom, CurTouchRect.mCB, CurTouchRect.mScrollSence, CurTouchRect.mHoverPass, &DirtyTest);
+                const Clip& LastClip = m_stack_clip[-1];
+                const float& LastZoom = m_stack_zoom[-1];
+                const float HRate = LastClip.Width() / CurCollector->mWidth;
+                const float VRate = LastClip.Height() / CurCollector->mHeight;
+                for(sint32 i = 0, iend = CurCollector->mTouchRects.Count(); i < iend; ++i)
+                {
+                    const TouchRect& CurTouchRect = CurCollector->mTouchRects[i].ConstValue();
+                    CurTouch->update(CurTouchRect.mName,
+                        LastClip.l + CurTouchRect.mL * CurTouchRect.mZoom * HRate,
+                        LastClip.t + CurTouchRect.mT * CurTouchRect.mZoom * VRate,
+                        LastClip.l + CurTouchRect.mR * CurTouchRect.mZoom * HRate,
+                        LastClip.t + CurTouchRect.mB * CurTouchRect.mZoom * VRate,
+                        LastZoom, CurTouchRect.mCB, CurTouchRect.mScrollSence, CurTouchRect.mHoverPass, &DirtyTest);
+                }
             }
+            CurCollector->mRefTouch = m_ref_touch;
+            CurCollector->mDirty = DirtyTest;
         }
-        CurCollector->mRefTouch = m_ref_touch;
-        CurCollector->mDirty = DirtyTest;
 
         if(surface)
         {
@@ -929,8 +934,19 @@ namespace BOSS
             const float YRate = LastClip.Height() / SurfaceHeight;
             const sint32 DstWidth = (sint32) (SurfaceWidth * XRate);
             const sint32 DstHeight = (sint32) (SurfaceHeight * YRate);
-            Platform::Graphics::DrawSurfaceToFBO(surface, 0, 0, SurfaceWidth, SurfaceHeight,
-                orientationtype_normal0, false, LastClip.l, LastClip.t, DstWidth, DstHeight, fbo());
+            // FBO에서 FBO로 랜더링 ===> 현재 정상적인 출력이 안됨!!!
+            if(auto CurFBO = fbo())
+            {
+                if(Platform::Graphics::BeginGL())
+                {
+                    Platform::Graphics::DrawSurfaceToFBO(surface, 0, 0, SurfaceWidth, SurfaceHeight,
+                        orientationtype_normal0, false, LastClip.l, LastClip.t, DstWidth, DstHeight, Color::White, CurFBO);
+                    Platform::Graphics::EndGL();
+                }
+            }
+            // FBO에서 화면으로 랜더링
+            else Platform::Graphics::DrawSurface(surface, 0, 0, SurfaceWidth, SurfaceHeight,
+                LastClip.l, LastClip.t, DstWidth, DstHeight);
         }
     }
 
@@ -1167,13 +1183,22 @@ namespace BOSS
         return StackBinder(this, ST_Color);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_mask(MaskRole role)
+    ZayPanel::StackBinder ZayPanel::_push_mask(MaskRole mask)
     {
         MaskRole& NewMask = m_stack_mask.AtAdding();
-        NewMask = role;
+        NewMask = mask;
 
         Platform::Graphics::SetMask(NewMask);
         return StackBinder(this, ST_Mask);
+    }
+
+    ZayPanel::StackBinder ZayPanel::_push_shader(ShaderRole shader)
+    {
+        ShaderRole& NewShader = m_stack_shader.AtAdding();
+        NewShader = shader;
+
+        Platform::Graphics::SetShader(NewShader);
+        return StackBinder(this, ST_Shader);
     }
 
     ZayPanel::StackBinder ZayPanel::_push_sysfont(float size, chars name)
@@ -1281,6 +1306,15 @@ namespace BOSS
 
         const MaskRole& LastMask = m_stack_mask[-1];
         Platform::Graphics::SetMask(LastMask);
+    }
+
+    void ZayPanel::_pop_shader()
+    {
+        BOSS_ASSERT("Pop할 잔여스택이 없습니다", 1 < m_stack_shader.Count());
+        m_stack_shader.SubtractionOne();
+
+        const ShaderRole& LastShader = m_stack_shader[-1];
+        Platform::Graphics::SetShader(LastShader);
     }
 
     void ZayPanel::_pop_font()
@@ -1435,6 +1469,11 @@ namespace BOSS
         return mUIName;
     }
 
+    sint32 ZayExtend::Payload::ElementID() const
+    {
+        return mElementID;
+    }
+
     ZayPanel::SubGestureCB ZayExtend::Payload::MakeGesture() const
     {
         auto ElementID = mElementID;
@@ -1575,6 +1614,22 @@ namespace BOSS
         jump(!Result.CompareNoCase("Right")) return UIFE_Right;
         error = true;
         return UIFE_None;
+    }
+
+    ShaderRole ZayExtend::Payload::ParamToShader(sint32 i, bool& error) const
+    {
+        String Result = mParams[i].ToText();
+        if(!String::CompareNoCase(Result, "SR_", 3))
+            Result = Result.Right(Result.Length() - 3);
+
+        branch;
+        jump(!Result.CompareNoCase("Normal")) return SR_Normal;
+        jump(!Result.CompareNoCase("Nv21")) return SR_Nv21;
+        jump(!Result.CompareNoCase("BlurWeak")) return SR_BlurWeak;
+        jump(!Result.CompareNoCase("BlurMedium")) return SR_BlurMedium;
+        jump(!Result.CompareNoCase("BlurStrong")) return SR_BlurStrong;
+        error = true;
+        return SR_Normal;
     }
 
     const ZayExtend::Renderer* ZayExtend::Payload::TakeRenderer() const

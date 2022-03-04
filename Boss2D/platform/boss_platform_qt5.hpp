@@ -2408,24 +2408,26 @@
         }
         void InitAllShaders(bool es)
         {
+            chars VSourceNormal = "#version %s\n"
+                "layout (location = %d) in highp vec2 a_position;\n"
+                "layout (location = %d) in highp vec4 a_color;\n"
+                "layout (location = %d) in highp vec2 a_texcoord;\n"
+                "uniform highp mat4 u_matrix;\n"
+                "uniform highp vec2 u_resolution;\n"
+                "out mediump vec4 v_fragmentColor;\n"
+                "out mediump vec2 v_texCoord;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
+                "    v_fragmentColor = a_color;\n"
+                "    v_texCoord = a_texcoord;\n"
+                "}";
+
             chars VersionCode = (es)? "300 es" : "330 core";
             InitShader(SR_Normal,
-                String::Format(
-                    "#version %s\n"
-                    "layout (location = %d) in highp vec2 a_position;\n"
-                    "layout (location = %d) in highp vec4 a_color;\n"
-                    "layout (location = %d) in highp vec2 a_texcoord;\n"
-                    "uniform highp mat4 u_matrix;\n"
-                    "uniform highp vec2 u_resolution;\n"
-                    "out mediump vec4 v_fragmentColor;\n"
-                    "out mediump vec2 v_texCoord;\n"
-                    "\n"
-                    "void main()\n"
-                    "{\n"
-                    "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
-                    "    v_fragmentColor = a_color;\n"
-                    "    v_texCoord = a_texcoord;\n"
-                    "}", VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
+                String::Format(VSourceNormal,
+                    VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
                 String::Format(
                     "#version %s\n"
                     "layout (location = 0) out highp vec4 oColour;\n"
@@ -2480,53 +2482,53 @@
                     "    oColour = v_fragmentColor * vec4(r, g, b, 1.0);\n"
                     "}", VersionCode));
 
-            InitShader(SR_Blur,
-                String::Format(
-                    "#version %s\n"
-                    "layout (location = %d) in highp vec2 a_position;\n"
-                    "layout (location = %d) in highp vec4 a_color;\n"
-                    "layout (location = %d) in highp vec2 a_texcoord;\n"
-                    "uniform highp mat4 u_matrix;\n"
-                    "uniform highp vec2 u_resolution;\n"
-                    "out mediump vec4 v_fragmentColor;\n"
-                    "out mediump vec2 v_texCoord;\n"
-                    "\n"
-                    "void main()\n"
-                    "{\n"
-                    "    gl_Position = u_matrix * vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
-                    "    v_fragmentColor = a_color;\n"
-                    "    v_texCoord = a_texcoord;\n"
-                    "}", VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
-                String::Format(
-                    "#version %s\n"
-                    "layout (location = 0) out highp vec4 oColour;\n"
-                    "uniform highp mat4 u_matrix;\n"
-                    "uniform highp vec2 u_resolution;\n"
-                    "uniform highp sampler2D u_texture;\n"
-                    "in mediump vec4 v_fragmentColor;\n"
-                    "in mediump vec2 v_texCoord;\n"
-                    "\n"
-                    "void main()\n"
-                    "{\n"
-                    "    float Pi2 = 6.28318530718;\n"
-                    "    float Direction = %lf;\n"
-                    "    float Quality = %lf;\n"
-                    "    vec2 Radius = %lf / u_resolution.xy;\n"
-                    "    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
-                    "    float SumRate = 1.0;\n"
-                    "    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
-                    "    {\n"
-                    "        for(float i = 1.0 / Quality; i < 1.0; i += 1.0 / Quality)\n"
-                    "        {\n"
-                    "            Sum += texture2D(u_texture, v_texCoord + vec2(cos(d), sin(d)) * Radius * i) * (1.0 - i);\n"
-                    "            SumRate += 1.0 - i;\n"
-                    "        }\n"
-                    "    }\n"
-                    "    oColour = v_fragmentColor * (Sum / SumRate);\n"
-                    "}", VersionCode, 128.0, 32.0, 64.0));
-                    // 약-블러 : 8.0, 2.0, 4.0 // 8 x 2 = 16회 반복
-                    // 중-블러 : 16.0, 4.0, 8.0 // 16 x 4 = 64회 반복
-                    // 강-블러 : 128.0, 32.0, 64.0 // 128 x 32 = 4096회 반복
+            chars FSourceBlur = "#version %s\n"
+                "layout (location = 0) out highp vec4 oColour;\n"
+                "uniform highp mat4 u_matrix;\n"
+                "uniform highp vec2 u_resolution;\n"
+                "uniform highp sampler2D u_texture;\n"
+                "in mediump vec4 v_fragmentColor;\n"
+                "in mediump vec2 v_texCoord;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "    float Pi2 = 6.28318530718;\n"
+                "    float Direction = %lf;\n"
+                "    float Quality = %lf;\n"
+                "    vec2 Radius = %lf / u_resolution.xy;\n"
+                "    vec4 Sum = texture2D(u_texture, v_texCoord);\n"
+                "    float SumRate = 1.0;\n"
+                "    for(float d = 0.0; d < Pi2; d += Pi2 / Direction)\n"
+                "    {\n"
+                "        for(float i = 1.0 / Quality; i < 1.0; i += 1.0 / Quality)\n"
+                "        {\n"
+                "            Sum += texture2D(u_texture, v_texCoord + vec2(cos(d), sin(d)) * Radius * i) * (1.0 - i);\n"
+                "            SumRate += 1.0 - i;\n"
+                "        }\n"
+                "    }\n"
+                "    oColour = v_fragmentColor * (Sum / SumRate);\n"
+                "}";
+
+            // 약-블러 : 8.0, 2.0, 4.0 // 8 x 2 = 16회 반복
+            InitShader(SR_BlurWeak,
+                String::Format(VSourceNormal,
+                    VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
+                String::Format(FSourceBlur,
+                    VersionCode, 8.0, 2.0, 4.0));
+
+            // 중-블러 : 16.0, 4.0, 8.0 // 16 x 4 = 64회 반복
+            InitShader(SR_BlurMedium,
+                String::Format(VSourceNormal,
+                    VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
+                String::Format(FSourceBlur,
+                    VersionCode, 16.0, 4.0, 8.0));
+
+            // 강-블러 : 128.0, 32.0, 64.0 // 128 x 32 = 4096회 반복
+            InitShader(SR_BlurStrong,
+                String::Format(VSourceNormal,
+                    VersionCode, AttribID::Vertice, AttribID::Color, AttribID::TexCoords),
+                String::Format(FSourceBlur,
+                    VersionCode, 128.0, 32.0, 64.0));
         }
         void TermShader()
         {

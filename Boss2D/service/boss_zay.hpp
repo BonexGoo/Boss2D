@@ -123,6 +123,8 @@
 // 옵션스택 - 기타
 #define ZAY_MASK(PANEL, MASK) \
     if(auto _ = (PANEL)._push_mask(MASK))
+#define ZAY_SHADER(PANEL, SHADER) \
+    if(auto _ = (PANEL)._push_shader(SHADER))
 #define ZAY_FONT(PANEL, ...) \
     if(auto _ = (PANEL)._push_sysfont(__VA_ARGS__))
 #define ZAY_FREEFONT(PANEL, ...) \
@@ -142,14 +144,14 @@
 #define ZAY_DECLARE_GLUE(PAY, ...)             [__VA_ARGS__](const ZayExtend::Payload& PAY)->void
 
 // 서브패널
-#define ZAY_MAKE_SUB(PANEL, SURFACE) \
+#define ZAY_MAKE_SUBPANEL(PANEL, SURFACE) \
     for(ZayPanel PANEL(SURFACE, Platform::Graphics::GetSurfaceWidth(SURFACE), Platform::Graphics::GetSurfaceHeight(SURFACE)); (PANEL)._is_dirty(); (PANEL)._clear_me())
-#define ZAY_MAKE_SUB_UI(PANEL, SURFACE, NAME) \
-    for(ZayPanel PANEL(SURFACE, Platform::Graphics::GetSurfaceWidth(SURFACE), Platform::Graphics::GetSurfaceHeight(SURFACE), NAME); (PANEL)._is_dirty(); (PANEL)._clear_me())
-#define ZAY_MAKE_SUB_WH(PANEL, SURFACE, W, H) \
+#define ZAY_MAKE_SUBPANEL_UI(PANEL, SURFACE, UIGROUP) \
+    for(ZayPanel PANEL(SURFACE, Platform::Graphics::GetSurfaceWidth(SURFACE), Platform::Graphics::GetSurfaceHeight(SURFACE), UIGROUP); (PANEL)._is_dirty(); (PANEL)._clear_me())
+#define ZAY_MAKE_SUBPANEL_WH(PANEL, SURFACE, W, H) \
     for(ZayPanel PANEL(SURFACE, W, H); (PANEL)._is_dirty(); (PANEL)._clear_me())
-#define ZAY_MAKE_SUB_UI_WH(PANEL, SURFACE, NAME, W, H) \
-    for(ZayPanel PANEL(SURFACE, W, H, NAME); (PANEL)._is_dirty(); (PANEL)._clear_me())
+#define ZAY_MAKE_SUBPANEL_UI_WH(PANEL, SURFACE, UIGROUP, W, H) \
+    for(ZayPanel PANEL(SURFACE, W, H, UIGROUP); (PANEL)._is_dirty(); (PANEL)._clear_me())
 
 // 뷰등록
 #define ZAY_VIEW_API static void
@@ -372,7 +374,7 @@ namespace BOSS
         void text(float x, float y, chars string, UIFontAlign align = UIFA_CenterMiddle) const; // 중점식
         void text(float x, float y, chars string, sint32 count, UIFontAlign align = UIFA_CenterMiddle) const; // 중점식
         bool textbox(chars string, sint32 linegap, UIAlign align) const;
-        void sub(chars uigroup, id_surface surface) const;
+        void subpanel(id_surface surface = nullptr, chars uigroup = nullptr) const;
         PanelState state(chars uiname = nullptr) const;
         Point toview(float x, float y) const;
         void test(UITestOrder order);
@@ -395,7 +397,7 @@ namespace BOSS
         {return m_stack_clip[0].Height();}
 
     public:
-        enum StackType {ST_Null, ST_Pass, ST_Clip, ST_Color, ST_Mask, ST_Font, ST_Zoom};
+        enum StackType {ST_Null, ST_Pass, ST_Clip, ST_Color, ST_Mask, ST_Shader, ST_Font, ST_Zoom};
         class StackBinder
         {
             BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(StackBinder, mPanel(rhs.mPanel))
@@ -410,6 +412,7 @@ namespace BOSS
                 case ST_Clip: mPanel->_pop_clip(); break;
                 case ST_Color: mPanel->_pop_color(); break;
                 case ST_Mask: mPanel->_pop_mask(); break;
+                case ST_Shader: mPanel->_pop_shader(); break;
                 case ST_Font: mPanel->_pop_font(); break;
                 case ST_Zoom: mPanel->_pop_zoom(); break;
                 }
@@ -434,7 +437,8 @@ namespace BOSS
         StackBinder _push_color(sint32 r, sint32 g, sint32 b, sint32 a);
         StackBinder _push_color(const Color& color);
         StackBinder _push_color_clear();
-        StackBinder _push_mask(MaskRole role);
+        StackBinder _push_mask(MaskRole mask);
+        StackBinder _push_shader(ShaderRole shader);
         StackBinder _push_sysfont(float size, chars name = nullptr);
         StackBinder _push_freefont(sint32 height, chars nickname = nullptr);
         StackBinder _push_zoom(float zoom);
@@ -445,6 +449,7 @@ namespace BOSS
         void _pop_clip();
         void _pop_color();
         void _pop_mask();
+        void _pop_shader();
         void _pop_font();
         void _pop_zoom();
         void _add_ui(chars uiname, SubGestureCB cb, sint32 scrollsense, bool hoverpass);
@@ -471,6 +476,7 @@ namespace BOSS
         Rects m_stack_scissor;
         Colors m_stack_color;
         Array<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
+        Array<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
         Fonts m_stack_font;
         floats m_stack_zoom;
 
@@ -499,6 +505,7 @@ namespace BOSS
         class Renderer
         {
         public:
+            virtual bool HasInsider(chars name) const = 0;
             virtual bool RenderInsider(chars name, ZayPanel& panel, sint32 pv = -1) const = 0;
         };
 
@@ -521,6 +528,7 @@ namespace BOSS
 
         public:
             chars UIName() const;
+            sint32 ElementID() const;
             ZayPanel::SubGestureCB MakeGesture() const;
             sint32 ParamCount() const;
             const SolverValue& Param(sint32 i) const;
@@ -530,6 +538,7 @@ namespace BOSS
             UIStretchForm ParamToUIStretchForm(sint32 i, bool& error) const;
             UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
+            ShaderRole ParamToShader(sint32 i, bool& error) const;
             const Renderer* TakeRenderer() const;
 
         private:

@@ -1017,6 +1017,16 @@ namespace BOSS
         }
 
     public: // ZayExtend::Renderer 구현부
+        bool HasInsider(chars name) const override
+        {
+            for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
+            {
+                auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
+                if(!CurInsider->mName.Compare(name))
+                    return true;
+            }
+            return false;
+        }
         bool RenderInsider(chars name, ZayPanel& panel, sint32 pv) const override
         {
             // 디버깅 정보수집
