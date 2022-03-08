@@ -494,10 +494,10 @@ ZEFakeZaySon::ZEFakeZaySon()
                 NewZayBox = ZEZayBoxCode::Create();
                 break;
             case ZayExtend::ComponentType::JumpCall:
-                NewZayBox = ZEZayBoxJump::Create(false);
+                NewZayBox = ZEZayBoxJumpOrGate::Create(false);
                 break;
             case ZayExtend::ComponentType::JumpMethod:
-                NewZayBox = ZEZayBoxJump::Create(true);
+                NewZayBox = ZEZayBoxJumpOrGate::Create(true);
                 break;
             case ZayExtend::ComponentType::Loop:
                 NewZayBox = ZEZayBoxLoop::Create();

@@ -175,6 +175,11 @@ chars ZEZayBox::GetComment() const
     return "error";
 }
 
+void ZEZayBox::OnClickMode()
+{
+    BOSS_ASSERT("잘못된 시나리오입니다", false);
+}
+
 Point ZEZayBox::GetBallPos(sint32 group) const
 {
     BOSS_ASSERT("잘못된 시나리오입니다", group == 0);
@@ -1535,6 +1540,11 @@ void ZEZayBox::BodyInputGroup::SubValue(sint32 i)
     mBox.RecalcSize();
 }
 
+void ZEZayBox::BodyInputGroup::TurnClickMode()
+{
+    mBox.OnClickMode();
+}
+
 void ZEZayBox::BodyInputGroup::ReadJson(const Context& json)
 {
     mInputs.Clear();
@@ -1577,7 +1587,7 @@ sint32 ZEZayBox::BodyInputGroup::GetCalcedSize(const BodyElement* sub) const
     return (ValueHeight + 4) * (mInputs.Count() + 1 + ((sub)? ((const BodyInputGroup*) sub)->mInputs.Count() : 0)) + 9;
 }
 
-void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub)
+void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub, bool showmode)
 {
     ZAY_INNER_SCISSOR(panel, 3)
     ZAY_INNER(panel, 1)
@@ -1592,8 +1602,35 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, Bod
                 {
                     if(i == iend)
                     {
-                        ZAY_RGB(panel, 0, 0, 0)
-                            panel.text(name, UIFA_LeftBottom);
+                        const sint32 NameWidth = Platform::Graphics::GetStringWidth(name) + 2;
+                        const sint32 NameHeight = Platform::Graphics::GetStringHeight() + 1;
+                        ZAY_XYWH(panel, 1, (panel.h() - NameHeight) / 2, NameWidth, NameHeight)
+                        {
+                            if(showmode)
+                            {
+                                const String UIClickMode = String::Format("%d-click-mode", mBox.mID);
+                                const bool IsFocused = ((panel.state(UIClickMode) & (PS_Focused | PS_Dropping)) == PS_Focused);
+                                const bool IsPressed = ((panel.state(UIClickMode) & (PS_Pressed | PS_Dragging)) != 0);
+                                if(IsFocused)
+                                {
+                                    ZAY_RGBA(panel, 0, 0, 0, 16)
+                                        panel.fill();
+                                    ZAY_RGBA(panel, 0, 0, 0, 64)
+                                        panel.rect(1);
+                                }
+                                ZAY_INNER_UI(panel, 0, UIClickMode,
+                                    ZAY_GESTURE_T(t, sub)
+                                    {
+                                        if(t == GT_InReleased && sub)
+                                            sub->TurnClickMode();
+                                    })
+                                ZAY_MOVE_IF(panel, 1, 1, IsPressed)
+                                ZAY_RGB(panel, 0, 0, 0)
+                                    panel.text(name, UIFA_CenterMiddle);
+                            }
+                            else ZAY_RGB(panel, 0, 0, 0)
+                                panel.text(name, UIFA_CenterMiddle);
+                        }
 
                         // 밸류 추가버튼
                         const String UIValueAdd = String::Format("%d-value-add", mBox.mID);
@@ -1654,8 +1691,8 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, Bod
                     {
                         if(i < sub->mInputs.Count())
                         {
-                            const String UIValue = String::Format("%d-extvalue-%d", mBox.mID, i);
-                            sub->RenderValueEditor(panel, UIValue, i, 1);
+                            const String UIValueExt = String::Format("%d-extvalue-%d", mBox.mID, i);
+                            sub->RenderValueEditor(panel, UIValueExt, i, 1);
                         }
                         else
                         {
@@ -2364,6 +2401,7 @@ Point ZEZayBoxContent::GetBallPos(sint32 group) const
 ////////////////////////////////////////////////////////////////////////////////
 ZEZayBoxLayout::ZEZayBoxLayout() : mNameComment(*this), mParamGroup(*this), mTouchGroup(*this), mClickGroup(*this)
 {
+    mClickMode = ClickMode::Click;
 }
 
 ZEZayBoxLayout::~ZEZayBoxLayout()
@@ -2375,6 +2413,7 @@ ZEZayBoxObject ZEZayBoxLayout::Create(chars comments)
     buffer NewZayBox = Buffer::Alloc<ZEZayBoxLayout>(BOSS_DBG 1);
     ((ZEZayBoxLayout*) NewZayBox)->mParamGroup.AddParam("");
     ((ZEZayBoxLayout*) NewZayBox)->mParamGroup.mComments = comments;
+    ((ZEZayBoxLayout*) NewZayBox)->mClickMode = ClickMode::Click;
     return ZEZayBoxObject(NewZayBox);
 }
 
@@ -2387,6 +2426,19 @@ void ZEZayBoxLayout::ReadJson(const Context& json)
     mParamGroup.ReadJson(json("compvalues"));
     mTouchGroup.ReadJson(json("ontouch"));
     mClickGroup.ReadJson(json("onclick"));
+
+    if(0 < mTouchGroup.mInputs.Count())
+        mClickMode = ClickMode::Touch;
+    else
+    {
+        auto ClickType = json("clicktype").GetText("Click");
+        branch;
+        jump(!ClickType.CompareNoCase("Click")) mClickMode = ClickMode::Click;
+        jump(!ClickType.CompareNoCase("Click_DoubleClick")) mClickMode = ClickMode::Click_DoubleClick;
+        jump(!ClickType.CompareNoCase("Click_LongPress")) mClickMode = ClickMode::Click_LongPress;
+        jump(!ClickType.CompareNoCase("Click_DoubleClick_LongPress")) mClickMode = ClickMode::Click_DoubleClick_LongPress;
+        else mClickMode = ClickMode::Error;
+    }
 }
 
 void ZEZayBoxLayout::WriteJson(Context& json, bool makeid) const
@@ -2405,6 +2457,17 @@ void ZEZayBoxLayout::WriteJson(Context& json, bool makeid) const
         mTouchGroup.WriteJson(json.At("ontouch"), makeid);
     if(0 < mClickGroup.mInputs.Count())
         mClickGroup.WriteJson(json.At("onclick"), makeid);
+
+    // Touch가 아닐때만
+    if(mTouchGroup.mInputs.Count() == 0)
+    {
+        // 기본 Click일때는 생략
+        branch;
+        jump(mClickMode == ClickMode::Click_DoubleClick) json.At("clicktype").Set("Click_DoubleClick");
+        jump(mClickMode == ClickMode::Click_LongPress) json.At("clicktype").Set("Click_LongPress");
+        jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) json.At("clicktype").Set("Click_DoubleClick_LongPress");
+        jump(mClickMode == ClickMode::Error) json.At("clicktype").Set("Error");
+    }
 }
 
 void ZEZayBoxLayout::Render(ZayPanel& panel)
@@ -2436,7 +2499,21 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 
                 // 인풋그룹
                 ZAY_LTRB(panel, 0, EditorHeight + ParamGroupHeight, panel.w(), panel.h())
-                    mClickGroup.RenderValueGroup(panel, "OnClick", &mTouchGroup);
+                {
+                    branch;
+                    jump(mClickMode == ClickMode::Click)
+                        mClickGroup.RenderValueGroup(panel, "OnClick", &mTouchGroup, true);
+                    jump(mClickMode == ClickMode::Click_DoubleClick)
+                        mClickGroup.RenderValueGroup(panel, "OnClick/D", &mTouchGroup, true);
+                    jump(mClickMode == ClickMode::Click_LongPress)
+                        mClickGroup.RenderValueGroup(panel, "OnClick/L", &mTouchGroup, true);
+                    jump(mClickMode == ClickMode::Click_DoubleClick_LongPress)
+                        mClickGroup.RenderValueGroup(panel, "OnClick/D/L", &mTouchGroup, true);
+                    jump(mClickMode == ClickMode::Touch)
+                        mClickGroup.RenderValueGroup(panel, "OnTouch", &mTouchGroup);
+                    jump(mClickMode == ClickMode::Error)
+                        mClickGroup.RenderValueGroup(panel, "Error", &mTouchGroup);
+                }
             }
         }
     }
@@ -2445,6 +2522,12 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
 void ZEZayBoxLayout::RecalcSize()
 {
     mBodySize.h = 8 + mNameComment.GetCalcedSize() + mParamGroup.GetCalcedSize() + mClickGroup.GetCalcedSize(&mTouchGroup);
+
+    // ClickMode업데이트
+    if(0 < mTouchGroup.mInputs.Count())
+        mClickMode = ClickMode::Touch;
+    else if(mClickMode == ClickMode::Touch)
+        mClickMode = ClickMode::Click;
 }
 
 void ZEZayBoxLayout::SubParam(sint32 i)
@@ -2465,6 +2548,15 @@ void ZEZayBoxLayout::SubExtInput(sint32 i)
 chars ZEZayBoxLayout::GetComment() const
 {
     return mNameComment.mComment;
+}
+
+void ZEZayBoxLayout::OnClickMode()
+{
+    branch;
+    jump(mClickMode == ClickMode::Click) mClickMode = ClickMode::Click_DoubleClick;
+    jump(mClickMode == ClickMode::Click_DoubleClick) mClickMode = ClickMode::Click_LongPress;
+    jump(mClickMode == ClickMode::Click_LongPress) mClickMode = ClickMode::Click_DoubleClick_LongPress;
+    jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) mClickMode = ClickMode::Click;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2555,25 +2647,25 @@ chars ZEZayBoxCode::GetComment() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ZEZayBoxJump
+// ZEZayBoxJumpOrGate
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxJump::ZEZayBoxJump() : mNameComment(*this)
+ZEZayBoxJumpOrGate::ZEZayBoxJumpOrGate() : mNameComment(*this)
 {
     mIsGate = false;
 }
 
-ZEZayBoxJump::~ZEZayBoxJump()
+ZEZayBoxJumpOrGate::~ZEZayBoxJumpOrGate()
 {
 }
 
-ZEZayBoxObject ZEZayBoxJump::Create(bool gate)
+ZEZayBoxObject ZEZayBoxJumpOrGate::Create(bool gate)
 {
-    buffer NewZayBox = Buffer::Alloc<ZEZayBoxJump>(BOSS_DBG 1);
-    ((ZEZayBoxJump*) NewZayBox)->mIsGate = gate;
+    buffer NewZayBox = Buffer::Alloc<ZEZayBoxJumpOrGate>(BOSS_DBG 1);
+    ((ZEZayBoxJumpOrGate*) NewZayBox)->mIsGate = gate;
     return ZEZayBoxObject(NewZayBox);
 }
 
-void ZEZayBoxJump::ReadJson(const Context& json)
+void ZEZayBoxJumpOrGate::ReadJson(const Context& json)
 {
     if(json("compid").HasValue())
         mCompID = ValidLastID(json("compid").GetInt());
@@ -2582,7 +2674,7 @@ void ZEZayBoxJump::ReadJson(const Context& json)
     mIsGate = (!String::Compare(mCompType, "gate", 4));
 }
 
-void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
+void ZEZayBoxJumpOrGate::WriteJson(Context& json, bool makeid) const
 {
     String OneType = mCompType;
     const sint32 Pos = OneType.Find(0, ' ');
@@ -2595,7 +2687,7 @@ void ZEZayBoxJump::WriteJson(Context& json, bool makeid) const
     mNameComment.WriteJson(json, makeid);
 }
 
-void ZEZayBoxJump::Render(ZayPanel& panel)
+void ZEZayBoxJumpOrGate::Render(ZayPanel& panel)
 {
     const String UIBody = String::Format("%d-body", mID);
     const String UINameComment = String::Format("%d-namecomment", mID);
@@ -2621,12 +2713,12 @@ void ZEZayBoxJump::Render(ZayPanel& panel)
     }
 }
 
-void ZEZayBoxJump::RecalcSize()
+void ZEZayBoxJumpOrGate::RecalcSize()
 {
     mBodySize.h = 8 + mNameComment.GetCalcedSize();
 }
 
-chars ZEZayBoxJump::GetComment() const
+chars ZEZayBoxJumpOrGate::GetComment() const
 {
     return mNameComment.mComment;
 }
@@ -2792,6 +2884,7 @@ void ZEZayBoxCondition::RecalcSize()
 ////////////////////////////////////////////////////////////////////////////////
 ZEZayBoxError::ZEZayBoxError() : mNameComment(*this), mParamGroup(*this), mTouchGroup(*this), mClickGroup(*this)
 {
+    mClickMode = ClickMode::Click;
 }
 
 ZEZayBoxError::~ZEZayBoxError()
@@ -2813,6 +2906,19 @@ void ZEZayBoxError::ReadJson(const Context& json)
     mParamGroup.ReadJson(json("compvalues"));
     mTouchGroup.ReadJson(json("ontouch"));
     mClickGroup.ReadJson(json("onclick"));
+
+    if(0 < mTouchGroup.mInputs.Count())
+        mClickMode = ClickMode::Touch;
+    else
+    {
+        auto ClickType = json("clicktype").GetText("Click");
+        branch;
+        jump(!ClickType.CompareNoCase("Click")) mClickMode = ClickMode::Click;
+        jump(!ClickType.CompareNoCase("Click_DoubleClick")) mClickMode = ClickMode::Click_DoubleClick;
+        jump(!ClickType.CompareNoCase("Click_LongPress")) mClickMode = ClickMode::Click_LongPress;
+        jump(!ClickType.CompareNoCase("Click_DoubleClick_LongPress")) mClickMode = ClickMode::Click_DoubleClick_LongPress;
+        else mClickMode = ClickMode::Error;
+    }
 }
 
 void ZEZayBoxError::WriteJson(Context& json, bool makeid) const
@@ -2828,6 +2934,17 @@ void ZEZayBoxError::WriteJson(Context& json, bool makeid) const
         mTouchGroup.WriteJson(json.At("ontouch"), makeid);
     if(0 < mClickGroup.mInputs.Count())
         mClickGroup.WriteJson(json.At("onclick"), makeid);
+
+    // Touch가 아닐때만
+    if(mTouchGroup.mInputs.Count() == 0)
+    {
+        // 기본 Click일때는 생략
+        branch;
+        jump(mClickMode == ClickMode::Click_DoubleClick) json.At("clicktype").Set("Click_DoubleClick");
+        jump(mClickMode == ClickMode::Click_LongPress) json.At("clicktype").Set("Click_LongPress");
+        jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) json.At("clicktype").Set("Click_DoubleClick_LongPress");
+        jump(mClickMode == ClickMode::Error) json.At("clicktype").Set("Error");
+    }
 }
 
 void ZEZayBoxError::Render(ZayPanel& panel)

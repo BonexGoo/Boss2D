@@ -12,6 +12,7 @@ class ZEZayBox
 {
 public:
     enum class ChildType {None, Inner, Insider};
+    enum class ClickMode {Click, Click_DoubleClick, Click_LongPress, Click_DoubleClick_LongPress, Touch, Error};
     typedef std::function<ZEZayBoxObject(chars compname)> CreatorCB;
 
 public:
@@ -43,6 +44,7 @@ public:
     virtual void SubExtInput(sint32 i);
     virtual void SubInsiderBall(sint32 group);
     virtual chars GetComment() const;
+    virtual void OnClickMode();
     virtual Point GetBallPos(sint32 group) const;
 
 public:
@@ -224,11 +226,12 @@ protected:
     public:
         void AddValue(chars key, chars value);
         void SubValue(sint32 i);
+        void TurnClickMode();
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
-        void RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub = nullptr);
+        void RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub = nullptr, bool showmode = false);
         void RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i, sint32 extmode);
     public:
         class Input
@@ -388,12 +391,14 @@ public:
     void SubInput(sint32 i) override;
     void SubExtInput(sint32 i) override;
     chars GetComment() const override;
+    void OnClickMode() override;
 
 protected: // 데이터
     BodyNameComment mNameComment;
     BodyParamGroup mParamGroup;
     BodyInputGroup mTouchGroup;
     BodyInputGroup mClickGroup;
+    ClickMode mClickMode;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,13 +427,13 @@ protected: // 데이터
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// ZEZayBoxJump
+// ZEZayBoxJumpOrGate
 ////////////////////////////////////////////////////////////////////////////////
-class ZEZayBoxJump : public ZEZayBox
+class ZEZayBoxJumpOrGate : public ZEZayBox
 {
 public:
-    ZEZayBoxJump();
-    ~ZEZayBoxJump() override;
+    ZEZayBoxJumpOrGate();
+    ~ZEZayBoxJumpOrGate() override;
 
 public:
     static ZEZayBoxObject Create(bool gate);
@@ -516,4 +521,5 @@ protected: // 데이터보전
     BodyParamGroup mParamGroup;
     BodyInputGroup mTouchGroup;
     BodyInputGroup mClickGroup;
+    ClickMode mClickMode;
 };
