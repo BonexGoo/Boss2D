@@ -457,7 +457,7 @@ namespace BOSS
                         if(panel)
                         {
                             const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
-                            IsTrue = !!(panel->state(viewname + ('.' + UIName)) & PS_Focused);
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & (PS_Focused | PS_Dropping)) == PS_Focused);
                         }
                     }
                     // 호버확인
@@ -466,7 +466,7 @@ namespace BOSS
                         if(panel)
                         {
                             const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
-                            IsTrue = !!(panel->state(viewname + ('.' + UIName)) & PS_Hovered);
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & PS_Hovered) == PS_Hovered);
                         }
                     }
                     // 프레스확인
@@ -475,7 +475,7 @@ namespace BOSS
                         if(panel)
                         {
                             const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
-                            IsTrue = !!(panel->state(viewname + ('.' + UIName)) & PS_Dragging);
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & PS_Dragging) == PS_Dragging);
                         }
                     }
 

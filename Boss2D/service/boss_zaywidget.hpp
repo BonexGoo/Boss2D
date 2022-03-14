@@ -25,6 +25,9 @@ namespace BOSS
         bool TickOnce();
 
     public:
+        inline const String& viewname() const {return mZaySonViewName;}
+
+    public:
         static void BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
         static void BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
 
