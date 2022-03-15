@@ -649,7 +649,7 @@
             else
             {
                 if(m_request == WR_NeedExit)
-                    getWidget()->close();
+                    QApplication::closeAllWindows();
                 else if(m_request == WR_NeedHide)
                     getWidget()->hide();
                 m_request = WR_Null;
