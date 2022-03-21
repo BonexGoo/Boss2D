@@ -687,7 +687,7 @@
 		},
 		{
 			"addw":"0",
-			"comment":"일반버튼",
+			"comment":"프레스버튼",
 			"compid":"52",
 			"compname":"xywh",
 			"compvalues":
@@ -702,12 +702,23 @@
 			"expanded":"1",
 			"onclick":
 			[
+				"ifoutreleased",
 				{
-					"mess":"클릭"
+					"mess":"아웃릴리즈"
+				},
+				"else",
+				{
+					"mess":"릴리즈"
 				}
 			],
-			"posx":"305",
-			"posy":"2056",
+			"ontouch":
+			[
+				{
+					"mess":"프레스"
+				}
+			],
+			"posx":"303",
+			"posy":"2085",
 			"ui":
 			[
 				{
@@ -715,8 +726,8 @@
 					"compid":"53",
 					"compname":"jump",
 					"expanded":"1",
-					"posx":"701",
-					"posy":"2101",
+					"posx":"699",
+					"posy":"2130",
 					"uiname":"button"
 				}
 			]
@@ -739,12 +750,17 @@
 			"expanded":"1",
 			"onclick":
 			[
+				"ifdoubleclicked",
 				{
 					"mess":"더블클릭"
+				},
+				"else",
+				{
+					"mess":"클릭A"
 				}
 			],
-			"posx":"303",
-			"posy":"2291",
+			"posx":"301",
+			"posy":"2425",
 			"ui":
 			[
 				{
@@ -752,8 +768,8 @@
 					"compid":"55",
 					"compname":"jump",
 					"expanded":"1",
-					"posx":"699",
-					"posy":"2336",
+					"posx":"697",
+					"posy":"2470",
 					"uiname":"button"
 				}
 			]
@@ -776,12 +792,17 @@
 			"expanded":"1",
 			"onclick":
 			[
+				"iflongpressed",
 				{
 					"mess":"롱프레스"
+				},
+				"else",
+				{
+					"mess":"클릭B"
 				}
 			],
-			"posx":"302",
-			"posy":"2538",
+			"posx":"307",
+			"posy":"2738",
 			"ui":
 			[
 				{
@@ -790,7 +811,7 @@
 					"compname":"jump",
 					"expanded":"1",
 					"posx":"698",
-					"posy":"2583",
+					"posy":"2803",
 					"uiname":"button"
 				}
 			]
@@ -813,12 +834,21 @@
 			"expanded":"1",
 			"onclick":
 			[
+				"ifdoubleclicked",
 				{
-					"mess":"더블클릭/롱프레스"
+					"mess":"더블클릭"
+				},
+				"eliflongpressed",
+				{
+					"mess":"롱프레스"
+				},
+				"else",
+				{
+					"mess":"클릭C"
 				}
 			],
-			"posx":"301",
-			"posy":"2787",
+			"posx":"303",
+			"posy":"3048",
 			"ui":
 			[
 				{
@@ -826,8 +856,8 @@
 					"compid":"59",
 					"compname":"jump",
 					"expanded":"1",
-					"posx":"697",
-					"posy":"2832",
+					"posx":"699",
+					"posy":"3093",
 					"uiname":"button"
 				}
 			]

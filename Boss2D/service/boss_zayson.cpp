@@ -239,6 +239,7 @@ namespace BOSS
     {
         if(withelse) *withelse = false;
         branch;
+        // if계열
         jump(!String::Compare(text, "if(", 3))
             return ZaySonInterface::ConditionType::If;
         jump(!String::Compare(text, "iffocused(", 10))
@@ -247,6 +248,13 @@ namespace BOSS
             return ZaySonInterface::ConditionType::IfHovered;
         jump(!String::Compare(text, "ifpressed(", 10))
             return ZaySonInterface::ConditionType::IfPressed;
+        jump(!String::Compare(text, "ifdoubleclicked"))
+            return ZaySonInterface::ConditionType::IfDoubleClicked;
+        jump(!String::Compare(text, "iflongpressed"))
+            return ZaySonInterface::ConditionType::IfLongPressed;
+        jump(!String::Compare(text, "ifoutreleased"))
+            return ZaySonInterface::ConditionType::IfOutReleased;
+        // elif계열
         jump(!String::Compare(text, "elif(", 5))
         {
             if(withelse) *withelse = true;
@@ -267,6 +275,22 @@ namespace BOSS
             if(withelse) *withelse = true;
             return ZaySonInterface::ConditionType::IfPressed;
         }
+        jump(!String::Compare(text, "elifdoubleclicked"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfDoubleClicked;
+        }
+        jump(!String::Compare(text, "eliflongpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfLongPressed;
+        }
+        jump(!String::Compare(text, "elifoutreleased"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfOutReleased;
+        }
+        // 기타
         jump(!String::Compare(text, "else"))
             return ZaySonInterface::ConditionType::Else;
         jump(!String::Compare(text, "endif"))
@@ -346,7 +370,9 @@ namespace BOSS
     public:
         virtual void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const {}
         virtual void OnCursor(CursorRole role) {}
-        virtual bool OnTouch(chars uiname, sint32 id) {return false;}
+        virtual bool TouchValid_DoubleClick() {return false;}
+        virtual bool TouchValid_LongPress() {return false;}
+        virtual bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased) {return false;}
 
     public:
         Type mType;
@@ -374,17 +400,37 @@ namespace BOSS
     bool ZayExtendPress(chars uiname, sint32 elementid)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, 0);
+            return CurUIElement->OnTouch(uiname, 0, false, false, false);
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayExtendValid_DoubleClick
+    ////////////////////////////////////////////////////////////////////////////////
+    bool ZayExtendValid_DoubleClick(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->TouchValid_DoubleClick();
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayExtendValid_LongPress
+    ////////////////////////////////////////////////////////////////////////////////
+    bool ZayExtendValid_LongPress(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->TouchValid_LongPress();
         return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // ZayExtendClick
     ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendClick(chars uiname, sint32 elementid)
+    bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, 1);
+            return CurUIElement->OnTouch(uiname, 1, doubleclicked, longpressed, outreleased);
         return false;
     }
 
@@ -438,7 +484,7 @@ namespace BOSS
             }
             return false;
         };
-        static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel = nullptr)
+        static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel = nullptr, bool doubleclicked = false, bool longpressed = false, bool outreleased = false)
         {
             sint32s Collector;
             // 조건문처리로 유효한 CompValue를 수집
@@ -478,6 +524,15 @@ namespace BOSS
                             IsTrue = ((panel->state(viewname + ('.' + UIName)) & PS_Dragging) == PS_Dragging);
                         }
                     }
+                    // 더블클릭확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfDoubleClicked)
+                        IsTrue = doubleclicked;
+                    // 롱프레스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfLongPressed)
+                        IsTrue = longpressed;
+                    // 아웃릴리즈확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfOutReleased)
+                        IsTrue = outreleased;
 
                     if(IsTrue)
                     {
@@ -742,7 +797,12 @@ namespace BOSS
     class ZayComponentElement : public ZayUIElement, ZayExtend::Renderer
     {
     public:
-        ZayComponentElement() : ZayUIElement(Type::Component) {mCompID = -2;}
+        ZayComponentElement() : ZayUIElement(Type::Component)
+        {
+            mCompID = -2;
+            mValidDoubleClicked = false;
+            mValidLongPressed = false;
+        }
         ~ZayComponentElement() override {}
 
     public:
@@ -782,6 +842,30 @@ namespace BOSS
 
             hook(context("onclick"))
                 LoadCode(root, fish, 1);
+
+            hook(context("clicktype"))
+            {
+                if(!fish.GetText().Compare("Click_DoubleClick"))
+                {
+                    mValidDoubleClicked = true;
+                    mValidLongPressed = false;
+                }
+                else if(!fish.GetText().Compare("Click_LongPress"))
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = true;
+                }
+                else if(!fish.GetText().Compare("Click_DoubleClick_LongPress"))
+                {
+                    mValidDoubleClicked = true;
+                    mValidLongPressed = true;
+                }
+                else
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = false;
+                }
+            }
 
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -990,7 +1074,15 @@ namespace BOSS
         {
             mRefRoot->SendCursor(role);
         }
-        bool OnTouch(chars uiname, sint32 id) override
+        bool TouchValid_DoubleClick() override
+        {
+            return mValidDoubleClicked;
+        }
+        bool TouchValid_LongPress() override
+        {
+            return mValidLongPressed;
+        }
+        bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased) override
         {
             if(0 < mTouchCodes[id].Count())
             {
@@ -1005,7 +1097,8 @@ namespace BOSS
                 }
 
                 // 클릭코드의 실행
-                sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mTouchCodes[id]);
+                sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mTouchCodes[id],
+                    nullptr, doubleclicked, longpressed, outreleased);
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mTouchCodes[id].At(CollectedClickCodes[i]).Ptr();
@@ -1069,6 +1162,8 @@ namespace BOSS
         mutable ZayUIs mInputCodes;
         ZayUIs mTouchCodes[2];
         Strings mTouchCaptures[2];
+        bool mValidDoubleClicked;
+        bool mValidLongPressed;
         typedef Map<String> CaptureValue;
         mutable Map<CaptureValue> mTouchCapturedValues[2];
         ZayUIs mChildren;

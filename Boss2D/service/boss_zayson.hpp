@@ -40,7 +40,8 @@ namespace BOSS
     class ZaySonInterface
     {
     public:
-        enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed, Else, Endif};
+        enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed,
+            IfDoubleClicked, IfLongPressed, IfOutReleased, Else, Endif};
         enum class RequestType {Unknown, Function, Variable};
 
     public:

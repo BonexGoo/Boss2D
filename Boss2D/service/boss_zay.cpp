@@ -1393,7 +1393,9 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     extern void ZayExtendCursor(CursorRole role, sint32 elementid);
     extern bool ZayExtendPress(chars uiname, sint32 elementid);
-    extern bool ZayExtendClick(chars uiname, sint32 elementid);
+    extern bool ZayExtendValid_DoubleClick(sint32 elementid);
+    extern bool ZayExtendValid_LongPress(sint32 elementid);
+    extern bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased);
 
     ZayExtend::ZayExtend(ComponentType type, ComponentCB ccb, GlueCB gcb)
     {
@@ -1477,9 +1479,12 @@ namespace BOSS
     ZayPanel::SubGestureCB ZayExtend::Payload::MakeGesture() const
     {
         auto ElementID = mElementID;
-        return ZAY_GESTURE_NT(n, t, ElementID)
+        return ZAY_GESTURE_VNT(v, n, t, ElementID)
             {
                 static bool PressMode = false;
+                static bool HasLongPress = false;
+                static String ReleaseUIName;
+                static uint64 ReleaseMsec = 0;
                 if(t == GT_Moving || t == GT_MovingIdle)
                     ZayExtendCursor(CR_PointingHand, ElementID);
                 else if(t == GT_MovingLosed)
@@ -1491,12 +1496,39 @@ namespace BOSS
                         PressMode = true;
                         ZayExtendCursor(CR_Busy, ElementID);
                     }
+                    HasLongPress = false;
                 }
                 else if(t == GT_InReleased || (t == GT_OutReleased && PressMode))
                 {
-                    if(ZayExtendClick(n, ElementID))
-                        ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                    if(!HasLongPress)
+                    {
+                        const uint64 CurReleaseMsec = Platform::Utility::CurrentTimeMsec();
+                        const bool HasDoubleClick = (CurReleaseMsec < ReleaseMsec + 300 && ReleaseUIName == n);
+                        if(HasDoubleClick && ZayExtendValid_DoubleClick(ElementID))
+                        {
+                            if(ZayExtendClick(n, ElementID, true, false, false))
+                                ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                            ReleaseUIName.Empty();
+                            ReleaseMsec = 0;
+                        }
+                        else
+                        {
+                            if(ZayExtendClick(n, ElementID, false, false, t == GT_OutReleased))
+                                ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                            ReleaseUIName = n;
+                            ReleaseMsec = CurReleaseMsec;
+                        }
+                    }
                     PressMode = false;
+                }
+                else if(t == GT_LongPressed)
+                {
+                    if(ZayExtendValid_LongPress(ElementID))
+                    {
+                        if(ZayExtendClick(n, ElementID, false, true, false))
+                            v->invalidate();
+                        HasLongPress = true;
+                    }
                 }
             };
     }

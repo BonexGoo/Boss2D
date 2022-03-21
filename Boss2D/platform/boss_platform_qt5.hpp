@@ -537,7 +537,7 @@
             if(event->button() == Qt::LeftButton)
             {
                 touch(TT_Press, 0, event->x(), event->y());
-                m_longpress_timer.start(3000);
+                m_longpress_timer.start(1500);
                 m_longpress_x = event->x();
                 m_longpress_y = event->y();
             }
