@@ -1986,23 +1986,37 @@ namespace BOSS
                 else
                 {
                     if(!IsSameElement && PressElement && PressElement->m_cb)
+                    {
                         PressElement->m_cb(this, PressElement, GT_OutDragging, x, y);
+                        if(PressElement != CurTouch->background())
+                            CurTouch->background()->m_peekdragging = true;
+                    }
                     CurElement.m_cb(this, &CurElement, SavedType = ((IsSameElement)? GT_InDragging : GT_Dropping), x, y);
+                    // Peek처리
+                    if(CurTouch->background()->m_peekdragging)
+                        CurTouch->background()->m_cb(this, CurTouch->background(), GT_DraggingPeeked, x, y);
                 }
                 break;
             case TT_DraggingIdle:
                 if(!IsSameElement && PressElement && PressElement->m_cb)
                     PressElement->m_cb(this, PressElement, GT_OutDraggingIdle, x, y);
                 CurElement.m_cb(this, &CurElement, (IsSameElement)? GT_InDraggingIdle : GT_DroppingIdle, x, y);
+                // Peek처리
+                if(CurTouch->background()->m_peekdragging)
+                    CurTouch->background()->m_cb(this, CurTouch->background(), GT_DraggingIdlePeeked, x, y);
                 break;
             case TT_Release:
                 CurElement.m_cb(this, &CurElement, SavedType = ((IsSameElement)? GT_InReleased : GT_Dropped), x, y);
                 if(!IsSameElement && PressElement && PressElement->m_cb)
                     PressElement->m_cb(this, PressElement, GT_OutReleased, x, y);
+                // Peek처리
+                if(CurTouch->background()->m_peekdragging)
+                {
+                    CurTouch->background()->m_peekdragging = false;
+                    CurTouch->background()->m_cb(this, CurTouch->background(), GT_DraggingIsOverPeeked, x, y);
+                }
                 break;
             case TT_WheelUp: case TT_WheelDown:
-            case TT_WheelPress: case TT_WheelDragging: case TT_WheelDraggingIdle: case TT_WheelRelease:
-            case TT_ExtendPress: case TT_ExtendDragging: case TT_ExtendDraggingIdle: case TT_ExtendRelease:
                 CurElement.m_cb(this, &CurElement, (GestureType) (type - TT_WheelUp + GT_WheelUp), x, y);
                 // 스크롤처리
                 if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb)
@@ -2015,6 +2029,21 @@ namespace BOSS
                 if(&CurElement != CurTouch->background())
                     CurTouch->background()->m_cb(this, CurTouch->background(),
                         (GestureType) (type - TT_WheelUp + GT_WheelUpPeeked), x, y);
+                break;
+            case TT_WheelPress: case TT_WheelDragging: case TT_WheelDraggingIdle: case TT_WheelRelease:
+            case TT_ExtendPress: case TT_ExtendDragging: case TT_ExtendDraggingIdle: case TT_ExtendRelease:
+                CurElement.m_cb(this, &CurElement, (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
+                // 스크롤처리
+                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb)
+                {
+                    ScrollElement->m_cb(this, ScrollElement,
+                        (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
+                    NeedUpdate = true;
+                }
+                // Peek처리
+                if(PressElement != CurTouch->background())
+                    CurTouch->background()->m_cb(this, CurTouch->background(),
+                        (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
                 break;
             case TT_ToolTip:
                 CurElement.m_cb(this, &CurElement, GT_ToolTip, x, y);
@@ -2136,6 +2165,7 @@ namespace BOSS
         m_scrollsence = -1;
         m_hoverpass = false;
         m_hoverid = -1;
+        m_peekdragging = false;
         m_saved_xy.x = 0;
         m_saved_xy.y = 0;
         m_saved_updateid_for_state = -1;
@@ -2161,6 +2191,7 @@ namespace BOSS
         m_scrollsence = rhs.m_scrollsence;
         m_hoverpass = rhs.m_hoverpass;
         m_hoverid = rhs.m_hoverid;
+        m_peekdragging = rhs.m_peekdragging;
         m_saved_xy.x = rhs.m_saved_xy.x;
         m_saved_xy.y = rhs.m_saved_xy.y;
         m_saved_updateid_for_state = rhs.m_saved_updateid_for_state;

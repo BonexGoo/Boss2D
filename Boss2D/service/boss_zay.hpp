@@ -193,20 +193,20 @@
 namespace BOSS
 {
     enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Tick};
-    enum GestureType {
-        // 일반
-        GT_Null, GT_Moving, GT_MovingIdle, GT_MovingLosed, GT_Pressed,
-        GT_InDragging, GT_InDraggingIdle, GT_OutDragging, GT_OutDraggingIdle, GT_InReleased, GT_OutReleased,
-        GT_Dropping, GT_DroppingIdle, GT_DroppingLosed, GT_Dropped,
+    enum GestureType {GT_Null,
+        GT_Moving, GT_MovingIdle, GT_MovingLosed, // 마우스전용
+        GT_Pressed, GT_InReleased, GT_OutReleased, // 터치
+        GT_InDragging, GT_InDraggingIdle, GT_OutDragging, GT_OutDraggingIdle, // 드래그
+        GT_Dropping, GT_DroppingIdle, GT_DroppingLosed, GT_Dropped, // 드롭
         // 마우스휠
         GT_WheelUp, GT_WheelDown, GT_WheelPressed, GT_WheelDragging, GT_WheelDraggingIdle, GT_WheelRelease,
         // 마우스확장
         GT_ExtendPressed, GT_ExtendDragging, GT_ExtendDraggingIdle, GT_ExtendRelease,
-        // 드래그피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
-        GT_InDraggingPeeked, GT_InDraggingIdlePeeked, GT_OutDraggingPeeked, GT_OutDraggingIdlePeeked, GT_DroppingPeeked, GT_DroppingIdlePeeked,
-        // 마우스휠피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
+        // 드래그-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
+        GT_DraggingPeeked, GT_DraggingIdlePeeked, GT_DraggingIsOverPeeked,
+        // 마우스휠-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
         GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressedPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
-        // 마우스확장피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
+        // 마우스확장-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
         GT_ExtendPressedPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
         // 키보드
         GT_KeyPressed, GT_KeyReleased,
@@ -654,6 +654,7 @@ namespace BOSS
             sint32 m_scrollsence; // -1은 스크롤아님, 0~N : 스크롤민감도
             bool m_hoverpass;
             sint32 m_hoverid;
+            mutable bool m_peekdragging;
             mutable point64 m_saved_xy;
 
         private:
