@@ -469,6 +469,10 @@ public:
         /// @param pos : 윈도우좌표계 커서위치(px)
         static void GetCursorPos(point64& pos);
 
+        /// @brief 커서위치 지정
+        /// @param pos : 윈도우좌표계 커서위치(px)
+        static void SetCursorPos(point64 pos);
+
         /// @brief 윈도우내 커서위치 얻기
         /// @param pos : 클라이언트좌표계 커서위치(px)
         /// @return 윈도우의 안쪽인지의 여부

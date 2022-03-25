@@ -1302,6 +1302,11 @@
             pos.y = CursorPos.y();
         }
 
+        void Platform::Utility::SetCursorPos(point64 pos)
+        {
+            QCursor::setPos(pos.x, pos.y);
+        }
+
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);

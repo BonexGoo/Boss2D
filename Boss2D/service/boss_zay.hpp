@@ -202,6 +202,8 @@ namespace BOSS
         GT_WheelUp, GT_WheelDown, GT_WheelPressed, GT_WheelDragging, GT_WheelDraggingIdle, GT_WheelRelease,
         // 마우스확장
         GT_ExtendPressed, GT_ExtendDragging, GT_ExtendDraggingIdle, GT_ExtendRelease,
+        // 드래그피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
+        GT_InDraggingPeeked, GT_InDraggingIdlePeeked, GT_OutDraggingPeeked, GT_OutDraggingIdlePeeked, GT_DroppingPeeked, GT_DroppingIdlePeeked,
         // 마우스휠피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
         GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressedPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
         // 마우스확장피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)

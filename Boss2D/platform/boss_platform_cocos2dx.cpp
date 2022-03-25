@@ -730,6 +730,11 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Utility::SetCursorPos(point64 pos)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
             BOSS_ASSERT("Further development is needed.", false);
