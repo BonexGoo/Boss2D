@@ -229,7 +229,7 @@
 
     public:
         enum ParentType {PT_Null, PT_GenericView, PT_GenericViewGL, PT_MainViewGL, PT_MainViewMDI};
-        enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2};
+        enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2, WR_NeedShow = -3};
 
     public:
         ViewAPI(ParentType type, buffer buf, View* manager, View::UpdaterCB cb, QWidget* data, QWidget* device)
@@ -498,10 +498,8 @@
 
         void update(sint32 count)
         {
-            if(count == WR_NeedExit)
-                m_request = WR_NeedExit;
-            else if(count == WR_NeedHide)
-                m_request = WR_NeedHide;
+            if(count <= WR_NeedExit)
+                m_request = (WidgetRequest) count;
             else if(m_paintcount < count)
             {
                 if(m_paintcount == 0)
@@ -652,6 +650,8 @@
                     QApplication::closeAllWindows();
                 else if(m_request == WR_NeedHide)
                     getWidget()->hide();
+                else if(m_request == WR_NeedShow)
+                    getWidget()->show();
                 m_request = WR_Null;
             }
         }

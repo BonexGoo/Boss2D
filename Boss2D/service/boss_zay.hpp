@@ -263,6 +263,7 @@ namespace BOSS
         bool next(View* viewmanager);
         void exit();
         void hide();
+        void show();
         bool valid(chars uiname = nullptr) const;
         const rect128& rect(chars uiname = nullptr) const;
         const float zoom(chars uiname = nullptr) const;

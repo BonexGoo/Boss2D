@@ -162,6 +162,13 @@ namespace BOSS
             m_updater(m_updater_data, -2);
     }
 
+    void ZayObject::show()
+    {
+        BOSS_ASSERT("Updater가 없습니다", m_updater);
+        if(m_updater)
+            m_updater(m_updater_data, -3);
+    }
+
     bool ZayObject::valid(chars uiname) const
     {
         BOSS_ASSERT("Finder가 없습니다", m_finder);
