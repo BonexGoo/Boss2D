@@ -431,7 +431,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
                             v->invalidate(2);
                         }
-                    }, 5, 20)
+                    }, {-1, 5}, 20)
                 for(sint32 i = 0; i < ComponentCount; ++i)
                     ZAY_XYWH(panel, 10, ZEZayBox::TitleBarHeight * i, panel.w() - 20, ZEZayBox::TitleBarHeight)
                         m->RenderComponent(panel, i, true, m->mZaySonAPI.mDraggingComponentID == i);
@@ -1233,7 +1233,7 @@ void zayeditorData::RenderDOM(ZayPanel& panel)
                             auto PosY = v->scrollpos("dom-body-scroll").y;
                             v->moveScroll("dom-body-scroll", 0, PosY, 0, PosY - 1000, 2.0, true);
                         }
-                    }, 5, 20)
+                    }, {-1, 5}, 20)
                 {
                     // 페이로드를 구성
                     struct Payload
