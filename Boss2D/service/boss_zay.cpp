@@ -1402,7 +1402,7 @@ namespace BOSS
     extern bool ZayExtendPress(chars uiname, sint32 elementid);
     extern bool ZayExtendValid_DoubleClick(sint32 elementid);
     extern bool ZayExtendValid_LongPress(sint32 elementid);
-    extern bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased);
+    extern bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased);
 
     ZayExtend::ZayExtend(ComponentType type, ComponentCB ccb, GlueCB gcb)
     {
@@ -1513,14 +1513,14 @@ namespace BOSS
                         const bool HasDoubleClick = (CurReleaseMsec < ReleaseMsec + 300 && ReleaseUIName == n);
                         if(HasDoubleClick && ZayExtendValid_DoubleClick(ElementID))
                         {
-                            if(ZayExtendClick(n, ElementID, true, false, false))
+                            if(ZayExtendClick(n, ElementID, true, false, false, false))
                                 ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
                             ReleaseUIName.Empty();
                             ReleaseMsec = 0;
                         }
                         else
                         {
-                            if(ZayExtendClick(n, ElementID, false, false, t == GT_OutReleased))
+                            if(ZayExtendClick(n, ElementID, false, false, t == GT_OutReleased, t == GT_CancelReleased))
                                 ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
                             ReleaseUIName = n;
                             ReleaseMsec = CurReleaseMsec;
@@ -1532,7 +1532,7 @@ namespace BOSS
                 {
                     if(ZayExtendValid_LongPress(ElementID))
                     {
-                        if(ZayExtendClick(n, ElementID, false, true, false))
+                        if(ZayExtendClick(n, ElementID, false, true, false, false))
                             v->invalidate();
                         HasLongPress = true;
                     }
@@ -1979,13 +1979,13 @@ namespace BOSS
             case TT_MovingIdle: CurElement.m_cb(this, &CurElement, GT_MovingIdle, x, y); break;
             case TT_Press: CurElement.m_cb(this, &CurElement, SavedType = GT_Pressed, x, y); break;
             case TT_Dragging:
-                // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 이벤트전이
+                // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 제스처전이
                 if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb &&
                     ((ScrollElement->m_scrollsense.x != -1 && ScrollElement->m_scrollsense.x < CurTouch->press_to_x(x)) ||
                         (ScrollElement->m_scrollsense.y != -1 && ScrollElement->m_scrollsense.y < CurTouch->press_to_y(y))))
                 {
                     if(PressElement && PressElement->m_cb)
-                        PressElement->m_cb(this, PressElement, GT_OutReleased, x, y);
+                        PressElement->m_cb(this, PressElement, GT_CancelReleased, x, y);
                     ScrollElement->m_cb(this, ScrollElement, SavedType = GT_Pressed, x, y);
                     // 백스크롤을 강제로 Press화
                     CurTouch->changepress(ScrollElement);

@@ -254,6 +254,8 @@ namespace BOSS
             return ZaySonInterface::ConditionType::IfLongPressed;
         jump(!String::Compare(text, "ifoutreleased"))
             return ZaySonInterface::ConditionType::IfOutReleased;
+        jump(!String::Compare(text, "ifcancelreleased"))
+            return ZaySonInterface::ConditionType::IfCancelReleased;
         // elif계열
         jump(!String::Compare(text, "elif(", 5))
         {
@@ -289,6 +291,11 @@ namespace BOSS
         {
             if(withelse) *withelse = true;
             return ZaySonInterface::ConditionType::IfOutReleased;
+        }
+        jump(!String::Compare(text, "elifcancelreleased"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfCancelReleased;
         }
         // 기타
         jump(!String::Compare(text, "else"))
@@ -372,7 +379,7 @@ namespace BOSS
         virtual void OnCursor(CursorRole role) {}
         virtual bool TouchValid_DoubleClick() {return false;}
         virtual bool TouchValid_LongPress() {return false;}
-        virtual bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased) {return false;}
+        virtual bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased) {return false;}
 
     public:
         Type mType;
@@ -400,7 +407,7 @@ namespace BOSS
     bool ZayExtendPress(chars uiname, sint32 elementid)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, 0, false, false, false);
+            return CurUIElement->OnTouch(uiname, 0, false, false, false, false);
         return false;
     }
 
@@ -427,10 +434,10 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     // ZayExtendClick
     ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased)
+    bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, 1, doubleclicked, longpressed, outreleased);
+            return CurUIElement->OnTouch(uiname, 1, doubleclicked, longpressed, outreleased, cancelreleased);
         return false;
     }
 
@@ -484,7 +491,8 @@ namespace BOSS
             }
             return false;
         };
-        static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel = nullptr, bool doubleclicked = false, bool longpressed = false, bool outreleased = false)
+        static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel = nullptr,
+            bool doubleclicked = false, bool longpressed = false, bool outreleased = false, bool cancelreleased = false)
         {
             sint32s Collector;
             // 조건문처리로 유효한 CompValue를 수집
@@ -533,6 +541,9 @@ namespace BOSS
                     // 아웃릴리즈확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfOutReleased)
                         IsTrue = outreleased;
+                    // 캔슬릴리즈확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfCancelReleased)
+                        IsTrue = cancelreleased;
 
                     if(IsTrue)
                     {
@@ -1082,7 +1093,7 @@ namespace BOSS
         {
             return mValidLongPressed;
         }
-        bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased) override
+        bool OnTouch(chars uiname, sint32 id, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased) override
         {
             if(0 < mTouchCodes[id].Count())
             {
@@ -1098,7 +1109,7 @@ namespace BOSS
 
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mTouchCodes[id],
-                    nullptr, doubleclicked, longpressed, outreleased);
+                    nullptr, doubleclicked, longpressed, outreleased, cancelreleased);
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mTouchCodes[id].At(CollectedClickCodes[i]).Ptr();

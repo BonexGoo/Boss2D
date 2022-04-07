@@ -195,7 +195,7 @@ namespace BOSS
     enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Tick};
     enum GestureType {GT_Null,
         GT_Moving, GT_MovingIdle, GT_MovingLosed, // 마우스전용
-        GT_Pressed, GT_InReleased, GT_OutReleased, // 터치
+        GT_Pressed, GT_InReleased, GT_OutReleased, GT_CancelReleased, // 터치
         GT_InDragging, GT_InDraggingIdle, GT_OutDragging, GT_OutDraggingIdle, // 드래그
         GT_Dropping, GT_DroppingIdle, GT_DroppingLosed, GT_Dropped, // 드롭
         // 마우스휠/확장(우클릭드래그)
