@@ -14,7 +14,7 @@ namespace BOSS
     {
     public:
         TouchRect() {BOSS_ASSERT("잘못된 시나리오입니다", false);}
-        TouchRect(chars uiname, float l, float t, float r, float b, float zoom, ZayPanel::SubGestureCB cb, sint32 scrollsense, bool hoverpass)
+        TouchRect(chars uiname, float l, float t, float r, float b, float zoom, ZayPanel::SubGestureCB cb, point64 scrollsense, bool hoverpass)
         {
             mName = uiname;
             mL = l;
@@ -32,7 +32,7 @@ namespace BOSS
         {BOSS_ASSERT("잘못된 시나리오입니다", false); return *this;}
 
     public:
-        static buffer Create(chars uiname, float l, float t, float r, float b, float zoom, ZayPanel::SubGestureCB cb, sint32 scrollsense, bool hoverpass)
+        static buffer Create(chars uiname, float l, float t, float r, float b, float zoom, ZayPanel::SubGestureCB cb, point64 scrollsense, bool hoverpass)
         {
             buffer NewBuffer = Buffer::AllocNoConstructorOnce<TouchRect>(BOSS_DBG 1);
             BOSS_CONSTRUCTOR(NewBuffer, 0, TouchRect, uiname, l, t, r, b, zoom, cb, scrollsense, hoverpass);
@@ -47,7 +47,7 @@ namespace BOSS
         float mB;
         float mZoom;
         ZayPanel::SubGestureCB mCB;
-        sint32 mScrollSence; // -1은 스크롤아님, 0~N : 스크롤민감도
+        point64 mScrollSence; // -1은 스크롤아님, 0~N : 스크롤민감도
         bool mHoverPass;
     };
     typedef Object<TouchRect> TouchRectObject;
@@ -1031,7 +1031,7 @@ namespace BOSS
     {
         if(auto CurBinder = _push_clip(l, t, r, b, doScissor))
         {
-            _add_ui(uiname, cb, -1, hoverpass);
+            _add_ui(uiname, cb, {-1, -1}, hoverpass);
             return StackBinder(ToReference(CurBinder));
         }
         return StackBinder(this); // 하위진입불가
@@ -1065,13 +1065,13 @@ namespace BOSS
     {
         if(auto CurBinder = _push_clip_by_inside(inside, ix, iy, xcount, ycount, doScissor))
         {
-            _add_ui(uiname, cb, -1, hoverpass);
+            _add_ui(uiname, cb, {-1, -1}, hoverpass);
             return StackBinder(ToReference(CurBinder));
         }
         return StackBinder(this); // 하위진입불가
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_scroll_ui(float contentw, float contenth, chars uiname, SubGestureCB cb, sint32 sensitive, sint32 senseborder, bool loop, float loopw, float looph)
+    ZayPanel::StackBinder ZayPanel::_push_scroll_ui(float contentw, float contenth, chars uiname, SubGestureCB cb, point64 sensitive, sint32 senseborder, bool loop, float loopw, float looph)
     {
         if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
         {
@@ -1345,7 +1345,7 @@ namespace BOSS
         _pop_clip();
     }
 
-    void ZayPanel::_add_ui(chars uiname, SubGestureCB cb, sint32 scrollsense, bool hoverpass)
+    void ZayPanel::_add_ui(chars uiname, SubGestureCB cb, point64 scrollsense, bool hoverpass)
     {
         if(uiname && uiname[0])
         {
@@ -1972,6 +1972,7 @@ namespace BOSS
         {
             m_ref_func->m_lock(m_data);
             const bool IsSameElement = (&CurElement == PressElement);
+            const bool IsScrollPressed = (PressElement && (PressElement->m_scrollsense.x != -1 || PressElement->m_scrollsense.y != -1));
             switch(type)
             {
             case TT_Moving: CurElement.m_cb(this, &CurElement, SavedType = GT_Moving, x, y); break;
@@ -1979,8 +1980,9 @@ namespace BOSS
             case TT_Press: CurElement.m_cb(this, &CurElement, SavedType = GT_Pressed, x, y); break;
             case TT_Dragging:
                 // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 이벤트전이
-                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb
-                    && ScrollElement->m_scrollsence < CurTouch->press_to_xy(x, y))
+                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb &&
+                    ((ScrollElement->m_scrollsense.x != -1 && ScrollElement->m_scrollsense.x < CurTouch->press_to_x(x)) ||
+                        (ScrollElement->m_scrollsense.y != -1 && ScrollElement->m_scrollsense.y < CurTouch->press_to_y(y))))
                 {
                     if(PressElement && PressElement->m_cb)
                         PressElement->m_cb(this, PressElement, GT_OutReleased, x, y);
@@ -1995,7 +1997,7 @@ namespace BOSS
                     if(!IsSameElement && PressElement && PressElement->m_cb)
                     {
                         PressElement->m_cb(this, PressElement, GT_OutDragging, x, y);
-                        if(PressElement != CurTouch->background())
+                        if(PressElement != CurTouch->background() && !IsScrollPressed)
                             CurTouch->background()->m_peekdragging = true;
                     }
                     CurElement.m_cb(this, &CurElement, SavedType = ((IsSameElement)? GT_InDragging : GT_Dropping), x, y);
@@ -2023,7 +2025,8 @@ namespace BOSS
                     CurTouch->background()->m_cb(this, CurTouch->background(), GT_DraggingIsOverPeeked, x, y);
                 }
                 break;
-            case TT_WheelUp: case TT_WheelDown:
+            case TT_WheelUp: case TT_WheelDown: case TT_WheelPress: case TT_WheelDragging: case TT_WheelDraggingIdle: case TT_WheelRelease:
+            case TT_ExtendPress: case TT_ExtendDragging: case TT_ExtendDraggingIdle: case TT_ExtendRelease:
                 CurElement.m_cb(this, &CurElement, (GestureType) (type - TT_WheelUp + GT_WheelUp), x, y);
                 // 스크롤처리
                 if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb)
@@ -2036,21 +2039,6 @@ namespace BOSS
                 if(&CurElement != CurTouch->background())
                     CurTouch->background()->m_cb(this, CurTouch->background(),
                         (GestureType) (type - TT_WheelUp + GT_WheelUpPeeked), x, y);
-                break;
-            case TT_WheelPress: case TT_WheelDragging: case TT_WheelDraggingIdle: case TT_WheelRelease:
-            case TT_ExtendPress: case TT_ExtendDragging: case TT_ExtendDraggingIdle: case TT_ExtendRelease:
-                CurElement.m_cb(this, &CurElement, (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
-                // 스크롤처리
-                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb)
-                {
-                    ScrollElement->m_cb(this, ScrollElement,
-                        (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
-                    NeedUpdate = true;
-                }
-                // Peek처리
-                if(PressElement != CurTouch->background())
-                    CurTouch->background()->m_cb(this, CurTouch->background(),
-                        (GestureType) (type - TT_WheelPress + GT_WheelPressed), x, y);
                 break;
             case TT_ToolTip:
                 CurElement.m_cb(this, &CurElement, GT_ToolTip, x, y);
@@ -2169,7 +2157,8 @@ namespace BOSS
         m_zoom = 1;
         m_cb = nullptr;
         m_subcb = nullptr;
-        m_scrollsence = -1;
+        m_scrollsense.x = -1;
+        m_scrollsense.y = -1;
         m_hoverpass = false;
         m_hoverid = -1;
         m_peekdragging = false;
@@ -2195,7 +2184,7 @@ namespace BOSS
         m_zoom = rhs.m_zoom;
         m_cb = rhs.m_cb;
         m_subcb = rhs.m_subcb;
-        m_scrollsence = rhs.m_scrollsence;
+        m_scrollsense = rhs.m_scrollsense;
         m_hoverpass = rhs.m_hoverpass;
         m_hoverid = rhs.m_hoverid;
         m_peekdragging = rhs.m_peekdragging;
@@ -2296,7 +2285,7 @@ namespace BOSS
             OldY = CurY;
             sec -= unitsec;
         }
-        m_pos->MoveTo(x, y, sec);
+        m_pos->MoveTo(x, y, unitsec);
     }
 
     void ZayView::Scroll::Stop()
@@ -2382,7 +2371,7 @@ namespace BOSS
     }
 
     void ZayView::Touch::update(chars uiname, float l, float t, float r, float b,
-        float zoom, ZayPanel::SubGestureCB cb, sint32 scrollsense, bool hoverpass, bool* dirtytest)
+        float zoom, ZayPanel::SubGestureCB cb, point64 scrollsense, bool hoverpass, bool* dirtytest)
     {
         if(uiname == nullptr || uiname[0] == '\0' || r <= l || b <= t)
             return;
@@ -2398,7 +2387,7 @@ namespace BOSS
         CurElement.m_zoom = zoom;
         CurElement.m_cb = SubGestureCB;
         CurElement.m_subcb = cb;
-        CurElement.m_scrollsence = scrollsense;
+        CurElement.m_scrollsense = scrollsense;
         CurElement.m_hoverpass = hoverpass;
 
         const sint32 CellL = Math::Max(0, CurElement.m_rect.l / Cell::Size);
@@ -2447,11 +2436,11 @@ namespace BOSS
                 {
                     // 관련된 스크롤조사
                     const Element* ScrollBase = (press)? press : &CurElement;
-                    if(ScrollBase->m_scrollsence == -1) // 스크롤이 아닌 눌러진 영역이 있고
+                    if(ScrollBase->m_scrollsense.x == -1 && ScrollBase->m_scrollsense.y == -1) // 스크롤이 아닌 눌러진 영역이 있고
                     for(sint32 j = i; 0 <= j; --j) // 터치영역을 포함하여 바닥까지 조사
                     {
                         Element& ScrollElement = *CurCell->m_elements[j];
-                        if(ScrollElement.m_scrollsence != -1) // 대상 영역이 스크롤영역이고
+                        if(ScrollElement.m_scrollsense.x != -1 || ScrollElement.m_scrollsense.y != -1) // 대상 영역이 스크롤영역이고
                         {
                             const rect128& NextRect = ScrollElement.m_rect;
                             if(NextRect.l <= x && NextRect.t <= y && x < NextRect.r && y < NextRect.b) // 영역에 들어왔고

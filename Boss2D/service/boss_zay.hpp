@@ -198,16 +198,14 @@ namespace BOSS
         GT_Pressed, GT_InReleased, GT_OutReleased, // 터치
         GT_InDragging, GT_InDraggingIdle, GT_OutDragging, GT_OutDraggingIdle, // 드래그
         GT_Dropping, GT_DroppingIdle, GT_DroppingLosed, GT_Dropped, // 드롭
-        // 마우스휠
+        // 마우스휠/확장(우클릭드래그)
         GT_WheelUp, GT_WheelDown, GT_WheelPressed, GT_WheelDragging, GT_WheelDraggingIdle, GT_WheelRelease,
-        // 마우스확장
         GT_ExtendPressed, GT_ExtendDragging, GT_ExtendDraggingIdle, GT_ExtendRelease,
+        // 마우스휠/확장-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
+        GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressedPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
+        GT_ExtendPressedPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
         // 드래그-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
         GT_DraggingPeeked, GT_DraggingIdlePeeked, GT_DraggingIsOverPeeked,
-        // 마우스휠-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
-        GT_WheelUpPeeked, GT_WheelDownPeeked, GT_WheelPressedPeeked, GT_WheelDraggingPeeked, GT_WheelDraggingIdlePeeked, GT_WheelReleasePeeked,
-        // 마우스확장-피크(자식패널에게 이벤트가 전달될 경우, 최상단인 OnPanel에도 전달)
-        GT_ExtendPressedPeeked, GT_ExtendDraggingPeeked, GT_ExtendDraggingIdlePeeked, GT_ExtendReleasePeeked,
         // 키보드
         GT_KeyPressed, GT_KeyReleased,
         // 특수
@@ -436,7 +434,7 @@ namespace BOSS
         StackBinder _push_clip_ui_by_rect(const Rect& r, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
         StackBinder _push_clip_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor);
         StackBinder _push_clip_ui_by_inside(const InsideBinder& inside, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount, bool doScissor, chars uiname, SubGestureCB cb = nullptr, bool hoverpass = true);
-        StackBinder _push_scroll_ui(float contentw, float contenth, chars uiname, SubGestureCB cb = nullptr, sint32 sensitive = 0, sint32 senseborder = 0, bool loop = false, float loopw = 0, float looph = 0);
+        StackBinder _push_scroll_ui(float contentw, float contenth, chars uiname, SubGestureCB cb, point64 sensitive, sint32 senseborder = 0, bool loop = false, float loopw = 0, float looph = 0);
         StackBinder _push_color(sint32 r, sint32 g, sint32 b, sint32 a);
         StackBinder _push_color(const Color& color);
         StackBinder _push_color_clear();
@@ -455,7 +453,7 @@ namespace BOSS
         void _pop_shader();
         void _pop_font();
         void _pop_zoom();
-        void _add_ui(chars uiname, SubGestureCB cb, sint32 scrollsense, bool hoverpass);
+        void _add_ui(chars uiname, SubGestureCB cb, point64 scrollsense, bool hoverpass);
 
     private:
         bool _push_scissor(float l, float t, float r, float b);
@@ -652,7 +650,7 @@ namespace BOSS
             float m_zoom;
             GestureCB m_cb;
             ZayPanel::SubGestureCB m_subcb;
-            sint32 m_scrollsence; // -1은 스크롤아님, 0~N : 스크롤민감도
+            point64 m_scrollsense; // -1은 스크롤아님, 0~N : 스크롤민감도
             bool m_hoverpass;
             sint32 m_hoverid;
             mutable bool m_peekdragging;
@@ -724,7 +722,7 @@ namespace BOSS
         public:
             void ready(sint32 width, sint32 height);
             void update(chars uiname, float l, float t, float r, float b,
-                float zoom, ZayPanel::SubGestureCB cb, sint32 scroll, bool hoverpass, bool* dirtytest = nullptr);
+                float zoom, ZayPanel::SubGestureCB cb, point64 scrollsense, bool hoverpass, bool* dirtytest = nullptr);
             const Element* background() const;
             const Element* find(chars uiname, sint32 lag) const;
             const Element& get(sint32 x, sint32 y, const Element* press, const Element*& backscroll) const;
@@ -748,8 +746,8 @@ namespace BOSS
             inline const Element* getfocus() const {return m_focus;}
             inline const Element* getpress() const {return m_press;}
             inline void setpress_xy(sint32 x, sint32 y) {m_press_x = x; m_press_y = y;}
-            inline sint32 press_to_xy(sint32 x, sint32 y) const
-            {return (sint32) Math::Distance(m_press_x, m_press_y, x, y);}
+            inline sint32 press_to_x(sint32 x) const {return Math::Abs(x - m_press_x);}
+            inline sint32 press_to_y(sint32 y) const {return Math::Abs(y - m_press_y);}
             inline Scroll* getscroll(chars uiname) {return m_scrollmap.Access(uiname);}
             inline const Scroll* getscroll_const(chars uiname) const {return m_scrollmap.Access(uiname);}
             inline Scroll* getscroll_valid(chars uiname) {return &m_scrollmap(uiname);}

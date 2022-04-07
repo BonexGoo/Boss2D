@@ -14,9 +14,8 @@ namespace BOSS
     enum TouchType {TT_Null,
         // 일반
         TT_Moving, TT_MovingIdle, TT_Press, TT_Dragging, TT_DraggingIdle, TT_Release,
-        // 마우스휠
+        // 마우스휠/확장(우클릭드래그)
         TT_WheelUp, TT_WheelDown, TT_WheelPress, TT_WheelDragging, TT_WheelDraggingIdle, TT_WheelRelease,
-        // 마우스확장(우클릭드래그)
         TT_ExtendPress, TT_ExtendDragging, TT_ExtendDraggingIdle, TT_ExtendRelease,
         // 특수
         TT_ToolTip, TT_LongPress, TT_Render};
