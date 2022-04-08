@@ -1505,7 +1505,7 @@ namespace BOSS
                     }
                     HasLongPress = false;
                 }
-                else if(t == GT_InReleased || (t == GT_OutReleased && PressMode))
+                else if(t == GT_InReleased || (PressMode && (t == GT_OutReleased || t == GT_CancelReleased)))
                 {
                     if(!HasLongPress)
                     {
