@@ -436,7 +436,7 @@ BOSS_API_FUNC(BOSS, void, BuildForJAVA)(chars package)
     sint32 LastDotIndex = -1;
     for(sint32 i = 0; PackageName[i] != '\0'; ++i)
         if(PackageName[i] == '.') LastDotIndex = i;
-    const String CompanyName = (LastDotIndex == -1)? "unknown" : PackageName.Left(LastDotIndex);
+    const String CompanyName = (LastDotIndex == -1)? String("unknown") : PackageName.Left(LastDotIndex);
     const String ApplicationName = PackageName.Right(PackageName.Length() - LastDotIndex - 1);
 
     void* SourceFile = boss_fopen(ApplicationName + ".java", "wb");
