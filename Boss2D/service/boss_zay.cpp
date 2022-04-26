@@ -86,9 +86,9 @@ namespace BOSS
     {
         m_resource = nullptr;
         m_frame_counter = 0;
-        m_finder = nullptr;
+        m_finder_cb = nullptr;
         m_finder_data = nullptr;
-        m_updater = nullptr;
+        m_updater_cb = nullptr;
         m_updater_data = nullptr;
         m_resizing_width = -1;
         m_resizing_height = -1;
@@ -115,9 +115,9 @@ namespace BOSS
 
     void ZayObject::invalidate(sint32 count) const
     {
-        BOSS_ASSERT("Updater가 없습니다", m_updater);
-        if(m_updater && 0 < count)
-            m_updater(m_updater_data, count);
+        BOSS_ASSERT("Updater가 없습니다", m_updater_cb);
+        if(m_updater_cb && 0 < count)
+            m_updater_cb(m_updater_data, count, nullptr);
     }
 
     void ZayObject::invalidate(chars uigroup) const
@@ -150,35 +150,42 @@ namespace BOSS
 
     void ZayObject::exit()
     {
-        BOSS_ASSERT("Updater가 없습니다", m_updater);
-        if(m_updater)
-            m_updater(m_updater_data, -1);
+        BOSS_ASSERT("Updater가 없습니다", m_updater_cb);
+        if(m_updater_cb)
+            m_updater_cb(m_updater_data, -1, nullptr);
     }
 
     void ZayObject::hide()
     {
-        BOSS_ASSERT("Updater가 없습니다", m_updater);
-        if(m_updater)
-            m_updater(m_updater_data, -2);
+        BOSS_ASSERT("Updater가 없습니다", m_updater_cb);
+        if(m_updater_cb)
+            m_updater_cb(m_updater_data, -2, nullptr);
     }
 
     void ZayObject::show()
     {
-        BOSS_ASSERT("Updater가 없습니다", m_updater);
-        if(m_updater)
-            m_updater(m_updater_data, -3);
+        BOSS_ASSERT("Updater가 없습니다", m_updater_cb);
+        if(m_updater_cb)
+            m_updater_cb(m_updater_data, -3, nullptr);
+    }
+
+    void ZayObject::showby(sint32 x, sint32 y, sint32 w, sint32 h)
+    {
+        BOSS_ASSERT("Updater가 없습니다", m_updater_cb);
+        if(m_updater_cb)
+            m_updater_cb(m_updater_data, -4, String::Format("%d,%d,%d,%d", x, y, w, h));
     }
 
     bool ZayObject::valid(chars uiname) const
     {
-        BOSS_ASSERT("Finder가 없습니다", m_finder);
-        return !!m_finder(m_finder_data, uiname);
+        BOSS_ASSERT("Finder가 없습니다", m_finder_cb);
+        return !!m_finder_cb(m_finder_data, uiname);
     }
 
     const rect128& ZayObject::rect(chars uiname) const
     {
-        BOSS_ASSERT("Finder가 없습니다", m_finder);
-        if(auto CurElement = (const ZayView::Element*) m_finder(m_finder_data, uiname))
+        BOSS_ASSERT("Finder가 없습니다", m_finder_cb);
+        if(auto CurElement = (const ZayView::Element*) m_finder_cb(m_finder_data, uiname))
             return CurElement->m_rect;
         static const rect128 NullRect = {0, 0, 0, 0};
         return NullRect;
@@ -186,16 +193,16 @@ namespace BOSS
 
     const float ZayObject::zoom(chars uiname) const
     {
-        BOSS_ASSERT("Finder가 없습니다", m_finder);
-        if(auto CurElement = (const ZayView::Element*) m_finder(m_finder_data, uiname))
+        BOSS_ASSERT("Finder가 없습니다", m_finder_cb);
+        if(auto CurElement = (const ZayView::Element*) m_finder_cb(m_finder_data, uiname))
             return CurElement->m_zoom;
         return 1;
     }
 
     const point64& ZayObject::oldxy(chars uiname) const
     {
-        BOSS_ASSERT("Finder가 없습니다", m_finder);
-        if(auto CurElement = (const ZayView::Element*) m_finder(m_finder_data, uiname))
+        BOSS_ASSERT("Finder가 없습니다", m_finder_cb);
+        if(auto CurElement = (const ZayView::Element*) m_finder_cb(m_finder_data, uiname))
             return CurElement->m_saved_xy;
         static const point64 NullPoint = {0, 0};
         return NullPoint;
@@ -1766,9 +1773,9 @@ namespace BOSS
 
         void setCallback(ZayObject::FinderCB fcb, void* fdata, ZayObject::UpdaterCB icb, void* idata)
         {
-            m_finder = fcb;
+            m_finder_cb = fcb;
             m_finder_data = fdata;
-            m_updater = icb;
+            m_updater_cb = icb;
             m_updater_data = idata;
         }
     };

@@ -237,7 +237,7 @@ namespace BOSS
 
     public:
         typedef const void* (*FinderCB)(void*, chars);
-        typedef void (*UpdaterCB)(void*, sint32);
+        typedef void (*UpdaterCB)(void*, sint32, chars);
         typedef void (*ScrollerCB)(const size64&, const point64&);
         typedef void (*ReleaseCaptureCB)(payload olddata, payload newdata);
 
@@ -262,6 +262,7 @@ namespace BOSS
         void exit();
         void hide();
         void show();
+        void showby(sint32 x, sint32 y, sint32 w, sint32 h);
         bool valid(chars uiname = nullptr) const;
         const rect128& rect(chars uiname = nullptr) const;
         const float zoom(chars uiname = nullptr) const;
@@ -296,9 +297,9 @@ namespace BOSS
         void* m_resource;
         sint32 m_frame_counter;
         FrameUpdater m_frame_updater;
-        FinderCB m_finder;
+        FinderCB m_finder_cb;
         void* m_finder_data;
-        UpdaterCB m_updater;
+        UpdaterCB m_updater_cb;
         void* m_updater_data;
         sint32 m_resizing_width;
         sint32 m_resizing_height;

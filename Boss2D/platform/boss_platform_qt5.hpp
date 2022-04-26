@@ -229,7 +229,7 @@
 
     public:
         enum ParentType {PT_Null, PT_GenericView, PT_GenericViewGL, PT_MainViewGL, PT_MainViewMDI};
-        enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2, WR_NeedShow = -3};
+        enum WidgetRequest {WR_Null, WR_NeedExit = -1, WR_NeedHide = -2, WR_NeedShow = -3, WR_NeedShowBy = -4};
 
     public:
         ViewAPI(ParentType type, buffer buf, View* manager, View::UpdaterCB cb, QWidget* data, QWidget* device)
@@ -334,7 +334,7 @@
         {
             delete m_next_manager;
             m_next_manager = manager;
-            update(1);
+            update(1, nullptr);
         }
 
         inline void changeViewData(QWidget* data)
@@ -493,13 +493,16 @@
         void dirtyAndUpdate()
         {
             m_view_manager->DirtyAllSurfaces();
-            update(1);
+            update(1, nullptr);
         }
 
-        void update(sint32 count)
+        void update(sint32 count, chars arg)
         {
             if(count <= WR_NeedExit)
+            {
                 m_request = (WidgetRequest) count;
+                if(arg) m_request_arg = arg;
+            }
             else if(m_paintcount < count)
             {
                 if(m_paintcount == 0)
@@ -652,7 +655,19 @@
                     getWidget()->hide();
                 else if(m_request == WR_NeedShow)
                     getWidget()->show();
+                else if(m_request == WR_NeedShowBy)
+                {
+                    auto Args = String::Split(m_request_arg);
+                    BOSS_ASSERT("Args의 수량이 4개가 아닙니다", Args.Count() == 4);
+                    getWidget()->setGeometry(
+                        Parser::GetInt(Args[0]), Parser::GetInt(Args[1]),
+                        Parser::GetInt(Args[2]), Parser::GetInt(Args[3]));
+                    getWidget()->show();
+                    getWidget()->activateWindow(); // setFocus()는 작동하지 않는다!
+                    getWidget()->raise(); // 부모기준 첫번째 자식으로 올림
+                }
                 m_request = WR_Null;
+                m_request_arg.Empty();
             }
         }
 
@@ -697,6 +712,7 @@
         sint32 m_width;
         sint32 m_height;
         WidgetRequest m_request;
+        String m_request_arg;
         sint32 m_paintcount;
         QTimer m_tick_timer;
         QTimer m_update_timer;
@@ -789,8 +805,8 @@
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-        static void updater(void* data, sint32 count)
-        {((GenericView*) data)->m_api->update(count);}
+        static void updater(void* data, sint32 count, chars arg)
+        {((GenericView*) data)->m_api->update(count, arg);}
 
     protected:
         void takeView(h_view view)
@@ -1015,8 +1031,8 @@
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-        static void updater(void* data, sint32 count)
-        {((GenericViewGL*) data)->m_api->update(count);}
+        static void updater(void* data, sint32 count, chars arg)
+        {((GenericViewGL*) data)->m_api->update(count, arg);}
 
     protected:
         void takeView(h_view view)
@@ -1229,8 +1245,8 @@
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-        static void updater(void* data, sint32 count)
-        {((MainViewGL*) data)->m_api->update(count);}
+        static void updater(void* data, sint32 count, chars arg)
+        {((MainViewGL*) data)->m_api->update(count, arg);}
 
     public:
         ViewAPI* m_api;
@@ -1311,8 +1327,8 @@
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE {m_api->wheelEvent(event);}
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
-        static void updater(void* data, sint32 count)
-        {((MainViewMDI*) data)->m_api->update(count);}
+        static void updater(void* data, sint32 count, chars arg)
+        {((MainViewMDI*) data)->m_api->update(count, arg);}
 
     public:
         ViewAPI* m_api;

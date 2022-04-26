@@ -25,7 +25,7 @@ namespace BOSS
     {
     public:
         typedef View* (*CreatorCB)(chars);
-        typedef void (*UpdaterCB)(payload, sint32);
+        typedef void (*UpdaterCB)(payload, sint32, chars);
 
     protected:
         View();
