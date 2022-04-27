@@ -1231,6 +1231,9 @@ namespace BOSS
 
     ZayPanel::StackBinder ZayPanel::_push_freefont(sint32 height, chars nickname)
     {
+        if(height < 0)
+            height = 0;
+
         #if !BOSS_NEED_ADDON_FREETYPE
             return _push_sysfont(height * 0.075, nullptr);
         #endif

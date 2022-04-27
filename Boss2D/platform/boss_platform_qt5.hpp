@@ -1403,6 +1403,7 @@
                     m_ref_menu->show();
                     m_ref_menu->activateWindow(); // setFocus()는 작동하지 않는다!
                     m_ref_menu->raise(); // 부모기준 첫번째 자식으로 올림
+                    Platform::BroadcastNotify("show", nullptr, NT_TrayPopup, nullptr, true);
                 }
                 break;
             case QSystemTrayIcon::DoubleClick: // L버튼 더블클릭된 순간
@@ -1418,6 +1419,7 @@
             if(watched == m_ref_menu && event->type() == QEvent::FocusOut)
             {
                 m_ref_menu->hide();
+                Platform::BroadcastNotify("hide", nullptr, NT_TrayPopup, nullptr, true);
                 return true;
             }
             return QObject::eventFilter(watched, event);
