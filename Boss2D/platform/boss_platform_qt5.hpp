@@ -1154,6 +1154,8 @@
             m_fbo_width = 0;
             m_fbo_height = 0;
 
+            setAttribute(Qt::WA_NoSystemBackground);
+            //setAttribute(Qt::WA_PaintOnScreen); // 현재 OpenGL업데이트를 할 방법을 찾을 수 없음
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
             setFocusPolicy(Qt::ClickFocus);
@@ -1246,7 +1248,9 @@
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyPressEvent(event);}
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE {m_api->keyReleaseEvent(event);}
         static void updater(void* data, sint32 count, chars arg)
-        {((MainViewGL*) data)->m_api->update(count, arg);}
+        {
+            ((MainViewGL*) data)->m_api->update(count, arg);
+        }
 
     public:
         ViewAPI* m_api;
