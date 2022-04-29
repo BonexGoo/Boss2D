@@ -1375,6 +1375,7 @@
         TrayIcon(QWidget* menu)
         {
             m_ref_menu = menu;
+            m_saved_size = m_ref_menu->size();
             Qt::WindowFlags TypeCollector = Qt::Dialog;
             TypeCollector |= Qt::FramelessWindowHint;
             TypeCollector |= Qt::WindowStaysOnTopHint;
@@ -1397,13 +1398,12 @@
             case QSystemTrayIcon::MiddleClick: // 휠버튼 클릭
                 {
                     const QPoint ClickPos = QCursor::pos();
-                    const QSize MenuSize = m_ref_menu->size();
                     const QRect GeometryRect = QApplication::desktop()->screenGeometry(ClickPos);
-                    const float PosX = (GeometryRect.right() < ClickPos.x() + MenuSize.width())?
-                        ClickPos.x() - MenuSize.width() : ClickPos.x();
-                    const float PosY = (GeometryRect.bottom() < ClickPos.y() + MenuSize.height())?
-                        ClickPos.y() - MenuSize.height() : ClickPos.y();
-                    m_ref_menu->move(PosX, PosY);
+                    const float PosX = (GeometryRect.right() < ClickPos.x() + m_saved_size.width())?
+                        ClickPos.x() - m_saved_size.width() : ClickPos.x();
+                    const float PosY = (GeometryRect.bottom() < ClickPos.y() + m_saved_size.height())?
+                        ClickPos.y() - m_saved_size.height() : ClickPos.y();
+                    m_ref_menu->setGeometry(PosX, PosY, m_saved_size.width(), m_saved_size.height());
                     m_ref_menu->show();
                     m_ref_menu->activateWindow(); // setFocus()는 작동하지 않는다!
                     m_ref_menu->raise(); // 부모기준 첫번째 자식으로 올림
@@ -1431,6 +1431,7 @@
 
     private:
         QWidget* m_ref_menu;
+        QSize m_saved_size;
     };
 
     class TrayBox
