@@ -287,7 +287,7 @@ namespace BOSS
     public:
         inline h_view view() const
         {return m_view;}
-        inline sint32 frame() const
+        inline uint32 frame() const
         {return m_frame_counter;}
         inline FrameUpdater* updater()
         {return &m_frame_updater;}
@@ -295,7 +295,7 @@ namespace BOSS
     private:
         h_view m_view;
         void* m_resource;
-        sint32 m_frame_counter;
+        uint32 m_frame_counter;
         FrameUpdater m_frame_updater;
         FinderCB m_finder_cb;
         void* m_finder_data;
