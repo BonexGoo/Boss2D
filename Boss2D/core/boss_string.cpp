@@ -797,7 +797,7 @@ namespace BOSS
     {
         Strings Collector;
         chars Focus = text;
-        while(*text++ != '\0')
+        do
         {
             if(*text == comma || *text == '\0')
             {
@@ -805,6 +805,7 @@ namespace BOSS
                 Focus = text + 1;
             }
         }
+        while(*(text++) != '\0');
         return Collector;
     }
 
