@@ -3165,7 +3165,8 @@
                 delete m_player;
                 delete m_playlist;
                 delete m_output;
-                Mutex::Close(m_outputmutex);
+                if(m_outputmutex)
+                    Mutex::Close(m_outputmutex);
             }
 
         public:
