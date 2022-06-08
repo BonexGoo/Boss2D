@@ -3657,7 +3657,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
-        id_sound Platform::Sound::OpenForFile(chars filename, bool loop, sint32 fade_msec)
+        id_sound Platform::Sound::OpenForFile(chars filename, bool loop)
         {
             #ifdef QT_HAVE_MULTIMEDIA
                 BOSS_ASSERT("해당 사운드파일이 존재하지 않습니다", Platform::File::Exist(filename));
@@ -3686,16 +3686,32 @@
             #endif
         }
 
-        void Platform::Sound::SetVolume(float volume, sint32 fade_msec)
-        {
-        }
-
-        void Platform::Sound::Play(id_sound sound, float volume_rate)
+        void Platform::Sound::SetVolume(id_sound sound, float volume, sint32 apply_msec)
         {
             #ifdef QT_HAVE_MULTIMEDIA
                 SoundClass* CurSound = (SoundClass*) sound;
                 if(!CurSound) return;
-                CurSound->Play(volume_rate);
+                CurSound->SetVolume(volume, apply_msec);
+            #endif
+        }
+
+        bool Platform::Sound::ApplyVolumeOnce(id_sound sound)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return false;
+                return CurSound->ApplyVolumeOnce();
+            #else
+                return false;
+            #endif
+        }
+
+        void Platform::Sound::Play(id_sound sound)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return;
+                CurSound->Play();
             #endif
         }
 

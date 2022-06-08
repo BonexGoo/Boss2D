@@ -1377,10 +1377,9 @@ public:
         /// @brief 파일방식 사운드열기
         /// @param filename : 파일명
         /// @param loop : 루프방식여부
-        /// @param fade_msec : 페이드시간(밀리초)
         /// @return 사운드ID
         /// @see Close
-        static id_sound OpenForFile(chars filename, bool loop = false, sint32 fade_msec = 0);
+        static id_sound OpenForFile(chars filename, bool loop = false);
 
         /// @brief 스트림방식 사운드열기
         /// @param channel : 채널수(1, 2)
@@ -1396,14 +1395,20 @@ public:
         static void Close(id_sound sound);
 
         /// @brief 전체볼륨지정
+        /// @param sound : 사운드ID
         /// @param volume : 볼륨크기(0.0f~1.0f)
-        /// @param fade_msec : 페이드시간(밀리초)
-        static void SetVolume(float volume, sint32 fade_msec = 0);
+        /// @param apply_msec : 적용시간(밀리초)
+        static void SetVolume(id_sound sound, float volume, sint32 apply_msec = 0);
+
+        /// @brief 볼륨변화량 적용
+        /// @param sound : 사운드ID
+        /// @return 변화량이 더 있으면 true
+        static bool ApplyVolumeOnce(id_sound sound);
 
         /// @brief 사운드출력
         /// @param sound : 사운드ID
         /// @param volume_rate : 전체볼륨에 곱해질 배수값(0.0f~1.0f, 그 이상도 가능)
-        static void Play(id_sound sound, float volume_rate = 1.0f);
+        static void Play(id_sound sound);
 
         /// @brief 사운드중단
         /// @param sound : 사운드ID
@@ -1419,7 +1424,7 @@ public:
         /// @param raw : 저수준 사운드데이터
         /// @param size : raw데이터의 길이
         /// @param timeout : 타임아웃
-        /// @return 입력 실패시 -1, 성공시 현재 볼륨값(0~256, 그 이상도 가능)
+        /// @return 입력 실패시 -1, 성공시 현재 볼륨값(0~100, 그 이상도 가능)
         static sint32 AddStreamForPlay(id_sound sound, bytes raw, sint32 size, sint32 timeout = 3000);
 
         /// @brief 현재 플레이되고 있는 사운드중단

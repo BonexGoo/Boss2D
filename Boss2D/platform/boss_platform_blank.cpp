@@ -1719,7 +1719,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
-        id_sound Platform::Sound::OpenForFile(chars filename, bool loop, sint32 fade_msec)
+        id_sound Platform::Sound::OpenForFile(chars filename, bool loop)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
@@ -1736,12 +1736,18 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Sound::SetVolume(float volume, sint32 fade_msec)
+        void Platform::Sound::SetVolume(id_sound sound, float volume, sint32 apply_msec)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Sound::Play(id_sound sound, float volume_rate)
+        bool Platform::Sound::ApplyVolumeOnce(id_sound sound)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
+        void Platform::Sound::Play(id_sound sound)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }

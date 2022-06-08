@@ -3123,7 +3123,10 @@
         public:
             SoundClass(chars filename, bool loop)
             {
-                m_volume = 0;
+                m_volume_pos = 0;
+                m_volume_target = 0;
+                m_volume_pos_msec = 0;
+                m_volume_target_msec = 0;
                 m_player = new QMediaPlayer();
                 m_playlist = nullptr;
                 m_output = nullptr;
@@ -3150,7 +3153,10 @@
                 AudioFormat.setSampleType(QAudioFormat::SignedInt);
                 AudioFormat.setByteOrder(QAudioFormat::LittleEndian);
 
-                m_volume = 0;
+                m_volume_pos = 0;
+                m_volume_target = 0;
+                m_volume_pos_msec = 0;
+                m_volume_target_msec = 0;
                 m_player = nullptr;
                 m_playlist = nullptr;
                 m_output = new QAudioOutput(AudioFormat);
@@ -3170,13 +3176,56 @@
             }
 
         public:
-            void Play(float volume_rate)
+            void SetVolume(float volume, sint32 apply_msec)
             {
-                m_volume = Math::Max(0, 256 * volume_rate);
+                const sint32 NewVolume = Math::Clamp(100 * volume, 0, 100);
+                if(apply_msec == 0 || m_volume_pos == NewVolume)
+                {
+                    m_volume_pos = NewVolume;
+                    m_volume_target = NewVolume;
+                    m_volume_pos_msec = 0;
+                    m_volume_target_msec = 0;
+                    if(m_player)
+                        m_player->setVolume(m_volume_pos);
+                }
+                else
+                {
+                    m_volume_target = NewVolume;
+                    m_volume_pos_msec = Platform::Utility::CurrentTimeMsec();
+                    m_volume_target_msec = m_volume_pos_msec + apply_msec;
+                }
+            }
+            sint32 CalcedVolume() const
+            {
+                if(m_volume_target_msec == 0)
+                    return m_volume_pos;
+                const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+                return Math::Clamp(100 * (CurMsec - m_volume_pos_msec) / (m_volume_target_msec - m_volume_pos_msec), 0, 100);
+            }
+            bool ApplyVolumeOnce()
+            {
+                if(m_volume_target_msec == 0)
+                    return false;
+                const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+                if(m_volume_target_msec <= CurMsec)
+                {
+                    m_volume_pos = m_volume_target;
+                    m_volume_pos_msec = 0;
+                    m_volume_target_msec = 0;
+                    if(m_player)
+                        m_player->setVolume(m_volume_pos);
+                    return false;
+                }
+                if(m_player)
+                    m_player->setVolume(100 * (CurMsec - m_volume_pos_msec) / (m_volume_target_msec - m_volume_pos_msec));
+                return true;
+            }
+            void Play()
+            {
                 branch;
                 jump(m_player)
                 {
-                    m_player->setVolume(100 * volume_rate);
+                    m_player->setVolume(CalcedVolume());
                     m_player->play();
                 }
                 jump(m_output)
@@ -3247,15 +3296,18 @@
                         if(WrittenBytes == -1)
                             return -1;
                         if(WrittenBytes == size)
-                            return m_volume;
+                            return CalcedVolume();
                     }
                     return -1; // Timeout
                 }
-                return m_volume;
+                return CalcedVolume();
             }
 
         private:
-            sint32 m_volume;
+            sint32 m_volume_pos;
+            sint32 m_volume_target;
+            uint64 m_volume_pos_msec;
+            uint64 m_volume_target_msec;
             QMediaPlayer* m_player;
             QMediaPlaylist* m_playlist;
             QAudioOutput* m_output;
