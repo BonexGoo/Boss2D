@@ -720,7 +720,7 @@ namespace BOSS
                 #endif
             }
 
-            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath, ublock* getpid)
+            void Popup_ProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
             {
                 #if BOSS_WINDOWS
                     WString ExePathW = WString::FromChars(exepath);
@@ -736,7 +736,7 @@ namespace BOSS
                     ExecuteInfo.lpFile = (wchars) ExePathW;
                     ExecuteInfo.lpParameters = (wchars) ArgsW;
                     ExecuteInfo.lpDirectory = (dirpath)? (wchars) DirPathW : NULL;
-                    ExecuteInfo.nShow = SW_SHOWNORMAL;
+                    ExecuteInfo.nShow = (hide)? SW_HIDE : SW_SHOWNORMAL;
                     ShellExecuteExW(&ExecuteInfo);
 
                     if(getpid)

@@ -234,13 +234,6 @@
             return NewViewHandle;
         }
 
-        void Platform::SetWindowUrl(chars url)
-        {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-
-            BOSS_ASSERT("Further development is needed.", false);
-        }
-
         void Platform::SetWindowPos(sint32 x, sint32 y)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
@@ -264,6 +257,20 @@
         }
 
         void Platform::SetWindowVisible(bool visible)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SetWindowWebUrl(chars url)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
@@ -489,7 +496,7 @@
             return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
         }
 
-        void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, chars dirpath, ublock* getpid)
+        void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
             return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
         }

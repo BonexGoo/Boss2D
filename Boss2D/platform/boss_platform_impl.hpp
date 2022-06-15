@@ -46,7 +46,7 @@ namespace BOSS
             bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult);
             sint32 Popup_MessageDialog(chars title, chars text, DialogButtonType type);
             void Popup_WebBrowserDialog(String url);
-            void Popup_ProgramDialog(chars exepath, chars args, bool admin, chars dirpath, ublock* getpid = nullptr);
+            void Popup_ProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid = nullptr);
             void Kill_ProgramDialog(ublock pid);
 
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash);

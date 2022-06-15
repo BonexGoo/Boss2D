@@ -1582,10 +1582,23 @@
                 m_parent->setWindowFlags(TypeCollector);
         }
 
-        void setWindowUrl(chars url)
+        void setWindowWebUrl(chars url)
         {
             if(m_webPaper)
                 m_webPaper->load(QUrl(QString::fromUtf8(url)));
+        }
+
+        void callWindowWebJSFunction(chars script, sint32 matchid)
+        {
+            if(m_webPaper)
+            {
+                m_webPaper->page()->runJavaScript(script,
+                    [this, matchid](const QVariant& v)->void
+                    {
+                        Platform::BroadcastNotify(String::Format("JSResult[%d]:<%s>",
+                            matchid, v.toString().toUtf8().constData()), nullptr, NT_WindowWeb);
+                    });
+            }
         }
 
         ViewAPI* getMainAPI()

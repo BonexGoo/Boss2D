@@ -8,7 +8,7 @@ namespace BOSS
 {
     BOSS_DECLARE_HANDLE(h_view);
     enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease,
-        NT_FileContent, NT_SocketReceive, NT_Summit, NT_GLState,
+        NT_WindowWeb, NT_FileContent, NT_SocketReceive, NT_Summit, NT_GLState,
         NT_BluetoothSearch, NT_BluetoothDevice, NT_BluetoothService, NT_BluetoothReceive,
         NT_CameraCapture, NT_TrayPopup, NT_AddOn};
     enum TouchType {TT_Null,

@@ -76,10 +76,6 @@ public:
     /// @return 뷰핸들
     static h_view SetWindowView(chars viewclass = nullptr);
 
-    /// @brief 윈도우배경 설정
-    /// @param url : 윈도우배경으로 쓸 URL
-    static void SetWindowUrl(chars url);
-
     /// @brief 윈도우위치 설정
     /// @param x : 가로위치(px)
     /// @param y : 세로위치(px)
@@ -105,6 +101,15 @@ public:
     /// @brief 윈도우보여짐 설정
     /// @param visible : 보여짐여부
     static void SetWindowVisible(bool visible);
+
+    /// @brief 윈도우웹 URL설정
+    /// @param url : 웹으로 윈도우배경을 만들 URL
+    static void SetWindowWebUrl(chars url);
+
+    /// @brief 윈도우웹 자바스크립트함수 호출
+    /// @param script : 자바스크립트 소스코드(예시: "func(1, 2);")
+    /// @param matchid : 호출결과를 매칭하기 위한 ID(Notify를 통해 결과받음/NT_WindowWeb)
+    static void CallWindowWebJSFunction(chars script, sint32 matchid = 0);
 
     /// @brief 윈도우 강조하기
     static void SetWindowFlash();
@@ -313,9 +318,10 @@ public:
         /// @param exepath : 실행파일의 경로
         /// @param args : 전달할 스트링
         /// @param admin : 관리자권한
+        /// @param hide : 윈도우창 숨김
         /// @param dirpath : 실행위치
         /// @param getpid : 프로세스ID를 받는 변수
-        static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, chars dirpath = nullptr, ublock* getpid = nullptr);
+        static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, bool hide = false, chars dirpath = nullptr, ublock* getpid = nullptr);
 
         /// @brief 응용프로그램 다이얄로그 닫기
         /// @param pid : 프로세스ID
