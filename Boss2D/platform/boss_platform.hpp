@@ -27,9 +27,8 @@ enum UIStretchForm {UISF_Strong, UISF_Inner, UISF_Outer, UISF_Width, UISF_Height
 enum UIEditType {UIET_String, UIET_Int, UIET_Float};
 enum UITestOrder {UITO_ScissorOn, UITO_ScissorOff};
 enum UIStack {UIS_PushPop, UIS_Push, UIS_Current, UIS_Pop};
-enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst,
-    MR_SrcIn, MR_DstIn, MR_SrcOut, MR_DstOut,
-    MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Default = MR_SrcOver};
+enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn,
+    MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Default = MR_SrcOver};
 enum ShaderRole {SR_Normal, SR_Nv21, SR_BlurWeak, SR_BlurMedium, SR_BlurStrong, SR_Max};
 enum CursorRole {CR_Arrow, CR_UpArrow, CR_Cross, CR_Wait, CR_IBeam, CR_Blank,
     CR_SizeVer, CR_SizeHor, CR_SizeBDiag, CR_SizeFDiag, CR_SizeAll,

@@ -4252,6 +4252,10 @@
 
             setPage(new WebPageClass(this));
             setMouseTracking(true);
+            // 배경의 투명화
+            setStyleSheet("background-color:transparent;");
+            page()->setBackgroundColor(Qt::transparent);
+
             connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
             connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
             connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
@@ -4464,6 +4468,7 @@
             }
             const QImage& GetImage()
             {
+                mLastImage.fill(QColor(0, 0, 0, 0));
                 CanvasClass CurCanvas(&mLastImage);
                 mView.update();
                 mView.render(&CurCanvas.painter());
