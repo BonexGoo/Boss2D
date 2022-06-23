@@ -179,6 +179,7 @@
         void UnbindCore();
     public:
         // Getter
+        static inline bool enabled() {return (ST() != ST_FIRST());}
         static inline CanvasClass* get() {return ST();}
         inline QPainter& painter() {return mPainter;}
         inline bool is_font_ft() const {return mUseFontFT;}
@@ -205,7 +206,8 @@
         inline void SetShader(ShaderRole role)
         {mShader = role;}
     private:
-        static inline CanvasClass*& ST() {static CanvasClass* _ = nullptr; return _;}
+        static inline CanvasClass* ST_FIRST() {static CanvasClass _; return &_;}
+        static inline CanvasClass*& ST() {static CanvasClass* _ = ST_FIRST(); return _;}
     private: // 서피스관련
         const bool mIsTypeSurface;
         bool mIsSurfaceBinded;
@@ -479,7 +481,7 @@
         void paint()
         {
             // for assert dialog's recursive call
-            if(CanvasClass::get()) return;
+            if(CanvasClass::enabled()) return;
             CanvasClass Canvas(getWidgetForPaint());
             render(m_width, m_height);
         }
@@ -1586,6 +1588,47 @@
         {
             if(m_webPaper)
                 m_webPaper->load(QUrl(QString::fromUtf8(url)));
+        }
+
+        void SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
+        {
+            if(m_webPaper)
+            {
+                QMouseEvent::Type CurType = QMouseEvent::None;
+                sint32 ButtonType = 0;
+                switch(type)
+                {
+                case TT_Moving: CurType = QMouseEvent::MouseMove; break;
+                case TT_Press: CurType = QMouseEvent::MouseButtonPress; ButtonType = 1; break;
+                case TT_Dragging: CurType = QMouseEvent::MouseMove; ButtonType = 1; break;
+                case TT_Release: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 1; break;
+                case TT_ExtendPress: CurType = QMouseEvent::MouseButtonPress; ButtonType = 2; break;
+                case TT_ExtendDragging: CurType = QMouseEvent::MouseMove; ButtonType = 2; break;
+                case TT_ExtendRelease: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 2; break;
+                default: BOSS_ASSERT("해당 case가 준비되지 않았습니다", false);
+                }
+                QMouseEvent NewEvent(CurType, QPoint(x, y),
+                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                    Qt::NoModifier);
+                Q_FOREACH(QObject* obj, m_webPaper->page()->view()->children())
+                {
+                    if(qobject_cast<QWidget*>(obj))
+                        QApplication::sendEvent(obj, &NewEvent);
+                }
+            }
+        }
+
+        void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
+        {
+            if(m_webPaper)
+            {
+                if(auto CurWidget = m_webPaper->focusProxy())
+                {
+                    QKeyEvent NewEvent((pressed)? QKeyEvent::KeyPress : QKeyEvent::KeyRelease, code, Qt::NoModifier, text);
+                    QApplication::sendEvent(CurWidget, &NewEvent);
+                }
+            }
         }
 
         void callWindowWebJSFunction(chars script, sint32 matchid)

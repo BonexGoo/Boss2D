@@ -28,7 +28,10 @@ enum UIEditType {UIET_String, UIET_Int, UIET_Float};
 enum UITestOrder {UITO_ScissorOn, UITO_ScissorOff};
 enum UIStack {UIS_PushPop, UIS_Push, UIS_Current, UIS_Pop};
 enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn,
-    MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Default = MR_SrcOver};
+    MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop,
+    MR_Xor, MR_Plus, MR_Multiply, MR_Screen, MR_Overlay, MR_Darken, MR_Lighten,
+    MR_ColorDodge, MR_ColorBurn, MR_HardLight, MR_SoftLight, MR_Difference, MR_Exclusion,
+    MR_Default = MR_SrcOver};
 enum ShaderRole {SR_Normal, SR_Nv21, SR_BlurWeak, SR_BlurMedium, SR_BlurStrong, SR_Max};
 enum CursorRole {CR_Arrow, CR_UpArrow, CR_Cross, CR_Wait, CR_IBeam, CR_Blank,
     CR_SizeVer, CR_SizeHor, CR_SizeBDiag, CR_SizeFDiag, CR_SizeAll,
@@ -104,6 +107,18 @@ public:
     /// @brief 윈도우웹 URL설정
     /// @param url : 웹으로 윈도우배경을 만들 URL
     static void SetWindowWebUrl(chars url);
+
+    /// @brief 윈도우웹 터치이벤트 전달
+    /// @param type : 터치타입
+    /// @param x : 좌측위치(px)
+    /// @param y : 상단위치(px)
+    static void SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y);
+
+    /// @brief 윈도우웹 키이벤트 전달
+    /// @param code : 키코드
+    /// @param text : 키문자열
+    /// @param pressed : 눌려짐 여부
+    static void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed);
 
     /// @brief 윈도우웹 자바스크립트함수 호출
     /// @param script : 자바스크립트 소스코드(예시: "func(1, 2);")

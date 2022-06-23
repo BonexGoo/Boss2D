@@ -82,7 +82,7 @@
     void CanvasClass::BindCore(QPaintDevice* device)
     {
         BOSS_ASSERT("mSavedCanvas는 nullptr이어야 합니다", !mSavedCanvas);
-        if(mSavedCanvas = ST())
+        if((mSavedCanvas = ST()) != ST_FIRST())
         {
             mSavedCanvas->mSavedZoom = mSavedCanvas->mPainter.matrix().m11();
             mSavedCanvas->mSavedFont = mSavedCanvas->mPainter.font();
@@ -99,7 +99,7 @@
         mPainter.end();
         if(auto CurGLWidget = g_data->getGLWidget())
             CurGLWidget->makeCurrent();
-        if(ST() = mSavedCanvas)
+        if((ST() = mSavedCanvas) != ST_FIRST())
         {
             mSavedCanvas->mPainter.begin(mSavedCanvas->mPainter.device());
             mSavedCanvas->mPainter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
@@ -425,6 +425,18 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             g_data->setWindowWebUrl(url);
+        }
+
+        void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            g_data->SendWindowWebTouchEvent(type, x, y);
+        }
+
+        void Platform::SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            g_data->SendWindowWebKeyEvent(code, text, pressed);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
@@ -1621,6 +1633,18 @@
             case MR_SrcAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceAtop); break;
             case MR_DstAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationAtop); break;
             case MR_Xor: CanvasClass::get()->SetMask(QPainter::CompositionMode_Xor); break;
+            case MR_Plus: CanvasClass::get()->SetMask(QPainter::CompositionMode_Plus); break;
+            case MR_Multiply: CanvasClass::get()->SetMask(QPainter::CompositionMode_Multiply); break;
+            case MR_Screen: CanvasClass::get()->SetMask(QPainter::CompositionMode_Screen); break;
+            case MR_Overlay: CanvasClass::get()->SetMask(QPainter::CompositionMode_Overlay); break;
+            case MR_Darken: CanvasClass::get()->SetMask(QPainter::CompositionMode_Darken); break;
+            case MR_Lighten: CanvasClass::get()->SetMask(QPainter::CompositionMode_Lighten); break;
+            case MR_ColorDodge: CanvasClass::get()->SetMask(QPainter::CompositionMode_ColorDodge); break;
+            case MR_ColorBurn: CanvasClass::get()->SetMask(QPainter::CompositionMode_ColorBurn); break;
+            case MR_HardLight: CanvasClass::get()->SetMask(QPainter::CompositionMode_HardLight); break;
+            case MR_SoftLight: CanvasClass::get()->SetMask(QPainter::CompositionMode_SoftLight); break;
+            case MR_Difference: CanvasClass::get()->SetMask(QPainter::CompositionMode_Difference); break;
+            case MR_Exclusion: CanvasClass::get()->SetMask(QPainter::CompositionMode_Exclusion); break;
             }
         }
 
@@ -1873,25 +1897,21 @@
         class ImageRoutine
         {
         public:
-            ImageRoutine()
+            ImageRoutine(sint32 width, sint32 height) : mDstWidth(width), mDstHeight(height), mPlatformImage(width, height, QImage::Format_ARGB32)
             {
+                mPlatformPixmap = nullptr;
                 mSrcWidth = 0;
                 mSrcHeight = 0;
-                mDstWidth = 0;
-                mDstHeight = 0;
-                mPlatformImage = nullptr;
                 mNeedResizing = false;
                 mNeedColoring = false;
                 mDstBits = nullptr;
                 mSrcBits = nullptr;
                 mResultResizingLine = 0;
                 mResultColoringLine = 0;
-                mResultImage = nullptr;
             }
             ~ImageRoutine()
             {
-                delete mPlatformImage;
-                Platform::Graphics::RemoveImage(mResultImage);
+                delete mPlatformPixmap;
             }
 
         public:
@@ -2095,24 +2115,22 @@
             }
             void BuildCheck()
             {
+                BOSS_ASSERT("호출시점이 적절하지 않습니다", !mPlatformPixmap);
                 if(mResultResizingLine == mDstHeight && mResultColoringLine == mDstHeight)
                 {
-                    buffer NewPixmap = Buffer::Alloc<QPixmap>(BOSS_DBG 1);
-                    ((QPixmap*) NewPixmap)->convertFromImage(*mPlatformImage);
-                    mResultImage = (id_image) NewPixmap;
-                    // 불필요한 요소 해제
-                    delete mPlatformImage;
-                    mPlatformImage = nullptr;
+                    mPlatformPixmap = new QPixmap();
+                    *mPlatformPixmap = QPixmap::fromImage(ToReference(mPlatformImage));
                     mSxPool.Clear();
                 }
             }
 
         public:
+            const sint32 mDstWidth;
+            const sint32 mDstHeight;
+            QImage mPlatformImage;
+            QPixmap* mPlatformPixmap;
             sint32 mSrcWidth;
             sint32 mSrcHeight;
-            sint32 mDstWidth;
-            sint32 mDstHeight;
-            QImage* mPlatformImage;
             bool mNeedResizing;
             bool mNeedColoring;
             Color mColoring;
@@ -2121,7 +2139,6 @@
             sint32s mSxPool;
             sint32 mResultResizingLine;
             sint32 mResultColoringLine;
-            id_image mResultImage;
         };
 
         id_image_routine Platform::Graphics::CreateImageRoutine(id_bitmap_read bitmap, sint32 resizing_width, sint32 resizing_height, const Color coloring)
@@ -2129,16 +2146,13 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             BOSS_ASSERT("잘못된 파라미터입니다", resizing_width != -1 && resizing_height != -1);
 
-            auto NewImageRoutine = (ImageRoutine*) Buffer::Alloc<ImageRoutine>(BOSS_DBG 1);
+            auto NewImageRoutine = new ImageRoutine(resizing_width, resizing_height);
             NewImageRoutine->mSrcWidth = Bmp::GetWidth(bitmap);
             NewImageRoutine->mSrcHeight = Bmp::GetHeight(bitmap);
-            NewImageRoutine->mDstWidth = resizing_width;
-            NewImageRoutine->mDstHeight = resizing_height;
-            NewImageRoutine->mPlatformImage = new QImage(NewImageRoutine->mDstWidth, NewImageRoutine->mDstHeight, QImage::Format_ARGB32);
             NewImageRoutine->mNeedResizing = (NewImageRoutine->mDstWidth != NewImageRoutine->mSrcWidth || NewImageRoutine->mDstHeight != NewImageRoutine->mSrcHeight);
             NewImageRoutine->mNeedColoring = (coloring.argb != Color::ColoringDefault);
             NewImageRoutine->mColoring = coloring;
-            NewImageRoutine->mDstBits = (Bmp::bitmappixel*) NewImageRoutine->mPlatformImage->bits();
+            NewImageRoutine->mDstBits = (Bmp::bitmappixel*) NewImageRoutine->mPlatformImage.bits();
             NewImageRoutine->mSrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
             NewImageRoutine->ValidColorTabling();
             NewImageRoutine->ValidResizeTabling();
@@ -2154,19 +2168,19 @@
         id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, bool use_timeout)
         {
             auto CurImageRoutine = (ImageRoutine*) routine;
-            if(!CurImageRoutine->mResultImage)
+            if(!CurImageRoutine->mPlatformPixmap)
             {
                 const uint64 Timeout = (use_timeout)? g_ImageRoutineTimeout : 0;
                 if(CurImageRoutine->ResizingOnce(Timeout))
                     CurImageRoutine->ColoringOnce(Timeout);
                 CurImageRoutine->BuildCheck();
             }
-            return CurImageRoutine->mResultImage;
+            return (id_image_read) CurImageRoutine->mPlatformPixmap;
         }
 
         void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
         {
-            Buffer::Free((buffer) routine);
+            delete (ImageRoutine*) routine;
         }
 
         void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h)
@@ -2792,7 +2806,7 @@
                 g_stackBeginGL++;
                 return true;
             }
-            if(QOpenGLContext::currentContext())
+            if(g_data->getGLWidget())
             {
                 g_stackBeginGL = 1;
                 SurfaceClass::LockForGL();

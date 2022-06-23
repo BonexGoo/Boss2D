@@ -270,6 +270,20 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
