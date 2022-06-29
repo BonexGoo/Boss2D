@@ -133,6 +133,8 @@
     if(auto _ = (PANEL)._push_zoom(ZOOM))
 #define ZAY_ZOOM_CLEAR(PANEL) \
     if(auto _ = (PANEL)._push_zoom_clear())
+#define ZAY_SCISSOR_CLEAR(PANEL) \
+    if(auto _ = (PANEL)._push_scissor_clear())
 
 // 확장형 옵션스택
 // ZayExtend A가 파라미터가 없는 경우 : ZAY_EXTEND(A() >> panel) {...}
@@ -445,6 +447,7 @@ namespace BOSS
         StackBinder _push_freefont(sint32 height, chars nickname = nullptr);
         StackBinder _push_zoom(float zoom);
         StackBinder _push_zoom_clear();
+        StackBinder _push_scissor_clear();
         StackBinder _push_pass();
 
     private:
@@ -457,7 +460,8 @@ namespace BOSS
         void _add_ui(chars uiname, SubGestureCB cb, point64 scrollsense, bool hoverpass);
 
     private:
-        bool _push_scissor(float l, float t, float r, float b);
+        bool _push_scissor_intersect(float l, float t, float r, float b);
+        bool _push_scissor_copy(float l, float t, float r, float b);
         void _pop_scissor();
 
     public:

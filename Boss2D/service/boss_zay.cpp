@@ -1023,7 +1023,7 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-2];
         NewClip = Clip(LastClip.l + l, LastClip.t + t, LastClip.l + r, LastClip.t + b, doScissor);
 
-        if(doScissor && !_push_scissor(NewClip.l, NewClip.t, NewClip.r, NewClip.b))
+        if(doScissor && !_push_scissor_intersect(NewClip.l, NewClip.t, NewClip.r, NewClip.b))
         {
             m_stack_clip.SubtractionOne();
             return StackBinder(this); // 하위진입불가
@@ -1291,6 +1291,20 @@ namespace BOSS
         return StackBinder(this, ST_Zoom);
     }
 
+    ZayPanel::StackBinder ZayPanel::_push_scissor_clear()
+    {
+        Clip& NewClip = m_stack_clip.AtAdding();
+        const Clip& LastClip = m_stack_clip[-2];
+        NewClip = Clip(LastClip.l, LastClip.t, LastClip.r, LastClip.b, true);
+
+        if(!_push_scissor_copy(NewClip.l, NewClip.t, NewClip.r, NewClip.b))
+        {
+            m_stack_clip.SubtractionOne();
+            return StackBinder(this); // 하위진입불가
+        }
+        return StackBinder(this, ST_Clip);
+    }
+
     ZayPanel::StackBinder ZayPanel::_push_pass()
     {
         return StackBinder(this, ST_Pass);
@@ -1377,7 +1391,7 @@ namespace BOSS
         }
     }
 
-    bool ZayPanel::_push_scissor(float l, float t, float r, float b)
+    bool ZayPanel::_push_scissor_intersect(float l, float t, float r, float b)
     {
         Rect& NewScissor = m_stack_scissor.AtAdding();
         const Rect& LastScissor = m_stack_scissor[-2];
@@ -1385,6 +1399,22 @@ namespace BOSS
         NewScissor.t = Math::MaxF(t, LastScissor.t);
         NewScissor.r = Math::MinF(r, LastScissor.r);
         NewScissor.b = Math::MinF(b, LastScissor.b);
+
+        if(m_test_scissor && (NewScissor.r <= NewScissor.l || NewScissor.b <= NewScissor.t))
+        {
+            m_stack_scissor.SubtractionOne();
+            return false;
+        }
+
+        Platform::Graphics::SetScissor(NewScissor.l, NewScissor.t, NewScissor.Width(), NewScissor.Height());
+        return true;
+    }
+
+    bool ZayPanel::_push_scissor_copy(float l, float t, float r, float b)
+    {
+        Rect& NewScissor = m_stack_scissor.AtAdding();
+        const Rect& LastScissor = m_stack_scissor[-2];
+        NewScissor = LastScissor;
 
         if(m_test_scissor && (NewScissor.r <= NewScissor.l || NewScissor.b <= NewScissor.t))
         {
