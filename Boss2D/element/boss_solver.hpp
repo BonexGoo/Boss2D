@@ -12,6 +12,7 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or}; // [and], [or]
+    typedef void (*SolverRemoveCB)(chars, payload);
 
     // 업데이트체인
     class SolverChainPair
@@ -162,8 +163,8 @@ namespace BOSS
         public: Solver& Link(chars chain, chars variable = nullptr, bool updateobservers = false);
         public: void Unlink(bool updateobservers = false);
         public: static Solver* Find(chars chain, chars variable);
-        public: static Strings MatchedVariables(chars chain, chars keyword = nullptr);
         public: static void Remove(chars chain, chars variable);
+        public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb = nullptr, payload param = nullptr);
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;

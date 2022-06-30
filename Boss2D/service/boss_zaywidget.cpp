@@ -1083,12 +1083,22 @@ namespace BOSS
     void ZayWidgetDOM::RemoveVariables(chars keyword)
     {
         auto& Self = ST();
-        const Strings OldVariables = Self.mDocument->MatchedVariables(keyword);
-        for(sint32 i = 0, iend = OldVariables.Count(); i < iend; ++i)
+        Array<id_pipe> Pipes;
+        for(sint32 i = 0, iend = Self.mPipeMap.Count(); i < iend; ++i)
         {
-            Self.mDocument->Remove(OldVariables[i]);
-            Self.RemoveFlush(OldVariables[i]);
+            auto CurPipe = *Self.mPipeMap.AccessByOrder(i);
+            Pipes.AtAdding() = CurPipe.mRefPipe;
         }
+
+        if(Pipes.Count() == 0)
+            Self.mDocument->RemoveMatchedVariables(keyword);
+        else Self.mDocument->RemoveMatchedVariables(keyword,
+            [](chars variable, payload param)->void
+            {
+                auto& Pipes = *((const Array<id_pipe>*) param);
+                for(sint32 i = 0, iend = Pipes.Count(); i < iend; ++i)
+                    RemoveToPipe(Pipes[i], variable);
+            }, (payload) &Pipes);
     }
 
     void ZayWidgetDOM::BindPipe(id_pipe pipe)

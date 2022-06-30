@@ -104,14 +104,14 @@ namespace BOSS
         }
     }
 
-    Strings ZaySonDocument::MatchedVariables(chars keyword)
-    {
-        return Solver::MatchedVariables(mChain, keyword);
-    }
-
     void ZaySonDocument::Remove(chars variable)
     {
         Solver::Remove(mChain, variable);
+    }
+
+    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverRemoveCB cb, payload param)
+    {
+        return Solver::RemoveMatchedVariables(mChain, keyword, cb, param);
     }
 
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)

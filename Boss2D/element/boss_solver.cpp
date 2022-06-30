@@ -837,40 +837,51 @@ namespace BOSS
         return nullptr;
     }
 
-    Strings Solver::MatchedVariables(chars chain, chars keyword)
-    {
-        Strings Collector;
-        if(auto FindedChain = &gSolverChains(chain))
-        {
-            if(keyword == nullptr)
-            {
-                for(sint32 i = 0, iend = FindedChain->Count(); i < iend; ++i)
-                {
-                    chararray GetName;
-                    FindedChain->AccessByOrder(i, &GetName);
-                    Collector.AtAdding() = &GetName[0];
-                }
-            }
-            else
-            {
-                const String FindKeyword(keyword);
-                for(sint32 i = 0, iend = FindedChain->Count(); i < iend; ++i)
-                {
-                    chararray GetName;
-                    FindedChain->AccessByOrder(i, &GetName);
-                    const String Variable(ToReference(GetName));
-                    if(0 <= Variable.Find(0, FindKeyword))
-                        Collector.AtAdding() = Variable;
-                }
-            }
-        }
-        return Collector;
-    }
-
     void Solver::Remove(chars chain, chars variable)
     {
         if(auto FindedChain = &gSolverChains(chain))
             FindedChain->Remove(variable);
+    }
+
+    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb, payload param)
+    {
+        BOSS_ASSERT("잘못된 시나리오입니다", keyword);
+        if(auto FindedChain = &gSolverChains(chain))
+        {
+            struct Payload
+            {
+                SolverChain* mChain;
+                String mKeyword;
+                Strings mMatchedVariables;
+            };
+            Payload OnePayload {FindedChain, keyword};
+
+            // 삭제대상의 선별
+            FindedChain->AccessByCallback(
+                [](const MapPath* path, SolverChainPair* data, payload param)->void
+                {
+                    Payload& OnePayload = *((Payload*) param);
+                    const String Variable(ToReference(path->GetPath()));
+                    if(0 <= Variable.Find(0, OnePayload.mKeyword))
+                        OnePayload.mMatchedVariables.AtAdding() = Variable;
+                }, (payload) &OnePayload);
+
+            // 삭제실행
+            if(cb)
+            {
+                for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
+                {
+                    auto& CurVariable = OnePayload.mMatchedVariables[i];
+                    OnePayload.mChain->Remove(CurVariable);
+                    cb(CurVariable, param);
+                }
+            }
+            else for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
+            {
+                auto& CurVariable = OnePayload.mMatchedVariables[i];
+                OnePayload.mChain->Remove(CurVariable);
+            }
+        }
     }
 
     Solver& Solver::Parse(chars formula)

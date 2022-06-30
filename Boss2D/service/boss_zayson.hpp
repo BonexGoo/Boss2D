@@ -24,8 +24,8 @@ namespace BOSS
         String GetComment(chars variable) const;
         void SetComment(chars variable, chars text);
         void SetJson(const Context& json, const String nameheader = "");
-        Strings MatchedVariables(chars keyword = nullptr);
         void Remove(chars variable);
+        void RemoveMatchedVariables(chars keyword, SolverRemoveCB cb = nullptr, payload param = nullptr);
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
 
     protected:
