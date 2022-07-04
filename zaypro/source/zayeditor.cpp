@@ -713,7 +713,10 @@ bool ZEWidgetPipe::TickOnce()
             CurDOM.mUpdateMsec = Platform::Utility::CurrentTimeMsec();
         }
         else if(!String::Compare(Type, "dom_removed"))
-            mDOM.Remove((*NewJson)("variable").GetText());
+        {
+            const String OldVariable = (*NewJson)("variable").GetText();
+            mDOM.Remove(OldVariable);
+        }
         else AddLog(Type, (*NewJson)("title").GetText(), (*NewJson)("detail").GetText());
         NeedUpdate = true;
     }

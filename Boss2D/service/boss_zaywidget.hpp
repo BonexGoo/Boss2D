@@ -68,9 +68,9 @@ namespace BOSS
         static void UnbindPipe(id_pipe pipe);
 
     private:
-        void UpdateFlush();
+        void ConfirmUpdate();
+        void ConfirmRemove(chars variable);
         static void UpdateToPipe(id_pipe pipe, const Solver* solver);
-        void RemoveFlush(chars variable);
         static void RemoveToPipe(id_pipe pipe, chars variable);
 
     private:
@@ -87,6 +87,10 @@ namespace BOSS
     private:
         ZayWidgetDocumentP* const mDocument;
         Map<Pipe> mPipeMap;
+        bool mHasUpdate;
+        bool mHasRemove;
+        Map<bool> mRemoveVariables;
+        sint32 mUpdateProcedure;
     };
 
     /// @brief 제이컨트롤

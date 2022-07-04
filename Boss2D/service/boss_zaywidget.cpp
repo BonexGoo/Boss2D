@@ -1034,10 +1034,52 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     ZayWidgetDOM::ZayWidgetDOM() : mDocument(new ZayWidgetDocumentP())
     {
+        mHasUpdate = false;
+        mHasRemove = false;
+        mUpdateProcedure = Platform::AddProcedure(PE_100MSEC,
+            [](payload data)->void
+            {
+                auto Self = (ZayWidgetDOM*) data;
+                const uint64 NowMsec = Platform::Utility::CurrentTimeMsec();
+
+                // 우선적으로 삭제처리
+                if(Self->mHasRemove)
+                for(sint32 i = 0, iend = Self->mPipeMap.Count(); i < iend; ++i)
+                {
+                    auto CurPipe = *Self->mPipeMap.AccessByOrder(i);
+                    id_pipe PipeID = CurPipe.mRefPipe;
+                    for(sint32 j = 0, jend = Self->mRemoveVariables.Count(); j < jend; ++j)
+                    {
+                        chararray CurVariable;
+                        if(Self->mRemoveVariables.AccessByOrder(j, &CurVariable))
+                            RemoveToPipe(PipeID, &CurVariable[0]);
+                    }
+                }
+
+                // 업데이트처리
+                if(Self->mHasUpdate)
+                for(sint32 i = 0, iend = Self->mPipeMap.Count(); i < iend; ++i)
+                {
+                    if(auto CurPipe = Self->mPipeMap.AccessByOrder(i))
+                    if(CurPipe->mUpdatedMsec < NowMsec)
+                    {
+                        id_pipe CurPipeID = CurPipe->mRefPipe;
+                        Self->mDocument->CheckUpdatedSolvers(CurPipe->mUpdatedMsec, [CurPipeID](const Solver* solver)->void
+                        {UpdateToPipe(CurPipeID, solver);});
+                        CurPipe->mUpdatedMsec = NowMsec;
+                    }
+                }
+
+                // 초기화
+                Self->mHasUpdate = false;
+                Self->mHasRemove = false;
+                Self->mRemoveVariables.Reset();
+            }, this);
     }
 
     ZayWidgetDOM::~ZayWidgetDOM()
     {
+        Platform::SubProcedure(mUpdateProcedure);
         delete mDocument;
     }
 
@@ -1057,7 +1099,7 @@ namespace BOSS
     {
         auto& Self = ST();
         Self.mDocument->SetValue(variable, formula);
-        Self.UpdateFlush();
+        Self.ConfirmUpdate();
     }
 
     String ZayWidgetDOM::GetComment(chars variable)
@@ -1070,14 +1112,14 @@ namespace BOSS
     {
         auto& Self = ST();
         Self.mDocument->SetComment(variable, text);
-        Self.UpdateFlush();
+        Self.ConfirmUpdate();
     }
 
     void ZayWidgetDOM::SetJson(const Context& json, const String nameheader)
     {
         auto& Self = ST();
         Self.mDocument->SetJson(json, nameheader);
-        Self.UpdateFlush();
+        Self.ConfirmUpdate();
     }
 
     void ZayWidgetDOM::RemoveVariables(chars keyword)
@@ -1122,20 +1164,15 @@ namespace BOSS
         }
     }
 
-    void ZayWidgetDOM::UpdateFlush()
+    void ZayWidgetDOM::ConfirmUpdate()
     {
-        const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-        for(sint32 i = 0, iend = mPipeMap.Count(); i < iend; ++i)
-        {
-            if(auto CurPipe = mPipeMap.AccessByOrder(i))
-            if(CurPipe->mUpdatedMsec < CurMsec)
-            {
-                id_pipe CurPipeID = CurPipe->mRefPipe;
-                mDocument->CheckUpdatedSolvers(CurPipe->mUpdatedMsec, [CurPipeID](const Solver* solver)->void
-                {UpdateToPipe(CurPipeID, solver);});
-                CurPipe->mUpdatedMsec = CurMsec;
-            }
-        }
+        mHasUpdate = true;
+    }
+
+    void ZayWidgetDOM::ConfirmRemove(chars variable)
+    {
+        mHasRemove = true;
+        mRemoveVariables(variable) = true;
     }
 
     void ZayWidgetDOM::UpdateToPipe(id_pipe pipe, const Solver* solver)
@@ -1146,16 +1183,6 @@ namespace BOSS
         Json.At("result").Set(solver->result().ToText(true));
         Json.At("formula").Set(solver->parsed_formula());
         Platform::Pipe::SendJson(pipe, Json.SaveJson());
-    }
-
-    void ZayWidgetDOM::RemoveFlush(chars variable)
-    {
-        for(sint32 i = 0, iend = mPipeMap.Count(); i < iend; ++i)
-        {
-            auto CurPipe = *mPipeMap.AccessByOrder(i);
-            id_pipe PipeID = CurPipe.mRefPipe;
-            RemoveToPipe(PipeID, variable);
-        }
     }
 
     void ZayWidgetDOM::RemoveToPipe(id_pipe pipe, chars variable)
