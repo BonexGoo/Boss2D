@@ -1484,7 +1484,9 @@
             m_parent = parent;
             m_viewGL = nullptr;
             m_viewMDI = nullptr;
-            m_webPaper = nullptr;
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                m_webPaper = nullptr;
+            #endif
         }
         ~MainData() {}
 
@@ -1518,18 +1520,20 @@
             m_viewGL->m_api->renewParent(m_viewGL);
 
             auto MainWidget = new QWidget();
-            if(url)
-            {
-                m_webPaper = new QWebEngineView(m_parent);
-                m_webPaper->load(QUrl(QString::fromUtf8(url)));
-                auto MainLayout = new QStackedLayout();
-                MainLayout->setStackingMode(QStackedLayout::StackAll);
-                MainLayout->setMargin(0);
-                MainLayout->addWidget(m_webPaper);
-                MainLayout->addWidget(m_viewGL);
-                MainWidget->setLayout(MainLayout);
-            }
-            else
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                if(url)
+                {
+                    m_webPaper = new QWebEngineView(m_parent);
+                    m_webPaper->load(QUrl(QString::fromUtf8(url)));
+                    auto MainLayout = new QStackedLayout();
+                    MainLayout->setStackingMode(QStackedLayout::StackAll);
+                    MainLayout->setMargin(0);
+                    MainLayout->addWidget(m_webPaper);
+                    MainLayout->addWidget(m_viewGL);
+                    MainWidget->setLayout(MainLayout);
+                }
+                else
+            #endif
             {
                 auto MainLayout = new QHBoxLayout();
                 MainLayout->setMargin(0);
@@ -1586,62 +1590,70 @@
 
         void setWindowWebUrl(chars url)
         {
-            if(m_webPaper)
-                m_webPaper->load(QUrl(QString::fromUtf8(url)));
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                if(m_webPaper)
+                    m_webPaper->load(QUrl(QString::fromUtf8(url)));
+            #endif
         }
 
         void SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
         {
-            if(m_webPaper)
-            {
-                QMouseEvent::Type CurType = QMouseEvent::None;
-                sint32 ButtonType = 0;
-                switch(type)
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                if(m_webPaper)
                 {
-                case TT_Moving: CurType = QMouseEvent::MouseMove; break;
-                case TT_Press: CurType = QMouseEvent::MouseButtonPress; ButtonType = 1; break;
-                case TT_Dragging: CurType = QMouseEvent::MouseMove; ButtonType = 1; break;
-                case TT_Release: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 1; break;
-                case TT_ExtendPress: CurType = QMouseEvent::MouseButtonPress; ButtonType = 2; break;
-                case TT_ExtendDragging: CurType = QMouseEvent::MouseMove; ButtonType = 2; break;
-                case TT_ExtendRelease: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 2; break;
-                default: BOSS_ASSERT("해당 case가 준비되지 않았습니다", false);
+                    QMouseEvent::Type CurType = QMouseEvent::None;
+                    sint32 ButtonType = 0;
+                    switch(type)
+                    {
+                    case TT_Moving: CurType = QMouseEvent::MouseMove; break;
+                    case TT_Press: CurType = QMouseEvent::MouseButtonPress; ButtonType = 1; break;
+                    case TT_Dragging: CurType = QMouseEvent::MouseMove; ButtonType = 1; break;
+                    case TT_Release: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 1; break;
+                    case TT_ExtendPress: CurType = QMouseEvent::MouseButtonPress; ButtonType = 2; break;
+                    case TT_ExtendDragging: CurType = QMouseEvent::MouseMove; ButtonType = 2; break;
+                    case TT_ExtendRelease: CurType = QMouseEvent::MouseButtonRelease; ButtonType = 2; break;
+                    default: BOSS_ASSERT("해당 case가 준비되지 않았습니다", false);
+                    }
+                    QMouseEvent NewEvent(CurType, QPoint(x, y),
+                        (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                        (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
+                        Qt::NoModifier);
+                    Q_FOREACH(QObject* obj, m_webPaper->page()->view()->children())
+                    {
+                        if(qobject_cast<QWidget*>(obj))
+                            QApplication::sendEvent(obj, &NewEvent);
+                    }
                 }
-                QMouseEvent NewEvent(CurType, QPoint(x, y),
-                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
-                    (ButtonType == 0)? Qt::NoButton : ((ButtonType == 1)? Qt::LeftButton : Qt::RightButton),
-                    Qt::NoModifier);
-                Q_FOREACH(QObject* obj, m_webPaper->page()->view()->children())
-                {
-                    if(qobject_cast<QWidget*>(obj))
-                        QApplication::sendEvent(obj, &NewEvent);
-                }
-            }
+            #endif
         }
 
         void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
         {
-            if(m_webPaper)
-            {
-                if(auto CurWidget = m_webPaper->focusProxy())
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                if(m_webPaper)
                 {
-                    QKeyEvent NewEvent((pressed)? QKeyEvent::KeyPress : QKeyEvent::KeyRelease, code, Qt::NoModifier, text);
-                    QApplication::sendEvent(CurWidget, &NewEvent);
+                    if(auto CurWidget = m_webPaper->focusProxy())
+                    {
+                        QKeyEvent NewEvent((pressed)? QKeyEvent::KeyPress : QKeyEvent::KeyRelease, code, Qt::NoModifier, text);
+                        QApplication::sendEvent(CurWidget, &NewEvent);
+                    }
                 }
-            }
+            #endif
         }
 
         void callWindowWebJSFunction(chars script, sint32 matchid)
         {
-            if(m_webPaper)
-            {
-                m_webPaper->page()->runJavaScript(script,
-                    [this, matchid](const QVariant& v)->void
-                    {
-                        Platform::BroadcastNotify(String::Format("JSResult[%d]:<%s>",
-                            matchid, v.toString().toUtf8().constData()), nullptr, NT_WindowWeb);
-                    });
-            }
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                if(m_webPaper)
+                {
+                    m_webPaper->page()->runJavaScript(script,
+                        [this, matchid](const QVariant& v)->void
+                        {
+                            Platform::BroadcastNotify(String::Format("JSResult[%d]:<%s>",
+                                matchid, v.toString().toUtf8().constData()), nullptr, NT_WindowWeb);
+                        });
+                }
+            #endif
         }
 
         ViewAPI* getMainAPI()
@@ -1690,7 +1702,9 @@
         QMainWindow* m_parent;
         MainViewGL* m_viewGL;
         MainViewMDI* m_viewMDI;
-        QWebEngineView* m_webPaper;
+        #ifdef QT_HAVE_WEBENGINEWIDGETS
+            QWebEngineView* m_webPaper;
+        #endif
         Map<QMenu*> m_menuMap;
         Map<QToolBar*> m_toolbarMap;
     };
@@ -4234,7 +4248,7 @@
         WebEnginePageForExtraDesktop* mPage;
     };
 
-    #if defined(QT_HAVE_WEBENGINEWIDGETS)
+    #ifdef QT_HAVE_WEBENGINEWIDGETS
         typedef QWebEnginePage WebEnginePageClass;
         typedef QWebEngineView WebEngineViewClass;
     #else
@@ -4262,7 +4276,7 @@
         }
 
     private:
-        #if defined(QT_HAVE_WEBENGINEWIDGETS)
+        #ifdef QT_HAVE_WEBENGINEWIDGETS
             bool certificateError(const QWebEngineCertificateError& error) override
             {
                 return true;
@@ -4295,9 +4309,11 @@
 
             setPage(new WebPageClass(this));
             setMouseTracking(true);
-            // 배경의 투명화
-            setStyleSheet("background-color:transparent;");
-            page()->setBackgroundColor(Qt::transparent);
+            #ifdef QT_HAVE_WEBENGINEWIDGETS
+                // 배경의 투명화
+                setStyleSheet("background-color:transparent;");
+                page()->setBackgroundColor(Qt::transparent);
+            #endif
 
             connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
             connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
@@ -4405,7 +4421,7 @@
         payload mData;
     };
 
-    #if defined(QT_HAVE_WEBENGINEWIDGETS)
+    #ifdef QT_HAVE_WEBENGINEWIDGETS
         class WebClassForDesktop
         {
         public:

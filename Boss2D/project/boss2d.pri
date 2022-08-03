@@ -316,7 +316,7 @@ SOURCES += $$TOPPATH/platform/boss_platform_impl.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_native.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_qt5.cpp
 win32-msvc*{
-    HEADERS += $$TOPPATH/platform/win32/glew.h
+    HEADERS += $$TOPPATH/platform/win32/glew-2.2.0/include/GL/glew.h
 }
 ios{
     OBJECTIVE_HEADERS += $$TOPPATH/platform/ios/src/BossWebView.h

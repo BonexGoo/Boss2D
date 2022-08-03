@@ -351,7 +351,7 @@ namespace BOSS
 
             double Utility_CurrentTrafficCPU()
             {
-                #if BOSS_WINDOWS
+                #if BOSS_WINDOWS && !BOSS_WINDOWS_MINGW
                     static struct CPUStateClass
                     {
                         CPUStateClass()
