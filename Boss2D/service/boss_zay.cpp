@@ -1971,6 +1971,14 @@ namespace BOSS
 
     void ZayView::OnTouch(TouchType type, sint32 id, sint32 x, sint32 y)
     {
+        sint32s XY;
+        XY.AtAdding() = x;
+        XY.AtAdding() = y;
+
+        m_ref_func->m_lock(m_data);
+        m_ref_func->m_command(CT_Touch, XY, nullptr);
+        m_ref_func->m_unlock();
+
         Touch* CurTouch = (Touch*) m_touch;
         const Element* ScrollElement = nullptr;
         const Element* PressElement = CurTouch->getpress(); // Press가 존재해야 Scroll도 찾음

@@ -194,7 +194,7 @@
 
 namespace BOSS
 {
-    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Tick};
+    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Touch, CT_Tick};
     enum GestureType {GT_Null,
         GT_Moving, GT_MovingIdle, GT_MovingLosed, // 마우스전용
         GT_Pressed, GT_InReleased, GT_OutReleased, GT_CancelReleased, // 터치

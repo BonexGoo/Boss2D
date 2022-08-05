@@ -509,7 +509,7 @@
     <ClInclude Include="..\platform\android\OpenGLES_Functions.h">
       <Filter>Boss2D\platform\android</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\win32\glew.h">
+    <ClInclude Include="..\platform\win32\glew-2.2.0\include\GL\glew.h">
       <Filter>Boss2D\platform\win32</Filter>
     </ClInclude>
     <ClInclude Include="..\platform\boss_platform.hpp">
