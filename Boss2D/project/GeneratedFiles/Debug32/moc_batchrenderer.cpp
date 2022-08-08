@@ -7,7 +7,7 @@
 *****************************************************************************/
 
 #include <memory>
-#include "../../../platform/plugin_qt5/qtlottie/src/imports/rasterrenderer/batchrenderer.h"
+#include "../../../platform/qt5/qtlottie/src/imports/rasterrenderer/batchrenderer.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
