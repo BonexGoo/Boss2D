@@ -687,8 +687,8 @@ namespace BOSS
                     return panel._push_pass();
                 bool HasError = false;
                 auto UIName = ViewName + '.' + pay.Param(0).ToText();
-                auto UIScrollBgName = ViewName + ".scrollbg." + pay.Param(0).ToText(); // UIName에 제스터전이 방지
-                auto UIScrollBarName = ViewName + ".scrollbar." + pay.Param(0).ToText(); // UIName에 제스터전이 방지
+                auto UIScrollBgName = ViewName + ".scrollbg." + pay.Param(0).ToText(); // UIName에 제스처 전이방지
+                auto UIScrollBarName = ViewName + ".scrollbar." + pay.Param(0).ToText(); // UIName에 제스처 전이방지
                 auto ContentSize = pay.Param(1).ToInteger();
                 auto ContentCount = pay.Param(2).ToInteger();
                 auto Layout = (pay.ParamCount() < 4)? UIL_Vertical : pay.ParamToUILayout(3, HasError);
@@ -745,65 +745,63 @@ namespace BOSS
 
                         // 스크롤영역
                         if(0 < ScrollBorder && 0 < panel.h())
-                        {
-                            ZAY_XYWH_UI(panel, panel.w() - ScrollBorder, 0, ScrollBorder, panel.h(), UIScrollBgName,
-                                ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, WheelSpeed)
-                                {
-                                    if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
-                                    {
-                                        auto CurRect = v->rect(n);
-                                        const float TargetRate = (y - CurRect.t) / float(CurRect.b - CurRect.t);
-                                        const sint32 ScrollPos = v->scrollpos(UIName).y;
-                                        const sint32 ScrollTarget = (CurRect.b - CurRect.t - TotalContentSize) * TargetRate;
-                                        v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.5, false);
-                                    }
-                                    else if(t == GT_WheelUp || t == GT_WheelDown)
-                                    {
-                                        const sint32 ScrollPos = v->scrollpos(UIName).y;
-                                        const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
-                                        v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.0, false);
-                                    }
-                                })
+                        ZAY_XYWH_UI(panel, panel.w() - ScrollBorder, 0, ScrollBorder, panel.h(), UIScrollBgName,
+                            ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, WheelSpeed)
                             {
-                                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
-                                    RenderErrorBox(panel);
-
-                                // 스크롤바
-                                if(panel.h() < TotalContentSize)
+                                if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
                                 {
-                                    const sint32 BarSizeMin = Math::Min(20, panel.h());
-                                    const float ScrollRate = TotalContentSize / panel.h();
-                                    const sint32 ScrollSize = Math::Max(BarSizeMin, panel.h() * panel.h() / TotalContentSize);
-                                    const sint32 ScrollPos = (panel.h() - ScrollSize) * ContentPos / (TotalContentSize - panel.h());
-                                    const sint32 ScrollTop = Math::Clamp(ScrollPos, 0, panel.h() - BarSizeMin);
-                                    const sint32 ScrollBottom = Math::Clamp(ScrollPos + ScrollSize, BarSizeMin, panel.h());
-                                    ZAY_LTRB_UI(panel, 0, ScrollTop, panel.w(), ScrollBottom, UIScrollBarName,
-                                        ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, ScrollRate, WheelSpeed)
-                                        {
-                                            static sint32 FirstY = 0;
-                                            static sint32 OldY = 0;
-                                            if(t == GT_Pressed)
-                                            {
-                                                FirstY = v->scrollpos(UIName).y;
-                                                OldY = y;
-                                            }
-                                            else if(t == GT_InDragging || t == GT_OutDragging)
-                                            {
-                                                const sint32 ScrollTarget = FirstY + (OldY - y) * ScrollRate;
-                                                v->moveScroll(UIName, 0, ScrollTarget, 0, ScrollTarget, 0.1, true);
-                                            }
-                                            else if(t == GT_InReleased || t == GT_OutReleased)
-                                                v->clearScrollTouch(UIName);
-                                            else if(t == GT_WheelUp || t == GT_WheelDown)
-                                            {
-                                                const sint32 ScrollPos = v->scrollpos(UIName).y;
-                                                const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
-                                                v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.0, false);
-                                            }
-                                        })
-                                        if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
-                                            RenderErrorBox(panel);
+                                    auto CurRect = v->rect(n);
+                                    const float TargetRate = (y - CurRect.t) / float(CurRect.b - CurRect.t);
+                                    const sint32 ScrollPos = v->scrollpos(UIName).y;
+                                    const sint32 ScrollTarget = (CurRect.b - CurRect.t - TotalContentSize) * TargetRate;
+                                    v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.5, false);
                                 }
+                                else if(t == GT_WheelUp || t == GT_WheelDown)
+                                {
+                                    const sint32 ScrollPos = v->scrollpos(UIName).y;
+                                    const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
+                                    v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.0, false);
+                                }
+                            })
+                        {
+                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                                RenderErrorBox(panel);
+
+                            // 스크롤바
+                            if(panel.h() < TotalContentSize)
+                            {
+                                const sint32 BarSizeMin = Math::Min(20, panel.h());
+                                const float ScrollRate = TotalContentSize / panel.h();
+                                const sint32 ScrollSize = Math::Max(BarSizeMin, panel.h() * panel.h() / TotalContentSize);
+                                const sint32 ScrollPos = (panel.h() - ScrollSize) * ContentPos / (TotalContentSize - panel.h());
+                                const sint32 ScrollTop = Math::Clamp(ScrollPos, 0, panel.h() - BarSizeMin);
+                                const sint32 ScrollBottom = Math::Clamp(ScrollPos + ScrollSize, BarSizeMin, panel.h());
+                                ZAY_LTRB_UI(panel, 0, ScrollTop, panel.w(), ScrollBottom, UIScrollBarName,
+                                    ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, ScrollRate, WheelSpeed)
+                                    {
+                                        static sint32 FirstY = 0;
+                                        static sint32 OldY = 0;
+                                        if(t == GT_Pressed)
+                                        {
+                                            FirstY = v->scrollpos(UIName).y;
+                                            OldY = y;
+                                        }
+                                        else if(t == GT_InDragging || t == GT_OutDragging)
+                                        {
+                                            const sint32 ScrollTarget = FirstY + (OldY - y) * ScrollRate;
+                                            v->moveScroll(UIName, 0, ScrollTarget, 0, ScrollTarget, 0.1, true);
+                                        }
+                                        else if(t == GT_InReleased || t == GT_OutReleased)
+                                            v->clearScrollTouch(UIName);
+                                        else if(t == GT_WheelUp || t == GT_WheelDown)
+                                        {
+                                            const sint32 ScrollPos = v->scrollpos(UIName).y;
+                                            const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
+                                            v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.0, false);
+                                        }
+                                    })
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                        RenderErrorBox(panel);
                             }
                         }
                     }
@@ -848,65 +846,63 @@ namespace BOSS
 
                         // 스크롤영역
                         if(0 < ScrollBorder && 0 < panel.w())
-                        {
-                            ZAY_XYWH_UI(panel, 0, panel.h() - ScrollBorder, panel.w(), ScrollBorder, UIScrollBgName,
-                                ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, WheelSpeed)
-                                {
-                                    if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
-                                    {
-                                        auto CurRect = v->rect(n);
-                                        const float TargetRate = (x - CurRect.l) / float(CurRect.r - CurRect.l);
-                                        const sint32 ScrollPos = v->scrollpos(UIName).x;
-                                        const sint32 ScrollTarget = (CurRect.r - CurRect.l - TotalContentSize) * TargetRate;
-                                        v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.5, false);
-                                    }
-                                    else if(t == GT_WheelUp || t == GT_WheelDown)
-                                    {
-                                        const sint32 ScrollPos = v->scrollpos(UIName).x;
-                                        const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
-                                        v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.0, false);
-                                    }
-                                })
+                        ZAY_XYWH_UI(panel, 0, panel.h() - ScrollBorder, panel.w(), ScrollBorder, UIScrollBgName,
+                            ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, WheelSpeed)
                             {
-                                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
-                                    RenderErrorBox(panel);
-
-                                // 스크롤바
-                                if(panel.w() < TotalContentSize)
+                                if(t == GT_Pressed || t == GT_InDragging || t == GT_OutDragging)
                                 {
-                                    const sint32 BarSizeMin = Math::Min(20, panel.w());
-                                    const float ScrollRate = TotalContentSize / panel.w();
-                                    const sint32 ScrollSize = Math::Max(BarSizeMin, panel.w() * panel.w() / TotalContentSize);
-                                    const sint32 ScrollPos = (panel.w() - ScrollSize) * ContentPos / (TotalContentSize - panel.w());
-                                    const sint32 ScrollLeft = Math::Clamp(ScrollPos, 0, panel.w() - BarSizeMin);
-                                    const sint32 ScrollRight = Math::Clamp(ScrollPos + ScrollSize, BarSizeMin, panel.w());
-                                    ZAY_LTRB_UI(panel, ScrollLeft, 0, ScrollRight, panel.h(), UIScrollBarName,
-                                        ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, ScrollRate, WheelSpeed)
-                                        {
-                                            static sint32 FirstX = 0;
-                                            static sint32 OldX = 0;
-                                            if(t == GT_Pressed)
-                                            {
-                                                FirstX = v->scrollpos(UIName).x;
-                                                OldX = x;
-                                            }
-                                            else if(t == GT_InDragging || t == GT_OutDragging)
-                                            {
-                                                const sint32 ScrollTarget = FirstX + (OldX - x) * ScrollRate;
-                                                v->moveScroll(UIName, ScrollTarget, 0, ScrollTarget, 0, 0.1, true);
-                                            }
-                                            else if(t == GT_InReleased || t == GT_OutReleased)
-                                                v->clearScrollTouch(UIName);
-                                            else if(t == GT_WheelUp || t == GT_WheelDown)
-                                            {
-                                                const sint32 ScrollPos = v->scrollpos(UIName).x;
-                                                const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
-                                                v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.0, false);
-                                            }
-                                        })
-                                        if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
-                                            RenderErrorBox(panel);
+                                    auto CurRect = v->rect(n);
+                                    const float TargetRate = (x - CurRect.l) / float(CurRect.r - CurRect.l);
+                                    const sint32 ScrollPos = v->scrollpos(UIName).x;
+                                    const sint32 ScrollTarget = (CurRect.r - CurRect.l - TotalContentSize) * TargetRate;
+                                    v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.5, false);
                                 }
+                                else if(t == GT_WheelUp || t == GT_WheelDown)
+                                {
+                                    const sint32 ScrollPos = v->scrollpos(UIName).x;
+                                    const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
+                                    v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.0, false);
+                                }
+                            })
+                        {
+                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                                RenderErrorBox(panel);
+
+                            // 스크롤바
+                            if(panel.w() < TotalContentSize)
+                            {
+                                const sint32 BarSizeMin = Math::Min(20, panel.w());
+                                const float ScrollRate = TotalContentSize / panel.w();
+                                const sint32 ScrollSize = Math::Max(BarSizeMin, panel.w() * panel.w() / TotalContentSize);
+                                const sint32 ScrollPos = (panel.w() - ScrollSize) * ContentPos / (TotalContentSize - panel.w());
+                                const sint32 ScrollLeft = Math::Clamp(ScrollPos, 0, panel.w() - BarSizeMin);
+                                const sint32 ScrollRight = Math::Clamp(ScrollPos + ScrollSize, BarSizeMin, panel.w());
+                                ZAY_LTRB_UI(panel, ScrollLeft, 0, ScrollRight, panel.h(), UIScrollBarName,
+                                    ZAY_GESTURE_VNTXY(v, n, t, x, y, UIName, TotalContentSize, ScrollRate, WheelSpeed)
+                                    {
+                                        static sint32 FirstX = 0;
+                                        static sint32 OldX = 0;
+                                        if(t == GT_Pressed)
+                                        {
+                                            FirstX = v->scrollpos(UIName).x;
+                                            OldX = x;
+                                        }
+                                        else if(t == GT_InDragging || t == GT_OutDragging)
+                                        {
+                                            const sint32 ScrollTarget = FirstX + (OldX - x) * ScrollRate;
+                                            v->moveScroll(UIName, ScrollTarget, 0, ScrollTarget, 0, 0.1, true);
+                                        }
+                                        else if(t == GT_InReleased || t == GT_OutReleased)
+                                            v->clearScrollTouch(UIName);
+                                        else if(t == GT_WheelUp || t == GT_WheelDown)
+                                        {
+                                            const sint32 ScrollPos = v->scrollpos(UIName).x;
+                                            const sint32 ScrollTarget = ScrollPos + ((t == GT_WheelUp)? WheelSpeed : -WheelSpeed);
+                                            v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.0, false);
+                                        }
+                                    })
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                        RenderErrorBox(panel);
                             }
                         }
                     }

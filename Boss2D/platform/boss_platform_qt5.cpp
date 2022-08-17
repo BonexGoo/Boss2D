@@ -423,26 +423,26 @@
 
         void Platform::SetWindowWebUrl(chars url)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            g_data->setWindowWebUrl(url);
+            if(g_data)
+                g_data->setWindowWebUrl(url);
         }
 
         void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            g_data->SendWindowWebTouchEvent(type, x, y);
+            if(g_data)
+                g_data->SendWindowWebTouchEvent(type, x, y);
         }
 
         void Platform::SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            g_data->SendWindowWebKeyEvent(code, text, pressed);
+            if(g_data)
+                g_data->SendWindowWebKeyEvent(code, text, pressed);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
-            g_data->callWindowWebJSFunction(script, matchid);
+            if(g_data)
+                g_data->callWindowWebJSFunction(script, matchid);
         }
 
         void Platform::SetWindowFlash()

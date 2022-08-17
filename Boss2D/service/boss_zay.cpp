@@ -1093,9 +1093,9 @@ namespace BOSS
             sint32 ScrollX = CurScroll->m_pos->x();
             sint32 ScrollY = CurScroll->m_pos->y();
 
+            // 루프처리
             if(loop)
             {
-                // 루프처리
                 sint32 BeginIndexX = 0, BeginIndexY = 0;
                 if(0 < loopw)
                 {
@@ -1117,7 +1117,8 @@ namespace BOSS
                     return StackBinder(ToReference(CurBinder));
                 }
             }
-            else
+            // 스크롤 성립
+            else if(LastClip.Width() < contentw || LastClip.Height() < contenth)
             {
                 const float ContentWidth = Math::MaxF(contentw, LastClip.Width());
                 const float ContentHeight = Math::MaxF(contenth, LastClip.Height());
@@ -1158,6 +1159,16 @@ namespace BOSS
                 }
 
                 if(auto CurBinder = _push_clip(ScrollX, ScrollY, ScrollX + ContentWidth, ScrollY + ContentHeight, false))
+                {
+                    _add_ui(uiname, cb, sensitive, false);
+                    return StackBinder(ToReference(CurBinder));
+                }
+            }
+            // 스크롤 불성립
+            else
+            {
+                CurScroll->Reset(0, 0);
+                if(auto CurBinder = _push_clip(0, 0, LastClip.Width(), LastClip.Height(), false))
                 {
                     _add_ui(uiname, cb, sensitive, false);
                     return StackBinder(ToReference(CurBinder));
@@ -2027,7 +2038,7 @@ namespace BOSS
             case TT_MovingIdle: CurElement.m_cb(this, &CurElement, GT_MovingIdle, x, y); break;
             case TT_Press: CurElement.m_cb(this, &CurElement, SavedType = GT_Pressed, x, y); break;
             case TT_Dragging:
-                // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 제스처전이
+                // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 제스처 전이
                 if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb &&
                     ((ScrollElement->m_scrollsense.x != -1 && ScrollElement->m_scrollsense.x < CurTouch->press_to_x(x)) ||
                         (ScrollElement->m_scrollsense.y != -1 && ScrollElement->m_scrollsense.y < CurTouch->press_to_y(y))))
