@@ -250,11 +250,12 @@ namespace BOSS
         /// @param param : 전달인수
         void AccessByCallback(AccessCB cb, payload param) const
         {
+            MapPath LastPath(nullptr, 0);
             if(Table)
             for(sint32 i = 0; i < 16; ++i)
             {
                 if(!Table->Child[i]) continue;
-                Table->Child[i]->AccessByCallbackCore(MapPath(nullptr, i), cb, param);
+                Table->Child[i]->AccessByCallbackCore(MapPath(&LastPath, i), cb, param);
             }
         }
 
