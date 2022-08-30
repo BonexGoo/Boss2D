@@ -1838,6 +1838,17 @@
             return false;
         }
 
+        void Platform::Socket::ConnectAsync(id_socket socket, chars domain, uint16 port)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        bool Platform::Socket::IsConnected(id_socket socket)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
         bool Platform::Socket::Disconnect(id_socket socket, sint32 timeout)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

@@ -2079,6 +2079,17 @@
             return false;
         }
 
+        void Platform::Socket::ConnectAsync(id_socket socket, chars domain, uint16 port)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        bool Platform::Socket::IsConnected(id_socket socket)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
         bool Platform::Socket::Disconnect(id_socket socket, sint32 timeout)
         {
             BOSS_ASSERT("Further development is needed.", false);

@@ -1493,6 +1493,19 @@ public:
         /// @see Disconnect
         static bool Connect(id_socket socket, chars domain, uint16 port, sint32 timeout = 3000);
 
+        /// @brief 서버와 연결(비동기식)
+        /// @param socket : 소켓ID
+        /// @param domain : 도메인명(IP가능)
+        /// @param port : 포트번호
+        /// @see IsConnected, Disconnect
+        static void ConnectAsync(id_socket socket, chars domain, uint16 port);
+
+        /// @brief 서버와의 연결상태
+        /// @param socket : 소켓ID
+        /// @return 연결여부
+        /// @see ConnectAsync
+        static bool IsConnected(id_socket socket);
+
         /// @brief 서버와 연결해제
         /// @param socket : 소켓ID
         /// @param timeout : 타임아웃

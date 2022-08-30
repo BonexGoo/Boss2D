@@ -3839,16 +3839,56 @@
             SocketBox* CurSocketBox = SocketBox::Access(socket);
             if(!CurSocketBox) return false;
 
+            ConnectAsync(socket, domain, port);
             switch(CurSocketBox->m_type)
             {
             case SocketBox::Type::TCP:
                 {
-                    CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain, -1), port);
                     const bool WasBlocked = g_setEventBlocked(true);
                     bool Result = CurSocketBox->m_socket->waitForConnected(timeout);
                     g_setEventBlocked(WasBlocked);
                     BOSS_TRACE("Connect-TCP(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
                     return Result;
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    BOSS_TRACE("Connect-UDP(%s:%d)", domain, (sint32) port);
+                    return true;
+                }
+                break;
+            case SocketBox::Type::WS:
+                {
+                    const bool WasBlocked = g_setEventBlocked(true);
+                    bool Result = true;
+                    const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
+                    while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
+                    {
+                        Platform::Utility::Sleep(1, false, true);
+                        if(WaitForMsec < Platform::Utility::CurrentTimeMsec())
+                        {
+                            Result = false;
+                            break;
+                        }
+                    }
+                    g_setEventBlocked(WasBlocked);
+                    BOSS_TRACE("Connect-WS(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
+                    return Result;
+                }
+                break;
+            }
+            return false;
+        }
+
+        void Platform::Socket::ConnectAsync(id_socket socket, chars domain, uint16 port)
+        {
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(CurSocketBox)
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain, -1), port);
                 }
                 break;
             case SocketBox::Type::UDP:
@@ -3887,33 +3927,29 @@
                         CurSocketBox->m_udpip.setAddress(ip4Address);
                     }
                     CurSocketBox->m_udpport = port;
-                    BOSS_TRACE("Connect-UDP(%s:%d)", domain, (sint32) port);
-                    return true;
                 }
                 break;
             case SocketBox::Type::WS:
                 {
                     const String UrlText = String::Format("ws://%s:%d", domain, (sint32) port);
                     CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
-
-                    // 지정된 시간동안 결과를 기다림
-                    const bool WasBlocked = g_setEventBlocked(true);
-                    bool Result = true;
-                    const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
-                    while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
-                    {
-                        Platform::Utility::Sleep(1, false, true);
-                        if(WaitForMsec < Platform::Utility::CurrentTimeMsec())
-                        {
-                            Result = false;
-                            break;
-                        }
-                    }
-                    g_setEventBlocked(WasBlocked);
-                    BOSS_TRACE("Connect-WS(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
-                    return Result;
                 }
                 break;
+            }
+        }
+
+        bool Platform::Socket::IsConnected(id_socket socket)
+        {
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(CurSocketBox)
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                return (CurSocketBox->m_socket->state() == QAbstractSocket::ConnectedState);
+            case SocketBox::Type::UDP:
+                return true;
+            case SocketBox::Type::WS:
+                return (CurSocketBox->m_wsocket->state() == QAbstractSocket::ConnectedState);
             }
             return false;
         }
