@@ -380,7 +380,7 @@ namespace BOSS
     {
         if(mBeginMsec == 0 && mEndMsec == 0)
             return String::FromFloat(GetValue());
-        return "$R" + String::FromFloat(mValue1) + '_' + String::FromFloat(mValue2) + '_' +
+        return "$R:" + String::FromFloat(mValue1) + '_' + String::FromFloat(mValue2) + '_' +
             String::FromInteger((sint64) mBeginMsec) + '_' + String::FromInteger((sint64) mEndMsec) + '$';
     }
 
@@ -482,7 +482,7 @@ namespace BOSS
     SolverValue SolverValue::MakeByRangeTime(chars code)
     {
         SolverValue Result(SolverValueType::Range);
-        if(*(code++) == '$' && *(code++) == 'R') // $R0_0_0_0$
+        if(*(code++) == '$' && *(code++) == 'R' && *(code++) == ':') // $R:0_0_0_0$
         {
             sint32 FindStep = 0;
             chars BeginPos = code;
@@ -1110,7 +1110,7 @@ namespace BOSS
                     NewOperand = SolverLiteral(SolverValue::MakeByText(String(formula + 1, End - formula - 1))).clone();
                     formula += (End - formula - 1 + 2) - 1;
                 }
-                jump(*formula == '$')
+                jump(formula[0] == '$' && formula[1] == 'R' && formula[2] == ':')
                 {
                     chars End = formula;
                     while(*(++End)) if(*End == *formula) break;

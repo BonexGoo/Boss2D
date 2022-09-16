@@ -312,26 +312,26 @@ namespace BOSS
 
     String String::Left(sint32 length) const
     {
-        const sint32 CalcedLength = Math::Min(length, Length());
+        const sint32 CalcedLength = Math::Clamp(length, 0, Length());
         return String(&m_words[0], CalcedLength);
     }
 
     String String::Right(sint32 length) const
     {
-        const sint32 CalcedLength = Math::Min(length, Length());
+        const sint32 CalcedLength = Math::Clamp(length, 0, Length());
         return String(&m_words[Length() - CalcedLength], CalcedLength);
     }
 
     String String::Middle(sint32 index, sint32 length) const
     {
-        const sint32 CalcedIndex = Math::Max(0, index);
-        const sint32 CalcedLength = Math::Min(index + length, Length()) - CalcedIndex;
+        const sint32 CalcedIndex = Math::Clamp(index, 0, Length());
+        const sint32 CalcedLength = Math::Clamp(index + length, 0, Length()) - CalcedIndex;
         return String(&m_words[CalcedIndex], CalcedLength);
     }
 
     String String::Offset(sint32 offset) const
     {
-        const sint32 CalcedOffset = Math::Min(offset, Length());
+        const sint32 CalcedOffset = Math::Clamp(offset, 0, Length());
         return String(&m_words[CalcedOffset], Length() - CalcedOffset);
     }
 
