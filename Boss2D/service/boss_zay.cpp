@@ -1833,6 +1833,7 @@ namespace BOSS
         BOSS_ASSERT(String::Format("존재하지 않는 뷰(%s)를 생성하려 합니다", viewclass), m_ref_func);
         m_data = m_ref_func->m_alloc();
         m_touch = Buffer::Alloc<Touch>(BOSS_DBG 1);
+        m_touchin = -1;
         m_agreed_quit = false;
     }
 
@@ -1941,8 +1942,16 @@ namespace BOSS
         m_ref_func->m_lock(m_data);
         m_ref_func->m_command(CT_Tick, nullptr, nullptr);
         m_ref_func->m_unlock();
-
         ((ZayObjectData*) m_data)->wakeUpCheck();
+
+        // 마우스가 뷰안쪽인지 파악
+        point64 CursorPos;
+        const sint32 TouchIn = (Platform::Utility::GetCursorPosInWindow(CursorPos))? 1 : 0;
+        if(m_touchin != TouchIn)
+        {
+            m_touchin = TouchIn;
+            m_data->invalidate();
+        }
     }
 
     void ZayView::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -1966,11 +1975,11 @@ namespace BOSS
         ((ZayObjectData*) m_data)->nextFrame();
 
         // 마우스이벤트 처리
-        Touch* CurTouch = (Touch*) m_touch;
         point64 CursorPos;
         if(!Platform::Utility::GetCursorPosInWindow(CursorPos))
         {
             // 포커스 제거
+            Touch* CurTouch = (Touch*) m_touch;
             if(CurTouch->changefocus(nullptr))
                 m_data->invalidate();
             // MovingLosed와 DroppingLosed의 처리

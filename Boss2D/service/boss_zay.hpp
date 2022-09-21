@@ -878,6 +878,7 @@ namespace BOSS
         const String m_viewclass;
         ZayObject* m_data;
         buffer m_touch;
+        sint32 m_touchin; // -1:초기값, 0:뷰바깥쪽, 1:뷰안쪽
         bool m_agreed_quit;
     };
 }
