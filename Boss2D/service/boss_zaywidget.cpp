@@ -493,11 +493,12 @@ namespace BOSS
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "icon",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {
-                if(pay.ParamCount() != 2)
+                if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
                 auto ImageName = pay.Param(0).ToText();
                 auto Align = pay.ParamToUIAlign(1, HasError);
+                auto Degree = (pay.ParamCount() < 3)? 0.0f : pay.Param(2).ToFloat();
 
                 const Image* CurImage = nullptr;
                 if(*pcb && !String::Compare(ImageName, strpair("r.")))
@@ -505,14 +506,15 @@ namespace BOSS
                 else HasError = true;
 
                 if(CurImage)
-                    panel.icon(*CurImage, Align);
+                    panel.icon(*CurImage, Align, Degree);
 
                 if(HasError)
                     RenderErrorBox(panel);
                 return panel._push_pass();
             },
             "[RName:r.name]"
-            "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]");
+            "[UIAlign:LeftTop|CenterTop|RightTop|LeftMiddle|CenterMiddle|RightMiddle|LeftBottom|CenterBottom|RightBottom]#"
+            "[Degree:0.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "stretch",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb)

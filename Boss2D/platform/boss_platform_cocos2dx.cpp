@@ -1203,6 +1203,13 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Graphics::DrawRotatedImageToFBO(id_image_read image, float ox, float oy, float degree, float x, float y, Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         static cocos2d::TextHAlignment _ExchangeHAlignment(UIFontAlign align)
         {
             cocos2d::TextHAlignment Result = cocos2d::TextHAlignment::CENTER;

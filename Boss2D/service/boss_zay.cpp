@@ -546,7 +546,7 @@ namespace BOSS
         return YAlignCode;
     }
 
-    ZayPanel::InsideBinder ZayPanel::icon(const Image& image, UIAlign align, bool visible)
+    ZayPanel::InsideBinder ZayPanel::icon(const Image& image, UIAlign align, float degree, bool visible)
     {
         if(!image.HasBitmap())
             return InsideBinder(nullptr); // 안쪽영역없음
@@ -560,7 +560,14 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
-            Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
+            if(degree != 0 && Platform::Graphics::BeginGL())
+            {
+                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(LastColor),
+                    image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
+                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
+                Platform::Graphics::EndGL();
+            }
+            else Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
                 image.GetImageWidth(), image.GetImageHeight());
@@ -578,7 +585,7 @@ namespace BOSS
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    ZayPanel::InsideBinder ZayPanel::icon(float x, float y, const Image& image, UIAlign align, bool visible)
+    ZayPanel::InsideBinder ZayPanel::icon(float x, float y, const Image& image, UIAlign align, float degree, bool visible)
     {
         if(!image.HasBitmap())
             return InsideBinder(nullptr); // 안쪽영역없음
@@ -592,7 +599,14 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
-            Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
+            if(degree != 0 && Platform::Graphics::BeginGL())
+            {
+                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(LastColor),
+                    image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
+                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
+                Platform::Graphics::EndGL();
+            }
+            else Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
                 image.GetImageWidth(), image.GetImageHeight());
@@ -610,7 +624,7 @@ namespace BOSS
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    ZayPanel::InsideBinder ZayPanel::iconNative(id_image_read image, UIAlign align)
+    ZayPanel::InsideBinder ZayPanel::iconNative(id_image_read image, UIAlign align, float degree)
     {
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -620,12 +634,18 @@ namespace BOSS
         const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
         const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
 
-        Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
+        if(degree != 0 && Platform::Graphics::BeginGL())
+        {
+            Platform::Graphics::DrawRotatedImageToFBO(image, ImageWidth / 2, ImageHeight / 2, degree,
+                LastClip.l + DstX, LastClip.t + DstY);
+            Platform::Graphics::EndGL();
+        }
+        else Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
-    ZayPanel::InsideBinder ZayPanel::iconNative(float x, float y, id_image_read image, UIAlign align)
+    ZayPanel::InsideBinder ZayPanel::iconNative(float x, float y, id_image_read image, UIAlign align, float degree)
     {
         const Clip& LastClip = m_stack_clip[-1];
         const sint32 XAlignCode = GetXAlignCode(align);
@@ -635,7 +655,13 @@ namespace BOSS
         const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + ImageWidth / 2 - ImageWidth : x - ImageWidth));
         const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + ImageHeight / 2 - ImageHeight : y - ImageHeight));
 
-        Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
+        if(degree != 0 && Platform::Graphics::BeginGL())
+        {
+            Platform::Graphics::DrawRotatedImageToFBO(image, ImageWidth / 2, ImageHeight / 2, degree,
+                LastClip.l + DstX, LastClip.t + DstY);
+            Platform::Graphics::EndGL();
+        }
+        else Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
             LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
         return InsideBinder(nullptr); // 안쪽영역없음
     }

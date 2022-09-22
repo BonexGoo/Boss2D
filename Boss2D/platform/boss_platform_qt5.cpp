@@ -2187,6 +2187,7 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
+            if(image == nullptr) return;
 
             if(w == iw && h == ih)
                 CanvasClass::get()->painter().drawPixmap(QPoint((sint32) x, (sint32) y), *((const QPixmap*) image),
@@ -2209,6 +2210,37 @@
             if(image == nullptr) return;
 
             OpenGLClass::ST().DrawPixmap(fbo, x, y, ps, *((const QPixmap*) image), ips, colors);
+        }
+
+        void Platform::Graphics::DrawRotatedImageToFBO(id_image_read image, float ox, float oy, float degree, float x, float y, Color color, uint32 fbo)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            BOSS_ASSERT("본 함수를 호출하기 전에 BeginGL()을 호출하여야 안전합니다", 0 < g_stackBeginGL);
+            BOSS_ASSERT("image파라미터가 nullptr입니다", image);
+            if(image == nullptr) return;
+
+            const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
+            const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
+            const Point ImagePos[2][3] {{Point(0, 0), Point(ImageWidth, 0), Point(0, ImageHeight)},
+                {Point(ImageWidth, ImageHeight), Point(0, ImageHeight), Point(ImageWidth, 0)}};
+            const double Radian = Math::ToRadian(degree);
+            const double CosValue = Math::Cos(Radian);
+            const double SinValue = Math::Sin(Radian);
+            for(sint32 i = 0; i < 2; ++i)
+            {
+                Point PS[3];
+                Point IPS[3];
+                for(sint32 j = 0; j < 3; ++j)
+                {
+                    const double XValue = ImagePos[i][j].x - ox;
+                    const double YValue = ImagePos[i][j].y - oy;
+                    PS[j].x = ox + (XValue * CosValue) - (YValue * SinValue);
+                    PS[j].y = oy + (XValue * SinValue) + (YValue * CosValue);
+                    IPS[j].x = ImagePos[i][j].x / ImageWidth;
+                    IPS[j].y = ImagePos[i][j].y / ImageHeight;
+                }
+                OpenGLClass::ST().DrawPixmap(fbo, x, y, PS, *((const QPixmap*) image), IPS, {color, color, color});
+            }
         }
 
         static Qt::Alignment _ExchangeAlignment(UIFontAlign align)
