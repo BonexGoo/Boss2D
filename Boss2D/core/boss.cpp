@@ -446,7 +446,11 @@ public:
             {
                 fseek((FILE*) mFilePointer, 0, SEEK_END);
                 #if BOSS_X64
-                    mFileSize = _ftelli64((FILE*) mFilePointer);
+                    #if BOSS_LINUX
+                        mFileSize = ftello64((FILE*) mFilePointer);
+                    #else
+                        mFileSize = _ftelli64((FILE*) mFilePointer);
+                    #endif
                 #else
                     mFileSize = ftell((FILE*) mFilePointer);
                 #endif
