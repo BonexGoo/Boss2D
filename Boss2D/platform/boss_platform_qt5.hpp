@@ -7638,7 +7638,7 @@
     #endif
 
     #ifdef QT_HAVE_MULTIMEDIA
-        class MicrophoneClass : public QAudioProbe
+        class MicrophoneClass : public QObject
         {
             Q_OBJECT
 
@@ -7665,6 +7665,7 @@
 
         private:
             QAudioRecorder* mRecorder;
+            QAudioProbe* mProbe;
             QAudioEncoderSettings mAudioSettings;
             const sint32 mMaxQueueCount;
             Queue<Data> mDataQueue;
@@ -7735,6 +7736,10 @@
             MicrophoneClass(chars name, sint32 maxcount) : mMaxQueueCount(maxcount)
             {
                 mRecorder = new QAudioRecorder();
+                mProbe = new QAudioProbe();
+                connect(mProbe, &QAudioProbe::audioBufferProbed, this, &MicrophoneClass::processBuffer);
+                mProbe->setSource(mRecorder);
+
                 QString SelectedInput = "";
                 if(*name != '\0')
                 {
@@ -7746,28 +7751,26 @@
                 else SelectedInput = mRecorder->defaultAudioInput();
                 if(SelectedInput.length() == 0)
                 {
+                    delete mProbe;
+                    mProbe = nullptr;
                     delete mRecorder;
                     mRecorder = nullptr;
                     return;
                 }
-                mRecorder->setAudioInput(SelectedInput);
 
-                mAudioSettings = mRecorder->audioSettings();
+                mRecorder->setAudioInput(SelectedInput);
                 mAudioSettings.setCodec("audio/pcm");
+                mAudioSettings.setSampleRate(44100);
                 mAudioSettings.setBitRate(128000);
                 mAudioSettings.setChannelCount(2);
-                mAudioSettings.setSampleRate(44100);
                 mAudioSettings.setQuality(QMultimedia::HighQuality);
                 mAudioSettings.setEncodingMode(QMultimedia::ConstantBitRateEncoding);
-                mRecorder->setAudioSettings(mAudioSettings);
-
-                connect(this, SIGNAL(audioBufferProbed(QAudioBuffer)), this, SLOT(processBuffer(QAudioBuffer)));
-                setSource(mRecorder);
+                mRecorder->setEncodingSettings(mAudioSettings, QVideoEncoderSettings(), "audio/x-raw");
                 mRecorder->record();
             }
             ~MicrophoneClass()
             {
-                setSource((QMediaRecorder*) nullptr);
+                delete mProbe;
                 delete mRecorder;
                 while(0 < mDataQueue.Count())
                     mDataQueue.Dequeue();
@@ -7796,7 +7799,7 @@
             {return mAudioSettings;}
 
         private slots:
-            virtual void processBuffer(const QAudioBuffer& buffer)
+            void processBuffer(const QAudioBuffer& buffer)
             {
                 // 한계처리
                 while(mMaxQueueCount < mDataQueue.Count())

@@ -2103,7 +2103,7 @@ public:
 
         /// @brief 적재된 사운드확인 및 포커싱
         /// @param microphone : 마이크ID
-        /// @return 포키싱여부
+        /// @return 적재된 사운드 존재시 true
         static bool TryNextSound(id_microphone microphone);
 
         /// @brief 포커싱된 사운드데이터 반환
