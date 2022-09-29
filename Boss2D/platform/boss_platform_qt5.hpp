@@ -7675,60 +7675,22 @@
             static Strings GetList(String* spec)
             {
                 Strings Result;
-                Context SpecCollector;
-                const QList<QAudioDeviceInfo>& AllMicrophones = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-                foreach(const auto& CurMicrophone, AllMicrophones)
-                {
-                    String CurName = CurMicrophone.deviceName().toUtf8().constData();
-                    Result.AtAdding() = CurName;
-                    if(spec)
-                    {
-                        Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
-                        NewChild.At("devicename").Set(CurName);
-                        const auto& AllByteOrders = CurMicrophone.supportedByteOrders();
-                        foreach(const auto& CurByteOrder, AllByteOrders)
-                        {
-                            Context& NewChild2 = NewChild.At("byteorders").At(NewChild.At("byteorders").LengthOfIndexable());
-                            if(CurByteOrder == QAudioFormat::BigEndian) NewChild2.Set("BigEndian");
-                            else if(CurByteOrder == QAudioFormat::LittleEndian) NewChild2.Set("LittleEndian");
-                        }
-                        const auto& AllChannelCounts = CurMicrophone.supportedChannelCounts();
-                        foreach(const auto& CurChannelCount, AllChannelCounts)
-                        {
-                            Context& NewChild2 = NewChild.At("channelcounts").At(NewChild.At("channelcounts").LengthOfIndexable());
-                            NewChild2.Set(String::FromInteger(CurChannelCount));
-                        }
-                        const auto& AllCodecs = CurMicrophone.supportedCodecs();
-                        foreach(const auto& CurCodec, AllCodecs)
-                        {
-                            Context& NewChild2 = NewChild.At("codecs").At(NewChild.At("codecs").LengthOfIndexable());
-                            NewChild2.Set(CurCodec.toUtf8().constData());
-                        }
-                        const auto& AllSampleRates = CurMicrophone.supportedSampleRates();
-                        foreach(const auto& CurSampleRate, AllSampleRates)
-                        {
-                            Context& NewChild2 = NewChild.At("samplerates").At(NewChild.At("samplerates").LengthOfIndexable());
-                            NewChild2.Set(String::FromInteger(CurSampleRate));
-                        }
-                        const auto& AllSampleSizes = CurMicrophone.supportedSampleSizes();
-                        foreach(const auto& CurSampleSize, AllSampleSizes)
-                        {
-                            Context& NewChild2 = NewChild.At("samplesizes").At(NewChild.At("samplesizes").LengthOfIndexable());
-                            NewChild2.Set(String::FromInteger(CurSampleSize));
-                        }
-                        const auto& AllSampleTypes = CurMicrophone.supportedSampleTypes();
-                        foreach(const auto& CurSampleType, AllSampleTypes)
-                        {
-                            Context& NewChild2 = NewChild.At("sampletypes").At(NewChild.At("sampletypes").LengthOfIndexable());
-                            if(CurSampleType == QAudioFormat::Unknown) NewChild2.Set("Unknown");
-                            else if(CurSampleType == QAudioFormat::SignedInt) NewChild2.Set("SignedInt");
-                            else if(CurSampleType == QAudioFormat::UnSignedInt) NewChild2.Set("UnSignedInt");
-                            else if(CurSampleType == QAudioFormat::Float) NewChild2.Set("Float");
-                        }
-                    }
-                }
+                auto OneRecorder = new QAudioRecorder();
+                foreach(QString Input, OneRecorder->audioInputs())
+                    Result.AtAdding() = Input.toUtf8().constData();
+
                 if(spec)
+                {
+                    Context SpecCollector;
+                    foreach(QString AudioCodec, OneRecorder->supportedAudioCodecs())
+                        SpecCollector.At("codec").AtAdding().Set(AudioCodec.toUtf8().constData());
+                    foreach(QString Container, OneRecorder->supportedContainers())
+                        SpecCollector.At("container").AtAdding().Set(Container.toUtf8().constData());
+                    foreach(int SampleRate, OneRecorder->supportedAudioSampleRates())
+                        SpecCollector.At("samplerate").AtAdding().Set(String::FromInteger(SampleRate));
                     *spec = SpecCollector.SaveJson(*spec);
+                }
+                delete OneRecorder;
                 return Result;
             }
 
