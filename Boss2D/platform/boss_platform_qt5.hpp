@@ -7721,11 +7721,7 @@
                 }
 
                 mRecorder->setAudioInput(SelectedInput);
-                #if BOSS_LINUX
-                    mAudioSettings.setCodec("audio/x-raw");
-                #else
-                    mAudioSettings.setCodec("audio/pcm");
-                #endif
+                mAudioSettings.setCodec("audio/x-raw");
                 mAudioSettings.setSampleRate(44100);
                 mAudioSettings.setBitRate(128000);
                 mAudioSettings.setChannelCount(2);
