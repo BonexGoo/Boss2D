@@ -7721,13 +7721,17 @@
                 }
 
                 mRecorder->setAudioInput(SelectedInput);
-                mAudioSettings.setCodec("audio/pcm");
+                #if BOSS_LINUX
+                    mAudioSettings.setCodec("audio/x-raw");
+                #else
+                    mAudioSettings.setCodec("audio/pcm");
+                #endif
                 mAudioSettings.setSampleRate(44100);
                 mAudioSettings.setBitRate(128000);
                 mAudioSettings.setChannelCount(2);
                 mAudioSettings.setQuality(QMultimedia::HighQuality);
                 mAudioSettings.setEncodingMode(QMultimedia::ConstantBitRateEncoding);
-                mRecorder->setEncodingSettings(mAudioSettings, QVideoEncoderSettings(), "audio/x-raw");
+                mRecorder->setEncodingSettings(mAudioSettings, QVideoEncoderSettings(), "audio/x-wav");
                 mRecorder->record();
             }
             ~MicrophoneClass()
