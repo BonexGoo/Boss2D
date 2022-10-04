@@ -4994,14 +4994,14 @@
             return false;
         }
 
-        bytes Platform::Microphone::GetSoundData(id_microphone microphone, sint32* length, uint64* timems)
+        const uint16* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
         {
             #ifdef QT_HAVE_MULTIMEDIA
                 if(microphone)
                 {
                     MicrophoneClass* CurMicrophone = (MicrophoneClass*) microphone;
-                    const auto& LastData = CurMicrophone->GetLastData(timems);
-                    if(length) *length = LastData.Count();
+                    const auto& LastData = CurMicrophone->GetLastData(channel, timems);
+                    if(count) *count = LastData.Count();
                     return (0 < LastData.Count())? &LastData[0] : nullptr;
                 }
             #endif

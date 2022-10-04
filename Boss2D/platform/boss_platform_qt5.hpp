@@ -7646,20 +7646,22 @@
             class Data
             {
             public:
-                Data() {}
+                Data() {mChannel = 1;}
                 ~Data() {}
             public:
                 Data(const Data& rhs) {operator=(rhs);}
                 Data& operator=(const Data& rhs)
                 {
-                    mPcm = rhs.mPcm;
+                    mChannel = rhs.mChannel;
+                    mLinears = rhs.mLinears;
                     mTimeMsec = rhs.mTimeMsec;
                     return *this;
                 }
                 operator void*() const {return nullptr;}
-                bool operator!() const {return (mPcm.Count() == 0);}
+                bool operator!() const {return (mLinears.Count() == 0);}
             public:
-                uint08s mPcm;
+                sint32 mChannel;
+                uint16s mLinears;
                 uint64 mTimeMsec;
             };
 
@@ -7727,7 +7729,7 @@
                 mAudioSettings.setChannelCount(2);
                 mAudioSettings.setQuality(QMultimedia::HighQuality);
                 mAudioSettings.setEncodingMode(QMultimedia::ConstantBitRateEncoding);
-                mRecorder->setEncodingSettings(mAudioSettings, QVideoEncoderSettings(), "audio/x-wav");
+                mRecorder->setEncodingSettings(mAudioSettings);
                 mRecorder->record();
             }
             ~MicrophoneClass()
@@ -7752,13 +7754,29 @@
                 }
                 return false;
             }
-            const uint08s& GetLastData(uint64* timems) const
+            const uint16s& GetLastData(sint32* channel, uint64* timems) const
             {
+                if(channel) *channel = mLastData.mChannel;
                 if(timems) *timems = mLastData.mTimeMsec;
-                return mLastData.mPcm;
+                return mLastData.mLinears;
             }
             const QAudioEncoderSettings& GetAudioSettings() const
             {return mAudioSettings;}
+
+        private:
+            template<uint64 PEAK, int SHIFT, typename TYPE>
+            void copyBuffer(Data& dst, const TYPE* src, int frames, int channels)
+            {
+                dst.mChannel = channels;
+                auto Dst = dst.mLinears.AtDumping(0, frames * channels);
+                for(sint32 i = 0; i < frames; ++i)
+                for(sint32 j = 0; j < channels; ++j)
+                {
+                    const auto NewValue = float(src[i * channels + j]);
+                    const auto CalcedValue = uint64((NewValue < 0)? -NewValue : PEAK - NewValue);
+                    Dst[i * channels + j] = uint16(((SHIFT < 0)? CalcedValue << -SHIFT : CalcedValue >> SHIFT) & 0xFFFF);
+                }
+            }
 
         private slots:
             void processBuffer(const QAudioBuffer& buffer)
@@ -7766,11 +7784,35 @@
                 // 한계처리
                 while(mMaxQueueCount < mDataQueue.Count())
                     mDataQueue.Dequeue();
+
                 // 데이터적재
                 if(buffer.isValid())
+                if(buffer.format().codec() == "audio/pcm")
                 {
                     Data NewData;
-                    Memory::Copy(NewData.mPcm.AtDumpingAdded(buffer.byteCount()), buffer.constData(), buffer.byteCount());
+                    switch(buffer.format().sampleType())
+                    {
+                    case QAudioFormat::UnSignedInt:
+                        if(buffer.format().sampleSize() == 32)
+                            copyBuffer<0xFFFFFFFF, 16>(NewData, buffer.constData<quint32>(), buffer.frameCount(), buffer.format().channelCount());
+                        else if(buffer.format().sampleSize() == 16)
+                            copyBuffer<0xFFFF, 0>(NewData, buffer.constData<quint16>(), buffer.frameCount(), buffer.format().channelCount());
+                        else if(buffer.format().sampleSize() == 8)
+                            copyBuffer<0xFF, -8>(NewData, buffer.constData<quint8>(), buffer.frameCount(), buffer.format().channelCount());
+                        break;
+                    case QAudioFormat::Float:
+                        if(buffer.format().sampleSize() == 32)
+                            copyBuffer<0xFFFFFFFF, 0>(NewData, buffer.constData<float>(), buffer.frameCount(), buffer.format().channelCount());
+                        break;
+                    case QAudioFormat::SignedInt:
+                        if(buffer.format().sampleSize() == 32)
+                            copyBuffer<0xFFFFFFFF, 16>(NewData, buffer.constData<qint32>(), buffer.frameCount(), buffer.format().channelCount());
+                        else if(buffer.format().sampleSize() == 16)
+                            copyBuffer<0xFFFF, 0>(NewData, buffer.constData<qint16>(), buffer.frameCount(), buffer.format().channelCount());
+                        else if(buffer.format().sampleSize() == 8)
+                            copyBuffer<0xFF, -8>(NewData, buffer.constData<qint8>(), buffer.frameCount(), buffer.format().channelCount());
+                        break;
+                    }
                     NewData.mTimeMsec = Platform::Utility::CurrentTimeMsec();
                     mDataQueue.Enqueue(NewData);
                 }

@@ -2453,7 +2453,7 @@
             return false;
         }
 
-        bytes Platform::Microphone::GetSoundData(id_microphone microphone, sint32* length, uint64* timems)
+        const uint16* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;

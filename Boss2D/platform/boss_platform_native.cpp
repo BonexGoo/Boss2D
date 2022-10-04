@@ -2526,7 +2526,7 @@
             return false;
         }
 
-        bytes Platform::Microphone::GetSoundData(id_microphone microphone, sint32* length, uint64* timems)
+        const uint16* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

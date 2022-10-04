@@ -2108,11 +2108,12 @@ public:
 
         /// @brief 포커싱된 사운드데이터 반환
         /// @param microphone : 마이크ID
-        /// @param length : 사운드데이터의 크기(바이트단위)
+        /// @param count : 사운드데이터의 전체수량(수량 * 채널수)
+        /// @param channel : 사운드데이터의 채널수
         /// @param timems : 사운드데이터 발생시각
-        /// @return 사운드데이터(audio/pcm)
+        /// @return 사운드데이터(LINEAR16)
         /// @see TryNextSound
-        static bytes GetSoundData(id_microphone microphone, sint32* length = nullptr, uint64* timems = nullptr);
+        static const uint16* GetSoundData(id_microphone microphone, sint32* count = nullptr, sint32* channel = nullptr, uint64* timems = nullptr);
     };
 };
 
