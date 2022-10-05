@@ -2076,10 +2076,10 @@ public:
 
         /// @brief 마이크ID 할당
         /// @param name : 마이크이름(없으면 첫번째 마이크를 찾음)
-        /// @param maxcount : 사운드큐의 최대크기(너무 크게 잡으면 비디오와의 싱크가 맞지 않음)
+        /// @param maxcount : 사운드큐의 최대크기
         /// @return 마이크ID(nullptr은 실패)
         /// @see Close
-        static id_microphone Open(chars name = "", sint32 maxcount = 4);
+        static id_microphone Open(chars name = "", sint32 samplerate = 48000, sint32 channelcount = 2, sint32 maxqueue = 4);
 
         /// @brief 마이크ID 반환
         /// @param microphone : 마이크ID
@@ -2108,12 +2108,12 @@ public:
 
         /// @brief 포커싱된 사운드데이터 반환
         /// @param microphone : 마이크ID
-        /// @param count : 사운드데이터의 전체수량(수량 * 채널수)
+        /// @param count : 사운드데이터의 전체수량(채널수 * 코드량)
         /// @param channel : 사운드데이터의 채널수
         /// @param timems : 사운드데이터 발생시각
-        /// @return 사운드데이터(LINEAR16)
+        /// @return 사운드데이터(-1 ~ 1)
         /// @see TryNextSound
-        static const uint16* GetSoundData(id_microphone microphone, sint32* count = nullptr, sint32* channel = nullptr, uint64* timems = nullptr);
+        static const float* GetSoundData(id_microphone microphone, sint32* count = nullptr, sint32* channel = nullptr, uint64* timems = nullptr);
     };
 };
 

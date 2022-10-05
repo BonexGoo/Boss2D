@@ -4928,10 +4928,10 @@
             #endif
         }
 
-        id_microphone Platform::Microphone::Open(chars name, sint32 maxcount)
+        id_microphone Platform::Microphone::Open(chars name, sint32 samplerate, sint32 channelcount, sint32 maxqueue)
         {
             #ifdef QT_HAVE_MULTIMEDIA
-                MicrophoneClass* NewMicrophone = new MicrophoneClass(name, maxcount);
+                MicrophoneClass* NewMicrophone = new MicrophoneClass(name, samplerate, channelcount, maxqueue);
                 if(NewMicrophone->IsValid())
                     return (id_microphone) NewMicrophone;
                 delete NewMicrophone;
@@ -4994,7 +4994,7 @@
             return false;
         }
 
-        const uint16* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
+        const float* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
         {
             #ifdef QT_HAVE_MULTIMEDIA
                 if(microphone)

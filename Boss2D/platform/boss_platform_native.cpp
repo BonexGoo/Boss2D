@@ -2491,7 +2491,7 @@
             return Strings();
         }
 
-        id_microphone Platform::Microphone::Open(chars name, sint32 maxcount)
+        id_microphone Platform::Microphone::Open(chars name, sint32 samplerate, sint32 channelcount, sint32 maxqueue)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -2526,7 +2526,7 @@
             return false;
         }
 
-        const uint16* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
+        const float* Platform::Microphone::GetSoundData(id_microphone microphone, sint32* count, sint32* channel, uint64* timems)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

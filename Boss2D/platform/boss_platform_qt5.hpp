@@ -7653,15 +7653,15 @@
                 Data& operator=(const Data& rhs)
                 {
                     mChannel = rhs.mChannel;
-                    mLinears = rhs.mLinears;
+                    mPulseCodes = rhs.mPulseCodes;
                     mTimeMsec = rhs.mTimeMsec;
                     return *this;
                 }
                 operator void*() const {return nullptr;}
-                bool operator!() const {return (mLinears.Count() == 0);}
+                bool operator!() const {return (mPulseCodes.Count() == 0);}
             public:
                 sint32 mChannel;
-                uint16s mLinears;
+                floats mPulseCodes; // [Channel * Code]
                 uint64 mTimeMsec;
             };
 
@@ -7697,7 +7697,7 @@
             }
 
         public:
-            MicrophoneClass(chars name, sint32 maxcount) : mMaxQueueCount(maxcount)
+            MicrophoneClass(chars name, sint32 samplerate, sint32 channelcount, sint32 maxqueue) : mMaxQueueCount(maxqueue)
             {
                 mRecorder = new QAudioRecorder();
                 mProbe = new QAudioProbe();
@@ -7724,9 +7724,9 @@
 
                 mRecorder->setAudioInput(SelectedInput);
                 mAudioSettings.setCodec("audio/x-raw");
-                mAudioSettings.setSampleRate(44100);
+                mAudioSettings.setSampleRate(samplerate);
                 mAudioSettings.setBitRate(128000);
-                mAudioSettings.setChannelCount(2);
+                mAudioSettings.setChannelCount(channelcount);
                 mAudioSettings.setQuality(QMultimedia::HighQuality);
                 mAudioSettings.setEncodingMode(QMultimedia::ConstantBitRateEncoding);
                 mRecorder->setEncodingSettings(mAudioSettings);
@@ -7754,27 +7754,28 @@
                 }
                 return false;
             }
-            const uint16s& GetLastData(sint32* channel, uint64* timems) const
+            const floats& GetLastData(sint32* channel, uint64* timems) const
             {
                 if(channel) *channel = mLastData.mChannel;
                 if(timems) *timems = mLastData.mTimeMsec;
-                return mLastData.mLinears;
+                return mLastData.mPulseCodes;
             }
             const QAudioEncoderSettings& GetAudioSettings() const
             {return mAudioSettings;}
 
         private:
-            template<uint64 PEAK, int SHIFT, typename TYPE>
-            void copyBuffer(Data& dst, const TYPE* src, int frames, int channels)
+            template<bool SIGNED = true, typename TYPE>
+            void copyBuffer(Data& dst, const TYPE* src, int frames, int channels, double peak)
             {
                 dst.mChannel = channels;
-                auto Dst = dst.mLinears.AtDumping(0, frames * channels);
+                auto Dst = dst.mPulseCodes.AtDumping(0, frames * channels);
+                double PeakHalf = peak / 2;
                 for(sint32 i = 0; i < frames; ++i)
                 for(sint32 j = 0; j < channels; ++j)
                 {
-                    const auto NewValue = float(src[i * channels + j]);
-                    const auto CalcedValue = uint64((NewValue < 0)? -NewValue : PEAK - NewValue);
-                    Dst[i * channels + j] = uint16(((SHIFT < 0)? CalcedValue << -SHIFT : CalcedValue >> SHIFT) & 0xFFFF);
+                    if(SIGNED)
+                        Dst[i * channels + j] = src[i * channels + j] / peak;
+                    else Dst[i * channels + j] = (src[i * channels + j] - PeakHalf) / PeakHalf;
                 }
             }
 
@@ -7792,25 +7793,26 @@
                     Data NewData;
                     switch(buffer.format().sampleType())
                     {
+                    case QAudioFormat::Unknown:
                     case QAudioFormat::UnSignedInt:
                         if(buffer.format().sampleSize() == 32)
-                            copyBuffer<0xFFFFFFFF, 16>(NewData, buffer.constData<quint32>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer<false>(NewData, buffer.constData<quint32>(), buffer.frameCount(), buffer.format().channelCount(), 0xFFFFFFFF);
                         else if(buffer.format().sampleSize() == 16)
-                            copyBuffer<0xFFFF, 0>(NewData, buffer.constData<quint16>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer<false>(NewData, buffer.constData<quint16>(), buffer.frameCount(), buffer.format().channelCount(), 0xFFFF);
                         else if(buffer.format().sampleSize() == 8)
-                            copyBuffer<0xFF, -8>(NewData, buffer.constData<quint8>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer<false>(NewData, buffer.constData<quint8>(), buffer.frameCount(), buffer.format().channelCount(), 0xFF);
                         break;
                     case QAudioFormat::Float:
                         if(buffer.format().sampleSize() == 32)
-                            copyBuffer<0xFFFFFFFF, 0>(NewData, buffer.constData<float>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer(NewData, buffer.constData<float>(), buffer.frameCount(), buffer.format().channelCount(), 1.00003); // 1.00003은 QT예제
                         break;
                     case QAudioFormat::SignedInt:
                         if(buffer.format().sampleSize() == 32)
-                            copyBuffer<0xFFFFFFFF, 16>(NewData, buffer.constData<qint32>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer(NewData, buffer.constData<qint32>(), buffer.frameCount(), buffer.format().channelCount(), 0x7FFFFFFF);
                         else if(buffer.format().sampleSize() == 16)
-                            copyBuffer<0xFFFF, 0>(NewData, buffer.constData<qint16>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer(NewData, buffer.constData<qint16>(), buffer.frameCount(), buffer.format().channelCount(), 0x7FFF);
                         else if(buffer.format().sampleSize() == 8)
-                            copyBuffer<0xFF, -8>(NewData, buffer.constData<qint8>(), buffer.frameCount(), buffer.format().channelCount());
+                            copyBuffer(NewData, buffer.constData<qint8>(), buffer.frameCount(), buffer.format().channelCount(), 0x7F);
                         break;
                     }
                     NewData.mTimeMsec = Platform::Utility::CurrentTimeMsec();
