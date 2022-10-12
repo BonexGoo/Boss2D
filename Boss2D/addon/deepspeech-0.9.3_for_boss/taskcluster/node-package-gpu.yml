@@ -1,0 +1,16 @@
+build:
+  template_file: node-package-opt-base.tyml
+  dependencies:
+    - "linux-amd64-gpu-opt"
+    - "win-amd64-gpu-opt"
+  system_setup:
+    >
+      ${nodejs.packages_xenial.prep_12} && ${nodejs.packages_xenial.apt_pinning}
+      && apt-get -qq update && apt-get -qq -y install nodejs python-yaml
+  scripts:
+    build: "taskcluster/node-build.sh --cuda"
+    package: "taskcluster/node-package.sh"
+  workerType: "${docker.smallTask}"
+  metadata:
+    name: "DeepSpeech NodeJS GPU package"
+    description: "Packaging DeepSpeech GPU for registry"

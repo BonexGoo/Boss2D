@@ -1,0 +1,26 @@
+build:
+  template_file: linux-opt-base.tyml
+  dependencies:
+    - "swig-linux-amd64"
+    - "node-gyp-cache"
+    - "pyenv-linux-amd64"
+    - "tf_linux-amd64-gpu-opt"
+  routes:
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.gpu"
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.${event.head.sha}.gpu"
+    - "index.project.deepspeech.deepspeech.native_client.gpu.${event.head.sha}"
+  system_setup:
+    >
+      ${nodejs.packages_xenial.prep_12} && ${nodejs.packages_xenial.apt_pinning}
+      && apt-get -qq update && apt-get -qq -y install nodejs python-yaml
+  tensorflow: ${system.tensorflow.linux_amd64_cuda.url}
+  maxRunTime: 14400
+  scripts:
+    setup: "taskcluster/tc-true.sh"
+    build: "taskcluster/cuda-build.sh"
+    package: "taskcluster/package.sh"
+  nc_asset_name: "native_client.amd64.cuda.linux.tar.xz"
+  workerType: "${docker.tfBuild}"
+  metadata:
+    name: "DeepSpeech Linux AMD64 CUDA"
+    description: "Building DeepSpeech for Linux/AMD64, CUDA-enabled, optimized version"

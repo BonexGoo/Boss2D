@@ -199,7 +199,7 @@
     typedef __int64 __time64_t;
     typedef unsigned __int32 uid_t;
     typedef unsigned __int32 gid_t;
-    #if !BOSS_ANDROID & !BOSS_LINUX
+    #if !BOSS_ANDROID & !BOSS_LINUX & !BOSS_WASM
         typedef unsigned __int16 nlink_t;
         typedef __int32 blksize_t;
         typedef __int64 blkcnt_t;

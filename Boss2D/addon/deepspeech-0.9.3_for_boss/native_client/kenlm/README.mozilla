@@ -1,0 +1,12 @@
+KenLM source downloaded from https://github.com/kpu/kenlm on 2020/01/15
+commit b9f35777d112ce2fc10bd3986302517a16dc3883
+
+This corresponds to https://github.com/kpu/kenlm/commit/b9f35777d112ce2fc10bd3986302517a16dc3883
+
+The following procedure was run to remove unneeded files:
+
+cd kenlm
+rm -rf windows include lm/filter lm/builder util/stream util/getopt.* python
+
+This was done in order to ensure uniqueness of double_conversion:
+git grep 'double_conversion' | cut -d':' -f1 | sort | uniq | xargs sed -ri 's/double_conversion/kenlm_double_conversion/g'

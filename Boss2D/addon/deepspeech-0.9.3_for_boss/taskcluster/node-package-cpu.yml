@@ -1,0 +1,19 @@
+build:
+  template_file: node-package-opt-base.tyml
+  dependencies:
+    - "darwin-amd64-cpu-opt"
+    - "linux-amd64-cpu-opt"
+    - "linux-rpi3-cpu-opt"
+    - "linux-arm64-cpu-opt"
+    - "win-amd64-cpu-opt"
+  system_setup:
+    >
+      ${nodejs.packages_xenial.prep_12} && ${nodejs.packages_xenial.apt_pinning}
+      && apt-get -qq update && apt-get -qq -y install nodejs python-yaml
+  scripts:
+    build: "taskcluster/node-build.sh"
+    package: "taskcluster/node-package.sh"
+  workerType: "${docker.smallTask}"
+  metadata:
+    name: "DeepSpeech NodeJS CPU package"
+    description: "Packaging DeepSpeech CPU for registry"

@@ -298,7 +298,7 @@ inline void operator delete[](void*, sblock) {}
     private:
 
 // About opengl
-#if BOSS_ANDROID
+#if BOSS_ANDROID | BOSS_WASM
     #define GL_RGBA8 0x8058
     #define GL_BGRA 0x80E1
     #define GL_RGB16F 0x881B

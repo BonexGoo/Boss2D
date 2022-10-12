@@ -1,0 +1,20 @@
+build:
+  template_file: darwin-opt-base.tyml
+  dependencies:
+    - "swig-darwin-amd64"
+    - "node-gyp-cache"
+    - "homebrew_builds-darwin-amd64"
+    - "pyenv-darwin-amd64"
+    - "tf_darwin-amd64-opt"
+  routes:
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.osx-ctc"
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.${event.head.sha}.osx-ctc"
+    - "index.project.deepspeech.deepspeech.native_client.osx-ctc.${event.head.sha}"
+  tensorflow: ${system.tensorflow.darwin_amd64.url}
+  maxRunTime: 14400
+  scripts:
+    build: 'taskcluster/decoder-build.sh'
+    package: 'taskcluster/decoder-package.sh'
+  metadata:
+    name: "DeepSpeech CTC Decoder OSX AMD64 CPU"
+    description: "Building DeepSpeech CTC Decoder for OSX AMD64, CPU only, optimized version"

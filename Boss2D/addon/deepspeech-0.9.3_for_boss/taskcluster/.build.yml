@@ -1,0 +1,43 @@
+build:
+  allowed:
+    - "pull_request.opened"
+    - "pull_request.synchronize"
+    - "pull_request.reopened"
+    - "push"
+    - "tag"
+  ref_match: "invalid-refs-should-not-work"
+  dependencies: []
+  routes: []
+  maxRunTime: 3600
+  docker_image: "ubuntu:16.04"
+  system_setup:
+    >
+      true
+  system_config:
+    >
+      true
+  scripts:
+    setup: ''
+    build: ''
+    package: ''
+  nc_asset_name: 'native_client.tar.xz'
+  args:
+    tests_cmdline: ''
+  tensorflow_git_desc: 'TensorFlow: v2.3.0-6-g23ad988'
+  test_model_task: ''
+  homebrew:
+    url: ''
+    namespace: ''
+  cache:
+    url: ''
+    namespace: ''
+  android_cache:
+    url: ''
+    namespace: ''
+  gradle_cache:
+    url: ''
+    namespace: ''
+  build_or_cache:
+    repo: "${event.head.repo.url}"
+    sha: "${event.head.sha}"
+    dir: "DeepSpeech/ds"

@@ -1,0 +1,16 @@
+build:
+  template_file: generic_tc_caching-linux-opt-base.tyml
+  system_setup:
+    >
+      ${java.packages_xenial.apt}
+  cache:
+    artifact_url: ${system.android_cache.x86_64.android_24.url}
+    artifact_namespace: ${system.android_cache.x86_64.android_24.namespace}
+  scripts:
+    setup: "taskcluster/tc-true.sh"
+    build: "taskcluster/android_cache-build.sh x86_64 android-24"
+    package: "taskcluster/android_cache-package.sh"
+  workerType: "${docker.smallTask}"
+  metadata:
+    name: "Builds Android cache x86_64 / android-24"
+    description: "Setup an Android SDK / emulator cache for Android x86_64 / android-24"

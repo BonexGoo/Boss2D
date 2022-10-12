@@ -1,0 +1,52 @@
+{
+    "name" : "$(PROJECT_NAME)",
+    "version" : "$(PROJECT_VERSION)",
+    "description" : "DeepSpeech NodeJS bindings",
+    "main" : "./index.js",
+    "types": "./index.d.ts",
+    "bin": {
+       "deepspeech": "./client.js"
+    },
+    "author" : "DeepSpeech authors",
+    "license": "MPL-2.0",
+    "homepage": "https://github.com/mozilla/DeepSpeech/tree/v$(PROJECT_VERSION)#project-deepspeech",
+    "files": [
+       "README.md",
+       "client.js",
+       "index.js",
+       "index.d.ts",
+       "lib/*"
+    ],
+    "bugs": {
+       "url": "https://github.com/mozilla/DeepSpeech/issues"
+    },
+    "repository"   :  {
+       "type" : "git",
+       "url"  : "git://github.com/mozilla/DeepSpeech.git"
+    },
+    "binary": {
+        "module_name" : "deepspeech",
+        "module_path" : "./lib/binding/v{version}/{platform}-{arch}/{node_abi}/",
+        "remote_path" : "./v{version}/{configuration}/",
+        "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
+        "host"        : "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.v1.0.0-warpctc.arm/artifacts/public/"
+    },
+    "dependencies"  : {
+      "node-pre-gyp": "0.15.x",
+      "argparse": "1.0.x",
+      "sox-stream": "2.0.x",
+      "memory-stream": "1.0.x",
+      "node-wav": "0.0.2"
+    },
+    "devDependencies": {
+      "electron": "^1.7.9",
+      "node-gyp": "5.x",
+      "typescript": "3.8.x",
+      "typedoc": "0.17.x",
+      "@types/argparse": "1.0.x",
+      "@types/node": "13.9.x"
+    },
+    "scripts": {
+        "test": "node index.js"
+    }
+}

@@ -1,0 +1,287 @@
+python:
+  packages_xenial:
+    apt: 'make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev liblzma-dev curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libpng-dev libsox-dev libmagic-dev libgsm1-dev libltdl-dev'
+  packages_buster:
+    apt: 'python3-virtualenv python3-setuptools python3-pip python3-wheel python3-pkg-resources'
+  packages_docs_bionic:
+    apt: 'python3 python3-pip zip doxygen'
+training:
+  packages_xenial:
+    apt: 'libopus0'
+deepspeech:
+  packages_xenial:
+    apt: 'make build-essential gfortran git libblas-dev liblapack-dev libsox-dev libmagic-dev libgsm1-dev libltdl-dev libpng-dev python python-dev zlib1g-dev'
+  packages_bionic:
+    apt: 'apt-get -qq update && apt-get -qq -y install make build-essential gfortran git libblas-dev liblapack-dev libsox-dev libmagic-dev libgsm1-dev libltdl-dev libpng-dev python3 python3-dev python-is-python3 zlib1g-dev libbz2-dev liblzma-dev'
+kenlm:
+  packages_xenial:
+    apt: 'apt-get -qq update && apt-get -qq -y install cmake realpath build-essential libboost-dev wget software-properties-common zlib1g-dev libbz2-dev liblzma-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-test-dev'
+  packages_android:
+    apt: 'apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -qq -y install cmake coreutils build-essential wget software-properties-common unzip'
+  packages_win:
+    pacman: 'pacman --noconfirm -S cmake mingw-w64-x86_64-boost mingw-w64-x86_64-toolchain zlib bzip2 xz'
+tensorflow:
+  packages_xenial:
+    apt: 'apt-get -qq update && apt-get -qq -y install realpath build-essential python-virtualenv python-dev python-pip libblas-dev liblapack-dev gfortran wget software-properties-common pixz zip zlib1g-dev unzip'
+  packages_bionic:
+    apt: 'apt-get -qq update && apt-get -qq -y install coreutils build-essential python3-virtualenv python3-dev python3-pip python-is-python3 libblas-dev liblapack-dev gfortran wget software-properties-common pixz zip zlib1g-dev unzip'
+  packages_win:
+    pacman: 'pacman --noconfirm -S patch unzip tar'
+    msys64: 'ln -s $USERPROFILE/msys64 $TASKCLUSTER_TASK_DIR/msys64'
+valgrind:
+  packages_bionic:
+    apt: 'apt-get -qq update && apt-get -qq -y install python3 python3-simplejson python-is-python3 valgrind'
+java:
+  packages_xenial:
+    apt: 'apt-get -qq -y install curl software-properties-common wget unzip && add-apt-repository --yes ppa:openjdk-r/ppa && apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -qq -y --force-yes install openjdk-8-jdk && java -version && update-ca-certificates -f'
+  packages_bionic:
+    apt: 'apt-get -qq -y install curl software-properties-common wget unzip && add-apt-repository --yes ppa:openjdk-r/ppa && apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -qq -y --force-yes install openjdk-8-jdk && java -version && update-ca-certificates -f'
+electronjs:
+  packages_xenial:
+    apt: 'libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 xvfb'
+nodejs:
+  packages_xenial:
+    apt: 'nodejs sox'
+    apt_pinning: '(echo "Package: nodejs" && echo "Pin: origin deb.nodesource.com" && echo "Pin-Priority: 999") > /etc/apt/preferences'
+    prep_12: 'echo "deb http://deb.nodesource.com/node_12.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+  packages_xenial:
+    apt: 'nodejs sox'
+    apt_pinning: '(echo "Package: nodejs" && echo "Pin: origin deb.nodesource.com" && echo "Pin-Priority: 999") > /etc/apt/preferences'
+    prep_10: 'echo "deb http://deb.nodesource.com/node_10.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_11: 'echo "deb http://deb.nodesource.com/node_11.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_12: 'echo "deb http://deb.nodesource.com/node_12.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_13: 'echo "deb http://deb.nodesource.com/node_13.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_14: 'echo "deb http://deb.nodesource.com/node_14.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_15: 'echo "deb http://deb.nodesource.com/node_15.x xenial main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+  packages_docs_bionic:
+    apt: 'nodejs'
+    apt_pinning: '(echo "Package: nodejs" && echo "Pin: origin deb.nodesource.com" && echo "Pin-Priority: 999") > /etc/apt/preferences'
+    prep_12: 'echo "deb http://deb.nodesource.com/node_12.x bionic main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_13: 'echo "deb http://deb.nodesource.com/node_13.x bionic main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+  packages_buster:
+    apt: 'nodejs sox'
+    apt_pinning: '(echo "Package: nodejs" && echo "Pin: origin deb.nodesource.com" && echo "Pin-Priority: 999") > /etc/apt/preferences'
+    prep_10: 'echo "deb http://deb.nodesource.com/node_10.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_11: 'echo "deb http://deb.nodesource.com/node_11.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_12: 'echo "deb http://deb.nodesource.com/node_12.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_13: 'echo "deb http://deb.nodesource.com/node_13.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_14: 'echo "deb http://deb.nodesource.com/node_14.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    prep_15: 'echo "deb http://deb.nodesource.com/node_15.x buster main" > /etc/apt/sources.list.d/nodesource.list && wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+  brew:
+    prep_10: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 10.20.1'
+    prep_11: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 11.15.0'
+    prep_12: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 12.17.0'
+    prep_13: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 13.14.0'
+    prep_14: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 14.3.0'
+    prep_15: 'export NVM_DIR=$TASKCLUSTER_TASK_DIR/homebrew-tests/.nvm/ && source "$TASKCLUSTER_TASK_DIR/homebrew-tests/opt/nvm/nvm.sh" && nvm use 15.0.0'
+  win:
+    prep_10: '/usr/bin/wget.exe https://nodejs.org/dist/v10.20.1/node-v10.20.1-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v10.20.1-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v10.20.1-win-x64/:$PATH'
+    prep_11: '/usr/bin/wget.exe https://nodejs.org/dist/v11.15.0/node-v11.15.0-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v11.15.0-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v11.15.0-win-x64/:$PATH'
+    prep_12: '/usr/bin/wget.exe https://nodejs.org/dist/v12.17.0/node-v12.17.0-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v12.17.0-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v12.17.0-win-x64/:$PATH'
+    prep_13: '/usr/bin/wget.exe https://nodejs.org/dist/v13.14.0/node-v13.14.0-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v13.14.0-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v13.14.0-win-x64/:$PATH'
+    prep_14: '/usr/bin/wget.exe https://nodejs.org/dist/v14.3.0/node-v14.3.0-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v14.3.0-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v14.3.0-win-x64/:$PATH'
+    prep_15: '/usr/bin/wget.exe https://nodejs.org/dist/v15.0.0/node-v15.0.0-win-x64.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_NODE_DIR -tzip -aoa node-v15.0.0-win-x64.zip && rm node-*.zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/node-v15.0.0-win-x64/:$PATH'
+system:
+  node_gyp_cache:
+    url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.node-gyp-cache.11/artifacts/public/node-gyp-cache.tar.gz'
+    namespace: 'project.deepspeech.node-gyp-cache.11'
+  homebrew_builds:
+    url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.homebrew_builds.13/artifacts/public/homebrew_builds.tar.gz'
+    namespace: 'project.deepspeech.homebrew_builds.13'
+  homebrew_tests:
+    url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.homebrew_tests.13/artifacts/public/homebrew_tests.tar.gz'
+    namespace: 'project.deepspeech.homebrew_tests.13'
+  android_cache:
+    arm64_v8a:
+      android_24:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.arm64-v8a.android-24.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.arm64-v8a.android-24.7'
+      android_25:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.arm64-v8a.android-25.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.arm64-v8a.android-25.7'
+    armeabi_v7a:
+      android_24:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.armeabi-v7a.android-24.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.armeabi-v7a.android-24.7'
+      android_25:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.armeabi-v7a.android-25.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.armeabi-v7a.android-25.7'
+    x86_64:
+      android_24:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-24.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-24.7'
+      android_25:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-25.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-25.7'
+      android_26:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-26.3/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-26.3'
+      android_27:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-27.3/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-27.3'
+      android_28:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-28.3/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-28.3'
+      android_29:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-29.3/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-29.3'
+      android_30:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.x86_64.android-30.3/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.x86_64.android-30.3'
+    sdk:
+      android_27:
+        url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.android_cache.sdk.android-27.7/artifacts/public/android_cache.tar.gz'
+        namespace: 'project.deepspeech.android_cache.sdk.android-27.7'
+  gradle_cache:
+    url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.gradle.7/artifacts/public/gradle.tar.gz'
+    namespace: 'project.deepspeech.gradle.7'
+  pyenv:
+    linux:
+      url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.pyenv.linux.18/artifacts/public/pyenv.tar.gz'
+      namespace: 'project.deepspeech.pyenv.linux.18'
+    osx:
+      url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.pyenv.osx.18/artifacts/public/pyenv.tar.gz'
+      namespace: 'project.deepspeech.pyenv.osx.18'
+    win:
+      url: 'https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.pyenv.win.18/artifacts/public/pyenv.tar.gz'
+      namespace: 'project.deepspeech.pyenv.win.18'
+  kenlm:
+    android_arm64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-arm64/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-arm64"
+    android_armv7_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-armv7/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-armv7"
+    android_x86_64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-x86_64/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.android-x86_64"
+    linux_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.cpu/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.cpu"
+    linux_arm64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.arm64/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.arm64"
+    linux_rpi3_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.rpi3/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.rpi3"
+    darwin_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.osx/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.osx"
+    win_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.win/artifacts/public/kenlm.tar.gz"
+      namespace: "project.deepspeech.kenlm.689a25aae9171b3ea46bd80d4189f540f35f1a02.4.win"
+  swig:
+    repo: "https://github.com/lissyx/swig"
+    sha1: "1a4c14945012f1282c2eddc174fb7674d5295de8"
+  swig_build:
+    linux:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.swig.linux.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0/artifacts/public/ds-swig.tar.gz"
+      namespace: "project.deepspeech.swig.linux.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0"
+    osx:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.swig.darwin.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0/artifacts/public/ds-swig.tar.gz"
+      namespace: "project.deepspeech.swig.darwin.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0"
+    win:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.swig.win.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0/artifacts/public/ds-swig.tar.gz"
+      namespace: "project.deepspeech.swig.win.amd64.1a4c14945012f1282c2eddc174fb7674d5295de8.0"
+  tensorflow:
+    linux_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu"
+    linux_amd64_cuda:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda"
+    linux_armv7:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm"
+    linux_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm64"
+    darwin_amd64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.osx/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.osx"
+    android_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-arm64"
+    android_armv7:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-armv7/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-armv7"
+    win_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win"
+    win_amd64_cuda:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win-cuda/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win-cuda"
+    ios_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_arm64"
+    ios_x86_64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_x86_64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_x86_64"
+  tensorflow_gcc9:
+    linux_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu_gcc9/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu_gcc9"
+    linux_amd64_cuda:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda_gcc9/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda_gcc9"
+  tensorflow_dbg:
+    linux_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cpu"
+    linux_amd64_cuda:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.cuda"
+    linux_armv7:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm"
+    linux_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.arm64"
+    darwin_amd64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.osx/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.osx"
+    android_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-arm64"
+    android_armv7:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-armv7/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.android-armv7"
+    win_amd64_cpu:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win"
+    win_amd64_cuda:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win-cuda/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.win-cuda"
+    ios_arm64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_arm64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_arm64"
+    ios_x86_64:
+      url: "https://community-tc.services.mozilla.com/api/index/v1/task/project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_x86_64/artifacts/public/home.tar.xz"
+      namespace: "project.deepspeech.tensorflow_dbg.pip.r2.3.23ad988fcde60fb01f9533e95004bbc4877a9143.0.ios_x86_64"
+  username: 'build-user'
+  homedir:
+    linux: '/home/build-user'
+    osx: '/Users/build-user'
+    win: '/c/builds/tc-workdir'
+  sox_win: '/usr/bin/wget.exe https://sourceforge.net/projects/sox/files/sox/14.4.2/sox-14.4.2-win32.zip/download -O sox-14.4.2-win32.zip && ""C:\Program Files\7-zip\7z.exe"" x -o$TASKCLUSTER_TASK_DIR/bin/ -tzip -aoa sox-14.4.2-win32.zip && rm sox-*zip && export PATH=$TASKCLUSTER_TASK_DIR/bin/sox-14.4.2/:$PATH'
+  msys2:
+    url: 'https://github.com/msys2/msys2-installer/releases/download/2020-07-20/msys2-base-x86_64-20200720.tar.xz'
+    sha: '24f0a7a3f499d9309bb55bcde5d34a08e752922c3bee9de3a33d2c40896a1496'
+docker:
+  smallTask: 'ci-decision-task'
+  smallTaskBeta: 'ci-decision-task-b'
+  tfBuild: 'ci-tf-build'
+  tfBuildBeta: 'ci-tf-build-b'
+  dsBuild: 'ci-ds-build'
+  dsBuildBeta: 'ci-ds-build-b'
+  dsTests: 'ci-ds-tests'
+  dsTestsBeta: 'ci-ds-tests-b'
+  dsHighMemTests: 'ci-ds-mem-tests'
+  dsHighMemTestsBeta: 'ci-ds-mem-tests-b'
+macOS:
+  tfBuild: 'ds-macos-tf-build'
+  tfBuildBeta: 'ds-macos-tf-build-b'
+  dsBuild: 'ds-macos-ds-build'
+  dsBuildBeta: 'ds-macos-ds-build-b'
+  dsTests: 'ds-macos-ds-tests'
+  dsTestsBeta: 'ds-macos-ds-tests-b'

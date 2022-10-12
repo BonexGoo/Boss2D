@@ -1,0 +1,24 @@
+build:
+  template_file: simple-task.tyml
+  dependencies:
+    # Make sure builds are ready
+    - "win-amd64-cpu-opt"
+    - "win-amd64-gpu-opt"
+    - "win-amd64-tflite-opt"
+  allowed:
+    - "tag"
+  ref_match: "refs/tags/"
+  upload_targets:
+    - "nuget"
+  artifacts_deps:
+    python: []
+    cpp: []
+    javascript: []
+    java_aar: []
+    nuget:
+      - "win-amd64-cpu-opt"
+      - "win-amd64-gpu-opt"
+      - "win-amd64-tflite-opt"
+  metadata:
+    name: "DeepSpeech NuGet Packages"
+    description: "Trigger Uploading of DeepSpeech .Net Framework bindings to NuGet"

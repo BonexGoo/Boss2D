@@ -1,0 +1,24 @@
+build:
+  template_file: linux-opt-base.tyml
+  dependencies:
+    - "swig-linux-amd64"
+    - "node-gyp-cache"
+    - "pyenv-linux-amd64"
+    - "tf_linux-amd64-cpu-opt"
+  routes:
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.cpu-ctc"
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.${event.head.sha}.cpu-ctc"
+    - "index.project.deepspeech.deepspeech.native_client.cpu-ctc.${event.head.sha}"
+  system_setup:
+    >
+      ${nodejs.packages_xenial.prep_12} && ${nodejs.packages_xenial.apt_pinning}
+      && apt-get -qq update && apt-get -qq -y install nodejs python-yaml
+  tensorflow: ${system.tensorflow.linux_amd64_cpu.url}
+  scripts:
+    setup: "taskcluster/tc-true.sh"
+    build: 'taskcluster/decoder-build.sh'
+    package: 'taskcluster/decoder-package.sh'
+  workerType: "${docker.dsBuild}"
+  metadata:
+    name: "DeepSpeech CTC Decoder Linux AMD64 CPU"
+    description: "Building DeepSpeech CTC Decoder for Linux/AMD64, CPU only, optimized version"

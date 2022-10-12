@@ -1,0 +1,78 @@
+$if: '(event.event != "push") && (event.event != "tag")'
+then:
+  taskId: ${taskcluster.taskId}
+  provisionerId: ${taskcluster.generic.provisionerId}
+  workerType: ${macOS.dsTests}
+  taskGroupId: ${taskcluster.taskGroupId}
+  schedulerId: ${taskcluster.schedulerId}
+  dependencies:
+    $map: { $eval: build.dependencies }
+    each(b):
+      $eval: as_slugid(b)
+  created: { $fromNow: '0 sec' }
+  deadline: { $fromNow: '1 day' }
+  expires: { $fromNow: '7 days' }
+
+  extra:
+    github:
+      { $eval: taskcluster.github_events.pull_request }
+
+  scopes: [
+    "generic-worker:cache:deepspeech-macos-pyenv",
+  ]
+
+  payload:
+    maxRunTime: { $eval: to_int(build.maxRunTime) }
+
+    env:
+      $let:
+        training: { $eval: as_slugid(build.test_model_task) }
+        darwin_amd64_build: { $eval: as_slugid("darwin-amd64-cpu-opt") }
+        darwin_amd64_tflite: { $eval: as_slugid("darwin-amd64-tflite-opt") }
+      in:
+        DEEPSPEECH_TEST_MODEL: https://community-tc.services.mozilla.com/api/queue/v1/task/${training}/artifacts/public/output_graph.pb
+        DEEPSPEECH_PROD_MODEL: https://github.com/reuben/DeepSpeech/releases/download/v0.7.0-alpha.3/output_graph.pb
+        DEEPSPEECH_PROD_MODEL_MMAP: https://github.com/reuben/DeepSpeech/releases/download/v0.7.0-alpha.3/output_graph.pbmm
+        EXPECTED_TENSORFLOW_VERSION: "${build.tensorflow_git_desc}"
+
+    command:
+      - - "/bin/bash"
+        - "--login"
+        - "-cxe"
+        - $let:
+            extraSystemSetup: { $eval: strip(str(build.system_setup)) }
+          in: >
+            export TASKCLUSTER_ARTIFACTS="$(pwd)/public/" &&
+            export TASKCLUSTER_ORIG_TASKDIR="$(pwd)" &&
+            (rm -fr ../tc-workdir/ ; mkdir ../tc-workdir/) && cd ../tc-workdir/ &&
+            export TASKCLUSTER_TASK_DIR="$(pwd)" &&
+            export TASKCLUSTER_TMP_DIR="$TASKCLUSTER_TASK_DIR/tmp" &&
+            export LC_ALL=C &&
+            export MACOSX_DEPLOYMENT_TARGET=10.10 &&
+            export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk/ &&
+            export PIP_DEFAULT_TIMEOUT=60 &&
+            env &&
+            trap "export TASKCLUSTER_TASK_EXIT_CODE=$? &&
+            cd $TASKCLUSTER_ORIG_TASKDIR/ && rm -fr $TASKCLUSTER_TASK_DIR/ &&
+            exit $TASKCLUSTER_TASK_EXIT_CODE" 0 &&
+            git clone --quiet ${event.head.repo.url} $TASKCLUSTER_TASK_DIR/DeepSpeech/ds/ &&
+            cd $TASKCLUSTER_TASK_DIR/DeepSpeech/ds && git checkout --quiet ${event.head.sha} &&
+            cd $TASKCLUSTER_TASK_DIR &&
+            (mkdir pyenv-root/ && gtar -C pyenv-root/ -xf $TASKCLUSTER_ORIG_TASKDIR/pyenv.tar.gz) &&
+            (mkdir homebrew-tests/ && gtar -C homebrew-tests/ -xf $TASKCLUSTER_ORIG_TASKDIR/homebrew-tests.tar.gz) &&
+            ${extraSystemSetup} &&
+            /bin/bash ${build.args.tests_cmdline}
+
+    mounts:
+      - file: pyenv.tar.gz
+        content:
+          url: ${system.pyenv.osx.url}
+      - file: homebrew-tests.tar.gz
+        content:
+          url: ${system.homebrew_tests.url}
+
+  metadata:
+    name: ${build.metadata.name}
+    description: ${build.metadata.description}
+    owner: ${event.head.user.email}
+    source: ${event.head.repo.url}

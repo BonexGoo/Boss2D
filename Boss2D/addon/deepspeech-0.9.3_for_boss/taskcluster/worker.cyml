@@ -1,0 +1,19 @@
+taskcluster:
+  schedulerId: taskcluster-github
+  docker:
+    provisionerId: proj-deepspeech
+    workerTypeKvm: kvm
+    workerTypeWin: win
+    workerTypeCuda: win-gpu
+  dockerrpi3:
+    provisionerId: proj-deepspeech
+    workerType: ds-rpi3
+  dockerarm64:
+    provisionerId: proj-deepspeech
+    workerType: ds-lepotato
+  generic:
+    provisionerId: proj-deepspeech
+    workerType: ds-macos-light
+  script:
+    provisionerId: proj-deepspeech
+    workerType: ds-scriptworker

@@ -1,0 +1,31 @@
+build:
+  template_file: linux-opt-base.tyml
+  dependencies:
+    - "android-arm64-cpu-opt"
+    - "android-armv7-cpu-opt"
+    - "android-x86_64-cpu-opt"
+    - "pyenv-linux-amd64"
+    - "gradle-cache"
+    - "android-cache-sdk-android-27"
+  routes:
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.android-apk"
+    - "index.project.deepspeech.deepspeech.native_client.${event.head.branchortag}.${event.head.sha}.android-apk"
+    - "index.project.deepspeech.deepspeech.native_client.android-apk.${event.head.sha}"
+  system_setup:
+    >
+      ${java.packages_xenial.apt}
+  tensorflow: ${system.tensorflow.android_armv7.url}
+  gradle_cache:
+    url: ${system.gradle_cache.url}
+    namespace: ${system.gradle_cache.namespace}
+  android_cache:
+    url: ${system.android_cache.sdk.android_27.url}
+    namespace: ${system.android_cache.sdk.android_27.namespace}
+  scripts:
+    build: "taskcluster/android-apk-build.sh"
+    package: "taskcluster/android-apk-package.sh"
+  nc_asset_name: "native_client.apk.cpu.android.tar.xz"
+  workerType: "${docker.dsBuild}"
+  metadata:
+    name: "DeepSpeech Android APK (ARM64+ARMv7+x86_64)"
+    description: "Building DeepSpeech for Android APK (ARM64+ARMv7+x86_64), optimized version"

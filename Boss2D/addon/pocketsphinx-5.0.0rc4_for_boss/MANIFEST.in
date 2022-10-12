@@ -1,0 +1,46 @@
+include AUTHORS
+include CMakeLists.txt
+include LICENSE
+include NEWS
+include README.md
+include Dockerfile
+include .dockerignore
+include build_wheels.sh
+include config.h.in
+include pocketsphinx.pc.in
+include indent.sh
+include pyproject.toml
+include requirements.dev.txt
+include setup.cfg
+include setup.py
+include sphinx_config.h.in
+recursive-include cython *
+recursive-include docs *
+recursive-include doxygen *
+recursive-include examples *
+recursive-include include *
+recursive-include model *
+recursive-include programs *
+recursive-include src *
+recursive-include test *
+exclude MANIFEST.in
+exclude .readthedocs.yml
+exclude .travis.yml
+exclude .gitignore
+exclude examples/simple
+exclude examples/live
+exclude examples/vad
+recursive-exclude .github *
+recursive-exclude _skbuild *
+recursive-exclude build *
+recursive-exclude docs/build *
+recursive-exclude cython/pocketsphinx/model *
+recursive-exclude cython/pocketsphinx.egg-info *
+recursive-exclude * .gitignore
+recursive-exclude * *.py[co]
+recursive-exclude * *~ 
+recursive-exclude * *.orig
+recursive-exclude * *.DS_Store
+recursive-exclude * __pycache__
+recursive-exclude * *.so
+recursive-exclude * *.egg-info

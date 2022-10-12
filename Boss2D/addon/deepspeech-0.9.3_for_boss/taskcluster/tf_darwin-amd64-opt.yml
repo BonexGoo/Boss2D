@@ -1,0 +1,14 @@
+build:
+  template_file: generic_tc_caching-darwin-opt-base.tyml
+  cache:
+    artifact_url: ${system.tensorflow.darwin_amd64.url}
+    artifact_namespace: ${system.tensorflow.darwin_amd64.namespace}
+  workerType: ${macOS.tfBuild}
+  scripts:
+    setup: "taskcluster/tf_tc-setup.sh"
+    build: "taskcluster/tf_tc-build.sh --darwin-cpu"
+    package: "taskcluster/tf_tc-package.sh"
+  maxRunTime: 28800
+  metadata:
+    name: "TensorFlow OSX AMD64 CPU"
+    description: "Building TensorFlow for OSX AMD64, CPU only, optimized version"

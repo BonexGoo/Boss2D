@@ -1,0 +1,16 @@
+build:
+  template_file: generic_tc_caching-linux-opt-base.tyml
+  cache:
+    artifact_url: ${system.gradle_cache.url}
+    artifact_namespace: ${system.gradle_cache.namespace}
+  system_setup:
+    >
+      ${java.packages_xenial.apt}
+  scripts:
+    setup: "taskcluster/tc-true.sh"
+    build: "taskcluster/gradle-build.sh"
+    package: "taskcluster/gradle-package.sh"
+  workerType: "${docker.smallTask}"
+  metadata:
+    name: "Builds Gradle cache"
+    description: "Setup a Gradle cache for Android"

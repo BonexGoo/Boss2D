@@ -10,6 +10,7 @@ QT_PACKAGE_RPATH = no #ok #no
 }
 
 wasm{
+    QT -= bluetooth
     QMAKE_LFLAGS += -s TOTAL_MEMORY=26214400
 }
 

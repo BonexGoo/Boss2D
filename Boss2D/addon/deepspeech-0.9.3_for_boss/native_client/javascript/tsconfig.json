@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "target": "es6",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
+        "alwaysStrict": true,
+        "declaration": true,
+        "stripInternal": true
+    },
+    "files": [
+        "index.ts",
+        "client.ts",
+        "node-pre-gyp.d.ts"
+    ]
+}
