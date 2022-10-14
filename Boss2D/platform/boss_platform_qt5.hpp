@@ -1158,8 +1158,8 @@
             m_fbo_width = 0;
             m_fbo_height = 0;
 
-            setAttribute(Qt::WA_NoSystemBackground);
             //setAttribute(Qt::WA_PaintOnScreen); // 현재 OpenGL업데이트를 할 방법을 찾을 수 없음
+            setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
             setFocusPolicy(Qt::ClickFocus);
@@ -1555,13 +1555,7 @@
                 #elif BOSS_WINDOWS | BOSS_LINUX
                     TypeCollector |= Qt::FramelessWindowHint;
                 #endif
-                // Frameless에서의 그림자기능 연구중!
-                //MainWidget->setAttribute(Qt::WA_TranslucentBackground);
-                //MainWidget->layout()->setMargin(9);
-                //QGraphicsDropShadowEffect* NewEffect = new QGraphicsDropShadowEffect();
-                //NewEffect->setBlurRadius(9);
-                //NewEffect->setOffset(4);
-                //MainWidget->setGraphicsEffect(NewEffect);
+                m_parent->setAttribute(Qt::WA_TranslucentBackground);
             }
             if(topmost)
                 TypeCollector |= Qt::WindowStaysOnTopHint;
@@ -1583,6 +1577,7 @@
                 #elif BOSS_WINDOWS | BOSS_LINUX
                     TypeCollector |= Qt::FramelessWindowHint;
                 #endif
+                m_parent->setAttribute(Qt::WA_TranslucentBackground);
             }
             if(topmost)
                 TypeCollector |= Qt::WindowStaysOnTopHint;
