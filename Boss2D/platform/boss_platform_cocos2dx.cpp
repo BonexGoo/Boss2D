@@ -632,7 +632,7 @@
             return 0;
         }
 
-        void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket)
+        void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket, bool block_event)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

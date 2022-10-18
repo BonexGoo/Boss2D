@@ -177,7 +177,7 @@ public:
             // 복사된 내용이 하나라도 있으면 송신
             if(0 < CopiedSize || IsKilled) return CopiedSize;
             // 복사된 내용이 하나도 없으면 스트리밍이 종료되기 때문에 3초까지 50ms단위로 기다림
-            Platform::Utility::Sleep(50, false, false);
+            Platform::Utility::Sleep(50, false, false, false);
         }
         return 0;
     }

@@ -1012,10 +1012,10 @@
             return (qrand() & 0xFFFF) | ((qrand() & 0xFFFF) << 16);
         }
 
-        void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket)
+        void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket, bool block_event)
         {
             bool WasBlocked = false;
-            if(!process_input)
+            if(block_event)
                 WasBlocked = g_setEventBlocked(true);
 
             QTime StartTime = QTime::currentTime();
@@ -1030,7 +1030,7 @@
             sint32 SleepTime = ms - StartTime.msecsTo(QTime::currentTime());
             if(0 < SleepTime) QThread::msleep(SleepTime);
 
-            if(!process_input)
+            if(block_event)
                 g_setEventBlocked(WasBlocked);
         }
 
@@ -3896,7 +3896,7 @@
                     const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
                     while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
                     {
-                        Platform::Utility::Sleep(1, false, true);
+                        Platform::Utility::Sleep(1, false, true, false);
                         if(WaitForMsec < Platform::Utility::CurrentTimeMsec())
                         {
                             Result = false;

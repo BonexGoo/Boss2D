@@ -396,7 +396,8 @@ public:
         /// @param ms : 밀리초
         /// @param process_input : 입력처리
         /// @param process_socket : 소켓처리
-        static void Sleep(sint32 ms, bool process_input, bool process_socket);
+        /// @param block_event : 이벤트블록처리
+        static void Sleep(sint32 ms, bool process_input, bool process_socket, bool block_event);
 
         /// @brief 프로그램의 최소화
         static void SetMinimize();

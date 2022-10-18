@@ -3350,7 +3350,7 @@
                     uint64 BeginMsec = Platform::Utility::CurrentTimeMsec();
                     while(Platform::Utility::CurrentTimeMsec() < BeginMsec + timeout)
                     {
-                        Platform::Utility::Sleep(1, false, false);
+                        Platform::Utility::Sleep(1, false, false, true);
                         raw += WrittenBytes;
                         size -= WrittenBytes;
 

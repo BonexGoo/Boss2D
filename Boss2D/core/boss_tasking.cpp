@@ -157,10 +157,10 @@ static void _TaskCore(void* arg)
         const bool ProcessSocket = true;
         if(This->IsPause())
         {
-            Platform::Utility::Sleep(100, false, ProcessSocket);
+            Platform::Utility::Sleep(100, false, ProcessSocket, false);
             continue;
         }
-        else Platform::Utility::Sleep(NextSleep, false, ProcessSocket);
+        else Platform::Utility::Sleep(NextSleep, false, ProcessSocket, false);
         NextSleep = This->m_cb(This->m_self, This->m_query, This->m_answer, (id_common) &This->m_common);
     }
 
@@ -200,7 +200,7 @@ namespace BOSS
         else if(doWait)
         {
             while(((TaskingClass*) tasking)->IsAlive())
-                Platform::Utility::Sleep(10, false, false);
+                Platform::Utility::Sleep(10, false, false, false);
             Buffer::Free((buffer) tasking);
         }
     }

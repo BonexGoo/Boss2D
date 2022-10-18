@@ -1313,7 +1313,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
 
     extern "C" void boss_fakewin_Sleep(DWORD dwMilliseconds)
     {
-        Platform::Utility::Sleep(dwMilliseconds, true, true);
+        Platform::Utility::Sleep(dwMilliseconds, true, true, false);
     }
 
     extern "C" void boss_fakewin_SleepEx(DWORD, BOOL)
@@ -1432,7 +1432,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
                 if(CurThread->mFinished)
                     return WAIT_OBJECT_0;
             }
-            Platform::Utility::Sleep(10, true, true);
+            Platform::Utility::Sleep(10, true, true, false);
         }
         return WAIT_TIMEOUT;
     }
@@ -1466,7 +1466,7 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
                 return WAIT_FAILED;
             if(Finded)
                 return WAIT_OBJECT_0;
-            Platform::Utility::Sleep(10, true, true);
+            Platform::Utility::Sleep(10, true, true, false);
         }
         return WAIT_TIMEOUT;
     }
