@@ -988,7 +988,7 @@ namespace BOSS
             nullptr,
             "once|always");
 
-        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "user_content",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndSetter, "user_content",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("Register 'AddComponent' as 'user_content' once more and use it for replacement", false);

@@ -484,6 +484,9 @@ ZEFakeZaySon::ZEFakeZaySon()
             case ZayExtend::ComponentType::ContentWithParamAndInsider:
                 NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Insider, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
+            case ZayExtend::ComponentType::ContentWithParamAndSetter:
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Setter, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
+                break;
             case ZayExtend::ComponentType::Option:
                 NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Inner, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
@@ -540,6 +543,7 @@ Color ZEFakeZaySon::GetComponentColor(ZayExtend::ComponentType type, String& col
     case ZayExtend::ComponentType::ContentWithParameter:
     case ZayExtend::ComponentType::ContentWithInsider:
     case ZayExtend::ComponentType::ContentWithParamAndInsider:
+    case ZayExtend::ComponentType::ContentWithParamAndSetter:
         colorres = "box_title_d";
         return Color(0, 181, 240, 192);
     case ZayExtend::ComponentType::Option:

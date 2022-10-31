@@ -11,7 +11,7 @@ typedef Map<ZEZayBoxObject> ZEZayBoxMap;
 class ZEZayBox
 {
 public:
-    enum class ChildType {None, Inner, Insider};
+    enum class ChildType {None, Inner, Insider, Setter};
     enum class ClickMode {Click, Click_DoubleClick, Click_LongPress, Click_DoubleClick_LongPress, Touch, Error};
     typedef std::function<ZEZayBoxObject(chars compname)> CreatorCB;
 
@@ -355,6 +355,7 @@ public:
     void WriteJson(Context& json, bool makeid) const override;
     void Render(ZayPanel& panel) override;
     void RecalcSize() override;
+    void SubInput(sint32 i) override;
     sint32 GetChildrenGroupCount() const override;
     sint32s* GetChildrenGroup(sint32 group) override;
     void SubParam(sint32 i) override;
@@ -366,6 +367,7 @@ protected: // 데이터
     BodyComment mComment;
     BodyParamGroup mParamGroup;
     BodyInsideGroup mInsideGroup;
+    BodyInputGroup mSetGroup;
     ChildType mChildType;
     bool mHasParam;
 };

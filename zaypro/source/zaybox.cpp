@@ -688,6 +688,7 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
             }
         })
     ZAY_INNER(panel, 2)
+    ZAY_ZOOM(panel, 1 - AniValue * 0.2)
     {
         if(!Enable)
         {
@@ -2257,7 +2258,7 @@ chars ZEZayBoxStarter::GetComment() const
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBoxContent
 ////////////////////////////////////////////////////////////////////////////////
-ZEZayBoxContent::ZEZayBoxContent() : mComment(*this), mParamGroup(*this), mInsideGroup(*this)
+ZEZayBoxContent::ZEZayBoxContent() : mComment(*this), mParamGroup(*this), mInsideGroup(*this), mSetGroup(*this)
 {
     mChildType = ChildType::None;
     mHasParam = false;
@@ -2293,6 +2294,8 @@ void ZEZayBoxContent::ReadJson(const Context& json)
         mInsideGroup.ReadJson(json("insiders"));
     }
     BodyInsideGroup::BOX() = OldBox;
+
+    mSetGroup.ReadJson(json("onset"));
 }
 
 void ZEZayBoxContent::WriteJson(Context& json, bool makeid) const
@@ -2308,6 +2311,8 @@ void ZEZayBoxContent::WriteJson(Context& json, bool makeid) const
     mComment.WriteJson(json, makeid);
     mParamGroup.WriteJson(json, makeid);
     mInsideGroup.WriteJson(json, makeid);
+    if(0 < mSetGroup.mInputs.Count())
+        mSetGroup.WriteJson(json.At("onset"), makeid);
 }
 
 void ZEZayBoxContent::Render(ZayPanel& panel)
@@ -2338,9 +2343,18 @@ void ZEZayBoxContent::Render(ZayPanel& panel)
                     mComment.RenderCommentEditor(panel, UIComment);
 
                 // 파라미터그룹
+                sint32 ParamGroupHeight = 0;
                 if(mHasParam)
-                ZAY_LTRB(panel, 0, EditorHeight, panel.w(), panel.h())
-                    mParamGroup.RenderParamGroup(panel);
+                {
+                    ParamGroupHeight = (ParamHeight + 4) * (mParamGroup.mParams.Count() + 1) + 9;
+                    ZAY_LTRB(panel, 0, EditorHeight, panel.w(), EditorHeight + ParamGroupHeight)
+                        mParamGroup.RenderParamGroup(panel);
+                }
+
+                // 인풋그룹
+                if(mChildType == ChildType::Setter)
+                ZAY_LTRB(panel, 0, EditorHeight + ParamGroupHeight, panel.w(), panel.h())
+                    mSetGroup.RenderValueGroup(panel, "OnSet");
             }
         }
     }
@@ -2348,9 +2362,14 @@ void ZEZayBoxContent::Render(ZayPanel& panel)
 
 void ZEZayBoxContent::RecalcSize()
 {
-    mBodySize.h = 8 + mComment.GetCalcedSize();
-    if(mHasParam)
-        mBodySize.h += mParamGroup.GetCalcedSize();
+    mBodySize.h = 8 + mComment.GetCalcedSize()
+        + ((mHasParam)? mParamGroup.GetCalcedSize() : 0)
+        + ((mChildType == ChildType::Setter)? mSetGroup.GetCalcedSize() : 0);
+}
+
+void ZEZayBoxContent::SubInput(sint32 i)
+{
+    mSetGroup.SubValue(i);
 }
 
 sint32 ZEZayBoxContent::GetChildrenGroupCount() const

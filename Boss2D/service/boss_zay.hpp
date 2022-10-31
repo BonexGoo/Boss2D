@@ -498,7 +498,8 @@ namespace BOSS
         BOSS_DECLARE_STANDARD_CLASS(ZayExtend)
     public:
         class Payload;
-        enum class ComponentType {Unknown, Content, ContentWithParameter, ContentWithInsider, ContentWithParamAndInsider,
+        enum class ComponentType {Unknown,
+            Content, ContentWithParameter, ContentWithInsider, ContentWithParamAndInsider, ContentWithParamAndSetter,
             Option, Layout, CodeInput, JumpCall, JumpMethod, Loop, Condition, ConditionWithOperation, ConditionWithEvent};
         typedef std::function<ZayPanel::StackBinder(ZayPanel& panel, const Payload& pay)> ComponentCB;
         typedef std::function<void(const Payload& pay)> GlueCB;
