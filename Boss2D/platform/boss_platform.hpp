@@ -104,6 +104,10 @@ public:
     /// @param visible : 보여짐여부
     static void SetWindowVisible(bool visible);
 
+    /// @brief 최상위 윈도우스타일 변경
+    /// @param enable : 활성여부
+    static void SetWindowTopMost(bool enable);
+
     /// @brief 윈도우웹 URL설정
     /// @param url : 웹으로 윈도우배경을 만들 URL
     static void SetWindowWebUrl(chars url);

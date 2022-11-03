@@ -227,6 +227,13 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
+        void Platform::SetWindowTopMost(bool enable)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         void Platform::SetWindowWebUrl(chars url)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);

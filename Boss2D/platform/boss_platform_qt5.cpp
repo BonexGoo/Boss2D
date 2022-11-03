@@ -421,6 +421,12 @@
             }
         }
 
+        void Platform::SetWindowTopMost(bool enable)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
+            g_data->changeTopMost(enable);
+        }
+
         void Platform::SetWindowWebUrl(chars url)
         {
             if(g_data)
