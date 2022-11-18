@@ -36,6 +36,18 @@ namespace BOSS
         Solvers mSolvers;
     };
 
+    /// @brief 뷰스크립트 엘리먼트통신
+    class ZaySonElementCall
+    {
+    public:
+        static void SetCursor(sint32 elementid, CursorRole role);
+        static bool SetVariable(sint32 elementid, chars uiname, chars key, chars value);
+        static bool SendPress(sint32 elementid, chars uiname);
+        static bool SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased);
+        static bool IsValidDoubleClick(sint32 elementid);
+        static bool IsValidLongPress(sint32 elementid);
+    };
+
     /// @brief 뷰스크립트 원형
     class ZaySonInterface
     {

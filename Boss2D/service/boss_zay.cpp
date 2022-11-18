@@ -1,6 +1,8 @@
 ﻿#include <boss.hpp>
 #include "boss_zay.hpp"
 
+#include "boss_zayson.hpp"
+
 ZAY_DECLARE_VIEW("_defaultview_")
 ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
 ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*) {}
@@ -1472,15 +1474,6 @@ namespace BOSS
         Platform::Graphics::SetScissor(LastScissor.l, LastScissor.t, LastScissor.Width(), LastScissor.Height());
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtend
-    ////////////////////////////////////////////////////////////////////////////////
-    extern void ZayExtendCursor(CursorRole role, sint32 elementid);
-    extern bool ZayExtendPress(chars uiname, sint32 elementid);
-    extern bool ZayExtendValid_DoubleClick(sint32 elementid);
-    extern bool ZayExtendValid_LongPress(sint32 elementid);
-    extern bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased);
-
     ZayExtend::ZayExtend(ComponentType type, ComponentCB ccb, GlueCB gcb)
     {
         mComponentType = type;
@@ -1570,15 +1563,15 @@ namespace BOSS
                 static String ReleaseUIName;
                 static uint64 ReleaseMsec = 0;
                 if(t == GT_Moving || t == GT_MovingIdle)
-                    ZayExtendCursor(CR_PointingHand, ElementID);
+                    ZaySonElementCall::SetCursor(ElementID, CR_PointingHand);
                 else if(t == GT_MovingLosed)
-                    ZayExtendCursor(CR_Arrow, ElementID);
+                    ZaySonElementCall::SetCursor(ElementID, CR_Arrow);
                 else if(t == GT_Pressed)
                 {
-                    if(ZayExtendPress(n, ElementID))
+                    if(ZaySonElementCall::SendPress(ElementID, n))
                     {
                         PressMode = true;
-                        ZayExtendCursor(CR_Busy, ElementID);
+                        ZaySonElementCall::SetCursor(ElementID, CR_Busy);
                     }
                     HasLongPress = false;
                 }
@@ -1588,17 +1581,17 @@ namespace BOSS
                     {
                         const uint64 CurReleaseMsec = Platform::Utility::CurrentTimeMsec();
                         const bool HasDoubleClick = (CurReleaseMsec < ReleaseMsec + 300 && ReleaseUIName == n);
-                        if(HasDoubleClick && ZayExtendValid_DoubleClick(ElementID))
+                        if(HasDoubleClick && ZaySonElementCall::IsValidDoubleClick(ElementID))
                         {
-                            if(ZayExtendClick(n, ElementID, true, false, false, false))
-                                ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                            if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false))
+                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
                             ReleaseUIName.Empty();
                             ReleaseMsec = 0;
                         }
                         else
                         {
-                            if(ZayExtendClick(n, ElementID, false, false, t == GT_OutReleased, t == GT_CancelReleased))
-                                ZayExtendCursor((PressMode)? CR_Arrow : CR_Busy, ElementID);
+                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, t == GT_OutReleased, t == GT_CancelReleased))
+                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
                             ReleaseUIName = n;
                             ReleaseMsec = CurReleaseMsec;
                         }
@@ -1607,9 +1600,9 @@ namespace BOSS
                 }
                 else if(t == GT_LongPressed)
                 {
-                    if(ZayExtendValid_LongPress(ElementID))
+                    if(ZaySonElementCall::IsValidLongPress(ElementID))
                     {
-                        if(ZayExtendClick(n, ElementID, false, true, false, false))
+                        if(ZaySonElementCall::SendClick(ElementID, n, false, true, false, false))
                             v->invalidate();
                         HasLongPress = true;
                     }

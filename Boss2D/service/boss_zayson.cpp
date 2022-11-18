@@ -4,6 +4,95 @@
 namespace BOSS
 {
     ////////////////////////////////////////////////////////////////////////////////
+    // ZayUIElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayUIElement
+    {
+        BOSS_DECLARE_STANDARD_CLASS(ZayUIElement)
+    public:
+        enum class Type {Unknown, Condition, Param, Request, Inside, Gate, Component, View};
+        enum class LambdaID {OnSet, OnTouch, OnClick, Max};
+
+    public:
+        ZayUIElement(Type type = Type::Unknown) : mType(type)
+        {
+            mID = MakeID();
+            STMAP()[mID] = this;
+            mRefRoot = nullptr;
+        }
+        virtual ~ZayUIElement()
+        {
+            STMAP().Remove(mID);
+        }
+
+    private:
+        sint32 MakeID()
+        {
+            static sint32 LastID = -1;
+            return ++LastID;
+        }
+        static Map<ZayUIElement*>& STMAP()
+        {static Map<ZayUIElement*> _; return _;}
+
+    public:
+        static ZayUIElement* Get(sint32 id)
+        {
+            if(auto Result = STMAP().Access(id))
+                return *Result;
+            return nullptr;
+        }
+        static SolverValue GetResult(chars viewname, chars formula)
+        {
+            Solver NewSolver;
+            NewSolver.Link(viewname);
+            NewSolver.Parse(formula);
+            NewSolver.Execute();
+            return NewSolver.result();
+        }
+        static buffer Create(Type type);
+
+    public:
+        virtual void Load(const ZaySon& root, const Context& context)
+        {
+            mRefRoot = &root;
+            hook(context("uiname"))
+                mUINameSolver.Link(root.ViewName()).Parse(fish.GetText());
+            hook(context("uiloop"))
+                mUILoopSolver.Link(root.ViewName()).Parse(fish.GetText());
+            hook(context("comment"))
+                mComment = fish.GetText();
+        }
+
+    public:
+        class DebugLog
+        {
+        public:
+            Rect mRect;
+            bool mFill;
+            String mUIName;
+        };
+        typedef Array<DebugLog> DebugLogs;
+
+    public:
+        virtual void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const {}
+        virtual void SetCursor(CursorRole role) {}
+        virtual bool OnLambda(chars uiname, LambdaID id, chars key = nullptr, chars value = nullptr,
+            bool doubleclicked = false, bool longpressed = false, bool outreleased = false, bool cancelreleased = false) {return false;}
+        virtual bool IsValidDoubleClick() {return false;}
+        virtual bool IsValidLongPress() {return false;}
+
+    public:
+        Type mType;
+        sint32 mID;
+        const ZaySon* mRefRoot;
+        Solver mUINameSolver;
+        Solver mUILoopSolver;
+        String mComment;
+    };
+    typedef Object<ZayUIElement> ZayUI;
+    typedef Array<ZayUI> ZayUIs;
+
+    ////////////////////////////////////////////////////////////////////////////////
     // ZaySonDocument
     ////////////////////////////////////////////////////////////////////////////////
     ZaySonDocument::ZaySonDocument(chars chain) : mChain(chain)
@@ -128,6 +217,51 @@ namespace BOSS
         auto& NewSolver = mSolvers.AtAdding();
         NewSolver.Link(mChain, variable);
         return NewSolver;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZaySonElementCall
+    ////////////////////////////////////////////////////////////////////////////////
+    void ZaySonElementCall::SetCursor(sint32 elementid, CursorRole role)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            CurUIElement->SetCursor(role);
+    }
+
+    bool ZaySonElementCall::SetVariable(sint32 elementid, chars uiname, chars key, chars value)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnSet, key, value);
+        return false;
+    }
+
+    bool ZaySonElementCall::SendPress(sint32 elementid, chars uiname)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnTouch);
+        return false;
+    }
+
+    bool ZaySonElementCall::SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnClick, nullptr, nullptr,
+                doubleclicked, longpressed, outreleased, cancelreleased);
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidDoubleClick(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidDoubleClick();
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidLongPress(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidLongPress();
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -304,143 +438,6 @@ namespace BOSS
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // ZayUIElement
-    ////////////////////////////////////////////////////////////////////////////////
-    class ZayUIElement
-    {
-        BOSS_DECLARE_STANDARD_CLASS(ZayUIElement)
-    public:
-        enum class Type {Unknown, Condition, Param, Request, Inside, Gate, Component, View};
-        enum class LambdaID {Touch, Click, Set, Max};
-
-    public:
-        ZayUIElement(Type type = Type::Unknown) : mType(type)
-        {
-            mID = MakeID();
-            STMAP()[mID] = this;
-            mRefRoot = nullptr;
-        }
-        virtual ~ZayUIElement()
-        {
-            STMAP().Remove(mID);
-        }
-
-    private:
-        sint32 MakeID()
-        {
-            static sint32 LastID = -1;
-            return ++LastID;
-        }
-        static Map<ZayUIElement*>& STMAP()
-        {static Map<ZayUIElement*> _; return _;}
-
-    public:
-        static ZayUIElement* Get(sint32 id)
-        {
-            if(auto Result = STMAP().Access(id))
-                return *Result;
-            return nullptr;
-        }
-        static SolverValue GetResult(chars viewname, chars formula)
-        {
-            Solver NewSolver;
-            NewSolver.Link(viewname);
-            NewSolver.Parse(formula);
-            NewSolver.Execute();
-            return NewSolver.result();
-        }
-        static buffer Create(Type type);
-
-    public:
-        virtual void Load(const ZaySon& root, const Context& context)
-        {
-            mRefRoot = &root;
-            hook(context("uiname"))
-                mUINameSolver.Link(root.ViewName()).Parse(fish.GetText());
-            hook(context("uiloop"))
-                mUILoopSolver.Link(root.ViewName()).Parse(fish.GetText());
-            hook(context("comment"))
-                mComment = fish.GetText();
-        }
-
-    public:
-        class DebugLog
-        {
-        public:
-            Rect mRect;
-            bool mFill;
-            String mUIName;
-        };
-        typedef Array<DebugLog> DebugLogs;
-
-    public:
-        virtual void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const {}
-        virtual void OnCursor(CursorRole role) {}
-        virtual bool TouchValid_DoubleClick() {return false;}
-        virtual bool TouchValid_LongPress() {return false;}
-        virtual bool OnTouch(chars uiname, LambdaID id, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased) {return false;}
-
-    public:
-        Type mType;
-        sint32 mID;
-        const ZaySon* mRefRoot;
-        Solver mUINameSolver;
-        Solver mUILoopSolver;
-        String mComment;
-    };
-    typedef Object<ZayUIElement> ZayUI;
-    typedef Array<ZayUI> ZayUIs;
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendCursor
-    ////////////////////////////////////////////////////////////////////////////////
-    void ZayExtendCursor(CursorRole role, sint32 elementid)
-    {
-        if(auto CurUIElement = ZayUIElement::Get(elementid))
-            CurUIElement->OnCursor(role);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendPress
-    ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendPress(chars uiname, sint32 elementid)
-    {
-        if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, ZayUIElement::LambdaID::Touch, false, false, false, false);
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendValid_DoubleClick
-    ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendValid_DoubleClick(sint32 elementid)
-    {
-        if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->TouchValid_DoubleClick();
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendValid_LongPress
-    ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendValid_LongPress(sint32 elementid)
-    {
-        if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->TouchValid_LongPress();
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // ZayExtendClick
-    ////////////////////////////////////////////////////////////////////////////////
-    bool ZayExtendClick(chars uiname, sint32 elementid, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased)
-    {
-        if(auto CurUIElement = ZayUIElement::Get(elementid))
-            return CurUIElement->OnTouch(uiname, ZayUIElement::LambdaID::Click, doubleclicked, longpressed, outreleased, cancelreleased);
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
     // ZayConditionElement
     ////////////////////////////////////////////////////////////////////////////////
     class ZayConditionElement : public ZayUIElement
@@ -500,7 +497,7 @@ namespace BOSS
                 if(uis[i].ConstValue().mType == ZayUIElement::Type::Condition)
                 {
                     // 조건의 성공여부
-                    bool IsTrue = true;
+                    bool IsTrue = false;
                     auto CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
                     if(CurCondition->mConditionType == ZaySonInterface::ConditionType::If)
                         IsTrue = (CurCondition->mConditionSolver.ExecuteOnly().ToInteger() != 0);
@@ -543,6 +540,7 @@ namespace BOSS
                     // 캔슬릴리즈확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfCancelReleased)
                         IsTrue = cancelreleased;
+                    else IsTrue = true;
 
                     if(IsTrue)
                     {
@@ -856,11 +854,14 @@ namespace BOSS
                 mInputCodes.AtAdding() = (id_share) NewUI;
             }
 
+            hook(context("onset"))
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnSet);
+
             hook(context("ontouch"))
-                LoadCode(root, fish, ZayUIElement::LambdaID::Touch);
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnTouch);
 
             hook(context("onclick"))
-                LoadCode(root, fish, ZayUIElement::LambdaID::Click);
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnClick);
 
             hook(context("clicktype"))
             {
@@ -885,9 +886,6 @@ namespace BOSS
                     mValidLongPressed = false;
                 }
             }
-
-            hook(context("onset"))
-                LoadCode(root, fish, ZayUIElement::LambdaID::Set);
 
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -995,8 +993,14 @@ namespace BOSS
                         chars ComponentName = nullptr;
                         if(0 < UIName.Length())
                             ComponentName = UINameTemp = ViewName + ('.' + UIName);
-                        else if(0 < mLambdas[(sint32) LambdaID::Touch].mCodes.Count() + mLambdas[(sint32) LambdaID::Click].mCodes.Count())
-                            ComponentName = defaultname;
+                        else for(sint32 i = 0, iend = (sint32) LambdaID::Max; i < iend; ++i)
+                        {
+                            if(0 < mLambdas[i].mCodes.Count())
+                            {
+                                ComponentName = defaultname;
+                                break;
+                            }
+                        }
 
                         // 파라미터 없음
                         mInsidersLogs = &logs;
@@ -1023,8 +1027,14 @@ namespace BOSS
                         chars ComponentName = nullptr;
                         if(0 < UIName.Length())
                             ComponentName = UINameTemp = ViewName + ('.' + UIName) + ((1 < iend)? (chars) String::FromInteger(i) : "");
-                        else if(0 < mLambdas[(sint32) LambdaID::Touch].mCodes.Count() + mLambdas[(sint32) LambdaID::Click].mCodes.Count())
-                            ComponentName = DefaultName;
+                        else for(sint32 j = 0, jend = (sint32) LambdaID::Max; j < jend; ++j)
+                        {
+                            if(0 < mLambdas[j].mCodes.Count())
+                            {
+                                ComponentName = DefaultName;
+                                break;
+                            }
+                        }
 
                         // 지역변수 수집
                         Solvers LocalSolvers;
@@ -1064,20 +1074,22 @@ namespace BOSS
         void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
         {
             // 클릭코드를 위한 변수를 사전 캡쳐
-            for(LambdaID id = LambdaID::Touch; id < LambdaID::Max; id = LambdaID(sint32(id) + 1))
-            if(uiname != nullptr && 0 < mLambdas[(sint32) id].mCaptureKeys.Count())
+            for(sint32 i = 0, iend = (sint32) LambdaID::Max; i < iend; ++i)
             {
-                const Point ViewPos = panel.toview(0, 0);
-                hook(mLambdas[(sint32) id].mCaptureValues(uiname))
-                for(sint32 j = 0, jend = mLambdas[(sint32) id].mCaptureKeys.Count(); j < jend; ++j)
+                if(uiname != nullptr && 0 < mLambdas[i].mCaptureKeys.Count())
                 {
-                    chars CurVariable = mLambdas[(sint32) id].mCaptureKeys[j];
-                    branch;
-                    jump(!String::Compare(CurVariable, "pX")) fish(CurVariable) = String::FromFloat(ViewPos.x);
-                    jump(!String::Compare(CurVariable, "pY")) fish(CurVariable) = String::FromFloat(ViewPos.y);
-                    jump(!String::Compare(CurVariable, "pW")) fish(CurVariable) = String::FromFloat(panel.w());
-                    jump(!String::Compare(CurVariable, "pH")) fish(CurVariable) = String::FromFloat(panel.h());
-                    else fish(CurVariable) = Solver().Link(mRefRoot->ViewName()).Parse(CurVariable).ExecuteOnly().ToText(true);
+                    const Point ViewPos = panel.toview(0, 0);
+                    hook(mLambdas[i].mCaptureValues(uiname))
+                    for(sint32 j = 0, jend = mLambdas[i].mCaptureKeys.Count(); j < jend; ++j)
+                    {
+                        chars CurVariable = mLambdas[i].mCaptureKeys[j];
+                        branch;
+                        jump(!String::Compare(CurVariable, "pX")) fish(CurVariable) = String::FromFloat(ViewPos.x);
+                        jump(!String::Compare(CurVariable, "pY")) fish(CurVariable) = String::FromFloat(ViewPos.y);
+                        jump(!String::Compare(CurVariable, "pW")) fish(CurVariable) = String::FromFloat(panel.w());
+                        jump(!String::Compare(CurVariable, "pH")) fish(CurVariable) = String::FromFloat(panel.h());
+                        else fish(CurVariable) = Solver().Link(mRefRoot->ViewName()).Parse(CurVariable).ExecuteOnly().ToText(true);
+                    }
                 }
             }
 
@@ -1092,19 +1104,11 @@ namespace BOSS
                 }
             }
         }
-        void OnCursor(CursorRole role) override
+        void SetCursor(CursorRole role) override
         {
             mRefRoot->SendCursor(role);
         }
-        bool TouchValid_DoubleClick() override
-        {
-            return mValidDoubleClicked;
-        }
-        bool TouchValid_LongPress() override
-        {
-            return mValidLongPressed;
-        }
-        bool OnTouch(chars uiname, LambdaID id, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased) override
+        bool OnLambda(chars uiname, LambdaID id, chars key, chars value, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased) override
         {
             if(0 < mLambdas[(sint32) id].mCodes.Count())
             {
@@ -1118,6 +1122,10 @@ namespace BOSS
                     LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &Variable[0]).Parse(Value).Execute();
                 }
 
+                // 변수를 지역변수화
+                if(key && value)
+                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).Parse(String::Format("\'%s\'", value)).Execute();
+
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
                     nullptr, doubleclicked, longpressed, outreleased, cancelreleased);
@@ -1129,6 +1137,14 @@ namespace BOSS
                 return true;
             }
             return false;
+        }
+        bool IsValidDoubleClick() override
+        {
+            return mValidDoubleClicked;
+        }
+        bool IsValidLongPress() override
+        {
+            return mValidLongPressed;
         }
 
     public: // ZayExtend::Renderer 구현부
