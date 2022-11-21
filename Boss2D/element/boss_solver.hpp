@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <boss.hpp>
+#include <functional>
 
 namespace BOSS
 {
@@ -12,7 +13,7 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or, Function_Divide}; // [and], [or], [divide]
-    typedef void (*SolverRemoveCB)(chars, payload);
+    typedef std::function<void(const String& variable)> SolverRemoveCB;
 
     // 업데이트체인
     class SolverChainPair
@@ -117,6 +118,7 @@ namespace BOSS
         private: Range mRange;
     };
     typedef Array<SolverValue> SolverValues;
+    typedef std::function<bool(const String& formula, const SolverValue& value, float reliable)> SolverValueCB;
 
     // 피연산항
     class SolverOperand
@@ -165,12 +167,13 @@ namespace BOSS
         public: void Unlink(bool updateobservers = false);
         public: static Solver* Find(chars chain, chars variable);
         public: static void Remove(chars chain, chars variable);
-        public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb = nullptr, payload param = nullptr);
+        public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb = nullptr);
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;
         public: String ExecuteVariableName() const;
         public: Strings GetTargetlessVariables() const;
+        public: inline void SetResultFilter(SolverValueCB cb) {mResultCB = cb;}
         public: inline bool is_blank() const {return (mParsedFormula.Length() == 0);}
         public: inline const String& linked_variable() const {return mLinkedVariable;}
         public: inline const String& parsed_formula() const {return mParsedFormula;}
@@ -195,6 +198,7 @@ namespace BOSS
         private: SolverOperandObject mOperandTop;
         private: float mReliable;
         private: SolverValue mResult;
+        private: SolverValueCB mResultCB;
         private: uint64 mUpdatedFormulaMsec;
         private: uint64 mUpdatedResultMsec;
     };

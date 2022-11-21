@@ -18,14 +18,15 @@ namespace BOSS
         typedef std::function<void(const Solver*)> UpdateCB;
 
     public:
-        bool ExistValue(chars variable) const;
+        bool ExistVariable(chars variable) const;
+        void SetVariableFilter(chars variable, SolverValueCB cb);
         SolverValue GetValue(chars variable) const;
         void SetValue(chars variable, chars formula);
         String GetComment(chars variable) const;
         void SetComment(chars variable, chars text);
         void SetJson(const Context& json, const String nameheader = "");
         void Remove(chars variable);
-        void RemoveMatchedVariables(chars keyword, SolverRemoveCB cb = nullptr, payload param = nullptr);
+        void RemoveMatchedVariables(chars keyword, SolverRemoveCB cb = nullptr);
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
 
     protected:

@@ -57,7 +57,8 @@ namespace BOSS
         ~ZayWidgetDOM();
 
     public:
-        static bool ExistValue(chars variable);
+        static bool ExistVariable(chars variable);
+        static void SetVariableFilter(chars variable, SolverValueCB cb);
         static SolverValue GetValue(chars variable);
         static void SetValue(chars variable, chars formula);
         static String GetComment(chars variable);

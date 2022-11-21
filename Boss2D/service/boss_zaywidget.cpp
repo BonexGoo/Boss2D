@@ -1081,10 +1081,16 @@ namespace BOSS
         delete mDocument;
     }
 
-    bool ZayWidgetDOM::ExistValue(chars variable)
+    bool ZayWidgetDOM::ExistVariable(chars variable)
     {
         auto& Self = ST();
-        return Self.mDocument->ExistValue(variable);
+        return Self.mDocument->ExistVariable(variable);
+    }
+
+    void ZayWidgetDOM::SetVariableFilter(chars variable, SolverValueCB cb)
+    {
+        auto& Self = ST();
+        Self.mDocument->SetVariableFilter(variable, cb);
     }
 
     SolverValue ZayWidgetDOM::GetValue(chars variable)
@@ -1130,15 +1136,17 @@ namespace BOSS
             Pipes.AtAdding() = CurPipe.mRefPipe;
         }
 
-        if(Pipes.Count() == 0)
-            Self.mDocument->RemoveMatchedVariables(keyword);
-        else Self.mDocument->RemoveMatchedVariables(keyword,
-            [](chars variable, payload param)->void
-            {
-                auto& Pipes = *((const Array<id_pipe>*) param);
-                for(sint32 i = 0, iend = Pipes.Count(); i < iend; ++i)
-                    RemoveToPipe(Pipes[i], variable);
-            }, (payload) &Pipes);
+        if(0 < Pipes.Count())
+        {
+            const Array<id_pipe>* PtrPipes = &Pipes;
+            Self.mDocument->RemoveMatchedVariables(keyword,
+                [PtrPipes](const String& variable)->void
+                {
+                    for(sint32 i = 0, iend = PtrPipes->Count(); i < iend; ++i)
+                        RemoveToPipe((*PtrPipes)[i], variable);
+                });
+        }
+        else Self.mDocument->RemoveMatchedVariables(keyword);
     }
 
     void ZayWidgetDOM::BindPipe(id_pipe pipe)

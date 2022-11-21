@@ -809,6 +809,7 @@ namespace BOSS
         mOperandTop = ToReference(rhs.mOperandTop);
         mReliable = rhs.mReliable; rhs.mReliable = 0;
         mResult = ToReference(rhs.mResult);
+        mResultCB = rhs.mResultCB; rhs.mResultCB = nullptr;
         mUpdatedFormulaMsec = rhs.mUpdatedFormulaMsec; rhs.mUpdatedFormulaMsec = 0;
         mUpdatedResultMsec = rhs.mUpdatedResultMsec; rhs.mUpdatedResultMsec = 0;
 
@@ -863,7 +864,7 @@ namespace BOSS
             FindedChain->Remove(variable);
     }
 
-    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb, payload param)
+    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb)
     {
         BOSS_ASSERT("잘못된 시나리오입니다", keyword);
         if(auto FindedChain = &gSolverChains(chain))
@@ -893,7 +894,7 @@ namespace BOSS
                 {
                     auto& CurVariable = OnePayload.mMatchedVariables[i];
                     OnePayload.mChain->Remove(CurVariable);
-                    cb(CurVariable, param);
+                    cb(CurVariable);
                 }
             }
             else for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
@@ -1167,14 +1168,20 @@ namespace BOSS
     {
         const float OldReliable = mReliable;
         const SolverValue OldResult = ToReference(mResult);
-        mReliable = mOperandTop->reliable();
-        mResult = mOperandTop->result(SolverValue::MakeByInteger(0));
+        const float NewReliable = mOperandTop->reliable();
+        const SolverValue& NewResult = mOperandTop->result(SolverValue::MakeByInteger(0));
 
-        if(OldReliable != mReliable || OldResult.Different(mResult).ToInteger() != 0)
+        // 필터확인후 입력
+        if(mResultCB == nullptr || mResultCB(mParsedFormula, NewResult, NewReliable))
         {
-            mUpdatedResultMsec = Platform::Utility::CurrentTimeMsec();
-            if(mLinkedChain && 0 < mLinkedVariable.Length())
-                (*mLinkedChain)(mLinkedVariable).ResetTarget(this, updateobservers);
+            mReliable = NewReliable;
+            mResult = NewResult;
+            if(OldReliable != mReliable || OldResult.Different(mResult).ToInteger() != 0)
+            {
+                mUpdatedResultMsec = Platform::Utility::CurrentTimeMsec();
+                if(mLinkedChain && 0 < mLinkedVariable.Length())
+                    (*mLinkedChain)(mLinkedVariable).ResetTarget(this, updateobservers);
+            }
         }
     }
 

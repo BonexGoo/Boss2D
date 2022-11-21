@@ -114,9 +114,15 @@ namespace BOSS
         return *this;
     }
 
-    bool ZaySonDocument::ExistValue(chars variable) const
+    bool ZaySonDocument::ExistVariable(chars variable) const
     {
         return (Solver::Find(mChain, variable) != nullptr);
+    }
+
+    void ZaySonDocument::SetVariableFilter(chars variable, SolverValueCB cb)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.SetResultFilter(cb);
     }
 
     SolverValue ZaySonDocument::GetValue(chars variable) const
@@ -198,9 +204,9 @@ namespace BOSS
         Solver::Remove(mChain, variable);
     }
 
-    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverRemoveCB cb, payload param)
+    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverRemoveCB cb)
     {
-        return Solver::RemoveMatchedVariables(mChain, keyword, cb, param);
+        return Solver::RemoveMatchedVariables(mChain, keyword, cb);
     }
 
     void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
