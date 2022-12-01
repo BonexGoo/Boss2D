@@ -113,7 +113,7 @@ namespace BOSS
     ////////////////////////////////////////////////////////////////////////////////
     FrameUpdater::FrameUpdater()
     {
-        m_needRepaint = false;
+        m_repaint_count = 0;
     }
 
     FrameUpdater::FrameUpdater(const FrameUpdater& rhs)
@@ -131,9 +131,10 @@ namespace BOSS
         return *this;
     }
 
-    void FrameUpdater::RepaintOnce()
+    void FrameUpdater::Repaint(sint32 count)
     {
-        m_needRepaint = true;
+        if(m_repaint_count < count)
+            m_repaint_count = count;
     }
 
     void FrameUpdater::Flush(void (*invalidator)(payload, chars), payload data)
@@ -158,9 +159,9 @@ namespace BOSS
                 invalidator(data, CurUpdater->m_uigroup);
             CurUpdater = NextUpdater;
         }
-        if(m_needRepaint)
+        if(0 < m_repaint_count)
         {
-            m_needRepaint = false;
+            m_repaint_count--;
             invalidator(data, nullptr);
         }
     }

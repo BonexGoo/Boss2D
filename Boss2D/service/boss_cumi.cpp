@@ -1395,7 +1395,7 @@ static autorun CreateDefaultToken()
                 ZAY_RGBA(Panel, 0, 0, 0, CursorAlpha)
                 ZAY_LTRB(Panel, 1, 4, Result.w - 1, Panel.h() - 4)
                     Panel.fill();
-                Panel.repaintOnce();
+                Panel.repaint();
             }
             return Result;
         },

@@ -514,7 +514,7 @@ namespace BOSS
                     Platform::Graphics::DrawPolyImageToFBO(RebuildImage, ips,
                         LastClip.l, LastClip.t, ps, colors, fbo());
                 if(m_updater && !image.IsBuildFinished())
-                    m_updater->RepaintOnce();
+                    m_updater->Repaint(1);
             }
             else Platform::Graphics::DrawPolyImageToFBO(image.GetImage(), ips,
                 LastClip.l, LastClip.t, ps, colors, fbo());
@@ -724,7 +724,7 @@ namespace BOSS
                         LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
                 }
                 if(m_updater && !image.IsBuildFinished())
-                    m_updater->RepaintOnce();
+                    m_updater->Repaint(1);
             }
             else Platform::Graphics::DrawImage(image.GetImage(), 0, 0, image.GetImageWidth(), image.GetImageHeight(),
                 LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
@@ -1019,10 +1019,10 @@ namespace BOSS
         }
     }
 
-    void ZayPanel::repaintOnce()
+    void ZayPanel::repaint(sint32 count)
     {
         if(m_updater)
-            m_updater->RepaintOnce();
+            m_updater->Repaint(count);
     }
 
     VisibleState ZayPanel::visible() const

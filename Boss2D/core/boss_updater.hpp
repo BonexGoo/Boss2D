@@ -54,7 +54,7 @@ namespace BOSS
         FrameUpdater& operator=(const FrameUpdater& rhs);
 
     public:
-        void RepaintOnce();
+        void Repaint(sint32 count);
         void Flush(void (*invalidator)(payload, chars), payload data);
         void WakeUp(void (*invalidator)(payload, chars), payload data);
 
@@ -65,7 +65,7 @@ namespace BOSS
         {return false;}
 
     private:
-        bool m_needRepaint;
+        sint32 m_repaint_count;
     };
 
     ////////////////////////////////////////////////////////////////////////////////

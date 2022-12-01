@@ -650,7 +650,7 @@ namespace BOSS
                 auto IsPassword = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
 
                 if(ZayControl::RenderEditBox(panel, UIName, DOMName, Border, Enabled, IsPassword, pay.TakeRenderer()))
-                    panel.repaintOnce();
+                    panel.repaint();
 
                 if(HasError)
                     RenderErrorBox(panel);
