@@ -26,7 +26,7 @@ namespace BOSS
         void SetComment(chars variable, chars text);
         void SetJson(const Context& json, const String nameheader = "");
         void Remove(chars variable);
-        void RemoveMatchedVariables(chars keyword, SolverRemoveCB cb = nullptr);
+        void RemoveMatchedVariables(chars keyword, SolverVariableCB cb = nullptr);
         void CheckUpdatedSolvers(uint64 msec, UpdateCB cb);
 
     protected:

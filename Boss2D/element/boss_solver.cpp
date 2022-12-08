@@ -379,9 +379,9 @@ namespace BOSS
     SolverValue::Text SolverValue::Range::GetCode() const
     {
         if(mBeginMsec == 0 && mEndMsec == 0)
-            return String::FromFloat(GetValue());
-        return "$R:" + String::FromFloat(mValue1) + '_' + String::FromFloat(mValue2) + '_' +
-            String::FromInteger((sint64) mBeginMsec) + '_' + String::FromInteger((sint64) mEndMsec) + '$';
+            return Text::FromFloat(GetValue());
+        return "$R:" + Text::FromFloat(mValue1) + '_' + Text::FromFloat(mValue2) + '_' +
+            Text::FromInteger((sint64) mBeginMsec) + '_' + Text::FromInteger((sint64) mEndMsec) + '$';
     }
 
     SolverValue::SolverValue()
@@ -529,16 +529,16 @@ namespace BOSS
         return 0.0f;
     }
 
-    SolverValue::Text SolverValue::ToText(bool quotes) const
+    SolverValue::Text SolverValue::ToText(bool need_quotes, bool need_rangecode) const
     {
         switch(mType)
         {
-        case SolverValueType::Range: return mRange.GetCode();
-        case SolverValueType::Integer: return String::FromInteger(mInteger);
-        case SolverValueType::Float: return String::FromFloat(mFloat);
-        case SolverValueType::Text: return (quotes)? '\'' + mText + '\'' : mText;
+        case SolverValueType::Range: return (need_rangecode)? mRange.GetCode() : Text::FromFloat(mRange.GetValue());
+        case SolverValueType::Integer: return Text::FromInteger(mInteger);
+        case SolverValueType::Float: return Text::FromFloat(mFloat);
+        case SolverValueType::Text: return (need_quotes)? '\'' + mText + '\'' : mText;
         }
-        return String();
+        return Text();
     }
 
     SolverValue::Range SolverValue::ToRange() const
@@ -575,7 +575,7 @@ namespace BOSS
         {
         case SolverValueType::Integer: return MakeByInteger(ToInteger() - rhs.ToInteger());
         case SolverValueType::Float: return MakeByFloat(ToFloat() - rhs.ToFloat());
-        case SolverValueType::Text: return MakeByText(String(ToText()).Replace(rhs.ToText(), ""));
+        case SolverValueType::Text: return MakeByText(Text(ToText()).Replace(rhs.ToText(), ""));
         }
         return SolverValue();
     }
@@ -858,26 +858,39 @@ namespace BOSS
         return nullptr;
     }
 
+    void Solver::FindVariables(chars chain, SolverVariableCB cb)
+    {
+        if(auto FindedChain = &gSolverChains(chain))
+        {
+            FindedChain->AccessByCallback(
+                [](const MapPath* path, SolverChainPair* data, payload param)->void
+                {
+                    SolverVariableCB& OneCB = *((SolverVariableCB*) param);
+                    const String Variable(ToReference(path->GetPath()));
+                    OneCB(Variable);
+                }, (payload) &cb);
+        }
+    }
+
     void Solver::Remove(chars chain, chars variable)
     {
         if(auto FindedChain = &gSolverChains(chain))
             FindedChain->Remove(variable);
     }
 
-    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb)
+    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverVariableCB cb)
     {
         BOSS_ASSERT("잘못된 시나리오입니다", keyword);
         if(auto FindedChain = &gSolverChains(chain))
         {
             struct Payload
             {
-                SolverChain* mChain;
-                String mKeyword;
+                const String mKeyword;
                 Strings mMatchedVariables;
             };
-            Payload OnePayload {FindedChain, keyword};
+            Payload OnePayload {keyword};
 
-            // 삭제대상의 선별
+            // 삭제대상의 선별(AccessByCallback중 삭제불가)
             FindedChain->AccessByCallback(
                 [](const MapPath* path, SolverChainPair* data, payload param)->void
                 {
@@ -893,14 +906,14 @@ namespace BOSS
                 for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
                 {
                     auto& CurVariable = OnePayload.mMatchedVariables[i];
-                    OnePayload.mChain->Remove(CurVariable);
+                    FindedChain->Remove(CurVariable);
                     cb(CurVariable);
                 }
             }
             else for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
             {
                 auto& CurVariable = OnePayload.mMatchedVariables[i];
-                OnePayload.mChain->Remove(CurVariable);
+                FindedChain->Remove(CurVariable);
             }
         }
     }

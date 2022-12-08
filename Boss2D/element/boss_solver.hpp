@@ -13,7 +13,7 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or, Function_Divide}; // [and], [or], [divide]
-    typedef std::function<void(const String& variable)> SolverRemoveCB;
+    typedef std::function<void(const String& variable)> SolverVariableCB;
 
     // 업데이트체인
     class SolverChainPair
@@ -85,7 +85,7 @@ namespace BOSS
         public: SolverValueType GetType() const;
         public: Integer ToInteger() const;
         public: Float ToFloat() const;
-        public: Text ToText(bool quotes = false) const;
+        public: Text ToText(bool need_quotes = false, bool need_rangecode = true) const;
         public: Range ToRange() const;
         private: SolverValueType GetMergedType(const SolverValue& rhs) const;
         public: SolverValue Addition(const SolverValue& rhs) const;
@@ -166,8 +166,9 @@ namespace BOSS
         public: Solver& Link(chars chain, chars variable = nullptr, bool updateobservers = false);
         public: void Unlink(bool updateobservers = false);
         public: static Solver* Find(chars chain, chars variable);
+        public: static void FindVariables(chars chain, SolverVariableCB cb);
         public: static void Remove(chars chain, chars variable);
-        public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverRemoveCB cb = nullptr);
+        public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverVariableCB cb = nullptr);
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;

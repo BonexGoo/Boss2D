@@ -204,7 +204,7 @@ namespace BOSS
         Solver::Remove(mChain, variable);
     }
 
-    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverRemoveCB cb)
+    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverVariableCB cb)
     {
         return Solver::RemoveMatchedVariables(mChain, keyword, cb);
     }
