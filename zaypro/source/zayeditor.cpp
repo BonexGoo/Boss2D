@@ -775,8 +775,8 @@ public:
 private:
     void RenderCore(ZayPanel& panel) override
     {
-        const Color FontColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 224, 0)};
-        const Color& CurFontColor = FontColors[mGroupID & 0xF];
+        const Color UIColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 0, 224)};
+        const Color& CurFontColor = UIColors[mGroupID & 0xF];
         const String UIName = String::Format("log-%d", mGroupID);
 
         ZAY_INNER_UI(panel, 0, UIName,
@@ -833,13 +833,14 @@ public:
 private:
     void RenderCore(ZayPanel& panel) override
     {
-        const Color FontColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 224, 0)};
-        const Color& CurFontColor = FontColors[mGroupID & 0xF];
+        const Color UIColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 0, 224)};
+        const Color& CurBGColor = UIColors[mGroupID & 0xF];
 
-        ZAY_RGBA(panel, 0, 0, 0, 32)
+        ZAY_COLOR(panel, CurBGColor)
+        ZAY_RGBA(panel, 64, 64, 64, 92)
             panel.fill();
         // 텍스트
-        ZAY_COLOR(panel, CurFontColor)
+        ZAY_RGB(panel, 255, 255, 128)
         ZAY_LTRB(panel, 10, 0, panel.w() - 10 - panel.h(), panel.h())
             panel.text(mText, UIFA_LeftMiddle, UIFE_Right);
     }

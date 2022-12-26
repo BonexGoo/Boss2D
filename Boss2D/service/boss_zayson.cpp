@@ -464,7 +464,7 @@ namespace BOSS
             const String ConditionText = context.GetText();
             mConditionType = ZaySonUtility::ToCondition(ConditionText, &mWithElse);
             if(mConditionType == ZaySonInterface::ConditionType::Unknown)
-                root.SendErrorLog("조건문 판독실패", String::Format("알 수 없는 조건문입니다(%s, Load)", (chars) ConditionText));
+                root.SendErrorLog("Script Parsing Failed", String::Format(" ● Unknown conditional statement. (%s/Load)", (chars) ConditionText));
 
             sint32 PosB, PosE;
             if(ZaySonUtility::IsFunctionCall(ConditionText, &PosB, &PosE)) // ()사용여부와 파라미터 발라내기
@@ -645,7 +645,7 @@ namespace BOSS
                 mRequestType = ZaySonInterface::RequestType::Function;
                 mGlueFunction = root.FindGlue(TextTest.Left(PosB - 1));
                 if(!mGlueFunction)
-                    root.SendWarningLog("글루 바인딩실패", String::Format("글루함수를 찾을 수 없습니다(%s, Load)", (chars) TextTest.Left(PosB - 1)));
+                    root.SendWarningLog("Binding Failed", String::Format(" ● Glue function not found. (%s/Load)", (chars) TextTest.Left(PosB - 1)));
                 auto Params = ZaySonUtility::GetCommaStrings(TextTest.Middle(PosB, PosE - PosB));
                 for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
                     mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
@@ -721,7 +721,7 @@ namespace BOSS
                     FindedSolver->Parse(mRSolvers[0].ExecuteOnly().ToText(true));
                     FindedSolver->Execute();
                 }
-                else mRefRoot->SendErrorLog("변수 업데이트실패", String::Format("변수를 찾을 수 없습니다(%s, Transaction)",
+                else mRefRoot->SendErrorLog("Update Failed", String::Format(" ● Variable not found. (%s/Transaction)",
                     (chars) mLSolver.ExecuteVariableName()));
             }
             else if(mRequestType == ZaySonInterface::RequestType::Function)
@@ -1075,7 +1075,7 @@ namespace BOSS
                     }
                 }
             }
-            else mRefRoot->SendWarningLog("컴포넌트 랜더링실패", String::Format("컴포넌트함수를 찾을 수 없습니다(%s, Render)", (chars) mCompName));
+            else mRefRoot->SendWarningLog("Rendering Failed", String::Format(" ● Component not found. (%s/Render)", (chars) mCompName));
         }
         void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
         {
@@ -1123,9 +1123,9 @@ namespace BOSS
                 hook(mLambdas[(sint32) id].mCaptureValues(uiname))
                 for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
                 {
-                    chararray Variable;
-                    auto& Value = *fish.AccessByOrder(i, &Variable);
-                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &Variable[0]).Parse(Value).Execute();
+                    chararray GetVariable;
+                    auto& Value = *fish.AccessByOrder(i, &GetVariable);
+                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &GetVariable[0]).Parse(Value).Execute();
                 }
 
                 // 변수를 지역변수화
@@ -1348,7 +1348,17 @@ namespace BOSS
         auto NewView = new ZayViewElement();
         NewView->Load(*this, context);
         mUIElement = NewView;
-        SendInfoLog("제이썬 로드성공", String::Format("제이썬을 로드하였습니다(%s, Reload)", (chars) mViewName));
+
+        SendInfoLog("ZaySon Loaded", String::Format(" ● %s (Reload)", (chars) mViewName));
+        auto ComponentNames = AllComponentNames();
+        for(sint32 i = 0, iend = ComponentNames.Count(); i < iend; ++i)
+            SendInfoLog("Component Added", String::Format(" ● %s", (chars) ComponentNames[i]));
+        auto GlueNames = AllGlueNames();
+        for(sint32 i = 0, iend = GlueNames.Count(); i < iend; ++i)
+            SendInfoLog("Glue Added", String::Format(" ● %s", (chars) GlueNames[i]));
+        auto GateNames = AllGateNames();
+        for(sint32 i = 0, iend = GateNames.Count(); i < iend; ++i)
+            SendInfoLog("Gate Added", String::Format(" ● %s", (chars) GateNames[i]));
     }
 
     void ZaySon::SetLogger(LoggerCB cb)
@@ -1414,6 +1424,45 @@ namespace BOSS
         if(auto GateElement = TopElement->mGates.Access(name))
             return (*GateElement).ConstPtr();
         return nullptr;
+    }
+
+    const Strings ZaySon::AllComponentNames() const
+    {
+        Strings Collector;
+        for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
+            if(FindedFunc->HasComponent())
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
+    }
+
+    const Strings ZaySon::AllGlueNames() const
+    {
+        Strings Collector;
+        for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
+            if(FindedFunc->HasGlue())
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
+    }
+
+    const Strings ZaySon::AllGateNames() const
+    {
+        Strings Collector;
+        if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
+        for(sint32 i = 0, iend = TopElement->mGates.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedGate = TopElement->mGates.AccessByOrder(i, &GetName))
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
     }
 
     void ZaySon::Render(ZayPanel& panel)

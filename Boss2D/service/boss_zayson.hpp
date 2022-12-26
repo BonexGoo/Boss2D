@@ -99,6 +99,9 @@ namespace BOSS
         const ZayExtend* FindComponent(chars name) const;
         const ZayExtend* FindGlue(chars name) const;
         const void* FindGate(chars name) const;
+        const Strings AllComponentNames() const;
+        const Strings AllGlueNames() const;
+        const Strings AllGateNames() const;
         void Render(ZayPanel& panel);
 
     private:
