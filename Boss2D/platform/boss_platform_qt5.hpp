@@ -3639,9 +3639,9 @@
         Map<QWebSocket*> mPeers;
 
     public:
-        WSServerClass(chars name = "noname")
+        WSServerClass(chars name = "noname", bool use_wss = false)
         {
-            mServer = new QWebSocketServer(name, QWebSocketServer::NonSecureMode, this);
+            mServer = new QWebSocketServer(name, (use_wss)? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode, this);
             connect(mServer, &QWebSocketServer::newConnection, this, &WSServerClass::acceptPeer);
         }
 
@@ -3801,6 +3801,11 @@
                 m_type = Type::WS;
                 m_wsocket = new QWebSocket();
             }
+            else if(!String::Compare(type, "WSS"))
+            {
+                m_type = Type::WSS;
+                m_wsocket = new QWebSocket();
+            }
 
             if(m_socket)
             {
@@ -3829,6 +3834,7 @@
             case Type::UDP:
                 return true;
             case Type::WS:
+            case Type::WSS:
                 if(!m_wsocket->isValid())
                     return false;
                 if(m_wsocket->state() == QAbstractSocket::UnconnectedState)
@@ -3870,7 +3876,7 @@
         }
 
     public:
-        enum class Type {NIL, TCP, UDP, WS} m_type;
+        enum class Type {NIL, TCP, UDP, WS, WSS} m_type;
         QAbstractSocket* m_socket;
         QWebSocket* m_wsocket;
         QByteArray m_wbytes;

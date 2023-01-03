@@ -3831,10 +3831,10 @@
             return Result;
         }
 
-        id_socket Platform::Socket::OpenForWS()
+        id_socket Platform::Socket::OpenForWS(bool use_wss)
         {
             id_socket Result = nullptr;
-            SocketBox::Create(Result, "WS");
+            SocketBox::Create(Result, (use_wss)? "WSS" : "WS");
             return Result;
         }
 
@@ -3860,6 +3860,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     bool Result = (CurSocketBox->m_wsocket->error() == QAbstractSocket::UnknownSocketError);
                     if(CurSocketBox->m_wsocket->state() == QAbstractSocket::ConnectedState)
@@ -3896,6 +3897,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     const bool WasBlocked = g_setEventBlocked(true);
                     bool Result = true;
@@ -3973,6 +3975,12 @@
                     CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
                 }
                 break;
+            case SocketBox::Type::WSS:
+                {
+                    const String UrlText = String::Format("wss://%s:%d", domain, (sint32) port);
+                    CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
+                }
+                break;
             }
         }
 
@@ -3987,6 +3995,7 @@
             case SocketBox::Type::UDP:
                 return true;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 return (CurSocketBox->m_wsocket->state() == QAbstractSocket::ConnectedState);
             }
             return false;
@@ -4017,6 +4026,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     CurSocketBox->m_wsocket->abort();
                     BOSS_TRACE("Disconnect-WS()");
@@ -4066,6 +4076,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     return CurSocketBox->m_wbytes.count();
                 }
@@ -4118,6 +4129,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     Result = Math::Min(size, CurSocketBox->m_wbytes.size());
                     Memory::Copy(data, CurSocketBox->m_wbytes.constData(), Result);
@@ -4159,6 +4171,7 @@
                 }
                 break;
             case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
                 {
                     if(utf8)
                     {
@@ -4273,10 +4286,10 @@
             return (id_server)(ServerClass*) NewServer;
         }
 
-        id_server Platform::Server::CreateWS(chars name)
+        id_server Platform::Server::CreateWS(chars name, bool use_wss)
         {
             auto NewServer = (WSServerClass*) Buffer::AllocNoConstructorOnce<WSServerClass>(BOSS_DBG 1);
-            BOSS_CONSTRUCTOR(NewServer, 0, WSServerClass, name);
+            BOSS_CONSTRUCTOR(NewServer, 0, WSServerClass, name, use_wss);
             return (id_server)(ServerClass*) NewServer;
         }
 

@@ -1834,7 +1834,7 @@
             return nullptr;
         }
 
-        id_socket Platform::Socket::OpenForWS()
+        id_socket Platform::Socket::OpenForWS(bool use_wss)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
@@ -1989,7 +1989,7 @@
             return nullptr;
         }
 
-        id_server Platform::Server::CreateWS(chars name)
+        id_server Platform::Server::CreateWS(chars name, bool use_wss)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;

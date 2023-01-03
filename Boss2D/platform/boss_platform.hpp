@@ -1488,9 +1488,10 @@ public:
         static id_socket OpenForUDP();
 
         /// @brief 소켓열기(WS)
+        /// @param use_wss : WSS여부
         /// @return 소켓ID
         /// @see Close
-        static id_socket OpenForWS();
+        static id_socket OpenForWS(bool use_wss);
 
         /// @brief 소켓닫기
         /// @param socket : 소켓ID
@@ -1592,9 +1593,10 @@ public:
 
         /// @brief 서버ID 할당
         /// @param name : 핸드셰이킹에 필요한 서버이름
+        /// @param use_wss : WSS여부
         /// @return 서버ID(nullptr은 실패)
         /// @see Release, Listen
-        static id_server CreateWS(chars name);
+        static id_server CreateWS(chars name, bool use_wss);
 
         /// @brief 서버ID 반환
         /// @param server : 서버ID

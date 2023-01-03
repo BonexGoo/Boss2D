@@ -1907,7 +1907,7 @@
             return nullptr;
         }
 
-        id_socket Platform::Socket::OpenForWS()
+        id_socket Platform::Socket::OpenForWS(bool use_wss)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -2062,7 +2062,7 @@
             return nullptr;
         }
 
-        id_server Platform::Server::CreateWS(chars name)
+        id_server Platform::Server::CreateWS(chars name, bool use_wss)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
