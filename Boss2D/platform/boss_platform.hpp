@@ -1593,7 +1593,7 @@ public:
 
         /// @brief 서버ID 할당
         /// @param name : 핸드셰이킹에 필요한 서버이름
-        /// @param use_wss : WSS여부
+        /// @param use_wss : WSS여부 (아직 개발중...)
         /// @return 서버ID(nullptr은 실패)
         /// @see Release, Listen
         static id_server CreateWS(chars name, bool use_wss);
