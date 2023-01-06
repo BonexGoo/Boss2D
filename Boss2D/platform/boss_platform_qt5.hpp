@@ -393,6 +393,8 @@
             BOSS_ASSERT("잘못된 시나리오입니다", m_view_manager);
             g_view = getWidget();
             m_view_manager->OnTouch(type, id, x, y);
+
+            BOSS_TRACE("### - touch(%d,%d,%d,%d)", type, id, x, y);
         }
 
         inline void key(sint32 code, chars text, bool pressed)

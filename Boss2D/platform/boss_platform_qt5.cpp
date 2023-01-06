@@ -1333,9 +1333,9 @@
 
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
-            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window && g_view);
             const QPoint CursorPos = QCursor::pos();
-            const QRect ClientRect = g_window->geometry();
+            const QRect ClientRect = (g_window->isVisible())? g_window->geometry() : g_view->geometry();
             pos.x = CursorPos.x() - ClientRect.left();
             pos.y = CursorPos.y() - ClientRect.top();
             return !(CursorPos.x() < ClientRect.left() || CursorPos.y() < ClientRect.top()
