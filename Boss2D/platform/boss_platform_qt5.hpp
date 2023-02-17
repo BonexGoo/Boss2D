@@ -6819,7 +6819,7 @@
             }
 
         private:
-            virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const
+            QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const override
             {
                 Q_UNUSED(handleType);
                 return QList<QVideoFrame::PixelFormat>()
@@ -6828,7 +6828,7 @@
             }
 
         private slots:
-            virtual bool present(const QVideoFrame& frame)
+            bool present(const QVideoFrame& frame) override
             {
                 AddPictureShotCount();
                 bool Result = false;
@@ -6847,7 +6847,11 @@
                                 mLastImage.SubtractionAll();
                                 mLastImageWidth = ClonedFrame.width();
                                 mLastImageHeight = ClonedFrame.height();
-                                Memory::Copy(mLastImage.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight),
+                                if(mPixelFormat == QVideoFrame::Format_YUYV)
+                                    ToARGB32<QVideoFrame::Format_YUYV, true>(ClonedFrame.bits(),
+                                        mLastImageWidth / 2, mLastImageHeight, 4 * mLastImageWidth,
+                                        mLastImage.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight));
+                                else Memory::Copy(mLastImage.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight),
                                     ClonedFrame.bits(), 4 * mLastImageWidth * mLastImageHeight);
                             }
                             Mutex::Unlock(mMutex);
@@ -6892,10 +6896,11 @@
             template<sint32 FORMAT, bool FLIP>
             void ToARGB32(bytes srcbits, const sint32 width, const sint32 height, const sint32 rowbytes, uint08* dstbits)
             {
+                const sint32 SrcRowBytes = (FORMAT == (sint32)QVideoFrame::Format_YUYV)? rowbytes / 2 : rowbytes;
                 for(sint32 y = 0, yend = height; y < yend; ++y)
                 {
                     Bmp::bitmappixel* CurDst = (Bmp::bitmappixel*) &dstbits[rowbytes * y];
-                    bytes CurSrc = (FLIP)? &srcbits[rowbytes * (yend - 1 - y)] : &srcbits[rowbytes * y];
+                    bytes CurSrc = (FLIP)? &srcbits[SrcRowBytes * (yend - 1 - y)] : &srcbits[SrcRowBytes * y];
                     for(sint32 x = 0, xend = width; x < xend; ++x)
                     {
                         if(FORMAT == (sint32) QVideoFrame::Format_RGB32)
@@ -6912,6 +6917,22 @@
                             CurDst->r = CurSrc[0];
                             CurDst->g = CurSrc[1];
                             CurDst->b = CurSrc[2];
+                            CurDst++; CurSrc += 4;
+                        }
+                        if(FORMAT == (sint32) QVideoFrame::Format_YUYV)
+                        {
+                            const sint32 RAdd = 1.4065 * (CurSrc[3] - 128);
+                            const sint32 GSub = 0.3455 * (CurSrc[1] - 128) + 0.7169 * (CurSrc[3] - 128);
+                            const sint32 BAdd = 1.1790 * (CurSrc[1] - 128);
+                            CurDst->a = 0xFF;
+                            CurDst->r = Math::Clamp(CurSrc[0] + RAdd, 0, 255);
+                            CurDst->g = Math::Clamp(CurSrc[0] - GSub, 0, 255);
+                            CurDst->b = Math::Clamp(CurSrc[0] + BAdd, 0, 255);
+                            CurDst++;
+                            CurDst->a = 0xFF;
+                            CurDst->r = Math::Clamp(CurSrc[2] + RAdd, 0, 255);
+                            CurDst->g = Math::Clamp(CurSrc[2] - GSub, 0, 255);
+                            CurDst->b = Math::Clamp(CurSrc[2] + BAdd, 0, 255);
                             CurDst++; CurSrc += 4;
                         }
                     }
