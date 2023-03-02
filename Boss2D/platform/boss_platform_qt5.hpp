@@ -6769,7 +6769,28 @@
             id_texture CreateLastTexture(bool bitmapcache)
             {
                 if(0 < mLastImageWidth && 0 < mLastImageHeight && 0 < mLastImage.Count())
-                    return Platform::Graphics::CreateTexture(false, bitmapcache, mLastImageWidth, mLastImageHeight, &mLastImage[0]);
+                {
+                    uint08s mDecodedBits;
+                    switch(mPixelFormat)
+                    {
+                    case QVideoFrame::Format_RGB32:
+                        mDecodedBits = mLastImage;
+                        break;
+                    case QVideoFrame::Format_BGR32:
+                        ToARGB32<QVideoFrame::Format_BGR32, false>((bytes) &mLastImage[0], mLastImageWidth, mLastImageHeight, 4 * mLastImageWidth,
+                            mDecodedBits.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight));
+                        break;
+                    case QVideoFrame::Format_YUYV:
+                        ToARGB32<QVideoFrame::Format_YUYV, false>((bytes) &mLastImage[0], mLastImageWidth / 2, mLastImageHeight, 4 * mLastImageWidth,
+                            mDecodedBits.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight));
+                        break;
+                    case QVideoFrame::Format_Jpeg:
+                        ToARGB32<QVideoFrame::Format_Jpeg, false>((bytes) &mLastImage[0], mLastImageWidth, mLastImageHeight, mLastImage.Count(),
+                            mDecodedBits.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight));
+                        break;
+                    }
+                    return Platform::Graphics::CreateTexture(false, bitmapcache, mLastImageWidth, mLastImageHeight, &mDecodedBits[0]);
+                }
                 return nullptr;
             }
 
@@ -6800,6 +6821,14 @@
                             ToARGB32<QVideoFrame::Format_BGR32, true>((bytes) &mLastImage[0], width, height, 4 * width,
                                 bits.AtDumpingAdded(4 * width * height));
                             break;
+                        case QVideoFrame::Format_YUYV:
+                            ToARGB32<QVideoFrame::Format_YUYV, true>((bytes) &mLastImage[0], width / 2, height, 4 * width,
+                                bits.AtDumpingAdded(4 * width * height));
+                            break;
+                        case QVideoFrame::Format_Jpeg:
+                            ToARGB32<QVideoFrame::Format_Jpeg, true>((bytes) &mLastImage[0], width, height, mLastImage.Count(),
+                                bits.AtDumpingAdded(4 * width * height));
+                            break;
                         }
                     }
                     else switch(mPixelFormat)
@@ -6810,6 +6839,14 @@
                         break;
                     case QVideoFrame::Format_BGR32:
                         ToARGB32<QVideoFrame::Format_BGR32, false>((bytes) &mLastImage[0], width, height, 4 * width,
+                            bits.AtDumpingAdded(4 * width * height));
+                        break;
+                    case QVideoFrame::Format_YUYV:
+                        ToARGB32<QVideoFrame::Format_YUYV, false>((bytes) &mLastImage[0], width / 2, height, 4 * width,
+                            bits.AtDumpingAdded(4 * width * height));
+                        break;
+                    case QVideoFrame::Format_Jpeg:
+                        ToARGB32<QVideoFrame::Format_Jpeg, false>((bytes) &mLastImage[0], width, height, mLastImage.Count(),
                             bits.AtDumpingAdded(4 * width * height));
                         break;
                     }
@@ -6832,7 +6869,13 @@
             {
                 AddPictureShotCount();
                 bool Result = false;
-                if(frame.isValid() && CaptureEnabled())
+                if(!CaptureEnabled())
+                {
+                    auto FrameType = frame.handleType();
+                    if(FrameType != QAbstractVideoBuffer::GLTextureHandle)
+                        QVideoFrame(frame).unmap();
+                }
+                else if(frame.isValid())
                 {
                     auto FrameType = frame.handleType();
                     if(FrameType != QAbstractVideoBuffer::GLTextureHandle)
@@ -6847,12 +6890,8 @@
                                 mLastImage.SubtractionAll();
                                 mLastImageWidth = ClonedFrame.width();
                                 mLastImageHeight = ClonedFrame.height();
-                                if(mPixelFormat == QVideoFrame::Format_YUYV)
-                                    ToARGB32<QVideoFrame::Format_YUYV, true>(ClonedFrame.bits(),
-                                        mLastImageWidth / 2, mLastImageHeight, 4 * mLastImageWidth,
-                                        mLastImage.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight));
-                                else Memory::Copy(mLastImage.AtDumpingAdded(4 * mLastImageWidth * mLastImageHeight),
-                                    ClonedFrame.bits(), 4 * mLastImageWidth * mLastImageHeight);
+                                Memory::Copy(mLastImage.AtDumpingAdded(ClonedFrame.mappedBytes()),
+                                    ClonedFrame.bits(), ClonedFrame.mappedBytes());
                             }
                             Mutex::Unlock(mMutex);
                             BufferFlush();
@@ -6896,44 +6935,65 @@
             template<sint32 FORMAT, bool FLIP>
             void ToARGB32(bytes srcbits, const sint32 width, const sint32 height, const sint32 rowbytes, uint08* dstbits)
             {
-                const sint32 SrcRowBytes = (FORMAT == (sint32)QVideoFrame::Format_YUYV)? rowbytes / 2 : rowbytes;
-                for(sint32 y = 0, yend = height; y < yend; ++y)
+                if(FORMAT == (sint32) QVideoFrame::Format_Jpeg)
                 {
-                    Bmp::bitmappixel* CurDst = (Bmp::bitmappixel*) &dstbits[rowbytes * y];
-                    bytes CurSrc = (FLIP)? &srcbits[SrcRowBytes * (yend - 1 - y)] : &srcbits[SrcRowBytes * y];
-                    for(sint32 x = 0, xend = width; x < xend; ++x)
+                    if(id_bitmap NewBitmap = AddOn::Jpg::ToBmp(srcbits, rowbytes))
                     {
-                        if(FORMAT == (sint32) QVideoFrame::Format_RGB32)
+                        bytes SrcBits = Bmp::GetBits(NewBitmap);
+                        const sint32 RowBytes = 4 * width;
+                        if(FLIP)
                         {
-                            CurDst->a = 0xFF;
-                            CurDst->r = CurSrc[2];
-                            CurDst->g = CurSrc[1];
-                            CurDst->b = CurSrc[0];
-                            CurDst++; CurSrc += 4;
+                            for(sint32 y = 0, yend = height; y < yend; ++y)
+                            {
+                                Bmp::bitmappixel* CurDst = (Bmp::bitmappixel*) &dstbits[RowBytes * y];
+                                bytes CurSrc = &SrcBits[RowBytes * (yend - 1 - y)];
+                                Memory::Copy(CurDst, CurSrc, RowBytes);
+                            }
                         }
-                        if(FORMAT == (sint32) QVideoFrame::Format_BGR32)
+                        else Memory::Copy(dstbits, SrcBits, RowBytes * height);
+                    }
+                }
+                else
+                {
+                    const sint32 SrcRowBytes = (FORMAT == (sint32)QVideoFrame::Format_YUYV)? rowbytes / 2 : rowbytes;
+                    for(sint32 y = 0, yend = height; y < yend; ++y)
+                    {
+                        Bmp::bitmappixel* CurDst = (Bmp::bitmappixel*) &dstbits[rowbytes * y];
+                        bytes CurSrc = (FLIP)? &srcbits[SrcRowBytes * (yend - 1 - y)] : &srcbits[SrcRowBytes * y];
+                        for(sint32 x = 0, xend = width; x < xend; ++x)
                         {
-                            CurDst->a = 0xFF;
-                            CurDst->r = CurSrc[0];
-                            CurDst->g = CurSrc[1];
-                            CurDst->b = CurSrc[2];
-                            CurDst++; CurSrc += 4;
-                        }
-                        if(FORMAT == (sint32) QVideoFrame::Format_YUYV)
-                        {
-                            const sint32 RAdd = 1.4065 * (CurSrc[3] - 128);
-                            const sint32 GSub = 0.3455 * (CurSrc[1] - 128) + 0.7169 * (CurSrc[3] - 128);
-                            const sint32 BAdd = 1.1790 * (CurSrc[1] - 128);
-                            CurDst->a = 0xFF;
-                            CurDst->r = Math::Clamp(CurSrc[0] + RAdd, 0, 255);
-                            CurDst->g = Math::Clamp(CurSrc[0] - GSub, 0, 255);
-                            CurDst->b = Math::Clamp(CurSrc[0] + BAdd, 0, 255);
-                            CurDst++;
-                            CurDst->a = 0xFF;
-                            CurDst->r = Math::Clamp(CurSrc[2] + RAdd, 0, 255);
-                            CurDst->g = Math::Clamp(CurSrc[2] - GSub, 0, 255);
-                            CurDst->b = Math::Clamp(CurSrc[2] + BAdd, 0, 255);
-                            CurDst++; CurSrc += 4;
+                            if(FORMAT == (sint32) QVideoFrame::Format_RGB32)
+                            {
+                                CurDst->a = 0xFF;
+                                CurDst->r = CurSrc[2];
+                                CurDst->g = CurSrc[1];
+                                CurDst->b = CurSrc[0];
+                                CurDst++; CurSrc += 4;
+                            }
+                            if(FORMAT == (sint32) QVideoFrame::Format_BGR32)
+                            {
+                                CurDst->a = 0xFF;
+                                CurDst->r = CurSrc[0];
+                                CurDst->g = CurSrc[1];
+                                CurDst->b = CurSrc[2];
+                                CurDst++; CurSrc += 4;
+                            }
+                            if(FORMAT == (sint32) QVideoFrame::Format_YUYV)
+                            {
+                                const sint32 RAdd = 1.4065 * (CurSrc[3] - 128);
+                                const sint32 GSub = 0.3455 * (CurSrc[1] - 128) + 0.7169 * (CurSrc[3] - 128);
+                                const sint32 BAdd = 1.1790 * (CurSrc[1] - 128);
+                                CurDst->a = 0xFF;
+                                CurDst->r = Math::Clamp(CurSrc[0] + RAdd, 0, 255);
+                                CurDst->g = Math::Clamp(CurSrc[0] - GSub, 0, 255);
+                                CurDst->b = Math::Clamp(CurSrc[0] + BAdd, 0, 255);
+                                CurDst++;
+                                CurDst->a = 0xFF;
+                                CurDst->r = Math::Clamp(CurSrc[2] + RAdd, 0, 255);
+                                CurDst->g = Math::Clamp(CurSrc[2] - GSub, 0, 255);
+                                CurDst->b = Math::Clamp(CurSrc[2] + BAdd, 0, 255);
+                                CurDst++; CurSrc += 4;
+                            }
                         }
                     }
                 }
