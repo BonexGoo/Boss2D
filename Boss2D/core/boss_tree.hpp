@@ -70,6 +70,15 @@ namespace BOSS
             return (Result)? *Result : NullChild();
         }
 
+        /// @brief 키워드식 자식존재여부 얻기
+        /// @param key : 자식트리의 이름
+        /// @param length : 이름의 길이(-1이면 자동설정)
+        /// @return 존재여부
+        bool Exist(chars key, sint32 length = -1) const
+        {
+            return (mChild.Access(key, length) != nullptr);
+        }
+
         /// @brief 인덱스식 쓰기접근(없으면 생성)
         /// @param index : 자식트리의 순번
         /// @return 해당 자식트리
@@ -85,6 +94,14 @@ namespace BOSS
         {
             const Tree* Result = mChild.Access(index);
             return (Result)? *Result : NullChild();
+        }
+
+        /// @brief 인덱스식 자식존재여부 얻기
+        /// @param index : 자식트리의 순번
+        /// @return 존재여부
+        bool Exist(sint64 index) const
+        {
+            return (mChild.Access(index) != nullptr);
         }
 
         /// @brief 키워드식 자식제거
