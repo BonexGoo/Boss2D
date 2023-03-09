@@ -408,7 +408,8 @@ public:
 
         /// @brief 프로그램의 전체화면화
         /// @param available_only : 시작표시줄등을 제외한 유효영역만으로 제한
-        static void SetFullScreen(bool available_only = true);
+        /// @param addheight : OpenGL문제등으로 임의조정할 값
+        static void SetFullScreen(bool available_only = true, sint32 addheight = 0);
 
         /// @brief 프로그램의 전체화면화 여부
         static bool IsFullScreen();

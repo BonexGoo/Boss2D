@@ -651,7 +651,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Utility::SetFullScreen(bool available_only)
+        void Platform::Utility::SetFullScreen(bool available_only, sint32 addheight)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 

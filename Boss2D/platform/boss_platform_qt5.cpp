@@ -1052,7 +1052,7 @@
             g_window->showMinimized();
         }
 
-        void Platform::Utility::SetFullScreen(bool available_only)
+        void Platform::Utility::SetFullScreen(bool available_only, sint32 addheight)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
             if(g_data->m_lastWindowType == MainData::WindowType::Maximize)
@@ -1068,7 +1068,7 @@
                 g_data->m_lastWindowNormalRect = Platform::GetWindowRect();
             g_data->m_lastWindowType = MainData::WindowType::Maximize;
             g_window->setGeometry(FullScreenRect.l, FullScreenRect.t,
-                FullScreenRect.r - FullScreenRect.l, FullScreenRect.b - FullScreenRect.t);
+                FullScreenRect.r - FullScreenRect.l, FullScreenRect.b - FullScreenRect.t + addheight);
         }
 
         bool Platform::Utility::IsFullScreen()

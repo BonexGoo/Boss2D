@@ -586,7 +586,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Utility::SetFullScreen(bool available_only)
+        void Platform::Utility::SetFullScreen(bool available_only, sint32 addheight)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
