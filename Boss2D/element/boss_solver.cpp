@@ -854,7 +854,8 @@ namespace BOSS
     Solver* Solver::Find(chars chain, chars variable)
     {
         if(auto FindedChain = &gSolverChains(chain))
-            return (*FindedChain)(variable).target();
+        if(auto FindedChainPair = FindedChain->Access(variable))
+            return FindedChainPair->target();
         return nullptr;
     }
 
