@@ -736,7 +736,7 @@ namespace BOSS
 
         if(0 < DstSizeW)
         {
-            const float PatchRate = (DstSizeW - (SrcFixationSizeW * UnityFixationRate)) / PatchSumWidth();
+            const float PatchRate = Math::MaxF(0, DstSizeW - (SrcFixationSizeW * UnityFixationRate)) / PatchSumWidth();
             *(DstX++) = DstBeginW;
             float DstPos = DstBeginW;
             if(0 < PatchL())
@@ -752,7 +752,7 @@ namespace BOSS
         }
         if(0 < DstSizeH)
         {
-            const float PatchRate = (DstSizeH - (SrcFixationSizeH * UnityFixationRate)) / PatchSumHeight();
+            const float PatchRate = Math::MaxF(0, DstSizeH - (SrcFixationSizeH * UnityFixationRate)) / PatchSumHeight();
             *(DstY++) = DstBeginH;
             float DstPos = DstBeginH;
             if(0 < PatchT())
