@@ -744,6 +744,35 @@ namespace BOSS
                 #endif
             }
 
+            bool Move_ProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint)
+            {
+                // 윈도우핸들 찾기
+                struct Payload
+                {
+                    chars mTitleName;
+                    HWND mWindowHandle;
+                } OnePayload {titlename, NULL};
+                auto EnumWindowsProc = [](HWND hwnd, LPARAM lparam)->BOOL
+                {
+                    Payload& CurPayload = *((Payload*) lparam);
+                    wchar_t CurWindowText[80];
+                    const sint32 CurWindowTextLength = GetWindowTextW(hwnd, CurWindowText, 80);
+                    const String CurWindowName = String::FromWChars(CurWindowText, CurWindowTextLength);
+                    if(!CurWindowName.Compare(CurPayload.mTitleName))
+                    {
+                        CurPayload.mWindowHandle = hwnd;
+                        return false;
+                    }
+                    return true;
+                };
+                EnumWindows((WNDENUMPROC) EnumWindowsProc, (LPARAM) &OnePayload);
+
+                // 윈도우영역 설정
+                if(OnePayload.mWindowHandle)
+                    return MoveWindow(OnePayload.mWindowHandle, x, y, width, height, repaint);
+                return FALSE;
+            }
+
             void Kill_ProgramDialog(ublock pid)
             {
                 #if BOSS_WINDOWS

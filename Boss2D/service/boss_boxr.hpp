@@ -17,6 +17,7 @@ namespace BOSS
 
     public:
         bool LoadAtlas(chars key_filename, chars map_filename, bool keep_collection = false);
+        Strings LoadAtlasBitmap(id_bitmap_read key_bitmap, id_bitmap_read map_bitmap, bool keep_collection = false);
         void SaveSubImages(chars pathname = "") const;
 
     public:

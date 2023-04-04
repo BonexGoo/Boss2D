@@ -522,6 +522,11 @@
             return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
         }
 
+        bool Platform::Popup::MoveProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint)
+        {
+            return PlatformImpl::Wrap::Move_ProgramDialog(titlename, x, y, width, height, repaint);
+        }
+
         void Platform::Popup::CloseProgramDialog(ublock pid)
         {
             PlatformImpl::Wrap::Kill_ProgramDialog(pid);

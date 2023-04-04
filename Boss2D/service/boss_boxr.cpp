@@ -16,6 +16,7 @@ namespace BOSS
 
     bool BoxrBuilder::LoadAtlas(chars key_filename, chars map_filename, bool keep_collection)
     {
+        // 비트맵열기
         id_bitmap KeyBitmap = MakeBitmap(key_filename);
         id_bitmap MapBitmap = MakeBitmap(map_filename);
         if(!KeyBitmap || !MapBitmap)
@@ -24,19 +25,27 @@ namespace BOSS
             Bmp::Remove(MapBitmap);
             return false;
         }
+        LoadAtlasBitmap(KeyBitmap, MapBitmap, keep_collection);
+        // 비트맵정리
+        Bmp::Remove(KeyBitmap);
+        Bmp::Remove(MapBitmap);
+        return true;
+    }
 
+    Strings BoxrBuilder::LoadAtlasBitmap(id_bitmap_read key_bitmap, id_bitmap_read map_bitmap, bool keep_collection)
+    {
         // Make key bitmaps
         Array<id_bitmap> Keys;
-        const sint32 KeyWidth = Bmp::GetWidth(KeyBitmap);
-        const sint32 KeyHeight = Bmp::GetHeight(KeyBitmap);
-        const Bmp::bitmappixel* KeyBits = (const Bmp::bitmappixel*) Bmp::GetBits(KeyBitmap);
+        const sint32 KeyWidth = Bmp::GetWidth(key_bitmap);
+        const sint32 KeyHeight = Bmp::GetHeight(key_bitmap);
+        const Bmp::bitmappixel* KeyBits = (const Bmp::bitmappixel*) Bmp::GetBits(key_bitmap);
         const argb32 SplitColor = KeyBits[0].argb;
         for(sint32 i = 1, oldi = 1; i < KeyWidth; ++i)
         {
             if(KeyBits[i].argb == SplitColor)
             {
                 if(oldi < i)
-                    Keys.AtAdding() = Bmp::Copy(KeyBitmap, oldi, 0, i, KeyHeight);
+                    Keys.AtAdding() = Bmp::Copy(key_bitmap, oldi, 0, i, KeyHeight);
                 oldi = i + 1;
             }
         }
@@ -46,9 +55,9 @@ namespace BOSS
         const sint32 KeyHeadWidth = Bmp::GetWidth(Keys[0]);
         const sint32 KeyHeadHeight = Bmp::GetHeight(Keys[0]);
         const Bmp::bitmappixel* KeyHeadBits = (const Bmp::bitmappixel*) Bmp::GetBits(Keys[0]);
-        const sint32 MapWidth = Bmp::GetWidth(MapBitmap);
-        const sint32 MapHeight = Bmp::GetHeight(MapBitmap);
-        const Bmp::bitmappixel* MapBits = (const Bmp::bitmappixel*) Bmp::GetBits(MapBitmap);
+        const sint32 MapWidth = Bmp::GetWidth(map_bitmap);
+        const sint32 MapHeight = Bmp::GetHeight(map_bitmap);
+        const Bmp::bitmappixel* MapBits = (const Bmp::bitmappixel*) Bmp::GetBits(map_bitmap);
         for(sint32 y = 0, yend = MapHeight - KeyHeadHeight; y < yend; ++y)
         for(sint32 x = 0, xend = MapWidth - KeyHeadWidth; x < xend; ++x)
         {
@@ -113,6 +122,8 @@ namespace BOSS
                 }
             }
         }
+        for(sint32 i = 0; i < Keys.Count(); ++i)
+            Bmp::Remove(Keys[i]);
 
         // Find subimage by key-head
         Array<rect128> SubImageUVs;
@@ -128,7 +139,7 @@ namespace BOSS
                 if(CurColor.a && CurColor.argb != BgColor)
                 {
                     rect128 RectTest = {jxbegin, MapHeight - 1 - jy, jxbegin + 1, MapHeight - jy};
-                    Bmp::MaxTestWithBgColor(MapBitmap, RectTest, BgColor);
+                    Bmp::MaxTestWithBgColor(map_bitmap, RectTest, BgColor);
                     SubImageUVs.At(-1).l = RectTest.l;
                     SubImageUVs.At(-1).t = RectTest.t;
                     SubImageUVs.At(-1).r = RectTest.r;
@@ -144,24 +155,22 @@ namespace BOSS
         // Save subimage
         for(sint32 i = 0; i < KeyHeads.Count(); ++i)
         {
-            Image& NewImage = m_subimages.AtAdding().SetName(FileNames[i]);
-            id_bitmap NewBitmap = Bmp::Copy(MapBitmap, SubImageUVs[i].l, SubImageUVs[i].t, SubImageUVs[i].r, SubImageUVs[i].b);
-            const sint32 NewWidth = Bmp::GetWidth(NewBitmap);
-            const sint32 NewHeight = Bmp::GetHeight(NewBitmap);
-            const Bmp::bitmappixel* NewBits = (const Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
+            if(0 < FileNames[i].Length())
+            {
+                Image& NewImage = m_subimages.AtAdding().SetName(FileNames[i]);
+                id_bitmap NewBitmap = Bmp::Copy(map_bitmap, SubImageUVs[i].l, SubImageUVs[i].t, SubImageUVs[i].r, SubImageUVs[i].b);
+                const sint32 NewWidth = Bmp::GetWidth(NewBitmap);
+                const sint32 NewHeight = Bmp::GetHeight(NewBitmap);
+                const Bmp::bitmappixel* NewBits = (const Bmp::bitmappixel*) Bmp::GetBits(NewBitmap);
 
-            if(NewBits[(NewHeight - 1) * NewWidth].argb == 0xFFFF0000)
-                NewImage.LoadUIBitmap(NewBitmap);
-            else NewImage.LoadBitmap(NewBitmap);
-            NewImage.ChangeToMagentaAlpha();
-            Bmp::Remove(NewBitmap);
+                if(NewBits[(NewHeight - 1) * NewWidth].argb == 0xFFFF0000)
+                    NewImage.LoadUIBitmap(NewBitmap);
+                else NewImage.LoadBitmap(NewBitmap);
+                NewImage.ChangeToMagentaAlpha();
+                Bmp::Remove(NewBitmap);
+            }
         }
-
-        Bmp::Remove(KeyBitmap);
-        Bmp::Remove(MapBitmap);
-        for(sint32 i = 0; i < Keys.Count(); ++i)
-            Bmp::Remove(Keys[i]);
-        return true;
+        return FileNames;
     }
 
     void BoxrBuilder::SaveSubImages(chars pathname) const

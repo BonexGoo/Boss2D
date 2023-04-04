@@ -923,7 +923,12 @@
 
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
+            PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
+        }
+
+        bool Platform::Popup::MoveProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint)
+        {
+            return PlatformImpl::Wrap::Move_ProgramDialog(titlename, x, y, width, height, repaint);
         }
 
         void Platform::Popup::CloseProgramDialog(ublock pid)

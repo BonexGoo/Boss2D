@@ -341,6 +341,16 @@ public:
         /// @param getpid : 프로세스ID를 받는 변수
         static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, bool hide = false, chars dirpath = nullptr, ublock* getpid = nullptr);
 
+        /// @brief 응용프로그램 다이얄로그영역 설정
+        /// @param titlename : 타이틀명
+        /// @param x : 가로위치(px)
+        /// @param y : 세로위치(px)
+        /// @param width : 가로길이(px)
+        /// @param height : 세로길이(px)
+        /// @param repaint : 화면갱신여부
+        /// @return 정상실행여부(EnumWindows, MoveWindow가 실패할 수 있음)
+        static bool MoveProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint);
+
         /// @brief 응용프로그램 다이얄로그 닫기
         /// @param pid : 프로세스ID
         static void CloseProgramDialog(ublock pid);

@@ -3,6 +3,8 @@
 
 namespace BOSS
 {
+    static id_assetpath gAssetPath = nullptr;
+
     ////////////////////////////////////////////////////////////////////////////////
     // ZayWidgetDocumentP
     ////////////////////////////////////////////////////////////////////////////////
@@ -123,9 +125,9 @@ namespace BOSS
         if(assetname != nullptr) mZaySonAssetName = assetname;
         BOSS_ASSERT("assetname이 존재해야 합니다", 0 < mZaySonAssetName.Length());
 
-        if(Asset::Exist(mZaySonAssetName, nullptr, &mZaySonFileSize, nullptr, nullptr, &mZaySonModifyTime))
+        if(Asset::Exist(mZaySonAssetName, gAssetPath, &mZaySonFileSize, nullptr, nullptr, &mZaySonModifyTime))
         {
-            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName));
+            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName, gAssetPath));
             mZaySon.Load(mZaySonViewName, Json);
 
             Platform::SubProcedure(mProcedureID);
@@ -135,18 +137,18 @@ namespace BOSS
                     auto Self = (ZayWidget*) data;
                     // Json체크
                     uint64 FileSize = 0, ModifyTime = 0;
-                    if(Asset::Exist(Self->mZaySonAssetName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
+                    if(Asset::Exist(Self->mZaySonAssetName, gAssetPath, &FileSize, nullptr, nullptr, &ModifyTime))
                     if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
                     {
                         Self->mZaySonFileSize = FileSize;
                         Self->mZaySonModifyTime = ModifyTime;
-                        Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName));
+                        Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName, gAssetPath));
                         Self->mZaySon.Reload(Json);
                         Platform::UpdateAllViews();
                     }
 
                     // Pipe체크
-                    if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", nullptr, nullptr, nullptr, nullptr, &ModifyTime))
+                    if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", gAssetPath, nullptr, nullptr, nullptr, &ModifyTime))
                     {
                         if(Self->mPipeModifyTime != 0)
                         {
@@ -161,7 +163,7 @@ namespace BOSS
                         if(Self->mPipeModifyTime != ModifyTime)
                         {
                             Self->mPipeModifyTime = ModifyTime;
-                            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe"));
+                            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe", gAssetPath));
                             const String PipeName = Json("pipe").GetText();
                             ZayWidgetDOM::UnbindPipe(Self->mPipe);
                             Platform::Pipe::Close(Self->mPipe);
@@ -201,6 +203,12 @@ namespace BOSS
             }
         }
         return false;
+    }
+
+    void ZayWidget::SetAssetPath(id_assetpath assetpath)
+    {
+        AssetPath::Release(gAssetPath);
+        gAssetPath = assetpath;
     }
 
     void ZayWidget::BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)

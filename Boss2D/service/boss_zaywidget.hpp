@@ -28,6 +28,7 @@ namespace BOSS
         inline const String& viewname() const {return mZaySonViewName;}
 
     public:
+        static void SetAssetPath(id_assetpath assetpath);
         static void BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
         static void BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
 
