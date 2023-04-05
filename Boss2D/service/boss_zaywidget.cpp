@@ -77,7 +77,7 @@ namespace BOSS
         });
         mZaySonModifyTime = 0;
         mResourceCB = nullptr;
-        mProcedureID = 0;
+        mProcedureID = -1;
         mPipe = nullptr;
         mPipeModifyTime = 0;
     }
@@ -101,7 +101,7 @@ namespace BOSS
         mZaySonFileSize = ToReference(rhs.mZaySonFileSize);
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
         mResourceCB = ToReference(rhs.mResourceCB);
-        mProcedureID = ToReference(rhs.mProcedureID); rhs.mProcedureID = 0; // 이관
+        mProcedureID = ToReference(rhs.mProcedureID); rhs.mProcedureID = -1; // 이관
         mPipe = rhs.mPipe; rhs.mPipe = nullptr; // 이관
         mPipeModifyTime = ToReference(rhs.mPipeModifyTime);
         return *this;

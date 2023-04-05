@@ -8,12 +8,8 @@ namespace BOSS
         // 일반함수와 전역인스턴스
         namespace Core
         {
-            void LockProcedure();
-            void UnlockProcedure();
-            sint32 GetProcedureCount();
             void FlushProcedure();
-            ProcedureCB GetProcedureCB(sint32 i, uint64 oldmsec, uint64 newmsec);
-            payload GetProcedureData(sint32 i);
+            bool CallProcedures(sint32 msec);
             String NormalPath(chars itemname, bool QCodeTest = true);
             WString NormalPathW(wchars itemname, bool QCodeTest = true);
             void SetRoot(sint32 i, chars dirname);
@@ -26,7 +22,7 @@ namespace BOSS
         namespace Wrap
         {
             sint32 AddProcedure(ProcedureCB cb, payload data, sint32 msec);
-            bool SubProcedure(sint32 id);
+            void SubProcedure(sint32 id);
 
             chars Utility_GetOSName();
             chars Utility_GetDeviceID();

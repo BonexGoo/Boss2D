@@ -40,93 +40,85 @@ namespace BOSS
         ////////////////////////////////////////////////////////////////////////////////
         namespace Core
         {
-            class ProcedureLockClass
-            {
-            public:
-                ProcedureLockClass() {mMutex = Mutex::Open();}
-                ~ProcedureLockClass() {Mutex::Close(mMutex);}
-            public:
-                id_mutex mMutex;
-            };
-            ProcedureLockClass g_ProcedureLock;
-
-            void LockProcedure()
-            {
-                Mutex::Lock(g_ProcedureLock.mMutex);
-            }
-
-            void UnlockProcedure()
-            {
-                Mutex::Unlock(g_ProcedureLock.mMutex);
-            }
-
             class ProcedureClass
             {
             public:
-                ProcedureClass() {mID = CreateID(); mCb = nullptr; mData = nullptr; mMsec = 1;}
+                ProcedureClass() {mID = -1; mCb = nullptr; mData = nullptr; mMsec = 1; mFrame = 0;}
                 ~ProcedureClass() {}
                 ProcedureClass(const ProcedureClass& rhs) {operator=(rhs);}
                 ProcedureClass& operator=(const ProcedureClass& rhs)
-                {mID = rhs.mID; mCb = rhs.mCb; mData = rhs.mData; mMsec = rhs.mMsec; return *this;}
-            private:
-                sint32 CreateID() {static sint32 _ = 0; return ++_;}
+                {
+                    mID = rhs.mID;
+                    mCb = rhs.mCb;
+                    mData = rhs.mData;
+                    mMsec = rhs.mMsec;
+                    mFrame = rhs.mFrame;
+                    return *this;
+                }
+            public:
+                static sint32 NextID() {static sint32 _ = -1; return ++_;}
             public:
                 sint32 mID;
-                ProcedureEvent mEvent;
                 ProcedureCB mCb;
                 payload mData;
                 sint32 mMsec;
+                uint64 mFrame;
             };
             Map<ProcedureClass> g_AllProcedures;
+            sint32 g_NextProcedureOrder = 0;
             Queue<ProcedureClass> g_NewProcedures;
-
-            sint32 GetProcedureCount()
-            {
-                return g_AllProcedures.Count();
-            }
+            Queue<sint32> g_DeleteProcedureIDs;
 
             void FlushProcedure()
             {
-                LockProcedure();
+                // 추가큐
+                while(0 < g_NewProcedures.Count())
                 {
-                    // 추가
-                    while(0 < g_NewProcedures.Count())
-                    {
-                        auto SrcProcedure = g_NewProcedures.Dequeue();
-                        auto& DestProcedure = g_AllProcedures[SrcProcedure.mID];
-                        DestProcedure.mID = SrcProcedure.mID;
-                        DestProcedure.mCb = SrcProcedure.mCb;
-                        DestProcedure.mData = SrcProcedure.mData;
-                        DestProcedure.mMsec = SrcProcedure.mMsec;
-                    }
+                    auto CurProcedure = g_NewProcedures.Dequeue();
+                    auto& DestProcedure = g_AllProcedures[CurProcedure.mID];
+                    DestProcedure = CurProcedure;
+                }
+                // 삭제큐
+                while(0 < g_DeleteProcedureIDs.Count())
+                {
+                    auto CurProcedureID = g_DeleteProcedureIDs.Dequeue();
+                    g_AllProcedures.Remove(CurProcedureID);
+                }
+            }
 
-                    // 삭제
-                    for(sint32 i = g_AllProcedures.Count() - 1; 0 <= i; --i)
+            bool CallProcedures(sint32 msec)
+            {
+                bool Retry = false;
+                sint32 NextOrder = g_NextProcedureOrder;
+                const uint64 LimitMsec = Platform::Utility::CurrentTimeMsec() + msec;
+                for(sint32 i = 0, iend = g_AllProcedures.Count(); i < iend; ++i)
+                {
+                    const sint32 CurOrder = (g_NextProcedureOrder + i) % iend;
+                    if(auto CurProcedure = g_AllProcedures.AccessByOrder(CurOrder))
+                    if(CurProcedure->mCb)
                     {
-                        chararray GetID;
-                        auto CurProcedure = g_AllProcedures.AccessByOrder(i, &GetID);
-                        if(!CurProcedure->mCb)
+                        const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+                        if(CurMsec < LimitMsec)
                         {
-                            const sint32 OldProcedureID = MapPath::ToInt(GetID);
-                            g_AllProcedures.Remove(OldProcedureID);
+                            const uint64 CurFrame = CurMsec / CurProcedure->mMsec;
+                            if(CurProcedure->mFrame < CurFrame)
+                            {
+                                CurProcedure->mFrame = CurFrame;
+                                CurProcedure->mCb(CurProcedure->mData);
+                                NextOrder = CurOrder + 1;
+                                // 실행결과로 프로시저삭제가 발생했다면 즉시 루프탈출
+                                if(0 < g_DeleteProcedureIDs.Count())
+                                {
+                                    Retry = true; // 재시도
+                                    break;
+                                }
+                            }
                         }
+                        else break; // 작업시간초과
                     }
                 }
-                UnlockProcedure();
-            }
-
-            ProcedureCB GetProcedureCB(sint32 i, uint64 oldmsec, uint64 newmsec)
-            {
-                auto CurProcedure = g_AllProcedures.AccessByOrder(i);
-                if(oldmsec / CurProcedure->mMsec != newmsec / CurProcedure->mMsec)
-                    return CurProcedure->mCb;
-                return nullptr;
-            }
-
-            payload GetProcedureData(sint32 i)
-            {
-                auto CurProcedure = g_AllProcedures.AccessByOrder(i);
-                return CurProcedure->mData;
+                g_NextProcedureOrder = NextOrder;
+                return Retry;
             }
 
             String NormalPath(chars itemname, bool QCodeTest)
@@ -185,6 +177,7 @@ namespace BOSS
             {
                 if(auto NewProcedure = Core::g_NewProcedures.Create())
                 {
+                    NewProcedure->mID = Core::ProcedureClass::NextID();
                     NewProcedure->mCb = cb;
                     NewProcedure->mData = data;
                     NewProcedure->mMsec = msec;
@@ -193,15 +186,10 @@ namespace BOSS
                 return -1;
             }
 
-            bool SubProcedure(sint32 id)
+            void SubProcedure(sint32 id)
             {
-                // mCb를 제거해 놓으면 다음 FlushProcedure호출시 제거
-                if(auto CurProcedure = Core::g_AllProcedures.Access(id))
-                {
-                    CurProcedure->mCb = nullptr;
-                    return true;
-                }
-                return false;
+                if(id != -1)
+                    Core::g_DeleteProcedureIDs.Enqueue(id);
             }
 
             chars Utility_GetOSName()

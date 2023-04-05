@@ -123,7 +123,7 @@ namespace BOSS
         // 소켓관련 정리
         Platform::SubProcedure(ST().mRelayProcedure);
         Platform::Socket::Close(ST().mRelaySocket);
-        ST().mRelayProcedure = 0;
+        ST().mRelayProcedure = -1;
         ST().mRelaySocket = nullptr;
     }
 
