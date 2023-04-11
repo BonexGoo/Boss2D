@@ -1829,10 +1829,12 @@
     private:
         void msec_timeout()
         {
-            if(g_event_blocked)
-                return;
-            do {PlatformImpl::Core::FlushProcedure();}
-            while(PlatformImpl::Core::CallProcedures(20));
+            if(!g_event_blocked)
+            {
+                const uint64 LimitMsec = Platform::Utility::CurrentTimeMsec() + 20;
+                do {PlatformImpl::Core::FlushProcedure();}
+                while(PlatformImpl::Core::CallProcedures(LimitMsec - Platform::Utility::CurrentTimeMsec()));
+            }
         }
 
     private:
