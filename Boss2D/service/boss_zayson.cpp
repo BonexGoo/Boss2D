@@ -475,12 +475,22 @@ namespace BOSS
         }
 
     public:
-        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src)
+        void CollectCapture(Map<String>& collector)
+        {
+            // 캡쳐가 필요한 변수의 목록화
+            const Strings Variables = mConditionSolver.GetTargetlessVariables();
+            for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
+                collector(Variables[i]) = Variables[i];
+        }
+
+    public:
+        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, Map<String>* collector = nullptr)
         {
             if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
             {
                 ZayUI NewUI(ZayUIElement::Create(Type::Condition));
                 NewUI->Load(root, src);
+                if(collector) ((ZayConditionElement*) NewUI.Ptr())->CollectCapture(*collector);
                 dest.AtAdding() = (id_share) NewUI;
                 return true;
             }
@@ -488,6 +498,7 @@ namespace BOSS
             {
                 ZayUI NewUI(ZayUIElement::Create(Type::Condition));
                 NewUI->Load(root, src("compname"));
+                if(collector) ((ZayConditionElement*) NewUI.Ptr())->CollectCapture(*collector);
                 dest.AtAdding() = (id_share) NewUI;
                 return true;
             }
@@ -918,7 +929,7 @@ namespace BOSS
             Map<String> CaptureCollector;
             for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
             {
-                if(ZayConditionElement::Test(root, mLambdas[(sint32) id].mCodes, json[i]))
+                if(ZayConditionElement::Test(root, mLambdas[(sint32) id].mCodes, json[i], &CaptureCollector))
                     continue;
                 ZayUI NewUI(ZayUIElement::Create(Type::Request));
                 NewUI->Load(root, json[i]);
