@@ -388,8 +388,12 @@ namespace BOSS
             return ZaySonInterface::ConditionType::IfPressed;
         jump(!String::Compare(text, "ifdoubleclicked"))
             return ZaySonInterface::ConditionType::IfDoubleClicked;
+        jump(!String::Compare(text, "ifndoubleclicked"))
+            return ZaySonInterface::ConditionType::IfNDoubleClicked;
         jump(!String::Compare(text, "iflongpressed"))
             return ZaySonInterface::ConditionType::IfLongPressed;
+        jump(!String::Compare(text, "ifnlongpressed"))
+            return ZaySonInterface::ConditionType::IfNLongPressed;
         jump(!String::Compare(text, "ifoutreleased"))
             return ZaySonInterface::ConditionType::IfOutReleased;
         jump(!String::Compare(text, "ifcancelreleased"))
@@ -420,10 +424,20 @@ namespace BOSS
             if(withelse) *withelse = true;
             return ZaySonInterface::ConditionType::IfDoubleClicked;
         }
+        jump(!String::Compare(text, "elifndoubleclicked"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNDoubleClicked;
+        }
         jump(!String::Compare(text, "eliflongpressed"))
         {
             if(withelse) *withelse = true;
             return ZaySonInterface::ConditionType::IfLongPressed;
+        }
+        jump(!String::Compare(text, "elifnlongpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNLongPressed;
         }
         jump(!String::Compare(text, "elifoutreleased"))
         {
@@ -548,9 +562,15 @@ namespace BOSS
                     // 더블클릭확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfDoubleClicked)
                         IsTrue = doubleclicked;
+                    // 더블클릭이 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNDoubleClicked)
+                        IsTrue = !doubleclicked;
                     // 롱프레스확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfLongPressed)
                         IsTrue = longpressed;
+                    // 롱프레스가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNLongPressed)
+                        IsTrue = !longpressed;
                     // 아웃릴리즈확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfOutReleased)
                         IsTrue = outreleased;

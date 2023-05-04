@@ -54,7 +54,7 @@ namespace BOSS
     {
     public:
         enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed,
-            IfDoubleClicked, IfLongPressed, IfOutReleased, IfCancelReleased, Else, Endif};
+            IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed, IfOutReleased, IfCancelReleased, Else, Endif};
         enum class RequestType {Unknown, Function, Variable};
 
     public:
