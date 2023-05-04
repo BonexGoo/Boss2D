@@ -3591,6 +3591,7 @@
             if(QTcpSocket** Peer = mPeers.Access(peerid))
             {
                 (*Peer)->disconnectFromHost();
+                (*Peer)->deleteLater();
                 mPeers.Remove(peerid);
                 mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
                 Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
@@ -3796,6 +3797,7 @@
             if(QWebSocket** Peer = mPeers.Access(peerid))
             {
                 (*Peer)->disconnect();
+                (*Peer)->deleteLater();
                 mPeers.Remove(peerid);
                 mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
                 Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
