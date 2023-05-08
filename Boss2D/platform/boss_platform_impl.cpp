@@ -732,7 +732,14 @@ namespace BOSS
                 #endif
             }
 
-            bool Move_ProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint)
+            void Kill_ProgramDialog(ublock pid)
+            {
+                #if BOSS_WINDOWS
+                    TerminateProcess((HANDLE) pid, 1);
+                #endif
+            }
+
+            sint64 Find_WindowHandle(chars titlename)
             {
                 // 윈도우핸들 찾기
                 struct Payload
@@ -754,18 +761,48 @@ namespace BOSS
                     return true;
                 };
                 EnumWindows((WNDENUMPROC) EnumWindowsProc, (LPARAM) &OnePayload);
+                return (OnePayload.mWindowHandle)? (sint64) OnePayload.mWindowHandle : -1;
+            }
 
-                // 윈도우영역 설정
-                if(OnePayload.mWindowHandle)
-                    return MoveWindow(OnePayload.mWindowHandle, x, y, width, height, repaint);
+            bool Move_Window(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
+            {
+                if(hwnd != -1)
+                    return MoveWindow((HWND) hwnd, left, top, right - left, bottom - top, repaint);
                 return FALSE;
             }
 
-            void Kill_ProgramDialog(ublock pid)
+            bool Move_WindowGroup(sint64s windowparams, bool release)
             {
-                #if BOSS_WINDOWS
-                    TerminateProcess((HANDLE) pid, 1);
-                #endif
+                const sint32 WindowCount = windowparams.Count() / 5;
+                if(0 < WindowCount)
+                {
+                    // TOPMOST옵션으로 순서정렬후
+                    HDWP DeferHandle = BeginDeferWindowPos(WindowCount);
+                    for(sint32 i = 0; i < WindowCount; ++i)
+                    {
+                        HWND CurHandle = (HWND) windowparams[5 * i + 0];
+                        const sint32 Left = (sint32) windowparams[5 * i + 1];
+                        const sint32 Top = (sint32) windowparams[5 * i + 2];
+                        const sint32 Right = (sint32) windowparams[5 * i + 3];
+                        const sint32 Bottom = (sint32) windowparams[5 * i + 4];
+                        DeferWindowPos(DeferHandle, CurHandle, HWND_TOPMOST, Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW);
+                    }
+                    EndDeferWindowPos(DeferHandle);
+
+                    // TOPMOST옵션 제거
+                    if(release)
+                    {
+                        DeferHandle = BeginDeferWindowPos(WindowCount);
+                        for(sint32 i = 0; i < WindowCount; ++i)
+                        {
+                            HWND CurHandle = (HWND) windowparams[5 * i + 0];
+                            DeferWindowPos(DeferHandle, CurHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+                        }
+                        EndDeferWindowPos(DeferHandle);
+                    }
+                    return TRUE;
+                }
+                return FALSE;
             }
 
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash)

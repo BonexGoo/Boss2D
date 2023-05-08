@@ -108,6 +108,10 @@ public:
     /// @param enable : 활성여부
     static void SetWindowTopMost(bool enable);
 
+    /// @brief 윈도우핸들 얻기
+    /// @return 윈도우핸들(HWND값, 에러는 -1)
+    static sint64 GetWindowHandle();
+
     /// @brief 윈도우웹 URL설정
     /// @param url : 웹으로 윈도우배경을 만들 URL
     static void SetWindowWebUrl(chars url);
@@ -341,19 +345,30 @@ public:
         /// @param getpid : 프로세스ID를 받는 변수
         static void OpenProgramDialog(chars exepath, chars args = nullptr, bool admin = false, bool hide = false, chars dirpath = nullptr, ublock* getpid = nullptr);
 
-        /// @brief 응용프로그램 다이얄로그영역 설정
+        /// @brief 응용프로그램 다이얄로그 닫기
+        /// @param pid : 프로세스ID
+        static void CloseProgramDialog(ublock pid);
+
+        /// @brief 특정 응용프로그램의 윈도우핸들 찾기
         /// @param titlename : 타이틀명
+        /// @return 윈도우핸들(HWND값, 에러는 -1)
+        static sint64 FindWindowHandle(chars titlename);
+
+        /// @brief 특정 응용프로그램의 윈도우영역 설정
+        /// @param hwnd : 윈도우핸들
         /// @param x : 가로위치(px)
         /// @param y : 세로위치(px)
         /// @param width : 가로길이(px)
         /// @param height : 세로길이(px)
         /// @param repaint : 화면갱신여부
-        /// @return 정상실행여부(EnumWindows, MoveWindow가 실패할 수 있음)
-        static bool MoveProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint);
+        /// @return 정상실행여부
+        static bool MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint);
 
-        /// @brief 응용프로그램 다이얄로그 닫기
-        /// @param pid : 프로세스ID
-        static void CloseProgramDialog(ublock pid);
+        /// @brief 다수 응용프로그램들의 동시적 윈도우영역 설정
+        /// @param windowparams : 윈도우핸들, Left(px), Top(px), Right(px), Bottom(px)의 배열
+        /// @param release : 캡쳐상태가 풀리는 시점여부
+        /// @return 정상실행여부
+        static bool MoveWindowGroup(sint64s windowparams, bool release);
 
         /// @brief 텍스트편집 트래커 열기
         /// @param text : 입력(초기값 필요) 및 결과

@@ -234,6 +234,14 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
+        sint64 Platform::GetWindowHandle()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return -1;
+        }
+
         void Platform::SetWindowWebUrl(chars url)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
@@ -496,14 +504,24 @@
             return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
         }
 
-        bool Platform::Popup::MoveProgramDialog(chars titlename, sint32 x, sint32 y, sint32 width, sint32 height, bool repaint)
-        {
-            return PlatformImpl::Wrap::Move_ProgramDialog(titlename, x, y, width, height, repaint);
-        }
-
         void Platform::Popup::CloseProgramDialog(ublock pid)
         {
             PlatformImpl::Wrap::Kill_ProgramDialog(pid);
+        }
+
+        sint64 Platform::Popup::FindWindowHandle(chars titlename)
+        {
+            return PlatformImpl::Wrap::Find_WindowHandle(titlename);
+        }
+
+        bool Platform::Popup::MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
+        {
+            return PlatformImpl::Wrap::Move_Window(hwnd, left, top, right, bottom, repaint);
+        }
+
+        bool Platform::Popup::MoveWindowGroup(sint64s windowparams, bool release)
+        {
+            return PlatformImpl::Wrap::Move_WindowGroup(windowparams, release);
         }
 
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)
