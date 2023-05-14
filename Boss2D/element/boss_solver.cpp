@@ -171,6 +171,7 @@ namespace BOSS
             case SolverOperatorType::Function_And:    collector += "[and] "; break;
             case SolverOperatorType::Function_Or:     collector += "[or] "; break;
             case SolverOperatorType::Function_Divide: collector += "[divide] "; break;
+            case SolverOperatorType::Function_Find: collector += "[find] "; break;
             }
 
             // 우항
@@ -222,6 +223,7 @@ namespace BOSS
             case SolverOperatorType::Function_And:    return mOperandL->result(Zero).Function_And(mOperandR->result(One));
             case SolverOperatorType::Function_Or:     return mOperandL->result(Zero).Function_Or(mOperandR->result(One));
             case SolverOperatorType::Function_Divide: return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
+            case SolverOperatorType::Function_Find: return mOperandL->result(Zero).Function_Find(mOperandR->result(One));
             }
             return zero;
         }
@@ -780,6 +782,17 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::Function_Find(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToText().Find(0, rhs.ToText()));
+        case SolverValueType::Float: return MakeByInteger(ToText().Find(0, rhs.ToText()));
+        case SolverValueType::Text: return MakeByInteger(ToText().Find(0, rhs.ToText()));
+        }
+        return SolverValue();
+    }
+
     Solver::Solver()
     {
         mLinkedChain = nullptr;
@@ -935,7 +948,7 @@ namespace BOSS
             case SolverOperatorType::Remainder: case SolverOperatorType::Function_Divide: // 1순위> *, /, %, [divide]
                 NewPriority += PriorityCount - 1;
                 break;
-            case SolverOperatorType::Variabler: // 5순위> @
+            case SolverOperatorType::Variabler: case SolverOperatorType::Function_Find: // 5순위> @, [find]
                 NewPriority += PriorityCount - 5;
                 break;
             case SolverOperatorType::Commenter: // 9순위> ?
@@ -1079,6 +1092,11 @@ namespace BOSS
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Divide, deep);
                         formula += 8 - 1;
+                    }
+                    jump(!String::Compare("[find]", formula, 6))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Find, deep);
+                        formula += 6 - 1;
                     }
                     else
                     {
