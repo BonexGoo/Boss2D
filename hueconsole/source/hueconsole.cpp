@@ -25,38 +25,40 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     if(m->mLastApp.Length() == 0)
     {
         auto& AllApps = hueconsoleData::_AllApps();
+        ZAY_LTRB(panel, 10, 0, panel.w() - 10, panel.h() - 10)
         for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
         {
             chararray CurApp;
             AllApps.AccessByOrder(i, &CurApp);
-            ZAY_LTRB(panel, 0, panel.h() * i / iend, panel.w(), panel.h() * (i + 1) / iend)
-            {
-                const String UIName = String::Format("ui_app_%d", i);
-                ZAY_INNER_UI_SCISSOR(panel, 10, UIName,
-                    ZAY_GESTURE_T(t, CurApp)
-                    {
-                        if(t == GT_InReleased)
-                        {
-                            auto& AllApps = hueconsoleData::_AllApps();
-                            if(auto OneApp = AllApps.Access(&CurApp[0]))
-                            {
-                                m->mLastApp = &CurApp[0];
-                                (*OneApp)();
-                            }
-                        }
-                    })
+            const String UIName = String::Format("ui_app_%d", i);
+            ZAY_LTRB_UI_SCISSOR(panel, 0, panel.h() * i / iend + 10, panel.w(), panel.h() * (i + 1) / iend, UIName,
+                ZAY_GESTURE_T(t, CurApp)
                 {
-                    ZAY_RGB(panel, 255, 255, 255)
+                    if(t == GT_InReleased)
+                    {
+                        auto& AllApps = hueconsoleData::_AllApps();
+                        if(auto OneApp = AllApps.Access(&CurApp[0]))
+                        {
+                            m->mLastApp = &CurApp[0];
+                            (*OneApp)();
+                        }
+                    }
+                })
+            {
+                ZAY_RGB(panel, 255, 255, 255)
+                {
+                    ZAY_RGBA(panel, 128, 128, 128, 120)
                         panel.fill();
-                    ZAY_RGB(panel, 0, 0, 0)
-                        panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
+                    ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                        panel.fill();
                 }
+                ZAY_RGB(panel, 0, 0, 0)
+                    panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
             }
         }
     }
     else
     {
-        ZAY_LTRB(panel, 0, 1, panel.w(), panel.h())
         for(sint32 i = 0, iend = m->mCellWidth * m->mCellHeight; i < iend; ++i)
         {
             const sint32 X = i % m->mCellWidth;
@@ -71,7 +73,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 {
                     ZAY_COLOR(panel, CurCell.mBGColor)
                     {
-                        ZAY_RGBA(panel, 128, 128, 128, 110)
+                        ZAY_RGBA(panel, 128, 128, 128, 120)
                             panel.fill();
                         ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
                             panel.fill();
