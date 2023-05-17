@@ -8,6 +8,7 @@ public:
     String mLetter;
     Color mColor;
     Color mBGColor;
+    uint64 mWrittenMsec {0};
 };
 
 class Box
@@ -47,6 +48,7 @@ public:
     Color mLastColor;
     Color mLastBGColor;
     Array<Box> mBoxes;
+    uint64 mUpdateMsec;
 
 public:
     static inline Map<AppCB>& _AllApps()

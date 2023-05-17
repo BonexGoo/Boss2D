@@ -10,6 +10,11 @@ static hueconsoleData* gSelf = nullptr;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
+    if(type == CT_Tick)
+    {
+        if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
+            m->invalidate(2);
+    }
 }
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -76,6 +81,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     else
     {
         // 셀
+        const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
         for(sint32 i = 0, iend = m->mCellWidth * m->mCellHeight; i < iend; ++i)
         {
             const sint32 X = i % m->mCellWidth;
@@ -98,7 +104,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
                             panel.fill();
                     }
+                    const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
                     ZAY_COLOR(panel, CurCell.mColor)
+                    ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
                         panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
                 }
                 if(ExtendFont) i++;
@@ -157,6 +165,7 @@ hueconsoleData::hueconsoleData()
     gSelf = this;
     mLastColor = Color::Black;
     mLastBGColor = Color::White;
+    mUpdateMsec = 0;
     ClearScreen(80, 25, Color::White);
 }
 
@@ -177,6 +186,7 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
             auto& NewCell = gSelf->mCells.AtAdding();
             NewCell.mColor = Color::Black;
             NewCell.mBGColor = bgcolor;
+            NewCell.mWrittenMsec = 0;
         }
         gSelf->mCellFocus = 0;
         gSelf->mLastBGColor = bgcolor;
@@ -206,6 +216,7 @@ void hueconsoleData::TextPrint(String text)
 {
     if(gSelf)
     {
+        const uint64 UpdateMsec = Platform::Utility::CurrentTimeMsec() + 500;
         sint32 LetterIndex = gSelf->mCellFocus;
         for(sint32 i = 0, iend = boss_strlen(text); i < iend;)
         {
@@ -224,16 +235,19 @@ void hueconsoleData::TextPrint(String text)
                 CurCell.mLetter = NewLetter;
                 CurCell.mColor = gSelf->mLastColor;
                 CurCell.mBGColor = gSelf->mLastBGColor;
+                CurCell.mWrittenMsec = UpdateMsec;
                 if(1 < LetterCount) // 한글처럼 2칸을 쓰는 폰트에 대한 처리
                 {
                     auto& NextCell = gSelf->mCells.AtWherever(LetterIndex++);
                     NextCell.mLetter.Empty();
                     NextCell.mColor = gSelf->mLastColor;
                     NextCell.mBGColor = gSelf->mLastBGColor;
+                    NextCell.mWrittenMsec = UpdateMsec;
                 }
             }
         }
         gSelf->mCellFocus = LetterIndex;
+        gSelf->mUpdateMsec = UpdateMsec;
     }
 }
 
