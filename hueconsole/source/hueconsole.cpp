@@ -2,8 +2,11 @@
 #include "hueconsole.hpp"
 
 #include <resource.hpp>
+#include <service/boss_zaywidget.hpp>
 
 ZAY_DECLARE_VIEW_CLASS("hueconsoleView", hueconsoleData)
+
+static hueconsoleData* gSelf = nullptr;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
@@ -11,6 +14,18 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
 {
+    if(type == NT_ZayWidget)
+    {
+        if(!String::Compare(topic, "EnterPressing"))
+        {
+            const String DOMName(in);
+            const sint32 BoxIdx = Parser::GetInt(DOMName.Offset(4)); // dom_0
+            const String Text = ZayWidgetDOM::GetComment(DOMName);
+            auto& CurBox = gSelf->mBoxes[BoxIdx];
+            if(CurBox.mScanCB)
+                CurBox.mScanCB(Text, 1);
+        }
+    }
 }
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
@@ -95,20 +110,11 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         {
             auto& CurBox = m->mBoxes[i];
             const String UIName = String::Format("ui_%d", i);
-            ZAY_LTRB_UI(panel,
+            ZAY_LTRB(panel,
                 panel.w() * CurBox.mLeft / m->mCellWidth,
                 panel.h() * CurBox.mTop / m->mCellHeight,
                 panel.w() * CurBox.mRight / m->mCellWidth,
-                panel.h() * CurBox.mBottom / m->mCellHeight, UIName,
-                ZAY_GESTURE_T(t, i)
-                {
-                    if(t == GT_InReleased)
-                    {
-                        auto& CurBox = m->mBoxes[i];
-                        if(CurBox.mClickCB)
-                            CurBox.mClickCB();
-                    }
-                })
+                panel.h() * CurBox.mBottom / m->mCellHeight)
             {
                 const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
                 ZAY_COLOR(panel, CurBox.mColor)
@@ -116,12 +122,36 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_INNER(panel, -j)
                     ZAY_RGBA(panel, 128, 128, 128, 128 - (128 / jend) * j)
                         panel.rect(1);
+
+                // 스캔에디터
+                if(CurBox.mScanCB)
+                {
+                    const String DOMName = String::Format("dom_%d", i);
+                    ZAY_COLOR(panel, CurBox.mColor)
+                    ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h())
+                    ZAY_LTRB(panel, 0, 0, panel.w() - 4, panel.h())
+                    if(ZayControl::RenderEditBox(panel, UIName, DOMName, 1, true, false))
+                        panel.repaint();
+                }
+                // 클릭박스
+                else if(CurBox.mClickCB)
+                {
+                    ZAY_INNER_UI(panel, 0, UIName,
+                        ZAY_GESTURE_T(t, i)
+                    {
+                        if(t == GT_InReleased)
+                        {
+                            auto& CurBox = m->mBoxes[i];
+                            if(CurBox.mClickCB)
+                                CurBox.mClickCB();
+                        }
+                    });
+                }
             }
         }
     }
 }
 
-static hueconsoleData* gSelf = nullptr;
 hueconsoleData::hueconsoleData()
 {
     gSelf = this;
@@ -179,19 +209,29 @@ void hueconsoleData::TextPrint(String text)
         sint32 LetterIndex = gSelf->mCellFocus;
         for(sint32 i = 0, iend = boss_strlen(text); i < iend;)
         {
-            auto& CurCell = gSelf->mCells.AtWherever(LetterIndex++);
             const sint32 LetterCount = String::GetLengthOfFirstLetter(((chars) text) + i);
-            CurCell.mLetter = text.Middle(i, LetterCount);
-            CurCell.mColor = gSelf->mLastColor;
-            CurCell.mBGColor = gSelf->mLastBGColor;
-            if(1 < LetterCount) // 한글처럼 2칸을 쓰는 폰트에 대한 처리
-            {
-                auto& NextCell = gSelf->mCells.AtWherever(LetterIndex++);
-                NextCell.mLetter.Empty();
-                NextCell.mColor = gSelf->mLastColor;
-                NextCell.mBGColor = gSelf->mLastBGColor;
-            }
+            const String NewLetter = text.Middle(i, LetterCount);
             i += LetterCount;
+
+            if(!NewLetter.Compare("\n"))
+            {
+                LetterIndex -= (LetterIndex % gSelf->mCellWidth); // 현재줄의 맨앞으로 이동
+                LetterIndex += gSelf->mCellWidth; // 다음줄로 이동
+            }
+            else
+            {
+                auto& CurCell = gSelf->mCells.AtWherever(LetterIndex++);
+                CurCell.mLetter = NewLetter;
+                CurCell.mColor = gSelf->mLastColor;
+                CurCell.mBGColor = gSelf->mLastBGColor;
+                if(1 < LetterCount) // 한글처럼 2칸을 쓰는 폰트에 대한 처리
+                {
+                    auto& NextCell = gSelf->mCells.AtWherever(LetterIndex++);
+                    NextCell.mLetter.Empty();
+                    NextCell.mColor = gSelf->mLastColor;
+                    NextCell.mBGColor = gSelf->mLastBGColor;
+                }
+            }
         }
         gSelf->mCellFocus = LetterIndex;
     }
@@ -218,6 +258,21 @@ void hueconsoleData::TextScan(sint32 w, ScanCB cb)
         NewBox.mRight = X + Width;
         NewBox.mBottom = Y + 1;
         NewBox.mScanCB = cb;
+
+        const sint32 BoxIdx = gSelf->mBoxes.Count() - 1;
+        const String DOMName = String::Format("dom_%d", BoxIdx);
+        ZayWidgetDOM::SetComment(DOMName, "");
+        ZayWidgetDOM::SetVariableFilter(DOMName,
+            [BoxIdx](const String& formula, const SolverValue& value, float reliable)->bool
+            {
+                if(formula[0] == '?')
+                {
+                    auto& CurBox = gSelf->mBoxes[BoxIdx];
+                    if(CurBox.mScanCB)
+                        CurBox.mScanCB(((chars) formula) + 1, 0);
+                }
+                return true;
+            });
     }
 }
 

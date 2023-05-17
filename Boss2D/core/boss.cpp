@@ -208,6 +208,11 @@ extern "C" int boss_isalnum(int c)
     return isalnum(c);
 }
 
+extern "C" int boss_atoi(const char* str)
+{
+    return atoi(str);
+}
+
 extern "C" double boss_atof(const char* str)
 {
     #if BOSS_ANDROID

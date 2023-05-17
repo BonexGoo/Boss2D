@@ -57,7 +57,7 @@ namespace BOSS
             if(type == ZaySon::LogType::Option)
             {
                 if(!String::Compare(title, "Cursor"))
-                    Platform::BroadcastNotify("SetCursor", sint32o(Parser::GetInt(detail)));
+                    Platform::BroadcastNotify("SetCursor", sint32o(Parser::GetInt(detail)), NT_ZayWidget);
             }
             else
             {
@@ -1654,6 +1654,7 @@ namespace BOSS
             if(view) view->clearCapture();
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
+            Platform::BroadcastNotify("EnterPressing", String(domname), NT_ZayWidget);
         }
         jump(code == 21) // 한영키
         {

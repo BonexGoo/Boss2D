@@ -256,6 +256,7 @@
     int boss_isalpha(int c);
     int boss_isdigit(int c);
     int boss_isalnum(int c);
+    int boss_atoi(const char* str);
     double boss_atof(const char* str);
     char* boss_strcpy(char* dest, const char* src);
     char* boss_strncpy(char* dest, const char* src, boss_size_t n);
