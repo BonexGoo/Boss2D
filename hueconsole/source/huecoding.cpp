@@ -11,9 +11,9 @@ int _declareapp(const char* app, AppCB cb)
     return 0;
 }
 
-void setscreen(int w, int h, const char* bgcolor)
+void clrscr(int w, int h, const char* bgcolor)
 {
-    hueconsoleData::SetScreen(w, h, bgcolor);
+    hueconsoleData::ClearScreen(w, h, bgcolor);
 }
 
 void gotoxy(int x, int y)
@@ -21,9 +21,14 @@ void gotoxy(int x, int y)
     hueconsoleData::GotoXY(x, y);
 }
 
-void setcolor(const char* color, const char* bgcolor)
+void setcolor(const char* color)
 {
-    hueconsoleData::SetColor(color, bgcolor);
+    hueconsoleData::SetColor(color);
+}
+
+void setbgcolor(const char* bgcolor)
+{
+    hueconsoleData::SetBGColor(bgcolor);
 }
 
 void print(const char* format, ...)
@@ -40,13 +45,18 @@ void print(const char* format, ...)
         va_start(Args, format);
         boss_vsnprintf(Collector.AtDumping(0, Size + 1), Size + 1, format, Args);
         va_end(Args);
-        hueconsoleData::TextLabel(&Collector[0]);
+        hueconsoleData::TextPrint(&Collector[0]);
     }
     else
     {
         BOSS_ASSERT("vsnprintf에서 text의 길이를 추산하지 못함", false);
-        hueconsoleData::TextLabel("<error>");
+        hueconsoleData::TextPrint("<error>");
     }
+}
+
+void scan(int w, ScanCB cb)
+{
+    hueconsoleData::TextScan(w, cb);
 }
 
 void clickbox(int w, int h, ClickCB cb)
@@ -54,12 +64,7 @@ void clickbox(int w, int h, ClickCB cb)
     hueconsoleData::ClickBox(w, h, cb);
 }
 
-void textbox(int w, int h, TextCB cb)
+void repaint()
 {
-    hueconsoleData::TextBox(w, h, cb);
-}
-
-void redraw(int count)
-{
-    hueconsoleData::Redraw(count);
+    hueconsoleData::Repaint();
 }

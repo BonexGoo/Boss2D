@@ -7,18 +7,19 @@
 
     // 비공개부
     typedef void (*AppCB)();
+    typedef void (*ScanCB)(const char* text, int enter);
     typedef void (*ClickCB)();
-    typedef void (*TextCB)(const char* text);
     int _declareapp(const char* app, AppCB cb);
 
     // 공개부
-    void setscreen(int w, int h, const char* bgcolor);
+    void clrscr(int w, int h, const char* bgcolor);
     void gotoxy(int x, int y);
-    void setcolor(const char* color, const char* bgcolor);
+    void setcolor(const char* color);
+    void setbgcolor(const char* bgcolor);
     void print(const char* format, ...);
+    void scan(int w, ScanCB cb);
     void clickbox(int w, int h, ClickCB cb);
-    void textbox(int w, int h, TextCB cb);
-    void redraw(int count);
+    void repaint();
 
 #ifdef __cplusplus
     }
