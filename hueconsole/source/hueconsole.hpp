@@ -29,6 +29,9 @@ public:
     hueconsoleData();
     ~hueconsoleData();
 
+private:
+    void ValidCells(sint32 count);
+
 public:
     static void ClearScreen(sint32 w, sint32 h, Color bgcolor);
     static void GotoXY(sint32 x, sint32 y);
@@ -47,7 +50,10 @@ public:
     sint32 mCellFocus;
     Color mLastColor;
     Color mLastBGColor;
+    Color mClearBGColor;
     Array<Box> mBoxes;
+    sint32 mScrollLog;
+    sint32 mScrollPhy;
     uint64 mUpdateMsec;
 
 public:

@@ -65,5 +65,11 @@
     <ClCompile Include="..\source\huecoding.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\huecoding\study.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\bonexgoo.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

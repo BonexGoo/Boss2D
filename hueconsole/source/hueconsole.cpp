@@ -14,6 +14,26 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
     {
         if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
             m->invalidate(2);
+
+        // 스크롤
+        const sint32 ScrollMin = 0 * 1000;
+        const sint32 ScrollMax = Math::Max(0, (m->mCells.Count() / m->mCellWidth) - m->mCellHeight) * 1000;
+        if(m->mScrollLog < ScrollMin)
+        {
+            m->mScrollLog = ((m->mScrollLog + 1) * 8 + ScrollMin * 2) / 10;
+            m->invalidate(2);
+        }
+        else if(ScrollMax < m->mScrollLog)
+        {
+            m->mScrollLog = ((m->mScrollLog - 1) * 8 + ScrollMax * 2) / 10;
+            m->invalidate(2);
+        }
+        if(m->mScrollLog != m->mScrollPhy)
+        {
+            m->mScrollPhy += (m->mScrollLog < m->mScrollPhy)? -1 : 1;
+            m->mScrollPhy = (m->mScrollPhy * 9 + m->mScrollLog * 1) / 10;
+            m->invalidate(2);
+        }
     }
 }
 
@@ -35,6 +55,14 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
+    if(0 < m->mLastApp.Length())
+    {
+        if(type == GT_WheelUp || type == GT_WheelDown)
+        {
+            m->mScrollLog = m->mScrollLog + ((type == GT_WheelUp)? -1000 : 1000);
+            m->invalidate(2);
+        }
+    }
 }
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
@@ -78,39 +106,36 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
         }
     }
-    else
+    else ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
     {
         // 셀
         const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-        for(sint32 i = 0, iend = m->mCellWidth * m->mCellHeight; i < iend; ++i)
+        for(sint32 i = 0, iend = m->mCells.Count(); i < iend; ++i)
         {
+            const auto& CurCell = m->mCells[i];
+            const bool ExtendFont = (1 < CurCell.mLetter.Length());
             const sint32 X = i % m->mCellWidth;
             const sint32 Y = i / m->mCellWidth;
-            if(i < m->mCells.Count())
+            const sint32 XEnd = (ExtendFont)? X + 2 : X + 1;
+            ZAY_LTRB_SCISSOR(panel,
+                panel.w() * X / m->mCellWidth,
+                panel.h() * Y / m->mCellHeight,
+                panel.w() * XEnd / m->mCellWidth,
+                panel.h() * (Y + 1) / m->mCellHeight)
             {
-                const auto& CurCell = m->mCells[i];
-                const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                const sint32 XEnd = (ExtendFont)? X + 2 : X + 1;
-                ZAY_LTRB_SCISSOR(panel,
-                    panel.w() * X / m->mCellWidth,
-                    panel.h() * Y / m->mCellHeight,
-                    panel.w() * XEnd / m->mCellWidth,
-                    panel.h() * (Y + 1) / m->mCellHeight)
+                ZAY_COLOR(panel, CurCell.mBGColor)
                 {
-                    ZAY_COLOR(panel, CurCell.mBGColor)
-                    {
-                        ZAY_RGBA(panel, 128, 128, 128, 120)
-                            panel.fill();
-                        ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                            panel.fill();
-                    }
-                    const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
-                    ZAY_COLOR(panel, CurCell.mColor)
-                    ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
-                        panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
+                    ZAY_RGBA(panel, 128, 128, 128, 120)
+                        panel.fill();
+                    ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                        panel.fill();
                 }
-                if(ExtendFont) i++;
+                const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
+                ZAY_COLOR(panel, CurCell.mColor)
+                ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
+                    panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
             }
+            if(ExtendFont) i++;
         }
 
         // 박스
@@ -165,13 +190,27 @@ hueconsoleData::hueconsoleData()
     gSelf = this;
     mLastColor = Color::Black;
     mLastBGColor = Color::White;
+    mClearBGColor = Color::White;
     mUpdateMsec = 0;
+    mScrollLog = 0;
+    mScrollPhy = 0;
     ClearScreen(80, 25, Color::White);
 }
 
 hueconsoleData::~hueconsoleData()
 {
     gSelf = nullptr;
+}
+
+void hueconsoleData::ValidCells(sint32 count)
+{
+    for(sint32 i = mCells.Count(); i < count; ++i)
+    {
+        auto& NewCell = mCells.AtAdding();
+        NewCell.mColor = Color::Black;
+        NewCell.mBGColor = mClearBGColor;
+        NewCell.mWrittenMsec = 0;
+    }
 }
 
 void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
@@ -190,6 +229,7 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
         }
         gSelf->mCellFocus = 0;
         gSelf->mLastBGColor = bgcolor;
+        gSelf->mClearBGColor = bgcolor;
         gSelf->mBoxes.Clear();
     }
 }
@@ -216,6 +256,7 @@ void hueconsoleData::TextPrint(String text)
 {
     if(gSelf)
     {
+        gSelf->ValidCells(gSelf->mCellFocus);
         const uint64 UpdateMsec = Platform::Utility::CurrentTimeMsec() + 500;
         sint32 LetterIndex = gSelf->mCellFocus;
         for(sint32 i = 0, iend = boss_strlen(text); i < iend;)
@@ -231,14 +272,16 @@ void hueconsoleData::TextPrint(String text)
             }
             else
             {
-                auto& CurCell = gSelf->mCells.AtWherever(LetterIndex++);
+                gSelf->ValidCells(++LetterIndex);
+                auto& CurCell = gSelf->mCells.At(LetterIndex - 1);
                 CurCell.mLetter = NewLetter;
                 CurCell.mColor = gSelf->mLastColor;
                 CurCell.mBGColor = gSelf->mLastBGColor;
                 CurCell.mWrittenMsec = UpdateMsec;
                 if(1 < LetterCount) // 한글처럼 2칸을 쓰는 폰트에 대한 처리
                 {
-                    auto& NextCell = gSelf->mCells.AtWherever(LetterIndex++);
+                    gSelf->ValidCells(++LetterIndex);
+                    auto& NextCell = gSelf->mCells.At(LetterIndex - 1);
                     NextCell.mLetter.Empty();
                     NextCell.mColor = gSelf->mLastColor;
                     NextCell.mBGColor = gSelf->mLastBGColor;
@@ -248,6 +291,8 @@ void hueconsoleData::TextPrint(String text)
         }
         gSelf->mCellFocus = LetterIndex;
         gSelf->mUpdateMsec = UpdateMsec;
+        const sint32 YSize = (gSelf->mCellFocus + gSelf->mCellWidth - 1) / gSelf->mCellWidth;
+        gSelf->ValidCells(gSelf->mCellWidth * YSize);
     }
 }
 
@@ -255,15 +300,16 @@ void hueconsoleData::TextScan(sint32 w, ScanCB cb)
 {
     if(gSelf)
     {
-        sint32 X = gSelf->mCellFocus % m->mCellWidth;
-        sint32 Y = gSelf->mCellFocus / m->mCellWidth;
+        sint32 X = gSelf->mCellFocus % gSelf->mCellWidth;
+        sint32 Y = gSelf->mCellFocus / gSelf->mCellWidth;
         sint32 Width = w;
-        if(m->mCellWidth < X + Width)
+        if(gSelf->mCellWidth < X + Width)
         {
             X = 0;
             Y++;
-            Width = Math::Min(Width, m->mCellWidth);
+            Width = Math::Min(Width, gSelf->mCellWidth);
         }
+        gSelf->mCellFocus = (Y + 1) * gSelf->mCellWidth;
 
         auto& NewBox = gSelf->mBoxes.AtAdding();
         NewBox.mColor = gSelf->mLastColor;
@@ -294,14 +340,14 @@ void hueconsoleData::ClickBox(sint32 w, sint32 h, ClickCB cb)
 {
     if(gSelf)
     {
-        sint32 X = gSelf->mCellFocus % m->mCellWidth;
-        sint32 Y = gSelf->mCellFocus / m->mCellWidth;
+        sint32 X = gSelf->mCellFocus % gSelf->mCellWidth;
+        sint32 Y = gSelf->mCellFocus / gSelf->mCellWidth;
         sint32 Width = w;
-        if(m->mCellWidth < X + Width)
+        if(gSelf->mCellWidth < X + Width)
         {
             X = 0;
             Y++;
-            Width = Math::Min(Width, m->mCellWidth);
+            Width = Math::Min(Width, gSelf->mCellWidth);
         }
 
         auto& NewBox = gSelf->mBoxes.AtAdding();
