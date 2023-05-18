@@ -20,18 +20,22 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         const sint32 ScrollMax = Math::Max(0, (m->mCells.Count() / m->mCellWidth) - m->mCellHeight) * 1000;
         if(m->mScrollLog < ScrollMin)
         {
-            m->mScrollLog = ((m->mScrollLog + 1) * 8 + ScrollMin * 2) / 10;
+            m->mScrollLog = Math::Min((m->mScrollLog * 8 + ScrollMin * 2) / 10 + 1, ScrollMin);
             m->invalidate(2);
         }
-        else if(ScrollMax < m->mScrollLog)
+        else if(m->mScrollLog > ScrollMax)
         {
-            m->mScrollLog = ((m->mScrollLog - 1) * 8 + ScrollMax * 2) / 10;
+            m->mScrollLog = Math::Max((m->mScrollLog * 8 + ScrollMax * 2) / 10 - 1, ScrollMax);
             m->invalidate(2);
         }
-        if(m->mScrollLog != m->mScrollPhy)
+        if(m->mScrollPhy < m->mScrollLog)
         {
-            m->mScrollPhy += (m->mScrollLog < m->mScrollPhy)? -1 : 1;
-            m->mScrollPhy = (m->mScrollPhy * 9 + m->mScrollLog * 1) / 10;
+            m->mScrollPhy = Math::Min((m->mScrollPhy * 9 + m->mScrollLog * 1) / 10 + 1, m->mScrollLog);
+            m->invalidate(2);
+        }
+        else if(m->mScrollPhy > m->mScrollLog)
+        {
+            m->mScrollPhy = Math::Max((m->mScrollPhy * 9 + m->mScrollLog * 1) / 10 - 1, m->mScrollLog);
             m->invalidate(2);
         }
     }
