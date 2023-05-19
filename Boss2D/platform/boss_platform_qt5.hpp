@@ -3635,70 +3635,76 @@
     public:
         WSServerClass(chars name = "noname", bool use_wss = false)
         {
-            mServer = new QWebSocketServer(name, (use_wss)? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode, this);
+            #if !BOSS_WASM
+                mServer = new QWebSocketServer(name, (use_wss)? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode, this);
+            #else
+                mServer = new QWebSocketServer(name, QWebSocketServer::NonSecureMode, this);
+            #endif
             connect(mServer, &QWebSocketServer::newConnection, this, &WSServerClass::acceptPeer);
 
-            if(use_wss)
-            {
-                connect(mServer, &QWebSocketServer::sslErrors, this, &WSServerClass::sslErrors);
+            #if !BOSS_WASM
+                if(use_wss)
+                {
+                    connect(mServer, &QWebSocketServer::sslErrors, this, &WSServerClass::sslErrors);
 
-                QSslConfiguration sslConfiguration;
-                QByteArray certText;
-                certText.fromStdString(
-                    "-----BEGIN CERTIFICATE-----\r\n"
-                    "MIIC+zCCAeOgAwIBAgIJAP26rumH9qOkMA0GCSqGSIb3DQEBBQUAMBQxEjAQBgNV\r\n"
-                    "BAMMCWxvY2FsaG9zdDAeFw0xMzExMDYxNjU4NTRaFw0yMzExMDQxNjU4NTRaMBQx\r\n"
-                    "EjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\r\n"
-                    "ggEBALgagHqEqWr4WH+MFBQE+BWZri5UUn/QPORN2pUB1lWMzeDCM5YMc/D1dhUG\r\n"
-                    "7zg5I9QO5Ut1YcoVO25OAseddgVaIFXPNyEG2nUTz53xx3pyqp3WtQkYCRAQzI8K\r\n"
-                    "IFIzBSD+nJNl+8gBld7Fe+4d8bFCwfXspQBJ2RY8SQ6tjRFVKHN7haLsD+WV3AFg\r\n"
-                    "siWkCxeXxVLNI69cuLwV7bEsv6U1N1yNROvRpu4yJcaNnu36kJFbORPhNfy6qJGX\r\n"
-                    "i0A30dYdMoLhtCN3Qf/XwGyS84Rs2XXduNlBdUgbpluY2r2x3Gz32hIwsHHcPzX6\r\n"
-                    "O9nwVPQ8k29lfC8yPmAWA9vPiBUCAwEAAaNQME4wHQYDVR0OBBYEFJZESCN01tY3\r\n"
-                    "MgXxmqiUBNPxsgiKMB8GA1UdIwQYMBaAFJZESCN01tY3MgXxmqiUBNPxsgiKMAwG\r\n"
-                    "A1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADggEBAHylCJYED9PqLB9FE4A0CRfy\r\n"
-                    "BdxIqOK+UExxxkU1DeN7kM4U2+E0G85nqBLOL34BDj8LDKJH9WC7L9jMV8T3Upbg\r\n"
-                    "+RrTGiIcyjsL18L2KWeOia1R6VVAQcZrqoWv+QXyVvIi8IpTOE074C6+Vzx6XYMe\r\n"
-                    "CpW4jcdfmn39oVeMXxz9+8wD7CWeCT+SMj8tt+OB1XjQwdEG03vb6ArtnuJT77VI\r\n"
-                    "3I090OtKksBE5hy1H9N2E3wxhFTxC+DI5sc7Bj87v3blL4Z3DvRUEHwQHcDccQ0D\r\n"
-                    "ERUEcSyn1YGSlDVbVf3CzH4WXxddUBmaSHf4JTuAMy0C0A6IWuMP+rVVvVMIXNM=\r\n"
-                    "-----END CERTIFICATE-----\r\n");
-                QByteArray keyText;
-                keyText.fromStdString(
-                    "-----BEGIN RSA PRIVATE KEY-----\r\n"
-                    "MIIEogIBAAKCAQEAuBqAeoSpavhYf4wUFAT4FZmuLlRSf9A85E3alQHWVYzN4MIz\r\n"
-                    "lgxz8PV2FQbvODkj1A7lS3VhyhU7bk4Cx512BVogVc83IQbadRPPnfHHenKqnda1\r\n"
-                    "CRgJEBDMjwogUjMFIP6ck2X7yAGV3sV77h3xsULB9eylAEnZFjxJDq2NEVUoc3uF\r\n"
-                    "ouwP5ZXcAWCyJaQLF5fFUs0jr1y4vBXtsSy/pTU3XI1E69Gm7jIlxo2e7fqQkVs5\r\n"
-                    "E+E1/LqokZeLQDfR1h0yguG0I3dB/9fAbJLzhGzZdd242UF1SBumW5javbHcbPfa\r\n"
-                    "EjCwcdw/Nfo72fBU9DyTb2V8LzI+YBYD28+IFQIDAQABAoIBADADmWZamuSvCEWb\r\n"
-                    "ftEJyrm3btneW/XBlV/lfhBGfmOpaTgo7dNARCyfl8A8Ir+DB3kSuXJIlsxhZTKL\r\n"
-                    "XeY5hsI2kyBN/o66ftbx57/FgsTIiv7HNEe+4P4zo2Xaujs12yyTuromatfqse97\r\n"
-                    "iaq8XIBibLt6kD3XBKrr5hHR6WyPW9F7sM91e/1OGTXBt9URvnnHqcimJ8Wvto5p\r\n"
-                    "SMFlud8JXMmARhWaIfqQIcNYmNEHea0LfOZVerTOPE7IZd5coM91mr71lzoxs9Ik\r\n"
-                    "bRMbqgyAMXEJV3ynEH2LjjJZo1bVb8Va45QqqOQ4FtL46n1Z+EVUXyhCHGepwyOv\r\n"
-                    "uAru0wECgYEA3CnM252417At+N9Zq4KtBJ8tIEXKqvK1Bl5aZSqaJClywjCttR2l\r\n"
-                    "lRAlIRAmqHCQuxLDDfLfiJh6xgZsjr4MhksuyKc7DKssfWW+XCd+5GaaMoMvJXhs\r\n"
-                    "caJdhNSHzpnLPi++tJBYHwHa354D5PJ3eItzLkmuVyhmc3plNbkBGLECgYEA1hIX\r\n"
-                    "mA9KadVG9VkaDci+xo1p0ACb5ccHAvmA8+fzb0H09yKw5bCSpNGeHj4Qv5ZFqsUm\r\n"
-                    "96NWYEB38ezupWqWMFd9zr1kD2s3r6Kpq1TS6xuDPapyiXaKpcH1ys7IWZkinCkN\r\n"
-                    "oxhPHcQbFu9/CN2zIVFKvF5P98Rh0+wO7fgL/qUCgYAyleAd7cVUuYQ2lIrz31iF\r\n"
-                    "oVUq/x4r3Qw+5Fr8t6cm++cEO08OODudXlJJoH5hYUu/z/XFNLKrne1Hpp42xe/2\r\n"
-                    "wzuCmvn0VTgpr8DnR6PeMrznMkEY6Oxxx46ZQIPbsnaCWVIGBsxYg4KYsqPObO+K\r\n"
-                    "YPAcCI3oNL4ldk/e4h0gYQKBgHm+4FxClfeKrEhs3DxqptUVJ9B8CC2t+3bdn1EX\r\n"
-                    "4YKs6DyFJkX7HetOq7ZXZf8P3583cOn1ovIquAyGy1KYQ8JKf+pMG9QJDip9QDGI\r\n"
-                    "lEvR4dn4ThuPp1qN7NPitl7+kIhvcKoI8TXkieOJYZ4ROAcCzJZErQYkUd7MqdD8\r\n"
-                    "+RVhAoGAcWC9HRDhxjs4shaBlYi8Lfp3dV4f/4UgYosdFAZ26atwHz+sCLHwwg1j\r\n"
-                    "6t5Zxy9oEB89S5v5hkgO8//JmopvISSokdvocASMdKE+OmS3JfBmhQK9qVBW/vv/\r\n"
-                    "ut2bhPjEzIJyNFKX3xnGI8PREcR2eY+WLhIZ5KiR61tGpktJ4bg=\r\n"
-                    "-----END RSA PRIVATE KEY-----\r\n");
-                QSslCertificate certificate(certText, QSsl::Pem);
-                QSslKey sslKey(keyText, QSsl::Rsa, QSsl::Pem);
-                sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
-                sslConfiguration.setLocalCertificate(certificate);
-                sslConfiguration.setPrivateKey(sslKey);
-                mServer->setSslConfiguration(sslConfiguration);
-            }
+                    QSslConfiguration sslConfiguration;
+                    QByteArray certText;
+                    certText.fromStdString(
+                        "-----BEGIN CERTIFICATE-----\r\n"
+                        "MIIC+zCCAeOgAwIBAgIJAP26rumH9qOkMA0GCSqGSIb3DQEBBQUAMBQxEjAQBgNV\r\n"
+                        "BAMMCWxvY2FsaG9zdDAeFw0xMzExMDYxNjU4NTRaFw0yMzExMDQxNjU4NTRaMBQx\r\n"
+                        "EjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\r\n"
+                        "ggEBALgagHqEqWr4WH+MFBQE+BWZri5UUn/QPORN2pUB1lWMzeDCM5YMc/D1dhUG\r\n"
+                        "7zg5I9QO5Ut1YcoVO25OAseddgVaIFXPNyEG2nUTz53xx3pyqp3WtQkYCRAQzI8K\r\n"
+                        "IFIzBSD+nJNl+8gBld7Fe+4d8bFCwfXspQBJ2RY8SQ6tjRFVKHN7haLsD+WV3AFg\r\n"
+                        "siWkCxeXxVLNI69cuLwV7bEsv6U1N1yNROvRpu4yJcaNnu36kJFbORPhNfy6qJGX\r\n"
+                        "i0A30dYdMoLhtCN3Qf/XwGyS84Rs2XXduNlBdUgbpluY2r2x3Gz32hIwsHHcPzX6\r\n"
+                        "O9nwVPQ8k29lfC8yPmAWA9vPiBUCAwEAAaNQME4wHQYDVR0OBBYEFJZESCN01tY3\r\n"
+                        "MgXxmqiUBNPxsgiKMB8GA1UdIwQYMBaAFJZESCN01tY3MgXxmqiUBNPxsgiKMAwG\r\n"
+                        "A1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADggEBAHylCJYED9PqLB9FE4A0CRfy\r\n"
+                        "BdxIqOK+UExxxkU1DeN7kM4U2+E0G85nqBLOL34BDj8LDKJH9WC7L9jMV8T3Upbg\r\n"
+                        "+RrTGiIcyjsL18L2KWeOia1R6VVAQcZrqoWv+QXyVvIi8IpTOE074C6+Vzx6XYMe\r\n"
+                        "CpW4jcdfmn39oVeMXxz9+8wD7CWeCT+SMj8tt+OB1XjQwdEG03vb6ArtnuJT77VI\r\n"
+                        "3I090OtKksBE5hy1H9N2E3wxhFTxC+DI5sc7Bj87v3blL4Z3DvRUEHwQHcDccQ0D\r\n"
+                        "ERUEcSyn1YGSlDVbVf3CzH4WXxddUBmaSHf4JTuAMy0C0A6IWuMP+rVVvVMIXNM=\r\n"
+                        "-----END CERTIFICATE-----\r\n");
+                    QByteArray keyText;
+                    keyText.fromStdString(
+                        "-----BEGIN RSA PRIVATE KEY-----\r\n"
+                        "MIIEogIBAAKCAQEAuBqAeoSpavhYf4wUFAT4FZmuLlRSf9A85E3alQHWVYzN4MIz\r\n"
+                        "lgxz8PV2FQbvODkj1A7lS3VhyhU7bk4Cx512BVogVc83IQbadRPPnfHHenKqnda1\r\n"
+                        "CRgJEBDMjwogUjMFIP6ck2X7yAGV3sV77h3xsULB9eylAEnZFjxJDq2NEVUoc3uF\r\n"
+                        "ouwP5ZXcAWCyJaQLF5fFUs0jr1y4vBXtsSy/pTU3XI1E69Gm7jIlxo2e7fqQkVs5\r\n"
+                        "E+E1/LqokZeLQDfR1h0yguG0I3dB/9fAbJLzhGzZdd242UF1SBumW5javbHcbPfa\r\n"
+                        "EjCwcdw/Nfo72fBU9DyTb2V8LzI+YBYD28+IFQIDAQABAoIBADADmWZamuSvCEWb\r\n"
+                        "ftEJyrm3btneW/XBlV/lfhBGfmOpaTgo7dNARCyfl8A8Ir+DB3kSuXJIlsxhZTKL\r\n"
+                        "XeY5hsI2kyBN/o66ftbx57/FgsTIiv7HNEe+4P4zo2Xaujs12yyTuromatfqse97\r\n"
+                        "iaq8XIBibLt6kD3XBKrr5hHR6WyPW9F7sM91e/1OGTXBt9URvnnHqcimJ8Wvto5p\r\n"
+                        "SMFlud8JXMmARhWaIfqQIcNYmNEHea0LfOZVerTOPE7IZd5coM91mr71lzoxs9Ik\r\n"
+                        "bRMbqgyAMXEJV3ynEH2LjjJZo1bVb8Va45QqqOQ4FtL46n1Z+EVUXyhCHGepwyOv\r\n"
+                        "uAru0wECgYEA3CnM252417At+N9Zq4KtBJ8tIEXKqvK1Bl5aZSqaJClywjCttR2l\r\n"
+                        "lRAlIRAmqHCQuxLDDfLfiJh6xgZsjr4MhksuyKc7DKssfWW+XCd+5GaaMoMvJXhs\r\n"
+                        "caJdhNSHzpnLPi++tJBYHwHa354D5PJ3eItzLkmuVyhmc3plNbkBGLECgYEA1hIX\r\n"
+                        "mA9KadVG9VkaDci+xo1p0ACb5ccHAvmA8+fzb0H09yKw5bCSpNGeHj4Qv5ZFqsUm\r\n"
+                        "96NWYEB38ezupWqWMFd9zr1kD2s3r6Kpq1TS6xuDPapyiXaKpcH1ys7IWZkinCkN\r\n"
+                        "oxhPHcQbFu9/CN2zIVFKvF5P98Rh0+wO7fgL/qUCgYAyleAd7cVUuYQ2lIrz31iF\r\n"
+                        "oVUq/x4r3Qw+5Fr8t6cm++cEO08OODudXlJJoH5hYUu/z/XFNLKrne1Hpp42xe/2\r\n"
+                        "wzuCmvn0VTgpr8DnR6PeMrznMkEY6Oxxx46ZQIPbsnaCWVIGBsxYg4KYsqPObO+K\r\n"
+                        "YPAcCI3oNL4ldk/e4h0gYQKBgHm+4FxClfeKrEhs3DxqptUVJ9B8CC2t+3bdn1EX\r\n"
+                        "4YKs6DyFJkX7HetOq7ZXZf8P3583cOn1ovIquAyGy1KYQ8JKf+pMG9QJDip9QDGI\r\n"
+                        "lEvR4dn4ThuPp1qN7NPitl7+kIhvcKoI8TXkieOJYZ4ROAcCzJZErQYkUd7MqdD8\r\n"
+                        "+RVhAoGAcWC9HRDhxjs4shaBlYi8Lfp3dV4f/4UgYosdFAZ26atwHz+sCLHwwg1j\r\n"
+                        "6t5Zxy9oEB89S5v5hkgO8//JmopvISSokdvocASMdKE+OmS3JfBmhQK9qVBW/vv/\r\n"
+                        "ut2bhPjEzIJyNFKX3xnGI8PREcR2eY+WLhIZ5KiR61tGpktJ4bg=\r\n"
+                        "-----END RSA PRIVATE KEY-----\r\n");
+                    QSslCertificate certificate(certText, QSsl::Pem);
+                    QSslKey sslKey(keyText, QSsl::Rsa, QSsl::Pem);
+                    sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
+                    sslConfiguration.setLocalCertificate(certificate);
+                    sslConfiguration.setPrivateKey(sslKey);
+                    mServer->setSslConfiguration(sslConfiguration);
+                }
+            #endif
         }
 
         ~WSServerClass() override
@@ -3757,14 +3763,16 @@
             Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
         }
 
-        void sslErrors(const QList<QSslError>& errors)
-        {
-            foreach(const auto& CurError, errors)
+        #if !BOSS_WASM
+            void sslErrors(const QList<QSslError>& errors)
             {
-                String ErrorText = CurError.errorString().toUtf8().constData();
-                Platform::BroadcastNotify("error", ErrorText, NT_SocketReceive);
+                foreach(const auto& CurError, errors)
+                {
+                    String ErrorText = CurError.errorString().toUtf8().constData();
+                    Platform::BroadcastNotify("error", ErrorText, NT_SocketReceive);
+                }
             }
-        }
+        #endif
 
     private:
         bool Listen(uint16 port) override

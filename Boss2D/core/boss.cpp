@@ -28,6 +28,7 @@
     #include <android/asset_manager_jni.h>
 #elif BOSS_WASM
     #include <sys/stat.h>
+    #include <stdlib.h>
     #include <stropts.h>
     #include <dirent.h>
     #include <unistd.h>

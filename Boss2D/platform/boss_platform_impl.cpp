@@ -741,68 +741,80 @@ namespace BOSS
 
             sint64 Find_WindowHandle(chars titlename)
             {
-                // 윈도우핸들 찾기
-                struct Payload
-                {
-                    chars mTitleName;
-                    HWND mWindowHandle;
-                } OnePayload {titlename, NULL};
-                auto EnumWindowsProc = [](HWND hwnd, LPARAM lparam)->BOOL
-                {
-                    Payload& CurPayload = *((Payload*) lparam);
-                    wchar_t CurWindowText[80];
-                    const sint32 CurWindowTextLength = GetWindowTextW(hwnd, CurWindowText, 80);
-                    const String CurWindowName = String::FromWChars(CurWindowText, CurWindowTextLength);
-                    if(!CurWindowName.Compare(CurPayload.mTitleName))
+                #if BOSS_WINDOWS
+                    // 윈도우핸들 찾기
+                    struct Payload
                     {
-                        CurPayload.mWindowHandle = hwnd;
-                        return false;
-                    }
-                    return true;
-                };
-                EnumWindows((WNDENUMPROC) EnumWindowsProc, (LPARAM) &OnePayload);
-                return (OnePayload.mWindowHandle)? (sint64) OnePayload.mWindowHandle : -1;
+                        chars mTitleName;
+                        HWND mWindowHandle;
+                    } OnePayload {titlename, NULL};
+                    auto EnumWindowsProc = [](HWND hwnd, LPARAM lparam)->BOOL
+                    {
+                        Payload& CurPayload = *((Payload*) lparam);
+                        wchar_t CurWindowText[80];
+                        const sint32 CurWindowTextLength = GetWindowTextW(hwnd, CurWindowText, 80);
+                        const String CurWindowName = String::FromWChars(CurWindowText, CurWindowTextLength);
+                        if(!CurWindowName.Compare(CurPayload.mTitleName))
+                        {
+                            CurPayload.mWindowHandle = hwnd;
+                            return false;
+                        }
+                        return true;
+                    };
+                    EnumWindows((WNDENUMPROC) EnumWindowsProc, (LPARAM) &OnePayload);
+                    return (OnePayload.mWindowHandle)? (sint64) OnePayload.mWindowHandle : -1;
+                #else
+                    return -1;
+                #endif
             }
 
             bool Move_Window(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
             {
-                if(hwnd != -1)
-                    return MoveWindow((HWND) hwnd, left, top, right - left, bottom - top, repaint);
-                return FALSE;
+                #if BOSS_WINDOWS
+                    if(hwnd != -1)
+                        return MoveWindow((HWND) hwnd, left, top, right - left, bottom - top, repaint);
+                    return FALSE;
+                #else
+                    return false;
+                #endif
             }
 
             bool Move_WindowGroup(sint64s windowparams, bool release)
             {
-                const sint32 WindowCount = windowparams.Count() / 5;
-                if(0 < WindowCount)
-                {
-                    // TOPMOST옵션으로 순서정렬후
-                    HDWP DeferHandle = BeginDeferWindowPos(WindowCount);
-                    for(sint32 i = 0; i < WindowCount; ++i)
+                #if BOSS_WINDOWS
+                    const sint32 WindowCount = windowparams.Count() / 5;
+                    if(0 < WindowCount)
                     {
-                        HWND CurHandle = (HWND) windowparams[5 * i + 0];
-                        const sint32 Left = (sint32) windowparams[5 * i + 1];
-                        const sint32 Top = (sint32) windowparams[5 * i + 2];
-                        const sint32 Right = (sint32) windowparams[5 * i + 3];
-                        const sint32 Bottom = (sint32) windowparams[5 * i + 4];
-                        DeferWindowPos(DeferHandle, CurHandle, HWND_TOPMOST, Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW);
-                    }
-                    EndDeferWindowPos(DeferHandle);
-
-                    // TOPMOST옵션 제거
-                    if(release)
-                    {
-                        DeferHandle = BeginDeferWindowPos(WindowCount);
+                        // TOPMOST옵션으로 순서정렬후
+                        HDWP DeferHandle = BeginDeferWindowPos(WindowCount);
                         for(sint32 i = 0; i < WindowCount; ++i)
                         {
                             HWND CurHandle = (HWND) windowparams[5 * i + 0];
-                            DeferWindowPos(DeferHandle, CurHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+                            const sint32 Left = (sint32) windowparams[5 * i + 1];
+                            const sint32 Top = (sint32) windowparams[5 * i + 2];
+                            const sint32 Right = (sint32) windowparams[5 * i + 3];
+                            const sint32 Bottom = (sint32) windowparams[5 * i + 4];
+                            DeferWindowPos(DeferHandle, CurHandle, HWND_TOPMOST, Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW);
                         }
                         EndDeferWindowPos(DeferHandle);
+
+                        // TOPMOST옵션 제거
+                        if(release)
+                        {
+                            DeferHandle = BeginDeferWindowPos(WindowCount);
+                            for(sint32 i = 0; i < WindowCount; ++i)
+                            {
+                                HWND CurHandle = (HWND) windowparams[5 * i + 0];
+                                DeferWindowPos(DeferHandle, CurHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+                            }
+                            EndDeferWindowPos(DeferHandle);
+                        }
+                        return TRUE;
                     }
-                    return TRUE;
-                }
-                return FALSE;
+                    return FALSE;
+                #else
+                    return false;
+                #endif
             }
 
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash)
