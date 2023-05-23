@@ -4000,6 +4000,9 @@
                 {
                     const String UrlText = String::Format("wss://%s:%d", domain, (sint32) port);
                     CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
+                    #ifndef QT_NO_SSL
+                        CurSocketBox->m_wsocket->ignoreSslErrors();
+                    #endif
                 }
                 break;
             }
