@@ -3904,8 +3904,8 @@
             {
                 connect(m_wsocket, &QWebSocket::connected, this, &SocketBox::OnWebConnected);
                 connect(m_wsocket, &QWebSocket::disconnected, this, &SocketBox::OnWebDisconnected);
-                connect(m_wsocket, &QWebSocket::textFrameReceived, this, &SocketBox::OnWebTextReceived);
-                connect(m_wsocket, &QWebSocket::binaryFrameReceived, this, &SocketBox::OnWebBinaryReceived);
+                connect(m_wsocket, &QWebSocket::textMessageReceived, this, &SocketBox::OnWebTextMessageReceived);
+                connect(m_wsocket, &QWebSocket::binaryMessageReceived, this, &SocketBox::OnWebBinaryMessageReceived);
             }
         }
         bool CheckState(chars name)
@@ -3952,13 +3952,13 @@
         {
             Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, true);
         }
-        void OnWebTextReceived(const QString& frame, bool isLastFrame)
+        void OnWebTextMessageReceived(const QString& message)
         {
-            OnWebBinaryReceived(frame.toUtf8(), isLastFrame);
+            OnWebBinaryMessageReceived(message.toUtf8());
         }
-        void OnWebBinaryReceived(const QByteArray& frame, bool isLastFrame)
+        void OnWebBinaryMessageReceived(const QByteArray& message)
         {
-            m_wbytes += frame;
+            m_wbytes += message;
             Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
         }
 
