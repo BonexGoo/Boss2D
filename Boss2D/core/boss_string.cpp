@@ -575,6 +575,11 @@ namespace BOSS
                 Platform::File::Read(TextFile, (uint08*) Result.m_words.AtDumping(3, TextSize - 3), TextSize - 3);
             }
         }
+        else
+        {
+            Result.m_words.AtWherever(TextSize) = '\0';
+            Platform::File::Read(TextFile, (uint08*) Result.m_words.AtDumping(0, TextSize), TextSize);
+        }
         Platform::File::Close(TextFile);
         return Result;
     }
@@ -609,6 +614,11 @@ namespace BOSS
                 Result.m_words.At(2) = BOMTest[2];
                 Asset::Read(TextAsset, (uint08*) Result.m_words.AtDumping(3, TextSize - 3), TextSize - 3);
             }
+        }
+        else
+        {
+            Result.m_words.AtWherever(TextSize) = '\0';
+            Asset::Read(TextAsset, (uint08*) Result.m_words.AtDumping(0, TextSize), TextSize);
         }
         Asset::Close(TextAsset);
         return Result;
