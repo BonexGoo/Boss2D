@@ -52,6 +52,26 @@ namespace BOSS
             return Data;
         }
 
+        /// @brief 큐에서 배출될 데이터를 미리 확인
+        /// @return 해당 데이터
+        TYPE* TryLockPreview()
+        {
+            if(FORTHREAD) Mutex::Lock(DataMutex);
+            if(0 < DataCount)
+            {
+                if(Head.Next)
+                    return &Head.Next->Data;
+            }
+            if(FORTHREAD) Mutex::Unlock(DataMutex);
+            return nullptr;
+        }
+
+        /// @brief 배출확인 성공시 Unlock처리
+        void UnlockPreview()
+        {
+            if(FORTHREAD) Mutex::Unlock(DataMutex);
+        }
+
         /// @brief 현재 큐에 적재된 데이터수량
         /// @return 데이터수량
         sint32 Count() const
