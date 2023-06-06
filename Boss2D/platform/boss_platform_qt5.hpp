@@ -1713,7 +1713,11 @@
                         m_webPaper->load(QUrl(QString::fromUtf8(url)));
                         m_webPaper->show();
                     }
-                    else m_webPaper->hide();
+                    else
+                    {
+                        m_webPaper->load(QUrl(QString::fromUtf8("")));
+                        m_webPaper->hide();
+                    }
                 }
             #endif
         }
