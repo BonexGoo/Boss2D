@@ -171,6 +171,14 @@
                 QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
                 QApplication app(argc, argv);
 
+                #if BOSS_WASM
+                    // 한글가능한 폰트
+                    int NewFontID = QFontDatabase::addApplicationFont(":/font/daum_regular.ttf");
+                    QString FontFamily = QFontDatabase::applicationFontFamilies(NewFontID).at(0);
+                    QFont NewFont(FontFamily);
+                    app.setFont(NewFont);
+                #endif
+
                 MainWindow mainWindow;
                 g_window = &mainWindow;
                 g_argc = argc;
