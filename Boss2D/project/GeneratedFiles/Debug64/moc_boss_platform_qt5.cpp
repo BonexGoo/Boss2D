@@ -1136,8 +1136,8 @@ int WSServerClass::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 struct qt_meta_stringdata_SocketBox_t {
-    QByteArrayData data[11];
-    char stringdata0[139];
+    QByteArrayData data[10];
+    char stringdata0[143];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -1153,16 +1153,15 @@ QT_MOC_LITERAL(3, 23, 14), // "OnDisconnected"
 QT_MOC_LITERAL(4, 38, 11), // "OnReadyRead"
 QT_MOC_LITERAL(5, 50, 14), // "OnWebConnected"
 QT_MOC_LITERAL(6, 65, 17), // "OnWebDisconnected"
-QT_MOC_LITERAL(7, 83, 17), // "OnWebTextReceived"
-QT_MOC_LITERAL(8, 101, 5), // "frame"
-QT_MOC_LITERAL(9, 107, 11), // "isLastFrame"
-QT_MOC_LITERAL(10, 119, 19) // "OnWebBinaryReceived"
+QT_MOC_LITERAL(7, 83, 24), // "OnWebTextMessageReceived"
+QT_MOC_LITERAL(8, 108, 7), // "message"
+QT_MOC_LITERAL(9, 116, 26) // "OnWebBinaryMessageReceived"
 
     },
     "SocketBox\0OnConnected\0\0OnDisconnected\0"
     "OnReadyRead\0OnWebConnected\0OnWebDisconnected\0"
-    "OnWebTextReceived\0frame\0isLastFrame\0"
-    "OnWebBinaryReceived"
+    "OnWebTextMessageReceived\0message\0"
+    "OnWebBinaryMessageReceived"
 };
 #undef QT_MOC_LITERAL
 
@@ -1185,8 +1184,8 @@ static const uint qt_meta_data_SocketBox[] = {
        4,    0,   51,    2, 0x08 /* Private */,
        5,    0,   52,    2, 0x08 /* Private */,
        6,    0,   53,    2, 0x08 /* Private */,
-       7,    2,   54,    2, 0x08 /* Private */,
-      10,    2,   59,    2, 0x08 /* Private */,
+       7,    1,   54,    2, 0x08 /* Private */,
+       9,    1,   57,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -1194,8 +1193,8 @@ static const uint qt_meta_data_SocketBox[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, QMetaType::Bool,    8,    9,
-    QMetaType::Void, QMetaType::QByteArray, QMetaType::Bool,    8,    9,
+    QMetaType::Void, QMetaType::QString,    8,
+    QMetaType::Void, QMetaType::QByteArray,    8,
 
        0        // eod
 };
@@ -1211,8 +1210,8 @@ void SocketBox::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
         case 2: _t->OnReadyRead(); break;
         case 3: _t->OnWebConnected(); break;
         case 4: _t->OnWebDisconnected(); break;
-        case 5: _t->OnWebTextReceived((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< bool(*)>(_a[2]))); break;
-        case 6: _t->OnWebBinaryReceived((*reinterpret_cast< const QByteArray(*)>(_a[1])),(*reinterpret_cast< bool(*)>(_a[2]))); break;
+        case 5: _t->OnWebTextMessageReceived((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 6: _t->OnWebBinaryMessageReceived((*reinterpret_cast< const QByteArray(*)>(_a[1]))); break;
         default: ;
         }
     }

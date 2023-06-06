@@ -1476,6 +1476,113 @@
         TrayIcon* m_tray;
     };
 
+    class WebEnginePageForExtraDesktop : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        enum RenderProcessTerminationStatus {
+            NormalTerminationStatus = 0,
+            AbnormalTerminationStatus,
+            CrashedTerminationStatus,
+            KilledTerminationStatus
+        };
+        enum PermissionPolicy {
+            PermissionUnknown,
+            PermissionGrantedByUser,
+            PermissionDeniedByUser
+        };
+        enum Feature {
+            Notifications = 0,
+            Geolocation = 1,
+            MediaAudioCapture = 2,
+            MediaVideoCapture,
+            MediaAudioVideoCapture,
+            MouseLock,
+            DesktopVideoCapture,
+            DesktopAudioVideoCapture
+        };
+
+    public:
+        WebEnginePageForExtraDesktop(QObject* parent = nullptr) {}
+        virtual ~WebEnginePageForExtraDesktop() {}
+
+    public:
+        enum JavaScriptConsoleMessageLevel {InfoMessageLevel, WarningMessageLevel, ErrorMessageLevel};
+        typedef std::function<void(const QVariant&)> WebEngineCallbackForExtraDesktop;
+
+    public:
+        void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy) {}
+        void runJavaScript(const QString& scriptSource, const WebEngineCallbackForExtraDesktop& resultCallback) {}
+        virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) {}
+    };
+
+    class WebEngineViewForExtraDesktop : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        WebEngineViewForExtraDesktop(QWidget* parent = nullptr)
+        {
+            mPage = new WebEnginePageForExtraDesktop(this);
+        }
+        virtual ~WebEngineViewForExtraDesktop()
+        {
+            delete mPage;
+        }
+
+    public:
+        void setPage(WebEnginePageForExtraDesktop* page)
+        {
+            delete mPage;
+            mPage = page;
+        }
+        WebEnginePageForExtraDesktop* page() const {return mPage;}
+        void setMouseTracking(...) {}
+        virtual void closeEvent(QCloseEvent* event) {}
+
+    public:
+        WebEnginePageForExtraDesktop* mPage;
+    };
+
+    #ifdef QT_HAVE_WEBENGINEWIDGETS
+        typedef QWebEnginePage WebEnginePageClass;
+        typedef QWebEngineView WebEngineViewClass;
+    #else
+        typedef WebEnginePageForExtraDesktop WebEnginePageClass;
+        typedef WebEngineViewForExtraDesktop WebEngineViewClass;
+    #endif
+
+    class MainWebPage : public WebEnginePageClass
+    {
+        Q_OBJECT
+
+    public:
+        MainWebPage(QObject* parent = nullptr) : WebEnginePageClass(parent) {}
+        ~MainWebPage() override {}
+
+    private:
+        #ifdef QT_HAVE_WEBENGINEWIDGETS
+            bool certificateError(const QWebEngineCertificateError& error) override
+            {
+                return true;
+            }
+        #endif
+
+        void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
+        {
+            QString Level;
+            switch(level)
+            {
+            case InfoMessageLevel: Level = "Info"; break;
+            case WarningMessageLevel: Level = "Warning"; break;
+            case ErrorMessageLevel: Level = "Error"; break;
+            }
+            Platform::BroadcastNotify(String::Format("JSConsole[%s/%s/%d]:<%s>", Level.toUtf8().constData(),
+                sourceID.toUtf8().constData(), lineNumber, message.toUtf8().constData()), nullptr, NT_WindowWeb);
+        }
+    };
+
     class MainData
     {
     public:
@@ -1530,6 +1637,7 @@
                 if(url)
                 {
                     m_webPaper = new QWebEngineView(m_parent);
+                    m_webPaper->setPage(new MainWebPage(m_webPaper));
                     m_webPaper->load(QUrl(QString::fromUtf8(url)));
                     auto MainLayout = new QStackedLayout();
                     MainLayout->setStackingMode(QStackedLayout::StackAll);
@@ -1610,7 +1718,7 @@
             #endif
         }
 
-        void SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
+        void sendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
         {
             #ifdef QT_HAVE_WEBENGINEWIDGETS
                 if(m_webPaper)
@@ -1641,7 +1749,7 @@
             #endif
         }
 
-        void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
+        void sendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
         {
             #ifdef QT_HAVE_WEBENGINEWIDGETS
                 if(m_webPaper)
@@ -4323,83 +4431,6 @@
             PipeClientClass(chars name, SharedMemoryClass* semaphore) {}
             ~PipeClientClass() {}
         };
-    #endif
-
-    class WebEnginePageForExtraDesktop : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum RenderProcessTerminationStatus {
-            NormalTerminationStatus = 0,
-            AbnormalTerminationStatus,
-            CrashedTerminationStatus,
-            KilledTerminationStatus
-        };
-        enum PermissionPolicy {
-            PermissionUnknown,
-            PermissionGrantedByUser,
-            PermissionDeniedByUser
-        };
-        enum Feature {
-            Notifications = 0,
-            Geolocation = 1,
-            MediaAudioCapture = 2,
-            MediaVideoCapture,
-            MediaAudioVideoCapture,
-            MouseLock,
-            DesktopVideoCapture,
-            DesktopAudioVideoCapture
-        };
-
-    public:
-        WebEnginePageForExtraDesktop(QObject* parent = nullptr) {}
-        virtual ~WebEnginePageForExtraDesktop() {}
-
-    public:
-        enum JavaScriptConsoleMessageLevel {InfoMessageLevel, WarningMessageLevel, ErrorMessageLevel};
-        typedef std::function<void(const QVariant&)> WebEngineCallbackForExtraDesktop;
-
-    public:
-        void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy) {}
-        void runJavaScript(const QString& scriptSource, const WebEngineCallbackForExtraDesktop& resultCallback) {}
-        virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) {}
-    };
-
-    class WebEngineViewForExtraDesktop : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        WebEngineViewForExtraDesktop(QWidget* parent = nullptr)
-        {
-            mPage = new WebEnginePageForExtraDesktop(this);
-        }
-        virtual ~WebEngineViewForExtraDesktop()
-        {
-            delete mPage;
-        }
-
-    public:
-        void setPage(WebEnginePageForExtraDesktop* page)
-        {
-            delete mPage;
-            mPage = page;
-        }
-        WebEnginePageForExtraDesktop* page() const {return mPage;}
-        void setMouseTracking(...) {}
-        virtual void closeEvent(QCloseEvent* event) {}
-
-    public:
-        WebEnginePageForExtraDesktop* mPage;
-    };
-
-    #ifdef QT_HAVE_WEBENGINEWIDGETS
-        typedef QWebEnginePage WebEnginePageClass;
-        typedef QWebEngineView WebEngineViewClass;
-    #else
-        typedef WebEnginePageForExtraDesktop WebEnginePageClass;
-        typedef WebEngineViewForExtraDesktop WebEngineViewClass;
     #endif
 
     class WebPageClass : public WebEnginePageClass
@@ -7889,6 +7920,7 @@
     class MainViewGL : public QGLWidget {Q_OBJECT};
     class MainViewMDI : public QMdiArea {Q_OBJECT};
     class TrayIcon : public QSystemTrayIcon {Q_OBJECT};
+    class MainWebPage : public WebEnginePageClass {Q_OBJECT};
     class MainWindow : public QMainWindow {Q_OBJECT};
     class EditTracker : public QLineEdit {Q_OBJECT};
     class ListTracker : public QListWidget {Q_OBJECT};

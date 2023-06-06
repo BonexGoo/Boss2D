@@ -442,13 +442,13 @@
         void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
         {
             if(g_data)
-                g_data->SendWindowWebTouchEvent(type, x, y);
+                g_data->sendWindowWebTouchEvent(type, x, y);
         }
 
         void Platform::SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
         {
             if(g_data)
-                g_data->SendWindowWebKeyEvent(code, text, pressed);
+                g_data->sendWindowWebKeyEvent(code, text, pressed);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)

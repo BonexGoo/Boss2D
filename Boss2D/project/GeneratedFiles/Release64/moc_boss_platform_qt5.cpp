@@ -473,6 +473,216 @@ int TrayIcon::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     }
     return _id;
 }
+struct qt_meta_stringdata_WebEnginePageForExtraDesktop_t {
+    QByteArrayData data[1];
+    char stringdata0[29];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_WebEnginePageForExtraDesktop_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_WebEnginePageForExtraDesktop_t qt_meta_stringdata_WebEnginePageForExtraDesktop = {
+    {
+QT_MOC_LITERAL(0, 0, 28) // "WebEnginePageForExtraDesktop"
+
+    },
+    "WebEnginePageForExtraDesktop"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_WebEnginePageForExtraDesktop[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void WebEnginePageForExtraDesktop::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+QT_INIT_METAOBJECT const QMetaObject WebEnginePageForExtraDesktop::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_WebEnginePageForExtraDesktop.data,
+    qt_meta_data_WebEnginePageForExtraDesktop,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *WebEnginePageForExtraDesktop::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *WebEnginePageForExtraDesktop::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_WebEnginePageForExtraDesktop.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int WebEnginePageForExtraDesktop::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    return _id;
+}
+struct qt_meta_stringdata_WebEngineViewForExtraDesktop_t {
+    QByteArrayData data[1];
+    char stringdata0[29];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_WebEngineViewForExtraDesktop_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_WebEngineViewForExtraDesktop_t qt_meta_stringdata_WebEngineViewForExtraDesktop = {
+    {
+QT_MOC_LITERAL(0, 0, 28) // "WebEngineViewForExtraDesktop"
+
+    },
+    "WebEngineViewForExtraDesktop"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_WebEngineViewForExtraDesktop[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void WebEngineViewForExtraDesktop::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+QT_INIT_METAOBJECT const QMetaObject WebEngineViewForExtraDesktop::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_WebEngineViewForExtraDesktop.data,
+    qt_meta_data_WebEngineViewForExtraDesktop,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *WebEngineViewForExtraDesktop::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *WebEngineViewForExtraDesktop::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_WebEngineViewForExtraDesktop.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int WebEngineViewForExtraDesktop::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    return _id;
+}
+struct qt_meta_stringdata_MainWebPage_t {
+    QByteArrayData data[1];
+    char stringdata0[12];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_MainWebPage_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_MainWebPage_t qt_meta_stringdata_MainWebPage = {
+    {
+QT_MOC_LITERAL(0, 0, 11) // "MainWebPage"
+
+    },
+    "MainWebPage"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_MainWebPage[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void MainWebPage::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+QT_INIT_METAOBJECT const QMetaObject MainWebPage::staticMetaObject = { {
+    QMetaObject::SuperData::link<WebEnginePageClass::staticMetaObject>(),
+    qt_meta_stringdata_MainWebPage.data,
+    qt_meta_data_MainWebPage,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *MainWebPage::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *MainWebPage::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_MainWebPage.stringdata0))
+        return static_cast<void*>(this);
+    return WebEnginePageClass::qt_metacast(_clname);
+}
+
+int MainWebPage::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = WebEnginePageClass::qt_metacall(_c, _id, _a);
+    return _id;
+}
 struct qt_meta_stringdata_MainWindow_t {
     QByteArrayData data[3];
     char stringdata0[19];
@@ -1530,146 +1740,6 @@ int PipeClientClass::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             *reinterpret_cast<int*>(_a[0]) = -1;
         _id -= 3;
     }
-    return _id;
-}
-struct qt_meta_stringdata_WebEnginePageForExtraDesktop_t {
-    QByteArrayData data[1];
-    char stringdata0[29];
-};
-#define QT_MOC_LITERAL(idx, ofs, len) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_WebEnginePageForExtraDesktop_t, stringdata0) + ofs \
-        - idx * sizeof(QByteArrayData)) \
-    )
-static const qt_meta_stringdata_WebEnginePageForExtraDesktop_t qt_meta_stringdata_WebEnginePageForExtraDesktop = {
-    {
-QT_MOC_LITERAL(0, 0, 28) // "WebEnginePageForExtraDesktop"
-
-    },
-    "WebEnginePageForExtraDesktop"
-};
-#undef QT_MOC_LITERAL
-
-static const uint qt_meta_data_WebEnginePageForExtraDesktop[] = {
-
- // content:
-       8,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       0,    0, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
-
-       0        // eod
-};
-
-void WebEnginePageForExtraDesktop::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-{
-    Q_UNUSED(_o);
-    Q_UNUSED(_id);
-    Q_UNUSED(_c);
-    Q_UNUSED(_a);
-}
-
-QT_INIT_METAOBJECT const QMetaObject WebEnginePageForExtraDesktop::staticMetaObject = { {
-    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
-    qt_meta_stringdata_WebEnginePageForExtraDesktop.data,
-    qt_meta_data_WebEnginePageForExtraDesktop,
-    qt_static_metacall,
-    nullptr,
-    nullptr
-} };
-
-
-const QMetaObject *WebEnginePageForExtraDesktop::metaObject() const
-{
-    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-}
-
-void *WebEnginePageForExtraDesktop::qt_metacast(const char *_clname)
-{
-    if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_WebEnginePageForExtraDesktop.stringdata0))
-        return static_cast<void*>(this);
-    return QObject::qt_metacast(_clname);
-}
-
-int WebEnginePageForExtraDesktop::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
-{
-    _id = QObject::qt_metacall(_c, _id, _a);
-    return _id;
-}
-struct qt_meta_stringdata_WebEngineViewForExtraDesktop_t {
-    QByteArrayData data[1];
-    char stringdata0[29];
-};
-#define QT_MOC_LITERAL(idx, ofs, len) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_WebEngineViewForExtraDesktop_t, stringdata0) + ofs \
-        - idx * sizeof(QByteArrayData)) \
-    )
-static const qt_meta_stringdata_WebEngineViewForExtraDesktop_t qt_meta_stringdata_WebEngineViewForExtraDesktop = {
-    {
-QT_MOC_LITERAL(0, 0, 28) // "WebEngineViewForExtraDesktop"
-
-    },
-    "WebEngineViewForExtraDesktop"
-};
-#undef QT_MOC_LITERAL
-
-static const uint qt_meta_data_WebEngineViewForExtraDesktop[] = {
-
- // content:
-       8,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       0,    0, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
-
-       0        // eod
-};
-
-void WebEngineViewForExtraDesktop::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-{
-    Q_UNUSED(_o);
-    Q_UNUSED(_id);
-    Q_UNUSED(_c);
-    Q_UNUSED(_a);
-}
-
-QT_INIT_METAOBJECT const QMetaObject WebEngineViewForExtraDesktop::staticMetaObject = { {
-    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
-    qt_meta_stringdata_WebEngineViewForExtraDesktop.data,
-    qt_meta_data_WebEngineViewForExtraDesktop,
-    qt_static_metacall,
-    nullptr,
-    nullptr
-} };
-
-
-const QMetaObject *WebEngineViewForExtraDesktop::metaObject() const
-{
-    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-}
-
-void *WebEngineViewForExtraDesktop::qt_metacast(const char *_clname)
-{
-    if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_WebEngineViewForExtraDesktop.stringdata0))
-        return static_cast<void*>(this);
-    return QObject::qt_metacast(_clname);
-}
-
-int WebEngineViewForExtraDesktop::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
-{
-    _id = QObject::qt_metacall(_c, _id, _a);
     return _id;
 }
 struct qt_meta_stringdata_WebPageClass_t {
