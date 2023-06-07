@@ -512,6 +512,12 @@ public:
         /// @return 받은 스트링
         static String RecvFromTextClipboard();
 
+        /// @brief 시스템폰트 생성
+        /// @param data : TTF폰트 데이터
+        /// @param size : 데이터의 길이(byte)
+        /// @return 폰트패밀리명
+        static String CreateSystemFont(bytes data, const sint32 size);
+
         /// @brief 커서모양 바꾸기
         /// @param role : 커서모양
         static void SetCursor(CursorRole role);

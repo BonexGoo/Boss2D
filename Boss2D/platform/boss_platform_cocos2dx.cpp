@@ -771,6 +771,18 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        String Platform::Utility::RecvFromTextClipboard()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return String();
+        }
+
+        String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return String();
+        }
+
         void Platform::Utility::SetCursor(CursorRole role)
         {
             BOSS_ASSERT("Further development is needed.", false);

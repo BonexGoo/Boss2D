@@ -712,6 +712,12 @@
             return String();
         }
 
+        String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return String();
+        }
+
         void Platform::Utility::SetCursor(CursorRole role)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
