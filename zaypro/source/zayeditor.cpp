@@ -209,253 +209,255 @@ ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
 {
-    static const sint32 TitleHeight = 37;
-
-    // 타이틀바
-    ZAY_LTRB_UI(panel, 0, 0, panel.w(), TitleHeight, "title")
+    ZAY_FONT(panel, 1.0, m->mSystemFont)
     {
-        ZAY_RGB(panel, 60, 76, 91)
-            panel.fill();
-
-        // 로고
-        ZAY_LTRB(panel, 0, 0, TitleHeight, TitleHeight)
-            panel.icon(R("logo"), UIA_CenterMiddle);
-    }
-
-    // 뷰
-    ZAY_LTRB_SCISSOR(panel, 0, TitleHeight, panel.w(), panel.h())
-    {
-        ZAY_RGB(panel, 51, 61, 73)
-            panel.fill();
-
-        // 작업뷰
-        ZAY_XYWH_UI(panel, 0, 0, panel.w() - 240, panel.h(), "workspace",
-            ZAY_GESTURE_VNTXY(v, n, t, x, y)
-            {
-                if(t == GT_InDragging || t == GT_OutDragging)
-                {
-                    auto& OldPos = v->oldxy(n);
-                    const Point Drag(x - OldPos.x, y - OldPos.y);
-                    for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
-                    {
-                        auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-                        (*CurBox)->Move(Drag);
-                    }
-                    v->invalidate();
-                    m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
-                }
-                else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
-                {
-                    // 타이틀바만큼 올림
-                    m->mZaySonAPI.mDraggingComponentRect.t -= TitleHeight;
-                    m->mZaySonAPI.mDraggingComponentRect.b -= TitleHeight;
-
-                    // 컴포넌트 추가
-                    auto& CurComponent = m->mZaySonAPI.GetComponent(m->mZaySonAPI.mDraggingComponentID);
-                    ZEZayBoxObject NewZayBox = ZEZayBox::CREATOR()(CurComponent.mName);
-                    ZEZayBox::TOP()[NewZayBox->id()] = NewZayBox;
-                }
-            })
+        // 타이틀바
+        static const sint32 TitleHeight = 37;
+        ZAY_LTRB_UI(panel, 0, 0, panel.w(), TitleHeight, "title")
         {
-            // 버전
-            ZAY_INNER(panel, 10)
-            ZAY_FONT(panel, 1.5)
-            ZAY_RGBA(panel, 0, 0, 0, 32)
-                panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
+            ZAY_RGB(panel, 60, 76, 91)
+                panel.fill();
 
-            m->mWorkViewSize = Size(panel.w(), panel.h());
-            if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
-            {
-                ZAY_INNER(panel, 4)
-                ZAY_RGBA(panel, 255, 255, 255, 20)
-                    panel.rect(4);
-            }
-
-            // 박스
-            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
-            {
-                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-                (*CurBox)->Render(panel);
-            }
-
-            // DOM
-            m->RenderDOM(panel);
-
-            // 미니맵
-            m->RenderMiniMap(panel);
-
-            // 로그리스트
-            m->RenderLogList(panel);
-
-            // 간단세이브 효과
-            if(const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value()))
-            {
-                const sint32 Border = 20 * (100 - EasySaveAni) / 100;
-                ZAY_INNER(panel, Border)
-                ZAY_RGBA(panel, 31, 198, 253, 192 * EasySaveAni / 100)
-                    panel.rect(Border);
-            }
+            // 로고
+            ZAY_LTRB(panel, 0, 0, TitleHeight, TitleHeight)
+                panel.icon(R("logo"), UIA_CenterMiddle);
         }
 
-        // 도구뷰
-        ZAY_XYWH_UI(panel, panel.w() - 240, 0, 240, panel.h(), "apispace")
+        // 뷰
+        ZAY_LTRB_SCISSOR(panel, 0, TitleHeight, panel.w(), panel.h())
         {
-            // 버튼 구역
-            ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), 12 + 34 + 6 + 34 + 8)
+            ZAY_RGB(panel, 51, 61, 73)
+                panel.fill();
+
+            // 작업뷰
+            ZAY_XYWH_UI(panel, 0, 0, panel.w() - 240, panel.h(), "workspace",
+                ZAY_GESTURE_VNTXY(v, n, t, x, y)
+                {
+                    if(t == GT_InDragging || t == GT_OutDragging)
+                    {
+                        auto& OldPos = v->oldxy(n);
+                        const Point Drag(x - OldPos.x, y - OldPos.y);
+                        for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
+                        {
+                            auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
+                            (*CurBox)->Move(Drag);
+                        }
+                        v->invalidate();
+                        m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
+                    }
+                    else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
+                    {
+                        // 타이틀바만큼 올림
+                        m->mZaySonAPI.mDraggingComponentRect.t -= TitleHeight;
+                        m->mZaySonAPI.mDraggingComponentRect.b -= TitleHeight;
+
+                        // 컴포넌트 추가
+                        auto& CurComponent = m->mZaySonAPI.GetComponent(m->mZaySonAPI.mDraggingComponentID);
+                        ZEZayBoxObject NewZayBox = ZEZayBox::CREATOR()(CurComponent.mName);
+                        ZEZayBox::TOP()[NewZayBox->id()] = NewZayBox;
+                    }
+                })
             {
-                // 버튼 배경
-                ZAY_RGB(panel, 35, 44, 53)
-                    panel.fill();
+                // 버전
+                ZAY_INNER(panel, 10)
+                ZAY_FONT(panel, 1.5)
+                ZAY_RGBA(panel, 0, 0, 0, 32)
+                    panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
 
-                // 새프로젝트 버튼
-                ZAY_LTRB_UI(panel, 14, 12, 14 + 100, 12 + 34, "NEW",
-                    ZAY_GESTURE_T(t)
-                    {
-                        if(t == GT_InReleased)
-                            m->NewProject();
-                    })
+                m->mWorkViewSize = Size(panel.w(), panel.h());
+                if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
                 {
-                    const bool IsFocused = ((panel.state("NEW") & (PS_Focused | PS_Dropping)) == PS_Focused);
-                    const bool IsPressed = ((panel.state("NEW") & (PS_Pressed | PS_Dragging)) != 0);
-                    if(IsPressed) panel.ninepatch(R("btn_new_p"));
-                    else if(IsFocused) panel.ninepatch(R("btn_new_o"));
-                    else panel.ninepatch(R("btn_new_n"));
+                    ZAY_INNER(panel, 4)
+                    ZAY_RGBA(panel, 255, 255, 255, 20)
+                        panel.rect(4);
                 }
 
-                // 빠른저장 버튼
-                ZAY_LTRB_UI(panel, 14 + 100 + 12, 12, 14 + 100 + 12 + 100, 12 + 34, "FSAVE",
-                    ZAY_GESTURE_T(t)
-                    {
-                        if(t == GT_InReleased)
-                            m->FastSave();
-                    })
+                // 박스
+                for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
                 {
-                    if(const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value()))
-                    {
-                        panel.ninepatch(R("btn_fsave_n"));
-                        ZAY_RGBA(panel, 128, 128, 128, 128 * EasySaveAni / 100)
-                            panel.ninepatch(R("btn_fsave_o"));
-                    }
-                    else
-                    {
-                        const bool IsFocused = ((panel.state("FSAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
-                        const bool IsPressed = ((panel.state("FSAVE") & (PS_Pressed | PS_Dragging)) != 0);
-                        if(IsPressed) panel.ninepatch(R("btn_fsave_p"));
-                        else if(IsFocused) panel.ninepatch(R("btn_fsave_o"));
-                        else panel.ninepatch(R("btn_fsave_n"));
-                    }
+                    auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
+                    (*CurBox)->Render(panel);
                 }
 
-                // 불러오기 버튼
-                auto LoadGestureCB =
-                    #if BOSS_WASM
+                // DOM
+                m->RenderDOM(panel);
+
+                // 미니맵
+                m->RenderMiniMap(panel);
+
+                // 로그리스트
+                m->RenderLogList(panel);
+
+                // 간단세이브 효과
+                if(const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value()))
+                {
+                    const sint32 Border = 20 * (100 - EasySaveAni) / 100;
+                    ZAY_INNER(panel, Border)
+                    ZAY_RGBA(panel, 31, 198, 253, 192 * EasySaveAni / 100)
+                        panel.rect(Border);
+                }
+            }
+
+            // 도구뷰
+            ZAY_XYWH_UI(panel, panel.w() - 240, 0, 240, panel.h(), "apispace")
+            {
+                // 버튼 구역
+                ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), 12 + 34 + 6 + 34 + 8)
+                {
+                    // 버튼 배경
+                    ZAY_RGB(panel, 35, 44, 53)
+                        panel.fill();
+
+                    // 새프로젝트 버튼
+                    ZAY_LTRB_UI(panel, 14, 12, 14 + 100, 12 + 34, "NEW",
                         ZAY_GESTURE_T(t)
                         {
                             if(t == GT_InReleased)
-                                Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
-                        };
-                    #else
+                                m->NewProject();
+                        })
+                    {
+                        const bool IsFocused = ((panel.state("NEW") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                        const bool IsPressed = ((panel.state("NEW") & (PS_Pressed | PS_Dragging)) != 0);
+                        if(IsPressed) panel.ninepatch(R("btn_new_p"));
+                        else if(IsFocused) panel.ninepatch(R("btn_new_o"));
+                        else panel.ninepatch(R("btn_new_n"));
+                    }
+
+                    // 빠른저장 버튼
+                    ZAY_LTRB_UI(panel, 14 + 100 + 12, 12, 14 + 100 + 12 + 100, 12 + 34, "FSAVE",
+                        ZAY_GESTURE_T(t)
+                        {
+                            if(t == GT_InReleased)
+                                m->FastSave();
+                        })
+                    {
+                        if(const sint32 EasySaveAni = (sint32) (100 * m->mEasySaveEffect.value()))
+                        {
+                            panel.ninepatch(R("btn_fsave_n"));
+                            ZAY_RGBA(panel, 128, 128, 128, 128 * EasySaveAni / 100)
+                                panel.ninepatch(R("btn_fsave_o"));
+                        }
+                        else
+                        {
+                            const bool IsFocused = ((panel.state("FSAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                            const bool IsPressed = ((panel.state("FSAVE") & (PS_Pressed | PS_Dragging)) != 0);
+                            if(IsPressed) panel.ninepatch(R("btn_fsave_p"));
+                            else if(IsFocused) panel.ninepatch(R("btn_fsave_o"));
+                            else panel.ninepatch(R("btn_fsave_n"));
+                        }
+                    }
+
+                    // 불러오기 버튼
+                    auto LoadGestureCB =
+                        #if BOSS_WASM
+                            ZAY_GESTURE_T(t)
+                            {
+                                if(t == GT_InReleased)
+                                    Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
+                            };
+                        #else
+                            ZAY_GESTURE_T(t)
+                            {
+                                if(t == GT_InReleased)
+                                {
+                                    String JsonPath;
+                                    if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
+                                    {
+                                        m->mPipe.ResetJsonPath(JsonPath);
+                                        const String JsonText = String::FromFile(JsonPath);
+                                        const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
+                                        m->LoadCore(Json);
+                                    }
+                                }
+                            };
+                        #endif
+                    ZAY_LTRB_UI(panel, 14, 12 + 34 + 6, 14 + 100, 12 + 34 + 6 + 34, "LOAD", LoadGestureCB)
+                    {
+                        const bool IsFocused = ((panel.state("LOAD") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                        const bool IsPressed = ((panel.state("LOAD") & (PS_Pressed | PS_Dragging)) != 0);
+                        if(IsPressed) panel.ninepatch(R("btn_load_p"));
+                        else if(IsFocused) panel.ninepatch(R("btn_load_o"));
+                        else panel.ninepatch(R("btn_load_n"));
+                    }
+
+                    // 저장 버튼
+                    ZAY_LTRB_UI(panel, 14 + 100 + 12, 12 + 34 + 6, 14 + 100 + 12 + 100, 12 + 34 + 6 + 34, "SAVE",
                         ZAY_GESTURE_T(t)
                         {
                             if(t == GT_InReleased)
                             {
                                 String JsonPath;
-                                if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load json"))
+                                if(Platform::Popup::FileDialog(DST_FileSave, JsonPath, nullptr, "Save json"))
                                 {
                                     m->mPipe.ResetJsonPath(JsonPath);
-                                    const String JsonText = String::FromFile(JsonPath);
-                                    const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-                                    m->LoadCore(Json);
+                                    // 기존파일은 old로 보관
+                                    if(Platform::File::Exist(JsonPath))
+                                    {
+                                        String OldPath = JsonPath + ".old";
+                                        for(sint32 i = 2; Platform::File::Exist(OldPath); ++i)
+                                            OldPath = JsonPath + ".old" + String::FromInteger(i);
+                                        Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
+                                    }
+                                    m->SaveCore(JsonPath);
                                 }
                             }
-                        };
-                    #endif
-                ZAY_LTRB_UI(panel, 14, 12 + 34 + 6, 14 + 100, 12 + 34 + 6 + 34, "LOAD", LoadGestureCB)
-                {
-                    const bool IsFocused = ((panel.state("LOAD") & (PS_Focused | PS_Dropping)) == PS_Focused);
-                    const bool IsPressed = ((panel.state("LOAD") & (PS_Pressed | PS_Dragging)) != 0);
-                    if(IsPressed) panel.ninepatch(R("btn_load_p"));
-                    else if(IsFocused) panel.ninepatch(R("btn_load_o"));
-                    else panel.ninepatch(R("btn_load_n"));
+                        })
+                    {
+                        const bool IsFocused = ((panel.state("SAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                        const bool IsPressed = ((panel.state("SAVE") & (PS_Pressed | PS_Dragging)) != 0);
+                        if(IsPressed) panel.ninepatch(R("btn_save_p"));
+                        else if(IsFocused) panel.ninepatch(R("btn_save_o"));
+                        else panel.ninepatch(R("btn_save_n"));
+                    }
                 }
 
-                // 저장 버튼
-                ZAY_LTRB_UI(panel, 14 + 100 + 12, 12 + 34 + 6, 14 + 100 + 12 + 100, 12 + 34 + 6 + 34, "SAVE",
-                    ZAY_GESTURE_T(t)
-                    {
-                        if(t == GT_InReleased)
+                // 컴포넌트 구역
+                ZAY_LTRB_SCISSOR(panel, 0, 12 + 34 + 6 + 34 + 8, panel.w(), panel.h())
+                {
+                    // 컴포넌트 배경
+                    ZAY_RGBA(panel, 35, 44, 53, 192)
+                        panel.fill();
+
+                    // 컴포넌트들
+                    const sint32 ComponentCount = m->mZaySonAPI.GetComponentCount();
+                    const sint32 ScrollHeight = ZEZayBox::TitleBarHeight * ComponentCount;
+                    ZAY_SCROLL_UI(panel, 0, ScrollHeight, "apispace-scroll",
+                        ZAY_GESTURE_VNT(v, n, t)
                         {
-                            String JsonPath;
-                            if(Platform::Popup::FileDialog(DST_FileSave, JsonPath, nullptr, "Save json"))
+                            if(t == GT_WheelUp || t == GT_WheelDown)
                             {
-                                m->mPipe.ResetJsonPath(JsonPath);
-                                // 기존파일은 old로 보관
-                                if(Platform::File::Exist(JsonPath))
-                                {
-                                    String OldPath = JsonPath + ".old";
-                                    for(sint32 i = 2; Platform::File::Exist(OldPath); ++i)
-                                        OldPath = JsonPath + ".old" + String::FromInteger(i);
-                                    Platform::File::Rename(WString::FromChars(JsonPath), WString::FromChars(OldPath));
-                                }
-                                m->SaveCore(JsonPath);
+                                Platform::Popup::CloseAllTracker();
+                                const sint32 OldPos = v->scrollpos("apispace-scroll").y;
+                                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
+                                v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
+                                v->invalidate(2);
                             }
-                        }
-                    })
-                {
-                    const bool IsFocused = ((panel.state("SAVE") & (PS_Focused | PS_Dropping)) == PS_Focused);
-                    const bool IsPressed = ((panel.state("SAVE") & (PS_Pressed | PS_Dragging)) != 0);
-                    if(IsPressed) panel.ninepatch(R("btn_save_p"));
-                    else if(IsFocused) panel.ninepatch(R("btn_save_o"));
-                    else panel.ninepatch(R("btn_save_n"));
-                }
-            }
+                        }, {-1, 5}, 20)
+                    for(sint32 i = 0; i < ComponentCount; ++i)
+                        ZAY_XYWH(panel, 10, ZEZayBox::TitleBarHeight * i, panel.w() - 20, ZEZayBox::TitleBarHeight)
+                            m->RenderComponent(panel, i, true, m->mZaySonAPI.mDraggingComponentID == i);
 
-            // 컴포넌트 구역
-            ZAY_LTRB_SCISSOR(panel, 0, 12 + 34 + 6 + 34 + 8, panel.w(), panel.h())
-            {
-                // 컴포넌트 배경
-                ZAY_RGBA(panel, 35, 44, 53, 192)
-                    panel.fill();
-
-                // 컴포넌트들
-                const sint32 ComponentCount = m->mZaySonAPI.GetComponentCount();
-                const sint32 ScrollHeight = ZEZayBox::TitleBarHeight * ComponentCount;
-                ZAY_SCROLL_UI(panel, 0, ScrollHeight, "apispace-scroll",
-                    ZAY_GESTURE_VNT(v, n, t)
+                    // 부드러운 상하경계선
+                    for(sint32 i = 0; i < 5; ++i)
                     {
-                        if(t == GT_WheelUp || t == GT_WheelDown)
+                        ZAY_RGBA(panel, 35, 44, 53, 255 * (5 - i) / 5)
                         {
-                            Platform::Popup::CloseAllTracker();
-                            const sint32 OldPos = v->scrollpos("apispace-scroll").y;
-                            const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
-                            v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
-                            v->invalidate(2);
+                            ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                                panel.fill();
+                            ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                                panel.fill();
                         }
-                    }, {-1, 5}, 20)
-                for(sint32 i = 0; i < ComponentCount; ++i)
-                    ZAY_XYWH(panel, 10, ZEZayBox::TitleBarHeight * i, panel.w() - 20, ZEZayBox::TitleBarHeight)
-                        m->RenderComponent(panel, i, true, m->mZaySonAPI.mDraggingComponentID == i);
-
-                // 부드러운 상하경계선
-                for(sint32 i = 0; i < 5; ++i)
-                {
-                    ZAY_RGBA(panel, 35, 44, 53, 255 * (5 - i) / 5)
-                    {
-                        ZAY_XYWH(panel, 0, i, panel.w(), 1)
-                            panel.fill();
-                        ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
-                            panel.fill();
                     }
                 }
             }
         }
-    }
 
-    // 드래깅중인 API
-    if(m->mZaySonAPI.mDraggingComponentID != -1)
-    {
-        ZAY_RECT(panel, m->mZaySonAPI.mDraggingComponentRect)
-            m->RenderComponent(panel, m->mZaySonAPI.mDraggingComponentID, false, false);
+        // 드래깅중인 API
+        if(m->mZaySonAPI.mDraggingComponentID != -1)
+        {
+            ZAY_RECT(panel, m->mZaySonAPI.mDraggingComponentRect)
+                m->RenderComponent(panel, m->mZaySonAPI.mDraggingComponentID, false, false);
+        }
     }
 }
 
@@ -925,6 +927,11 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
 
     mResourceCB = [](chars name)->const Image* {return &((const Image&) R(name));};
     mEasySaveEffect.Reset(0);
+
+    // 시스템폰트 등록
+    buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf");
+    mSystemFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+    Buffer::Free(NewFontData);
 
     // 위젯 컴포넌트 추가
     ZayWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
