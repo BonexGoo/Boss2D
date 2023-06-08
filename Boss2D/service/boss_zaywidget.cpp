@@ -1578,42 +1578,63 @@ namespace BOSS
     void ZayControl::OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key)
     {
         branch;
-        jump(code == 37) // Left
+        jump(key == '\0')
         {
-            FlushSavedIME(domname);
-            if(0 < mCapturedCursorIndex)
+            branch;
+            jump(code == 37) // Left
             {
-                const String FieldText = ZayWidgetDOM::GetComment(domname);
-                mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
-                mCapturedCursorIndex = Math::Max(0, mCapturedCursorIndex - String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex));
+                FlushSavedIME(domname);
+                if(0 < mCapturedCursorIndex)
+                {
+                    const String FieldText = ZayWidgetDOM::GetComment(domname);
+                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
+                    mCapturedCursorIndex = Math::Max(0, mCapturedCursorIndex - String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex));
+                }
             }
-        }
-        jump(code == 39) // Right
-        {
-            if(!FlushSavedIME(domname))
+            jump(code == 39) // Right
             {
+                if(!FlushSavedIME(domname))
+                {
+                    const String FieldText = ZayWidgetDOM::GetComment(domname);
+                    const sint32 FieldTextLength = FieldText.Length();
+                    if(mCapturedCursorIndex < FieldTextLength)
+                    {
+                        mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
+                        mCapturedCursorIndex = Math::Min(mCapturedCursorIndex + String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex), FieldTextLength);
+                    }
+                }
+            }
+            jump(code == 36) // Home
+            {
+                FlushSavedIME(domname);
+                mCapturedCursorIndex = 0;
+            }
+            jump(code == 35) // End
+            {
+                FlushSavedIME(domname);
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const sint32 FieldTextLength = FieldText.Length();
-                if(mCapturedCursorIndex < FieldTextLength)
+                mCapturedCursorIndex = FieldTextLength;
+            }
+            jump(code == 21) // 한영키
+            {
+                FlushSavedIME(domname);
+                mLastLanguage = LanguageMode((mLastLanguage + 1) % LM_Max);
+            }
+            jump(code == 113) // F2
+            {
+                String PastedText = Platform::Utility::RecvFromTextClipboard();
+                if(0 < PastedText.Length())
                 {
-                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
-                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex + String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex), FieldTextLength);
+                    const String FieldText = ZayWidgetDOM::GetComment(domname);
+                    const String FrontText = FieldText.Left(mCapturedCursorIndex);
+                    const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
+                    ZayWidgetDOM::SetComment(domname, FrontText + PastedText + RearText);
+                    mCapturedCursorIndex += PastedText.Length();
                 }
             }
         }
-        jump(code == 36) // Home
-        {
-            FlushSavedIME(domname);
-            mCapturedCursorIndex = 0;
-        }
-        jump(code == 35) // End
-        {
-            FlushSavedIME(domname);
-            const String FieldText = ZayWidgetDOM::GetComment(domname);
-            const sint32 FieldTextLength = FieldText.Length();
-            mCapturedCursorIndex = FieldTextLength;
-        }
-        jump(code == 8) // BackSpace
+        jump(key == 8) // BackSpace
         {
             if(mCapturedIMEChar != L'\0')
                 mCapturedIMEChar = WString::BreakKorean(mCapturedIMEChar);
@@ -1627,7 +1648,7 @@ namespace BOSS
                 mCapturedCursorIndex -= LetterSize;
             }
         }
-        jump(code == 46) // Delete
+        jump(key == 127) // Delete
         {
             const String FieldText = ZayWidgetDOM::GetComment(domname);
             const sint32 FieldTextLength = FieldText.Length();
@@ -1639,7 +1660,7 @@ namespace BOSS
                 ZayWidgetDOM::SetComment(domname, FrontText + RearText);
             }
         }
-        jump(code == 27) // Esc
+        jump(key == 27) // Esc
         {
             if(view) view->clearCapture();
             mCapturedIMEChar = L'\0';
@@ -1648,7 +1669,7 @@ namespace BOSS
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
         }
-        jump(code == 13) // Enter
+        jump(key == 13) // Enter
         {
             FlushSavedIME(domname);
             if(view) view->clearCapture();
@@ -1656,30 +1677,12 @@ namespace BOSS
             mLastPressCode = 0; // 키해제
             Platform::BroadcastNotify("EnterPressing", String(domname), NT_ZayWidget);
         }
-        jump(code == 21) // 한영키
-        {
-            FlushSavedIME(domname);
-            mLastLanguage = LanguageMode((mLastLanguage + 1) % LM_Max);
-        }
-        jump(code == 113) // F2
-        {
-            String PastedText = Platform::Utility::RecvFromTextClipboard();
-            if(0 < PastedText.Length())
-            {
-                const String FieldText = ZayWidgetDOM::GetComment(domname);
-                const String FrontText = FieldText.Left(mCapturedCursorIndex);
-                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                ZayWidgetDOM::SetComment(domname, FrontText + PastedText + RearText);
-                mCapturedCursorIndex += PastedText.Length();
-            }
-        }
-        jump(Platform::Utility::IsWordableKey(code)) // 문자
+        else // 문자
         {
             const String IMEResult = AddToIME(key);
             if(0 < IMEResult.Length())
                 FlushIME(domname, IMEResult);
         }
-        else return;
 
         if(auto CurRenderInfo = mRenderInfoMap.Access(uiname))
         {
