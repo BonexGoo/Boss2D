@@ -243,6 +243,15 @@ public:
     void RenderDOM(ZayPanel& panel);
     void RenderMiniMap(ZayPanel& panel);
     void RenderLogList(ZayPanel& panel);
+    void RenderTitleBar(ZayPanel& panel);
+    void RenderOutline(ZayPanel& panel);
+
+public:
+    void SetCursor(CursorRole role);
+    sint32 MoveNcLeft(const rect128& rect, sint32 addx);
+    sint32 MoveNcTop(const rect128& rect, sint32 addy);
+    sint32 MoveNcRight(const rect128& rect, sint32 addx);
+    sint32 MoveNcBottom(const rect128& rect, sint32 addy);
 
 public:
     String mBuildTag;
@@ -250,9 +259,21 @@ public:
     ZEFakeZaySon mZaySonAPI;
     sint32 mDraggingHook;
     Tween1D mEasySaveEffect;
-    String mSystemFont;
+    String mBasicFont;
+    String mTitleFont;
     ZEWidgetPipe mPipe;
     uint64 mShowCommentTagMsec;
     Size mWorkViewSize;
     Point mWorkViewDrag;
+
+public: // 윈도우상태
+    static const sint32 mTitleHeight = 37;
+    static const sint32 mMinWindowWidth = 1200;
+    static const sint32 mMinWindowHeight = 800;
+    String mWindowName;
+    CursorRole mNowCursor;
+    bool mNcLeftBorder;
+    bool mNcTopBorder;
+    bool mNcRightBorder;
+    bool mNcBottomBorder;
 };

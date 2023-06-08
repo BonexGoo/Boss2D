@@ -36,43 +36,18 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
 {
-    if(type == NT_KeyPress)
-    {
-        const sint32 KeyCode = sint32o(in).ConstValue();
-        branch;
-        jump(KeyCode == 37) // Left
-            m->mWorkViewDrag = Point(300, 0);
-        jump(KeyCode == 38) // Up
-            m->mWorkViewDrag = Point(0, 300);
-        jump(KeyCode == 39) // Right
-            m->mWorkViewDrag = Point(-300, 0);
-        jump(KeyCode == 40) // Down
-            m->mWorkViewDrag = Point(0, -300);
-        jump(KeyCode == 116) // F5: 간단세이브
-            m->FastSave();
-    }
-    else if(type == NT_FileContent)
-    {
-        String ContentName = topic;
-        uint08s Content(in);
-        if(auto NewAsset = Asset::OpenForWrite(ContentName, true))
-        {
-            Asset::Write(NewAsset, &Content[0], Content.Count());
-            Asset::Close(NewAsset);
-            Content.Clear();
-        }
-
-        m->mPipe.ResetJsonPath(ContentName);
-        const String JsonText = String::FromAsset(ContentName);
-        const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
-        m->LoadCore(Json);
-    }
-    else if(type == NT_Normal)
+    if(type == NT_Normal)
     {
         branch;
         jump(!String::Compare(topic, "Update"))
         {
             m->invalidate(sint32o(in).ConstValue());
+        }
+        jump(!String::Compare(topic, "SetWindowName"))
+        {
+            m->mWindowName = String(in);
+            Platform::SetWindowName(m->mWindowName);
+            m->invalidate();
         }
         jump(!String::Compare(topic, "HookPressed"))
         {
@@ -201,30 +176,62 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             m->invalidate();
         }
     }
+    else if(type == NT_KeyPress)
+    {
+        const sint32 KeyCode = sint32o(in).ConstValue();
+        branch;
+        jump(KeyCode == 37) // Left
+            m->mWorkViewDrag = Point(300, 0);
+        jump(KeyCode == 38) // Up
+            m->mWorkViewDrag = Point(0, 300);
+        jump(KeyCode == 39) // Right
+            m->mWorkViewDrag = Point(-300, 0);
+        jump(KeyCode == 40) // Down
+            m->mWorkViewDrag = Point(0, -300);
+        jump(KeyCode == 116) // F5: 간단세이브
+            m->FastSave();
+    }
+    else if(type == NT_FileContent)
+    {
+        String ContentName = topic;
+        uint08s Content(in);
+        if(auto NewAsset = Asset::OpenForWrite(ContentName, true))
+        {
+            Asset::Write(NewAsset, &Content[0], Content.Count());
+            Asset::Close(NewAsset);
+            Content.Clear();
+        }
+
+        m->mPipe.ResetJsonPath(ContentName);
+        const String JsonText = String::FromAsset(ContentName);
+        const Context Json(ST_Json, SO_OnlyReference, (chars) JsonText);
+        m->LoadCore(Json);
+    }
+    else if(type == NT_ZayWidget)
+    {
+        if(!String::Compare(topic, "SetCursor"))
+        {
+            auto Cursor = CursorRole(sint32o(in).Value());
+            m->SetCursor(Cursor);
+        }
+    }
 }
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
+    if(type == GT_Moving || type == GT_MovingIdle)
+        m->SetCursor(CR_Arrow);
 }
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
 {
-    ZAY_FONT(panel, 1.0, m->mSystemFont)
+    ZAY_FONT(panel, 1.0, m->mBasicFont)
     {
         // 타이틀바
-        static const sint32 TitleHeight = 37;
-        ZAY_LTRB_UI(panel, 0, 0, panel.w(), TitleHeight, "title")
-        {
-            ZAY_RGB(panel, 60, 76, 91)
-                panel.fill();
-
-            // 로고
-            ZAY_LTRB(panel, 0, 0, TitleHeight, TitleHeight)
-                panel.icon(R("logo"), UIA_CenterMiddle);
-        }
+        m->RenderTitleBar(panel);
 
         // 뷰
-        ZAY_LTRB_SCISSOR(panel, 0, TitleHeight, panel.w(), panel.h())
+        ZAY_LTRB_SCISSOR(panel, 0, m->mTitleHeight, panel.w(), panel.h())
         {
             ZAY_RGB(panel, 51, 61, 73)
                 panel.fill();
@@ -248,8 +255,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
                     {
                         // 타이틀바만큼 올림
-                        m->mZaySonAPI.mDraggingComponentRect.t -= TitleHeight;
-                        m->mZaySonAPI.mDraggingComponentRect.b -= TitleHeight;
+                        m->mZaySonAPI.mDraggingComponentRect.t -= m->mTitleHeight;
+                        m->mZaySonAPI.mDraggingComponentRect.b -= m->mTitleHeight;
 
                         // 컴포넌트 추가
                         auto& CurComponent = m->mZaySonAPI.GetComponent(m->mZaySonAPI.mDraggingComponentID);
@@ -458,6 +465,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             ZAY_RECT(panel, m->mZaySonAPI.mDraggingComponentRect)
                 m->RenderComponent(panel, m->mZaySonAPI.mDraggingComponentID, false, false);
         }
+        // 아웃라인
+        else if(!Platform::Utility::IsFullScreen())
+            m->RenderOutline(panel);
     }
 }
 
@@ -686,14 +696,16 @@ bool ZEWidgetPipe::TickOnce()
     {
         mJsonPathUpdated = false;
         if(mLastJsonPath.Length() == 0)
-            Platform::SetWindowName("ZAYPRO");
+            Platform::BroadcastNotify("SetWindowName", String("ZAYPRO"));
         else
         {
             #if BOSS_WASM
-                Platform::SetWindowName("[" + mLastJsonPath + ((NewConnected)? "] + ZAYPRO" : "] - HUCLOUD ZAYPRO"));
+                Platform::BroadcastNotify("SetWindowName", String("[" + mLastJsonPath
+                    + ((NewConnected)? "] + ZAYPRO" : "] - ZAYPRO")));
             #else
-                Platform::SetWindowName("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath))) +
-                    ((NewConnected)? "] + ZAYPRO" : "] - ZAYPRO"));
+                Platform::BroadcastNotify("SetWindowName",
+                    String("[" + String::FromWChars(Platform::File::GetShortName(WString::FromChars(mLastJsonPath)))
+                        + ((NewConnected)? "] + ZAYPRO" : "] - ZAYPRO")));
             #endif
         }
     }
@@ -929,9 +941,16 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     mEasySaveEffect.Reset(0);
 
     // 시스템폰트 등록
-    buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf");
-    mSystemFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
-    Buffer::Free(NewFontData);
+    if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf"))
+    {
+        mBasicFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+        Buffer::Free(NewFontData);
+    }
+    if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCodingBold.ttf"))
+    {
+        mTitleFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+        Buffer::Free(NewFontData);
+    }
 
     // 위젯 컴포넌트 추가
     ZayWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
@@ -947,6 +966,14 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
 
     // 초기화
     ResetBoxes();
+
+    // 윈도우상태
+    mWindowName = "ZAYPRO";
+    mNowCursor = CR_Arrow;
+    mNcLeftBorder = false;
+    mNcTopBorder = false;
+    mNcRightBorder = false;
+    mNcBottomBorder = false;
 }
 
 zayeditorData::~zayeditorData()
@@ -1571,4 +1598,292 @@ void zayeditorData::RenderLogList(ZayPanel& panel)
             }
         }
     }
+}
+
+void zayeditorData::RenderTitleBar(ZayPanel& panel)
+{
+    ZAY_LTRB_UI(panel, 0, 0, panel.w(), mTitleHeight, "ui_title",
+        ZAY_GESTURE_T(t, this)
+        {
+            static point64 OldCursorPos;
+            static rect128 OldWindowRect;
+            if(t == GT_Moving || t == GT_MovingIdle)
+                SetCursor(CR_SizeAll);
+            else if(t == GT_MovingLosed)
+                SetCursor(CR_Arrow);
+            else if(t == GT_Pressed)
+            {
+                Platform::Utility::GetCursorPos(OldCursorPos);
+                OldWindowRect = Platform::GetWindowRect();
+            }
+            else if(t == GT_InDragging || t == GT_OutDragging)
+            {
+                point64 CurCursorPos;
+                Platform::Utility::GetCursorPos(CurCursorPos);
+                Platform::SetWindowPos(
+                    OldWindowRect.l + CurCursorPos.x - OldCursorPos.x,
+                    OldWindowRect.t + CurCursorPos.y - OldCursorPos.y);
+                invalidate();
+            }
+        })
+    {
+        // 배경색
+        ZAY_RGB(panel, 60, 76, 91)
+            panel.fill();
+
+        // 로고
+        ZAY_LTRB(panel, 0, 0, panel.h(), panel.h())
+            panel.icon(R("logo"), UIA_CenterMiddle);
+
+        // 타이틀
+        ZAY_RGB(panel, 129, 165, 200)
+        ZAY_FONT(panel, 1.5, mTitleFont)
+        ZAY_LTRB(panel, panel.h(), 0, panel.w() - 10 - 30 * 3, panel.h())
+            panel.text(mWindowName, UIFA_LeftMiddle, UIFE_Right);
+
+        #if !BOSS_WASM
+            // 최소화버튼
+            ZAY_XYWH_UI(panel, panel.w() - 10 - 30 * 3, 10, 30, panel.h() - 20, "ui_win_min",
+                ZAY_GESTURE_T(t)
+                {
+                    if(t == GT_InReleased)
+                        Platform::Utility::SetMinimize();
+                })
+            {
+                const bool Pressed = ((panel.state("ui_win_min") & (PS_Pressed | PS_Dropping)) == PS_Pressed);
+                const bool Hovered = ((panel.state("ui_win_min") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                panel.icon(R((Pressed)? "btn_win_min_p" : ((Hovered)? "btn_win_min_o" : "btn_win_min_n")), UIA_CenterMiddle);
+            }
+
+            // 최대화버튼
+            ZAY_XYWH_UI(panel, panel.w() - 10 - 30 * 2, 10, 30, panel.h() - 20, "ui_win_max",
+                ZAY_GESTURE_T(t)
+                {
+                    if(t == GT_InReleased)
+                    {
+                        if(Platform::Utility::IsFullScreen())
+                            Platform::Utility::SetNormalWindow();
+                        else Platform::Utility::SetFullScreen(false, 1);
+                    }
+                })
+            {
+                const bool Pressed = ((panel.state("ui_win_max") & (PS_Pressed | PS_Dropping)) == PS_Pressed);
+                const bool Hovered = ((panel.state("ui_win_max") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                panel.icon(R((Pressed)? "btn_win_max_p" : ((Hovered)? "btn_win_max_o" : "btn_win_max_n")), UIA_CenterMiddle);
+            }
+
+            // 종료버튼
+            ZAY_XYWH_UI(panel, panel.w() - 10 - 30 * 1, 10, 30, panel.h() - 20, "ui_win_close",
+                ZAY_GESTURE_T(t)
+                {
+                    if(t == GT_InReleased)
+                        Platform::Utility::ExitProgram();
+                })
+            {
+                const bool Pressed = ((panel.state("ui_win_close") & (PS_Pressed | PS_Dropping)) == PS_Pressed);
+                const bool Hovered = ((panel.state("ui_win_close") & (PS_Focused | PS_Dropping)) == PS_Focused);
+                panel.icon(R((Pressed)? "btn_win_close_p" : ((Hovered)? "btn_win_close_o" : "btn_win_close_n")), UIA_CenterMiddle);
+            }
+        #endif
+    }
+}
+
+void zayeditorData::RenderOutline(ZayPanel& panel)
+{
+    ZAY_INNER(panel, 1)
+    ZAY_RGBA(panel, 0, 0, 0, 32)
+        panel.rect(1);
+
+    // 리사이징바
+    ZAY_RGBA(panel, 31, 198, 253, 64 + 128 * Math::Abs(((frame() * 2) % 100) - 50) / 50)
+    {
+        if(mNcLeftBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, i, 0, 1, panel.h())
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcTopBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcRightBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, panel.w() - 1 - i, 0, 1, panel.h())
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcBottomBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                panel.fill();
+            invalidate(2);
+        }
+    }
+
+    // 윈도우 리사이징 모듈
+    #define RESIZING_MODULE(C, L, T, R, B, BORDER) do {\
+        static point64 OldMousePos; \
+        static rect128 OldWindowRect; \
+        if(t == GT_Pressed) \
+        { \
+            Platform::Utility::GetCursorPos(OldMousePos); \
+            OldWindowRect = Platform::GetWindowRect(); \
+        } \
+        else if(t == GT_InDragging || t == GT_OutDragging || t == GT_InReleased || t == GT_OutReleased || t == GT_CancelReleased) \
+        { \
+            point64 NewMousePos; \
+            Platform::Utility::GetCursorPos(NewMousePos); \
+            const rect128 NewWindowRect = {L, T, R, B}; \
+            Platform::SetWindowRect(NewWindowRect.l, NewWindowRect.t, \
+                NewWindowRect.r - NewWindowRect.l, NewWindowRect.b - NewWindowRect.t); \
+        } \
+        else if(t == GT_Moving) \
+        { \
+            SetCursor(C); \
+            mNcLeftBorder = false; \
+            mNcTopBorder = false; \
+            mNcRightBorder = false; \
+            mNcBottomBorder = false; \
+            BORDER = true; \
+        } \
+        else if(t == GT_MovingLosed) \
+        { \
+            SetCursor(CR_Arrow); \
+        }} while(false);
+
+    // 윈도우 리사이징 꼭지점
+    const sint32 SizeBorder = 10;
+    ZAY_LTRB_UI(panel, 0, 0, SizeBorder, SizeBorder, "NcLeftTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeFDiag,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcLeftBorder = mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, 0, panel.w(), SizeBorder, "NcRightTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeBDiag,
+                OldWindowRect.l,
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.b,
+                mNcRightBorder = mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, 0, panel.h() - SizeBorder, SizeBorder, panel.h(), "NcLeftBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeBDiag,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.t,
+                OldWindowRect.r,
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcLeftBorder = mNcBottomBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, panel.h() - SizeBorder, panel.w(), panel.h(), "NcRightBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeFDiag,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcRightBorder = mNcBottomBorder);
+        });
+
+    // 윈도우 리사이징 모서리
+    ZAY_LTRB_UI(panel, 0, SizeBorder, SizeBorder, panel.h() - SizeBorder, "NcLeft",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeHor,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.t,
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcLeftBorder);
+        });
+    ZAY_LTRB_UI(panel, SizeBorder, 0, panel.w() - SizeBorder, SizeBorder, "NcTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeVer,
+                OldWindowRect.l,
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, SizeBorder, panel.w(), panel.h() - SizeBorder, "NcRight",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeHor,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.b,
+                mNcRightBorder);
+        });
+    ZAY_LTRB_UI(panel, SizeBorder, panel.h() - SizeBorder, panel.w() - SizeBorder, panel.h(), "NcBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeVer,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                OldWindowRect.r,
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcBottomBorder);
+        });
+}
+
+void zayeditorData::SetCursor(CursorRole role)
+{
+    if(mNowCursor != role)
+    {
+        mNowCursor = role;
+        Platform::Utility::SetCursor(role);
+        if(mNowCursor != CR_SizeVer && mNowCursor != CR_SizeHor && mNowCursor != CR_SizeBDiag && mNowCursor != CR_SizeFDiag && mNowCursor != CR_SizeAll)
+        {
+            mNcLeftBorder = false;
+            mNcTopBorder = false;
+            mNcRightBorder = false;
+            mNcBottomBorder = false;
+        }
+    }
+}
+
+sint32 zayeditorData::MoveNcLeft(const rect128& rect, sint32 addx)
+{
+    const sint32 NewLeft = rect.l + addx;
+    return rect.r - Math::Max(mMinWindowWidth, rect.r - NewLeft);
+}
+
+sint32 zayeditorData::MoveNcTop(const rect128& rect, sint32 addy)
+{
+    const sint32 NewTop = rect.t + addy;
+    return rect.b - Math::Max(mMinWindowHeight, rect.b - NewTop);
+}
+
+sint32 zayeditorData::MoveNcRight(const rect128& rect, sint32 addx)
+{
+    const sint32 NewRight = rect.r + addx;
+    return rect.l + Math::Max(mMinWindowWidth, NewRight - rect.l);
+}
+
+sint32 zayeditorData::MoveNcBottom(const rect128& rect, sint32 addy)
+{
+    const sint32 NewBottom = rect.b + addy;
+    return rect.t + Math::Max(mMinWindowHeight, NewBottom - rect.t);
 }

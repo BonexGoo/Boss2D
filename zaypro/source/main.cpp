@@ -9,10 +9,9 @@ bool PlatformInit()
     #if BOSS_WASM
         Platform::InitForMDI(true);
     #else
-        Platform::InitForMDI();
+        Platform::InitForMDI(true);
         if(Asset::RebuildForEmbedded())
             return false;
-
         //String DataPath = Platform::File::RootForData();
         //Platform::File::ResetAssetsRemRoot(DataPath);
     #endif
