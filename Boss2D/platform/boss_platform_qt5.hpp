@@ -740,7 +740,7 @@
             m_api = nullptr;
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -759,7 +759,7 @@
             setMaximumSize(policy->m_maxwidth, policy->m_maxheight);
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -768,7 +768,7 @@
             takeView(view);
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -919,7 +919,7 @@
             m_fbo_height = 0;
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -944,7 +944,7 @@
             setMaximumSize(policy->m_maxwidth, policy->m_maxheight);
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -953,7 +953,7 @@
             takeView(view);
 
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
@@ -1166,7 +1166,7 @@
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
             if(webpaper)
                 setAttribute(Qt::WA_AlwaysStackOnTop);
@@ -1290,7 +1290,7 @@
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
-            setFocusPolicy(Qt::ClickFocus);
+            setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
         }
 
