@@ -370,6 +370,11 @@ public:
         /// @return 정상실행여부
         static bool MoveWindowGroup(sint64s windowparams, bool release);
 
+        /// @brief 트래커에 쓰일 폰트지정
+        /// @param family : 폰트패밀리명
+        /// @param pointsize : 사이즈값
+        static void SetTrackerFont(chars family, sint32 pointsize);
+
         /// @brief 텍스트편집 트래커 열기
         /// @param text : 입력(초기값 필요) 및 결과
         /// @param type : 입력조건

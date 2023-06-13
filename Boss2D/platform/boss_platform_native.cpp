@@ -550,6 +550,11 @@
             return PlatformImpl::Wrap::Move_WindowGroup(windowparams, release);
         }
 
+        void Platform::Popup::SetTrackerFont(chars family, sint32 pointsize)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_view);

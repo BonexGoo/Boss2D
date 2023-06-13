@@ -1133,7 +1133,7 @@ void ZEZayBox::BodyComment::RenderCommentEditor(ZayPanel& panel, chars uiname)
             {
                 auto CurRect = v->rect(n);
                 String Text = mComment;
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                 {
                     mComment = Text.Trim();
                     CommentTag::Update(&mBox);
@@ -1200,7 +1200,7 @@ void ZEZayBox::BodyNameComment::RenderNameCommentEditor(ZayPanel& panel, chars u
             {
                 auto CurRect = v->rect(n);
                 String Text = (mComment.Length() == 0)? mName : ((mName.Length() == 0)? "#" + mComment : mName + " #" + mComment);
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                 {
                     const sint32 FindedPos = Text.Find(0, "#");
                     if(FindedPos != -1)
@@ -1380,7 +1380,7 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
             {
                 auto CurRect = v->rect(n);
                 String Text = mParams[i];
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                 {
                     mParams.At(i) = ZaySonUtility::GetSafetyString(Text);
                     v->invalidate();
@@ -1736,7 +1736,7 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
                 {
                     auto CurRect = v->rect(n);
                     String Text = mInputs[i].mKey;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                     {
                         mInputs.At(i).mKey = ZaySonUtility::GetSafetyString(Text);
                         v->invalidate();
@@ -1773,7 +1773,7 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
                 {
                     auto CurRect = v->rect(n);
                     String Text = mInputs[i].mValue;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                     {
                         mInputs.At(i).mValue = ZaySonUtility::GetSafetyString(Text);
                         v->invalidate();
@@ -1857,7 +1857,7 @@ void ZEZayBox::BodyLoopOperation::RenderOperationEditor(ZayPanel& panel, chars u
                 {
                     auto CurRect = v->rect(n);
                     String Text = mOperation;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                     {
                         mOperation = Text.Trim();
                         v->invalidate();
@@ -1965,7 +1965,7 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
                 {
                     auto CurRect = v->rect(n);
                     String Text = mOperation;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l, CurRect.t + 1, CurRect.r, CurRect.b - 1))
+                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
                     {
                         mOperation = Text.Trim();
                         v->invalidate();

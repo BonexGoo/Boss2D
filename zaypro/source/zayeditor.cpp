@@ -944,6 +944,7 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf"))
     {
         mBasicFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+        Platform::Popup::SetTrackerFont(mBasicFont, 10);
         Buffer::Free(NewFontData);
     }
     if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCodingBold.ttf"))

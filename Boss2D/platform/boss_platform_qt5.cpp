@@ -952,12 +952,22 @@
             return PlatformImpl::Wrap::Move_WindowGroup(windowparams, release);
         }
 
+        static QString g_tracker_fontfamily;
+        static sint32 g_tracker_fontsize = 0;
+        void Platform::Popup::SetTrackerFont(chars family, sint32 pointsize)
+        {
+            g_tracker_fontfamily = QString::fromUtf8(family);
+            g_tracker_fontsize = pointsize;
+        }
+
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_view);
             if(r <= l || b <= t) return false;
 
             EditTracker* NewTracker = new EditTracker(type, QString::fromUtf8(text, -1), g_view);
+            if(0 < g_tracker_fontsize)
+                NewTracker->setFont(QFont(g_tracker_fontfamily, g_tracker_fontsize));
             switch(NewTracker->Popup(l, t, r - l, b - t))
             {
             case EditTracker::TCT_Enter:
@@ -982,6 +992,8 @@
             if(r <= l || b <= t) return -1;
 
             ListTracker* NewTracker = new ListTracker(textes, g_view);
+            if(0 < g_tracker_fontsize)
+                NewTracker->setFont(QFont(g_tracker_fontfamily, g_tracker_fontsize));
             const sint32 Result = NewTracker->Popup(l, t, r - l, b - t);
             delete NewTracker;
             return Result;
