@@ -259,8 +259,6 @@ public:
     ZEFakeZaySon mZaySonAPI;
     sint32 mDraggingHook;
     Tween1D mEasySaveEffect;
-    String mBasicFont;
-    String mTitleFont;
     ZEWidgetPipe mPipe;
     uint64 mShowCommentTagMsec;
     Size mWorkViewSize;

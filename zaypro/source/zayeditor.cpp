@@ -5,6 +5,9 @@
 
 ZAY_DECLARE_VIEW_CLASS("zayeditorView", zayeditorData)
 
+String gTitleFont;
+String gBasicFont;
+
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
     if(type == CT_Tick)
@@ -225,7 +228,7 @@ ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
 {
-    ZAY_FONT(panel, 1.0, m->mBasicFont)
+    ZAY_FONT(panel, 1.0, gBasicFont)
     {
         // 타이틀바
         m->RenderTitleBar(panel);
@@ -941,15 +944,15 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     mEasySaveEffect.Reset(0);
 
     // 시스템폰트 등록
-    if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf"))
+    if(buffer NewFontData = Asset::ToBuffer("font/Jalnan.ttf"))
     {
-        mBasicFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
-        Platform::Popup::SetTrackerFont(mBasicFont, 10);
+        gTitleFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
         Buffer::Free(NewFontData);
     }
-    if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCodingBold.ttf"))
+    if(buffer NewFontData = Asset::ToBuffer("font/NanumGothicCoding.ttf"))
     {
-        mTitleFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+        gBasicFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+        Platform::Popup::SetTrackerFont(gBasicFont, 10);
         Buffer::Free(NewFontData);
     }
 
@@ -958,12 +961,12 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     ZayWidget::BuildGlues(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
 
     // 분기문 컴포넌트 추가
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithOperation, "if → Conditional", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "iffocused → MouseFocus", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifhovered → MouseHover", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifpressed → MousePress", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "else → ConditionalElse", nullptr);
-    mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "endif → ConditionalExit", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithOperation, "if", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "iffocused", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifhovered", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithEvent, "ifpressed", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "else", nullptr);
+    mZaySonAPI.AddComponent(ZayExtend::ComponentType::Condition, "endif", nullptr);
 
     // 초기화
     ResetBoxes();
@@ -1150,6 +1153,7 @@ void zayeditorData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool
 
                 ZAY_LTRB(panel, 5 + 3, 0, panel.w() - 3, panel.h())
                 ZAY_RGB(panel, 255, 255, 255)
+                ZAY_FONT(panel, 1.0, gTitleFont)
                     panel.text(CurComponent.mName, UIFA_LeftMiddle, UIFE_Right);
             }
         }
@@ -1638,8 +1642,8 @@ void zayeditorData::RenderTitleBar(ZayPanel& panel)
 
         // 타이틀
         ZAY_RGB(panel, 129, 165, 200)
-        ZAY_FONT(panel, 1.5, mTitleFont)
-        ZAY_LTRB(panel, panel.h(), 0, panel.w() - 10 - 30 * 3, panel.h())
+        ZAY_FONT(panel, 1.4, gTitleFont)
+        ZAY_LTRB(panel, panel.h() + 5, 0, panel.w() - 10 - 30 * 3, panel.h())
             panel.text(mWindowName, UIFA_LeftMiddle, UIFE_Right);
 
         #if !BOSS_WASM

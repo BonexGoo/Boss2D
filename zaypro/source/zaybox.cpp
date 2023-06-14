@@ -4,6 +4,9 @@
 #include <service/boss_zayson.hpp>
 #include <resource.hpp>
 
+extern String gTitleFont;
+extern String gBasicFont;
+
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBox
 ////////////////////////////////////////////////////////////////////////////////
@@ -348,6 +351,7 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
 
             // 타이틀
             ZAY_LTRB(panel, 5 + 3, 0, TitleEndX + 3, panel.h())
+            ZAY_FONT(panel, 1.0, gTitleFont)
             {
                 String TitleText((IsFocusing && mDebugOrder != -1)?
                     (chars) String::Format("[%d] %s", mDebugOrder, title) : title);

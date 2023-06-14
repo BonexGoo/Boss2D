@@ -228,21 +228,21 @@ namespace BOSS
             }
         };
 
-        interface.AddComponent(ZayExtend::ComponentType::CodeInput, "code → Input",
+        interface.AddComponent(ZayExtend::ComponentType::CodeInput, "code",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'code'", false);
                 return panel._push_pass();
             });
 
-        interface.AddComponent(ZayExtend::ComponentType::JumpCall, "jump → Call",
+        interface.AddComponent(ZayExtend::ComponentType::JumpCall, "jump",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'jump'", false);
                 return panel._push_pass();
             });
 
-        interface.AddComponent(ZayExtend::ComponentType::JumpMethod, "gate → Method",
+        interface.AddComponent(ZayExtend::ComponentType::JumpMethod, "gate",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'jumpgate'", false);
@@ -1004,7 +1004,7 @@ namespace BOSS
             },
             "[According to customization]");
 
-        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop → Repeat",
+        interface.AddComponent(ZayExtend::ComponentType::Loop, "loop",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 BOSS_ASSERT("No conditional expression for 'loop'", false);
