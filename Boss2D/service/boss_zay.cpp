@@ -336,12 +336,13 @@ namespace BOSS
         m_ref_touch_collector = nullptr;
         ((ZayView::Touch*) m_ref_touch)->ready((sint32) m_width, (sint32) m_height);
 
+        const sint32 Dpi = Platform::Utility::GetPhysicalDpi();
         m_stack_clip.AtAdding() = Clip(0, 0, m_width, m_height, true);
         m_stack_scissor.AtAdding() = Rect(0, 0, m_width, m_height);
         m_stack_color.AtAdding() = Color(Color::ColoringDefault);
         m_stack_mask.AtAdding() = MR_Default;
         m_stack_shader.AtAdding() = SR_Normal;
-        m_stack_font.AtAdding();
+        m_stack_font.AtAdding().system_size *= 100 / (float) Dpi;
         m_stack_zoom.AtAdding() = 1;
 
         m_clipped_width = m_width;
@@ -350,7 +351,7 @@ namespace BOSS
 
         Platform::Graphics::SetScissor(0, 0, m_width, m_height);
         Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-        Platform::Graphics::SetFont("Arial", 10);
+        Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size);
         Platform::Graphics::SetZoom(1);
     }
 
@@ -389,12 +390,13 @@ namespace BOSS
                 ((TouchCollector*) m_ref_touch_collector)->mTouchRects.SubtractionAll();
             }
 
+            const sint32 Dpi = Platform::Utility::GetPhysicalDpi();
             m_stack_clip.AtAdding() = Clip(0, 0, m_width, m_height, true);
             m_stack_scissor.AtAdding() = Rect(0, 0, m_width, m_height);
             m_stack_color.AtAdding() = Color(Color::ColoringDefault);
             m_stack_mask.AtAdding() = MR_Default;
             m_stack_shader.AtAdding() = SR_Normal;
-            m_stack_font.AtAdding();
+            m_stack_font.AtAdding().system_size *= 100 / (float) Dpi;
             m_stack_zoom.AtAdding() = 1;
 
             m_clipped_width = m_width;
@@ -403,7 +405,7 @@ namespace BOSS
 
             Platform::Graphics::SetScissor(0, 0, m_width, m_height);
             Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-            Platform::Graphics::SetFont("Arial", m_stack_font[-1].system_size);
+            Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size);
             Platform::Graphics::SetZoom(1);
         }
         else m_ref_surface = nullptr;
