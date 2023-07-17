@@ -7760,6 +7760,8 @@
                 if(spec)
                 {
                     Context SpecCollector;
+                    foreach(QString Input, OneRecorder->audioInputs())
+                        SpecCollector.At("input").AtAdding().Set(Input.toUtf8().constData());
                     foreach(QString AudioCodec, OneRecorder->supportedAudioCodecs())
                         SpecCollector.At("codec").AtAdding().Set(AudioCodec.toUtf8().constData());
                     foreach(QString Container, OneRecorder->supportedContainers())
