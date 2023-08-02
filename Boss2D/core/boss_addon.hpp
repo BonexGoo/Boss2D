@@ -40,9 +40,18 @@ namespace BOSS
         class Abc
         {
         public:
+            enum ButtonState {BS_InHovering, BS_OutHovering, BS_Pressed, BS_Dragging, BS_InReleased, BS_OutReleased};
+            typedef void (*ButtonCB)(payload data, chars name, sint32 x, sint32 y, sint32 r, ButtonState state);
+
+        public:
             static id_abc Create(chars abcpath);
             static void Release(id_abc abc);
-            static void Render(id_abc abc, float x, float y, uint32 fbo = 0);
+            static void SetColor(id_abc abc, chars name, double r, double g, double b);
+            static void SetButton(id_abc abc, chars name, double x, double y, double z, double r);
+            static void SetAction(id_abc abc, chars name);
+            static void AddRotation(id_abc abc, double x, double y, double z);
+            static void Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h,
+                ButtonCB cb = nullptr, payload data = nullptr);
         };
 
         /// @brief ALPR연동

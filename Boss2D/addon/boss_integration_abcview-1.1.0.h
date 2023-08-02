@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <addon/boss_fakewin.h>
-#include <addon/boss_integration_alembic-1.8.1.h>
+#include <addon/boss_integration_alembic-1.8.5.h>
 #include <addon/boss_integration_freeglut-3.2.1.h>
 
 #define PLATFORM_WINDOWS

@@ -41,7 +41,7 @@
     <ClCompile Include="..\addon\boss_fakewin.cpp" />
     <ClCompile Include="..\addon\boss_integration_abcview-1.1.0.cpp" />
     <ClCompile Include="..\addon\boss_integration_abseil-cpp-20211102.0.cpp" />
-    <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp" />
+    <ClCompile Include="..\addon\boss_integration_alembic-1.8.5.cpp" />
     <ClCompile Include="..\addon\boss_integration_curl-7.51.0.c" />
     <ClCompile Include="..\addon\boss_integration_dlib-19.17.cpp" />
     <ClCompile Include="..\addon\boss_integration_fdk-aac-0.1.4.cpp" />
@@ -186,7 +186,7 @@
     <ClInclude Include="..\addon\boss_fakewin.h" />
     <ClInclude Include="..\addon\boss_integration_abcview-1.1.0.h" />
     <ClInclude Include="..\addon\boss_integration_abseil-cpp-20211102.0.h" />
-    <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h" />
+    <ClInclude Include="..\addon\boss_integration_alembic-1.8.5.h" />
     <ClInclude Include="..\addon\boss_integration_curl-7.51.0.h" />
     <ClInclude Include="..\addon\boss_integration_dlib-19.17.h" />
     <ClInclude Include="..\addon\boss_integration_fdk-aac-0.1.4.h" />

@@ -70,7 +70,11 @@ namespace BOSS
     static void Abc_Error() {BOSS_ASSERT("Abc애드온이 준비되지 않았습니다", false);}
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Create, id_abc, return nullptr, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Release, void, return, id_abc)
-    BOSS_DEFINE_ADDON_FUNCTION(Abc, Render, void, return, id_abc, float, float, uint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetColor, void, return, id_abc, chars, double, double, double)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetButton, void, return, id_abc, chars, double, double, double, double)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetAction, void, return, id_abc, chars)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, AddRotation, void, return, id_abc, double, double, double)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, Render, void, return, id_abc, sint32, sint32, sint32, sint32, AddOn::Abc::ButtonCB, payload)
 
     id_abc AddOn::Abc::Create(chars abcpath)
     {return Core_AddOn_Abc_Create()(abcpath);}
@@ -78,8 +82,20 @@ namespace BOSS
     void AddOn::Abc::Release(id_abc abc)
     {Core_AddOn_Abc_Release()(abc);}
 
-    void AddOn::Abc::Render(id_abc abc, float x, float y, uint32 fbo)
-    {Core_AddOn_Abc_Render()(abc, x, y, fbo);}
+    void AddOn::Abc::SetColor(id_abc abc, chars name, double r, double g, double b)
+    {Core_AddOn_Abc_SetColor()(abc, name, r, g, b);}
+
+    void AddOn::Abc::SetButton(id_abc abc, chars name, double x, double y, double z, double r)
+    {Core_AddOn_Abc_SetButton()(abc, name, x, y, z, r);}
+
+    void AddOn::Abc::SetAction(id_abc abc, chars name)
+    {Core_AddOn_Abc_SetAction()(abc, name);}
+
+    void AddOn::Abc::AddRotation(id_abc abc, double x, double y, double z)
+    {Core_AddOn_Abc_AddRotation()(abc, x, y, z);}
+
+    void AddOn::Abc::Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h, ButtonCB cb, payload data)
+    {Core_AddOn_Abc_Render()(abc, x, y, w, h, cb, data);}
 
     ////////////////////////////////////////////////////////////////////////////////
     static void Alpr_Error() {BOSS_ASSERT("Alpr애드온이 준비되지 않았습니다", false);}

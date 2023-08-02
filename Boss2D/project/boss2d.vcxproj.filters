@@ -453,9 +453,6 @@
     <ClCompile Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.cpp">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </ClCompile>
-    <ClCompile Include="..\addon\boss_integration_alembic-1.8.1.cpp">
-      <Filter>Boss2D\addon</Filter>
-    </ClCompile>
     <ClCompile Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
@@ -472,6 +469,9 @@
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
     <ClCompile Include="..\addon\boss_integration_opus-1.1.2.c">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_alembic-1.8.5.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -893,9 +893,6 @@
     <ClInclude Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\lottierasterrenderer.h">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\addon\boss_integration_alembic-1.8.1.h">
-      <Filter>Boss2D\addon</Filter>
-    </ClInclude>
     <ClInclude Include="..\addon\boss_integration_opencv-3.1.0_3rdparty_openexr.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
@@ -912,6 +909,9 @@
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_opus-1.1.2.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_alembic-1.8.5.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>
