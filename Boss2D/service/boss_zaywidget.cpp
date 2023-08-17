@@ -426,6 +426,12 @@ namespace BOSS
             "[HexColor:#ffffff]#"
             "[OpacityRate:1.0]");
 
+        interface.AddComponent(ZayExtend::ComponentType::OptionWithoutParameter, "color_clear",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                return panel._push_color_clear();
+            });
+
         interface.AddComponent(ZayExtend::ComponentType::Option, "shader",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
@@ -472,6 +478,18 @@ namespace BOSS
                 return panel._push_zoom(Zoom);
             },
             "[ZoomRate:1.0]");
+
+        interface.AddComponent(ZayExtend::ComponentType::OptionWithoutParameter, "zoom_clear",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                return panel._push_zoom_clear();
+            });
+
+        interface.AddComponent(ZayExtend::ComponentType::OptionWithoutParameter, "scissor_clear",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                return panel._push_scissor_clear();
+            });
 
         interface.AddComponent(ZayExtend::ComponentType::Content, "fill",
             ZAY_DECLARE_COMPONENT(panel, pay)

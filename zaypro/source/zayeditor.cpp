@@ -438,7 +438,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             {
                                 Platform::Popup::CloseAllTracker();
                                 const sint32 OldPos = v->scrollpos("apispace-scroll").y;
-                                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
+                                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 300 : -300);
                                 v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
                                 v->invalidate(2);
                             }
@@ -505,6 +505,9 @@ ZEFakeZaySon::ZEFakeZaySon()
             case ZayExtend::ComponentType::Option:
                 NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Inner, true, CurComponent->mParamComments, CurComponent->mInsideSamples);
                 break;
+            case ZayExtend::ComponentType::OptionWithoutParameter:
+                NewZayBox = ZEZayBoxContent::Create(ZEZayBox::ChildType::Inner, false, CurComponent->mParamComments, CurComponent->mInsideSamples);
+                break;
             case ZayExtend::ComponentType::Layout:
                 NewZayBox = ZEZayBoxLayout::Create(CurComponent->mParamComments);
                 break;
@@ -562,6 +565,7 @@ Color ZEFakeZaySon::GetComponentColor(ZayExtend::ComponentType type, String& col
         colorres = "box_title_d";
         return Color(0, 181, 240, 192);
     case ZayExtend::ComponentType::Option:
+    case ZayExtend::ComponentType::OptionWithoutParameter:
         colorres = "box_title_c";
         return Color(252, 181, 11, 192);
     case ZayExtend::ComponentType::Layout:
@@ -1123,7 +1127,7 @@ void zayeditorData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool
             {
                 Platform::Popup::CloseAllTracker();
                 const sint32 OldPos = v->scrollpos("apispace-scroll").y;
-                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 200 : -200);
+                const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 300 : -300);
                 v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
                 v->invalidate(2);
             }

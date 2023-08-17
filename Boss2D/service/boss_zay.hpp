@@ -500,7 +500,8 @@ namespace BOSS
         class Payload;
         enum class ComponentType {Unknown,
             Content, ContentWithParameter, ContentWithInsider, ContentWithParamAndInsider, ContentWithParamAndSetter,
-            Option, Layout, CodeInput, JumpCall, JumpMethod, Loop, Condition, ConditionWithOperation, ConditionWithEvent};
+            Option, OptionWithoutParameter, Layout, CodeInput, JumpCall, JumpMethod,
+            Loop, Condition, ConditionWithOperation, ConditionWithEvent};
         typedef std::function<ZayPanel::StackBinder(ZayPanel& panel, const Payload& pay)> ComponentCB;
         typedef std::function<void(const Payload& pay)> GlueCB;
 
