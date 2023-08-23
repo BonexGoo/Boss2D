@@ -779,14 +779,14 @@ namespace BOSS
                 #endif
             }
 
-            bool Move_WindowGroup(sint64s windowparams, bool release)
+            bool Move_WindowGroup(sint64s windowparams)
             {
                 #if BOSS_WINDOWS
                     const sint32 WindowCount = windowparams.Count() / 5;
                     if(0 < WindowCount)
                     {
-                        // TOPMOST옵션으로 순서정렬후
                         HDWP DeferHandle = BeginDeferWindowPos(WindowCount);
+                        HWND OldHandle = HWND_TOP;
                         for(sint32 i = 0; i < WindowCount; ++i)
                         {
                             HWND CurHandle = (HWND) windowparams[5 * i + 0];
@@ -794,21 +794,11 @@ namespace BOSS
                             const sint32 Top = (sint32) windowparams[5 * i + 2];
                             const sint32 Right = (sint32) windowparams[5 * i + 3];
                             const sint32 Bottom = (sint32) windowparams[5 * i + 4];
-                            DeferWindowPos(DeferHandle, CurHandle, HWND_TOPMOST, Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW);
+                            DeferWindowPos(DeferHandle, CurHandle, OldHandle,
+                                Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW | SWP_NOACTIVATE);
+                            OldHandle = CurHandle;
                         }
                         EndDeferWindowPos(DeferHandle);
-
-                        // TOPMOST옵션 제거
-                        if(release)
-                        {
-                            DeferHandle = BeginDeferWindowPos(WindowCount);
-                            for(sint32 i = 0; i < WindowCount; ++i)
-                            {
-                                HWND CurHandle = (HWND) windowparams[5 * i + 0];
-                                DeferWindowPos(DeferHandle, CurHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
-                            }
-                            EndDeferWindowPos(DeferHandle);
-                        }
                         return TRUE;
                     }
                     return FALSE;

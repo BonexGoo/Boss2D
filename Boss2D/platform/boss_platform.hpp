@@ -366,9 +366,8 @@ public:
 
         /// @brief 다수 응용프로그램들의 동시적 윈도우영역 설정
         /// @param windowparams : 윈도우핸들, Left(px), Top(px), Right(px), Bottom(px)의 배열
-        /// @param release : 캡쳐상태가 풀리는 시점여부
         /// @return 정상실행여부
-        static bool MoveWindowGroup(sint64s windowparams, bool release);
+        static bool MoveWindowGroup(sint64s windowparams);
 
         /// @brief 트래커에 쓰일 폰트지정
         /// @param family : 폰트패밀리명

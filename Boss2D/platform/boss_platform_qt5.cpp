@@ -947,9 +947,9 @@
             return PlatformImpl::Wrap::Move_Window(hwnd, left, top, right, bottom, repaint);
         }
 
-        bool Platform::Popup::MoveWindowGroup(sint64s windowparams, bool release)
+        bool Platform::Popup::MoveWindowGroup(sint64s windowparams)
         {
-            return PlatformImpl::Wrap::Move_WindowGroup(windowparams, release);
+            return PlatformImpl::Wrap::Move_WindowGroup(windowparams);
         }
 
         static QString g_tracker_fontfamily;
