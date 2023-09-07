@@ -62,6 +62,9 @@ namespace BOSS
         virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars paramcomments = nullptr, chars insidenames = nullptr) = 0;
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) = 0;
+        virtual void JumpCall(chars gatename, sint32 runcount) = 0;
+        virtual void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) = 0;
+        virtual void JumpClear() = 0;
     };
 
     /// @brief 뷰스크립트 도구
@@ -96,6 +99,9 @@ namespace BOSS
         ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
+        void JumpCall(chars gatename, sint32 runcount) override;
+        void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) override;
+        void JumpClear() override;
         const ZayExtend* FindComponent(chars name) const;
         const ZayExtend* FindGlue(chars name) const;
         const void* FindGate(chars name) const;
@@ -108,6 +114,7 @@ namespace BOSS
         String mViewName;
         void* mUIElement;
         Map<ZayExtend> mExtendMap;
+        Strings mJumpCalls;
 
     public:
         void SendCursor(CursorRole role) const;

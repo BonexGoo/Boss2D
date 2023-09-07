@@ -614,6 +614,18 @@ ZaySonInterface& ZEFakeZaySon::AddGlue(chars name, ZayExtend::GlueCB cb)
     return *this;
 }
 
+void ZEFakeZaySon::JumpCall(chars gatename, sint32 runcount)
+{
+}
+
+void ZEFakeZaySon::JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h)
+{
+}
+
+void ZEFakeZaySon::JumpClear()
+{
+}
+
 sint32 ZEFakeZaySon::GetComponentCount() const
 {
     return mComponents.Count();

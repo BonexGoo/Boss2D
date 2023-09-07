@@ -833,6 +833,21 @@ namespace BOSS
         }
 
     public:
+        void RenderByCall(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const
+        {
+            // 자식으로 재귀
+            if(0 < mChildren.Count())
+            {
+                sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren, &panel);
+                for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
+                {
+                    auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
+                    CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
+                }
+            }
+        }
+
+    public:
         ZayUIs mChildren;
     };
 
@@ -1361,6 +1376,7 @@ namespace BOSS
         mUIElement = rhs.mUIElement;
         rhs.mUIElement = nullptr;
         mExtendMap = ToReference(rhs.mExtendMap);
+        mJumpCalls = ToReference(rhs.mJumpCalls);
         mDebugLogger = ToReference(mDebugLogger);
         mDebugFocusedCompID = ToReference(rhs.mDebugFocusedCompID);
         return *this;
@@ -1423,6 +1439,21 @@ namespace BOSS
         auto& NewFunction = mExtendMap(OneName);
         NewFunction.ResetForGlue(cb);
         return *this;
+    }
+
+    void ZaySon::JumpCall(chars gatename, sint32 runcount)
+    {
+        mJumpCalls.AtAdding() = String::Format("%s,0,%d", gatename, runcount);
+    }
+
+    void ZaySon::JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h)
+    {
+        mJumpCalls.AtAdding() = String::Format("%s,0,%d,%f,%f,%f,%f", gatename, runcount, x, y, w, h);
+    }
+
+    void ZaySon::JumpClear()
+    {
+        mJumpCalls.Clear();
     }
 
     const ZayExtend* ZaySon::FindComponent(chars name) const
@@ -1502,6 +1533,56 @@ namespace BOSS
         {
             ZayUIElement::DebugLogs LogCollector;
             ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
+
+            // 수집된 점프콜 처리
+            bool HasJumpCall = false;
+            for(sint32 i = 0, iend = mJumpCalls.Count(); i < iend; ++i)
+            {
+                const Strings& JumpParams = String::Split(mJumpCalls[i]);
+                const String GateName = JumpParams[0];
+                const sint32 RunIndex = Parser::GetInt(JumpParams[1]);
+                const sint32 RunCount = Parser::GetInt(JumpParams[2]);
+                if(RunIndex < RunCount)
+                {
+                    HasJumpCall = true;
+                    if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(GateName))
+                    {
+                        // 지역변수 수집
+                        Solvers LocalSolvers;
+                        const Point ViewPos = panel.toview(0, 0);
+                        LocalSolvers.AtAdding().Link(mViewName, "pV").Parse(String::FromInteger(RunIndex)).Execute();
+                        if(JumpParams.Count() == 7)
+                        {
+                            LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(JumpParams[3]).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(JumpParams[4]).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(JumpParams[5]).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(JumpParams[6]).Execute();
+                            const float X = Parser::GetFloat(JumpParams[3]);
+                            const float Y = Parser::GetFloat(JumpParams[4]);
+                            const float W = Parser::GetFloat(JumpParams[5]);
+                            const float H = Parser::GetFloat(JumpParams[6]);
+                            ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
+                                CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                        else
+                        {
+                            LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(String::FromFloat(ViewPos.x)).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(String::FromFloat(ViewPos.y)).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(String::FromFloat(panel.w())).Execute();
+                            LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
+                            CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                    }
+                    // 점프콜 변경
+                    String NextJumpCall = String::Format("%s,%d", (chars) GateName, RunIndex + 1);
+                    for(sint32 i = 2, iend = JumpParams.Count(); i < iend; ++i)
+                        NextJumpCall += ',' + JumpParams[i];
+                    mJumpCalls.At(i) = NextJumpCall;
+                }
+            }
+            if(HasJumpCall)
+                panel.repaint(2);
+            else mJumpCalls.Clear();
 
             // 수집된 디버그로그(GUI툴에 의한 포커스표현)
             const Point ViewPos = panel.toview(0, 0);

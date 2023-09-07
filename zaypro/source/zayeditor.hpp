@@ -36,6 +36,9 @@ public:
     ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
         ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
     ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
+    void JumpCall(chars gatename, sint32 runcount) override;
+    void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) override;
+    void JumpClear() override;
 
 public:
     sint32 GetComponentCount() const;

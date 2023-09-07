@@ -1051,6 +1051,32 @@ namespace BOSS
                     Platform::Utility::SetNormalWindow();
                 else Platform::Utility::SetFullScreen();
             });
+
+        ZaySonInterface* RefZaySon = &interface;
+        interface.AddGlue("jumpcall",
+            ZAY_DECLARE_GLUE(pay, RefZaySon)
+            {
+                if(0 < pay.ParamCount())
+                {
+                    const String GateName = pay.Param(0).ToText();
+                    const sint32 RunCount = (1 < pay.ParamCount())? pay.Param(1).ToInteger() : 1;
+                    if(pay.ParamCount() == 6)
+                    {
+                        const float X = pay.Param(2).ToFloat();
+                        const float Y = pay.Param(3).ToFloat();
+                        const float W = pay.Param(4).ToFloat();
+                        const float H = pay.Param(5).ToFloat();
+                        RefZaySon->JumpCallWithArea(GateName, RunCount, X, Y, W, H);
+                    }
+                    else RefZaySon->JumpCall(GateName, RunCount);
+                }
+            });
+
+        interface.AddGlue("jumpclear",
+            ZAY_DECLARE_GLUE(pay, RefZaySon)
+            {
+                RefZaySon->JumpClear();
+            });
     }
 
     ////////////////////////////////////////////////////////////////////////////////
