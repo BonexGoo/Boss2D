@@ -258,7 +258,6 @@ public:
 
 public:
     String mBuildTag;
-    ZayWidget::ResourceCB mResourceCB;
     ZEFakeZaySon mZaySonAPI;
     sint32 mDraggingHook;
     Tween1D mEasySaveEffect;

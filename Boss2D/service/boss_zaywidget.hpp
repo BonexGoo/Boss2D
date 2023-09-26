@@ -29,8 +29,8 @@ namespace BOSS
 
     public:
         static void SetAssetPath(id_assetpath assetpath);
-        static void BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
-        static void BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb);
+        static void BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB pcb);
+        static void BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB pcb);
 
     private:
         ZaySon mZaySon;
@@ -38,7 +38,6 @@ namespace BOSS
         String mZaySonAssetName;
         uint64 mZaySonFileSize;
         uint64 mZaySonModifyTime;
-        ResourceCB mResourceCB;
         sint32 mProcedureID;
         id_pipe mPipe;
         uint64 mPipeModifyTime;

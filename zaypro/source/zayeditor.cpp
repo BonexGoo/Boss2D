@@ -955,8 +955,6 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     String TimeText = __TIME__;
     TimeText.Replace(":", "");
     mBuildTag = String::Format("BUILD_%s_%s_KST", (chars) DateText, (chars) TimeText);
-
-    mResourceCB = [](chars name)->const Image* {return &((const Image&) R(name));};
     mEasySaveEffect.Reset(0);
 
     // 시스템폰트 등록
@@ -973,8 +971,9 @@ zayeditorData::zayeditorData() : mEasySaveEffect(updater())
     }
 
     // 위젯 컴포넌트 추가
-    ZayWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
-    ZayWidget::BuildGlues(mZaySonAPI.ViewName(), mZaySonAPI, &mResourceCB);
+    auto ResourceCB = [](chars name)->const Image* {return &((const Image&) R(name));};
+    ZayWidget::BuildComponents(mZaySonAPI.ViewName(), mZaySonAPI, ResourceCB);
+    ZayWidget::BuildGlues(mZaySonAPI.ViewName(), mZaySonAPI, ResourceCB);
 
     // 분기문 컴포넌트 추가
     mZaySonAPI.AddComponent(ZayExtend::ComponentType::ConditionWithOperation, "if", nullptr);

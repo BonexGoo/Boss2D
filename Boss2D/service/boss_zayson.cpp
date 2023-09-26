@@ -1586,6 +1586,7 @@ namespace BOSS
 
             // 수집된 디버그로그(GUI툴에 의한 포커스표현)
             const Point ViewPos = panel.toview(0, 0);
+            ZAY_ZOOM_CLEAR(panel)
             ZAY_MOVE(panel, -ViewPos.x, -ViewPos.y)
             for(sint32 i = 0, iend = LogCollector.Count(); i < iend; ++i)
             {

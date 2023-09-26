@@ -76,7 +76,6 @@ namespace BOSS
             }
         });
         mZaySonModifyTime = 0;
-        mResourceCB = nullptr;
         mProcedureID = -1;
         mPipe = nullptr;
         mPipeModifyTime = 0;
@@ -97,23 +96,24 @@ namespace BOSS
     ZayWidget& ZayWidget::operator=(ZayWidget&& rhs)
     {
         mZaySon = ToReference(rhs.mZaySon);
+        mZaySonViewName = ToReference(rhs.mZaySonViewName);
         mZaySonAssetName = ToReference(rhs.mZaySonAssetName);
         mZaySonFileSize = ToReference(rhs.mZaySonFileSize);
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
-        mResourceCB = ToReference(rhs.mResourceCB);
         mProcedureID = ToReference(rhs.mProcedureID); rhs.mProcedureID = -1; // 이관
         mPipe = rhs.mPipe; rhs.mPipe = nullptr; // 이관
         mPipeModifyTime = ToReference(rhs.mPipeModifyTime);
+        // this가 변경되면 Reload가 필요
+        if(0 < mZaySonAssetName.Length())
+            Reload(mZaySonAssetName);
         return *this;
     }
 
     ZaySon& ZayWidget::Init(chars viewname, chars assetname, ResourceCB cb)
     {
-        BuildComponents(viewname, mZaySon, &mResourceCB);
-        BuildGlues(viewname, mZaySon, &mResourceCB);
+        BuildComponents(viewname, mZaySon, cb);
+        BuildGlues(viewname, mZaySon, cb);
         mZaySonViewName = viewname;
-        mResourceCB = cb;
-
         if(assetname)
             Reload(assetname);
         return mZaySon;
@@ -211,7 +211,7 @@ namespace BOSS
         gAssetPath = assetpath;
     }
 
-    void ZayWidget::BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)
+    void ZayWidget::BuildComponents(chars viewname, ZaySonInterface& interface, ResourceCB pcb)
     {
         const String ViewName = viewname;
 
@@ -527,8 +527,8 @@ namespace BOSS
                 auto Degree = (pay.ParamCount() < 3)? 0.0f : pay.Param(2).ToFloat();
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, strpair("r.")))
-                    CurImage = (*pcb)(ImageName.Offset(2));
+                if(pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (pcb)(ImageName.Offset(2));
                 else HasError = true;
 
                 if(CurImage)
@@ -553,8 +553,8 @@ namespace BOSS
                 auto Form = (pay.ParamCount() < 3)? UISF_Strong : pay.ParamToUIStretchForm(2, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, strpair("r.")))
-                    CurImage = (*pcb)(ImageName.Offset(2));
+                if(pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (pcb)(ImageName.Offset(2));
                 else HasError = true;
 
                 if(CurImage)
@@ -577,8 +577,8 @@ namespace BOSS
                 auto ImageName = pay.Param(0).ToText();
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, strpair("r.")))
-                    CurImage = (*pcb)(ImageName.Offset(2));
+                if(pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (pcb)(ImageName.Offset(2));
                 else HasError = true;
 
                 if(CurImage)
@@ -603,8 +603,8 @@ namespace BOSS
                 auto ReversedYorder = (pay.ParamCount() < 4)? false : pay.ParamToBool(3, HasError);
 
                 const Image* CurImage = nullptr;
-                if(*pcb && !String::Compare(ImageName, strpair("r.")))
-                    CurImage = (*pcb)(ImageName.Offset(2));
+                if(pcb && !String::Compare(ImageName, strpair("r.")))
+                    CurImage = (pcb)(ImageName.Offset(2));
                 else HasError = true;
 
                 if(CurImage)
@@ -1030,7 +1030,7 @@ namespace BOSS
             });
     }
 
-    void ZayWidget::BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB* pcb)
+    void ZayWidget::BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB pcb)
     {
         interface.AddGlue("exit",
             ZAY_DECLARE_GLUE(pay)

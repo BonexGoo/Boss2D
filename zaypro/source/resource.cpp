@@ -16,46 +16,6 @@ namespace BOSS
     public:
         bool mFlag;
     };
-    static Map<Image> gImageMap;
-    static Map<BoolClass> gExistMap;
-    static String gAtlasDir;
-
-    R::R(chars name)
-    {
-        mImage = gImageMap.Access(name);
-        bool& Exist = gExistMap(name).mFlag;
-        if(!mImage)
-        {
-            mImage = &gImageMap(name);
-            if(!mImage->SetName(gAtlasDir + name).Load())
-            {
-                Exist = false;
-                if(id_asset_read PngAsset = Asset::OpenForRead(gAtlasDir + "noimg.png"))
-                {
-                    const sint32 PngSize = Asset::Size(PngAsset);
-                    buffer PngBuffer = Buffer::Alloc(BOSS_DBG PngSize);
-                    Asset::Read(PngAsset, (uint08*) PngBuffer, PngSize);
-                    Asset::Close(PngAsset);
-                    mImage->LoadBitmap(Png().ToBmp((bytes) PngBuffer, true));
-                    Buffer::Free(PngBuffer);
-                }
-                else
-                {
-                    id_bitmap NewBitmap = Bmp::Create(4, 10, 10);
-                    Bmp::FillColor(NewBitmap, Color(255, 0, 0).argb);
-                    id_bitmap OldBitmap = mImage->ChangeBitmap(NewBitmap);
-                    Bmp::Remove(OldBitmap);
-                }
-            }
-            else Exist = true;
-        }
-        mExist = Exist;
-    }
-
-    R::~R()
-    {
-    }
-
     class AtlasSet
     {
     public:
@@ -75,7 +35,55 @@ namespace BOSS
         sint32 FileSize;
         sint32 ModifyTime;
     };
+    static Map<Image> gImageMap;
+    static Map<BoolClass> gExistMap;
+    static id_assetpath gAssetPath = nullptr;
+    static String gAtlasDir;
     static Array<AtlasSet> gAtlasSets;
+
+    R::R(chars name)
+    {
+        mImage = gImageMap.Access(name);
+        bool& Exist = gExistMap(name).mFlag;
+        if(!mImage)
+        {
+            mImage = &gImageMap(name);
+            Exist = true;
+            String Path = gAtlasDir + name;
+            if(!mImage->SetName(Path).Load(gAssetPath))
+            if(!mImage->SetName(Path.Replace('.', '/')).Load(gAssetPath))
+            {
+                Exist = false;
+                if(id_asset_read PngAsset = Asset::OpenForRead(gAtlasDir + "noimg.png"))
+                {
+                    const sint32 PngSize = Asset::Size(PngAsset);
+                    buffer PngBuffer = Buffer::Alloc(BOSS_DBG PngSize);
+                    Asset::Read(PngAsset, (uint08*) PngBuffer, PngSize);
+                    Asset::Close(PngAsset);
+                    mImage->LoadBitmap(Png().ToBmp((bytes) PngBuffer, true));
+                    Buffer::Free(PngBuffer);
+                }
+                else
+                {
+                    id_bitmap NewBitmap = Bmp::Create(4, 10, 10);
+                    Bmp::FillColor(NewBitmap, Color(255, 0, 0).argb);
+                    id_bitmap OldBitmap = mImage->ChangeBitmap(NewBitmap);
+                    Bmp::Remove(OldBitmap);
+                }
+            }
+        }
+        mExist = Exist;
+    }
+
+    R::~R()
+    {
+    }
+
+    void R::SetAssetPath(id_assetpath assetpath)
+    {
+        AssetPath::Release(gAssetPath);
+        gAssetPath = assetpath;
+    }
 
     void R::SetAtlasDir(chars dirname)
     {
@@ -130,5 +138,11 @@ namespace BOSS
             }
         }
         Builder.SaveSubImages(gAtlasDir);
+    }
+
+    void R::ClearImages(Strings names)
+    {
+        for(sint32 i = 0, iend = names.Count(); i < iend; ++i)
+            gImageMap.Remove(names[i]);
     }
 }

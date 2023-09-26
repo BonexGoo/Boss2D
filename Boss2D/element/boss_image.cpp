@@ -89,11 +89,7 @@ namespace BOSS
             m_fileformat = Format::Png;
         else if(!m_filepath.Right(4).CompareNoCase(".jpg"))
             m_fileformat = Format::Jpg;
-        else
-        {
-            m_filepath += ".bmp";
-            m_fileformat = Format::Bmp;
-        }
+        else m_fileformat = Format::Unknown;
         return *this;
     }
 
@@ -103,9 +99,9 @@ namespace BOSS
         if(0 < PathnameWithSlash.Length() && PathnameWithSlash[-2] != '/' && PathnameWithSlash[-2] != '\\')
             PathnameWithSlash += '/';
 
-        const String Filename = m_filepath.Left(m_filepath.Length() - 4);
-        id_asset BmpAsset = Asset::OpenForWrite(String::Format("%s%s.bmp", (chars) PathnameWithSlash, (chars) Filename), true);
-        id_asset JsonAsset = Asset::OpenForWrite(String::Format("%s%s.json", (chars) PathnameWithSlash, (chars) Filename), true);
+        const String FilePath = (m_fileformat == Format::Unknown)? m_filepath : m_filepath.Left(m_filepath.Length() - 4);
+        id_asset BmpAsset = Asset::OpenForWrite(String::Format("%s%s.bmp", (chars) PathnameWithSlash, (chars) FilePath), true);
+        id_asset JsonAsset = Asset::OpenForWrite(String::Format("%s%s.json", (chars) PathnameWithSlash, (chars) FilePath), true);
         if(!BmpAsset || !JsonAsset)
         {
             Asset::Close(BmpAsset);
@@ -163,10 +159,33 @@ namespace BOSS
         // 초기화
         ResetBitmap();
         ResetData();
+        if(m_fileformat == Format::Null)
+            return false;
+
+        // 포맷처리
+        String FilePath = m_filepath;
+        Format FileFormat = m_fileformat;
+        if(FileFormat == Format::Unknown)
+        {
+            if(Asset::Exist(String::Format("%s.bmp", (chars) FilePath), assetpath))
+            {
+                FilePath += ".bmp";
+                FileFormat = Format::Bmp;
+            }
+            else if(Asset::Exist(String::Format("%s.png", (chars) FilePath), assetpath))
+            {
+                FilePath += ".png";
+                FileFormat = Format::Png;
+            }
+            else if(Asset::Exist(String::Format("%s.jpg", (chars) FilePath), assetpath))
+            {
+                FilePath += ".jpg";
+                FileFormat = Format::Jpg;
+            }
+        }
 
         // 파일오픈
-        if(m_fileformat == Format::Null) return false;
-        id_asset_read ImageAsset = Asset::OpenForRead(String::Format("%s", (chars) m_filepath), assetpath);
+        id_asset_read ImageAsset = Asset::OpenForRead(String::Format("%s", (chars) FilePath), assetpath);
         if(!ImageAsset) return false;
         const sint32 ImageAssetFilesize = Asset::Size(ImageAsset);
         if(ImageAssetFilesize == 0)
@@ -174,11 +193,11 @@ namespace BOSS
             Asset::Close(ImageAsset);
             return false;
         }
-        const String JsonFilename = m_filepath.Left(m_filepath.Length() - 4);
+        const String JsonFilename = FilePath.Left(FilePath.Length() - 4);
         id_asset_read JsonAsset = Asset::OpenForRead(String::Format("%s.json", (chars) JsonFilename), assetpath);
 
         // 디코딩
-        if(m_fileformat == Format::Bmp)
+        if(FileFormat == Format::Bmp)
         {
             buffer BmpBuffer = Buffer::Alloc(BOSS_DBG ImageAssetFilesize - 2);
             Asset::Skip(ImageAsset, 2);
@@ -187,7 +206,7 @@ namespace BOSS
             m_bitmap = Bmp::Clone((id_bitmap) BmpBuffer);
             Buffer::Free(BmpBuffer);
         }
-        else if(m_fileformat == Format::Png)
+        else if(FileFormat == Format::Png)
         {
             buffer PngBuffer = Buffer::Alloc(BOSS_DBG ImageAssetFilesize);
             Asset::Read(ImageAsset, (uint08*) PngBuffer, ImageAssetFilesize);
@@ -195,7 +214,7 @@ namespace BOSS
             m_bitmap = Png().ToBmp((bytes) PngBuffer, true);
             Buffer::Free(PngBuffer);
         }
-        else if(m_fileformat == Format::Jpg)
+        else if(FileFormat == Format::Jpg)
         {
             buffer JpgBuffer = Buffer::Alloc(BOSS_DBG ImageAssetFilesize);
             Asset::Read(ImageAsset, (uint08*) JpgBuffer, ImageAssetFilesize);

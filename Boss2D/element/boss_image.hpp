@@ -8,7 +8,7 @@ namespace BOSS
     class Image
     {
     public:
-        enum class Format {Null, Bmp, Png, Jpg};
+        enum class Format {Null, Unknown, Bmp, Png, Jpg};
         enum class Build {Null, Force, Async, AsyncNotNull};
 
     public:
