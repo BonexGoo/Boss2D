@@ -41,8 +41,11 @@
     {
         mIsSurfaceBinded = false;
         mSavedCanvas = nullptr;
-        mSavedZoom = 1.0f;
+        mSavedZoom.scale = 1;
+        mSavedZoom.orientation = OR_Normal;
         mSavedMask = QPainter::CompositionMode_SourceOver;
+        mPainterWidth = 0;
+        mPainterHeight = 0;
         mUseFontFT = false;
         mShader = SR_Normal;
     }
@@ -50,8 +53,11 @@
     {
         mIsSurfaceBinded = false;
         mSavedCanvas = nullptr;
-        mSavedZoom = 1.0f;
+        mSavedZoom.scale = 1;
+        mSavedZoom.orientation = OR_Normal;
         mSavedMask = QPainter::CompositionMode_SourceOver;
+        mPainterWidth = 0;
+        mPainterHeight = 0;
         mUseFontFT = false;
         mShader = SR_Normal;
         BindCore(device);
@@ -84,13 +90,25 @@
         BOSS_ASSERT("mSavedCanvas는 nullptr이어야 합니다", !mSavedCanvas);
         if((mSavedCanvas = ST()) != ST_FIRST())
         {
-            mSavedCanvas->mSavedZoom = mSavedCanvas->mPainter.matrix().m11();
+            const bool M11Flag = (mSavedCanvas->mPainter.matrix().m11() < 0);
+            const bool M12Flag = (mSavedCanvas->mPainter.matrix().m12() < 0);
+            const bool M21Flag = (mSavedCanvas->mPainter.matrix().m21() < 0);
+            mSavedCanvas->mSavedZoom.scale = mSavedCanvas->mPainter.matrix().m11() * ((M11Flag)? -1 : 1);
+            if(M12Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW270;
+            else if(M11Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW180;
+            else if(M21Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW90;
+            else mSavedCanvas->mSavedZoom.orientation = OR_Normal;
+
             mSavedCanvas->mSavedFont = mSavedCanvas->mPainter.font();
             mSavedCanvas->mSavedMask = mSavedCanvas->mPainter.compositionMode();
             mSavedCanvas->mPainter.end();
+            mSavedCanvas->mPainterWidth = mPainterWidth;
+            mSavedCanvas->mPainterHeight = mPainterHeight;
         }
         mPainter.begin(device);
         mPainter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
+        mPainterWidth = device->width();
+        mPainterHeight = device->height();
         ST() = this;
     }
     void CanvasClass::UnbindCore()
@@ -101,9 +119,11 @@
             CurGLWidget->makeCurrent();
         if((ST() = mSavedCanvas) != ST_FIRST())
         {
+            mPainterWidth = mSavedCanvas->mPainterWidth;
+            mPainterHeight = mSavedCanvas->mPainterHeight;
             mSavedCanvas->mPainter.begin(mSavedCanvas->mPainter.device());
             mSavedCanvas->mPainter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
-            Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom);
+            Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom.scale, mSavedCanvas->mSavedZoom.orientation);
             mSavedCanvas->mPainter.setFont(mSavedCanvas->mSavedFont);
             mSavedCanvas->mPainter.setClipRect(mSavedCanvas->mScissor);
             mSavedCanvas->mPainter.setCompositionMode(mSavedCanvas->mSavedMask);
@@ -1717,10 +1737,27 @@
             CanvasClass::get()->SetFontFT(nickname, height);
         }
 
-        void Platform::Graphics::SetZoom(float zoom)
+        void Platform::Graphics::SetZoom(float zoom, OrientationRole orientation)
         {
+            const sint32 Width = CanvasClass::get()->painter_width();
+            const sint32 Height = CanvasClass::get()->painter_height();
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             QMatrix NewMatrix(zoom, 0, 0, zoom, 0, 0);
+            switch(orientation)
+            {
+            case OR_CW90:
+                NewMatrix.translate(Width, 0);
+                NewMatrix.rotate(89.9999999); // QT버그대응
+                break;
+            case OR_CW180:
+                NewMatrix.translate(Width, Height);
+                NewMatrix.rotate(180);
+                break;
+            case OR_CW270:
+                NewMatrix.translate(0, Height);
+                NewMatrix.rotate(-89.9999999); // QT버그대응
+                break;
+            }
             CanvasClass::get()->painter().setMatrix(NewMatrix);
             CanvasClass::get()->painter().setRenderHint(QPainter::SmoothPixmapTransform, zoom < 1);
         }

@@ -1035,7 +1035,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Graphics::SetZoom(float zoom)
+        void Platform::Graphics::SetZoom(float zoom, OrientationRole orientation)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
             ViewAPI::CurPainter()->setZoom(zoom);

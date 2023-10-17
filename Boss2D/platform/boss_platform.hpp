@@ -33,6 +33,14 @@ enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn,
     MR_ColorDodge, MR_ColorBurn, MR_HardLight, MR_SoftLight, MR_Difference, MR_Exclusion,
     MR_Default = MR_SrcOver};
 enum ShaderRole {SR_Normal, SR_Nv21, SR_BlurWeak, SR_BlurMedium, SR_BlurStrong, SR_Max};
+enum OrientationRole {OR_Normal, OR_CW90, OR_CW180, OR_CW270, OR_Max};
+class ZoomState
+{
+public:
+    float scale;
+    OrientationRole orientation;
+};
+typedef Array<ZoomState, datatype_pod_canmemcpy> ZoomStates;
 enum CursorRole {CR_Arrow, CR_UpArrow, CR_Cross, CR_Wait, CR_IBeam, CR_Blank,
     CR_SizeVer, CR_SizeHor, CR_SizeBDiag, CR_SizeFDiag, CR_SizeAll,
     CR_PointingHand, CR_OpenHand, CR_ClosedHand, CR_Forbidden, CR_Busy, CR_WhatsThis};
@@ -766,8 +774,9 @@ public:
         static void SetFontForFreeType(chars nickname, sint32 height);
 
         /// @brief 줌지정
-        /// @param zoom : 줌값
-        static void SetZoom(float zoom);
+        /// @param scale : 크기값
+        /// @param orientation : 출력방향
+        static void SetZoom(float scale, OrientationRole orientation = OR_Normal);
 
         /// @brief 사각영역 지우기
         /// @param x : 좌측위치(px)

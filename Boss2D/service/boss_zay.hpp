@@ -129,8 +129,8 @@
     if(auto _ = (PANEL)._push_sysfont(__VA_ARGS__))
 #define ZAY_FREEFONT(PANEL, ...) \
     if(auto _ = (PANEL)._push_freefont(__VA_ARGS__))
-#define ZAY_ZOOM(PANEL, ZOOM) \
-    if(auto _ = (PANEL)._push_zoom(ZOOM))
+#define ZAY_ZOOM(PANEL, ...) \
+    if(auto _ = (PANEL)._push_zoom(__VA_ARGS__))
 #define ZAY_ZOOM_CLEAR(PANEL) \
     if(auto _ = (PANEL)._push_zoom_clear())
 #define ZAY_SCISSOR_CLEAR(PANEL) \
@@ -389,7 +389,7 @@ namespace BOSS
     public:
         inline const Color color() const
         {return m_stack_color[-1];}
-        inline const float zoom() const
+        inline const ZoomState zoom() const
         {return m_stack_zoom[-1];}
         inline const float w() const
         {return m_clipped_width;}
@@ -441,11 +441,11 @@ namespace BOSS
         StackBinder _push_color(sint32 r, sint32 g, sint32 b, sint32 a);
         StackBinder _push_color(const Color& color);
         StackBinder _push_color_clear();
-        StackBinder _push_mask(MaskRole mask);
-        StackBinder _push_shader(ShaderRole shader);
+        StackBinder _push_mask(MaskRole role);
+        StackBinder _push_shader(ShaderRole role);
         StackBinder _push_sysfont(float size, chars name = nullptr);
         StackBinder _push_freefont(sint32 height, chars nickname = nullptr);
-        StackBinder _push_zoom(float zoom);
+        StackBinder _push_zoom(float zoom, OrientationRole orientation = OR_Normal);
         StackBinder _push_zoom_clear();
         StackBinder _push_scissor_clear();
         StackBinder _push_pass();
@@ -484,7 +484,7 @@ namespace BOSS
         Array<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
         Array<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
         Fonts m_stack_font;
-        floats m_stack_zoom;
+        ZoomStates m_stack_zoom;
 
     protected:
         float m_clipped_width;
@@ -547,6 +547,7 @@ namespace BOSS
             UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
             ShaderRole ParamToShader(sint32 i, bool& error) const;
+            OrientationRole ParamToOrientation(sint32 i, bool& error) const;
             const Renderer* TakeRenderer() const;
 
         private:

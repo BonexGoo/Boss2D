@@ -472,12 +472,17 @@ namespace BOSS
         interface.AddComponent(ZayExtend::ComponentType::Option, "zoom",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(pay.ParamCount() != 1)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
+                bool HasError = false;
                 auto Zoom = pay.Param(0).ToFloat();
-                return panel._push_zoom(Zoom);
+                auto Orientation = (pay.ParamCount() < 2)? OR_Normal : pay.ParamToOrientation(1, HasError);
+                if(!HasError)
+                    return panel._push_zoom(Zoom, Orientation);
+                return panel._push_pass();
             },
-            "[ZoomRate:1.0]");
+            "[ZoomRate:1.0]#"
+            "[Orientation:Normal|CW90|CW180|CW270]");
 
         interface.AddComponent(ZayExtend::ComponentType::OptionWithoutParameter, "zoom_clear",
             ZAY_DECLARE_COMPONENT(panel, pay)
@@ -1469,8 +1474,8 @@ namespace BOSS
                 if(0 < Self.mCopyAni)
                 {
                     // 커서영역의 산정 및 보정
-                    const sint32 CopyX = Math::Min(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom();
-                    sint32 CopyWidth = Math::Max(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom() - CopyX;
+                    const sint32 CopyX = Math::Min(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom().scale;
+                    sint32 CopyWidth = Math::Max(Self.mCopyAreaA, Self.mCopyAreaB) / panel.zoom().scale - CopyX;
                     if(Self.mCopyAreaB < Self.mCopyAreaA)
                         CopyWidth -= CursorWidth;
 
@@ -1595,7 +1600,7 @@ namespace BOSS
         sint32& cursor, sint32 pos, sint32 height, const ZayExtend::Renderer* renderer)
     {
         auto& CurRenderInfo = mRenderInfoMap(uiname);
-        CurRenderInfo.UpdatePos(cursor, panel.toview(pos, 0).x * panel.zoom());
+        CurRenderInfo.UpdatePos(cursor, panel.toview(pos, 0).x * panel.zoom().scale);
         while(*text)
         {
             // 한 글자
@@ -1605,7 +1610,7 @@ namespace BOSS
             pos += Platform::Graphics::GetStringWidth(text, LetterLength);
             text += LetterLength;
             cursor++;
-            CurRenderInfo.UpdatePos(cursor, panel.toview(pos, 0).x * panel.zoom());
+            CurRenderInfo.UpdatePos(cursor, panel.toview(pos, 0).x * panel.zoom().scale);
 
             // 포커싱된 커서표현
             if(height != 0 && cursor == CurRenderInfo.GetFocus() && *text)

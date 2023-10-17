@@ -186,6 +186,8 @@
         static inline bool enabled() {return (ST() != ST_FIRST());}
         static inline CanvasClass* get() {return ST();}
         inline QPainter& painter() {return mPainter;}
+        inline sint32 painter_width() const {return mPainterWidth;}
+        inline sint32 painter_height() const {return mPainterHeight;}
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
@@ -217,10 +219,12 @@
         bool mIsSurfaceBinded;
     private: // 페인터관련
         CanvasClass* mSavedCanvas;
-        float mSavedZoom;
+        ZoomState mSavedZoom;
         QFont mSavedFont;
         QPainter::CompositionMode mSavedMask;
         QPainter mPainter;
+        sint32 mPainterWidth;
+        sint32 mPainterHeight;
     private: // 오리지널옵션
         bool mUseFontFT;
         FTFontClass mFontFT;

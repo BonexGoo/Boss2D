@@ -985,8 +985,7 @@ namespace BOSS
                 auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
                 {
                     auto& NewLog = logs.AtAdding();
-                    NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h()));
-                    NewLog.mRect *= panel.zoom();
+                    NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
                     NewLog.mFill = fill;
                     NewLog.mUIName = uiname;
                 };
@@ -1216,8 +1215,7 @@ namespace BOSS
             auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
             {
                 auto& NewLog = logs.AtAdding();
-                NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h()));
-                NewLog.mRect *= panel.zoom();
+                NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
                 NewLog.mFill = fill;
                 NewLog.mUIName = uiname;
             };

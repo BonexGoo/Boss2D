@@ -343,7 +343,9 @@ namespace BOSS
         m_stack_mask.AtAdding() = MR_Default;
         m_stack_shader.AtAdding() = SR_Normal;
         m_stack_font.AtAdding().system_size *= 100 / (float) Dpi;
-        m_stack_zoom.AtAdding() = 1;
+        auto& NewZoom = m_stack_zoom.AtAdding();
+        NewZoom.scale = 1;
+        NewZoom.orientation = OR_Normal;
 
         m_clipped_width = m_width;
         m_clipped_height = m_height;
@@ -397,7 +399,9 @@ namespace BOSS
             m_stack_mask.AtAdding() = MR_Default;
             m_stack_shader.AtAdding() = SR_Normal;
             m_stack_font.AtAdding().system_size *= 100 / (float) Dpi;
-            m_stack_zoom.AtAdding() = 1;
+            auto& NewZoom = m_stack_zoom.AtAdding();
+            NewZoom.scale = 1;
+            NewZoom.orientation = OR_Normal;
 
             m_clipped_width = m_width;
             m_clipped_height = m_height;
@@ -951,7 +955,7 @@ namespace BOSS
             if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
             {
                 const Clip& LastClip = m_stack_clip[-1];
-                const float& LastZoom = m_stack_zoom[-1];
+                const auto& LastZoom = m_stack_zoom[-1];
                 const float HRate = LastClip.Width() / CurCollector->mWidth;
                 const float VRate = LastClip.Height() / CurCollector->mHeight;
                 for(sint32 i = 0, iend = CurCollector->mTouchRects.Count(); i < iend; ++i)
@@ -962,7 +966,7 @@ namespace BOSS
                         LastClip.t + CurTouchRect.mT * CurTouchRect.mZoom * VRate,
                         LastClip.l + CurTouchRect.mR * CurTouchRect.mZoom * HRate,
                         LastClip.t + CurTouchRect.mB * CurTouchRect.mZoom * VRate,
-                        LastZoom, CurTouchRect.mCB, CurTouchRect.mScrollSence, CurTouchRect.mHoverPass, &DirtyTest);
+                        LastZoom.scale, CurTouchRect.mCB, CurTouchRect.mScrollSence, CurTouchRect.mHoverPass, &DirtyTest);
                 }
             }
             CurCollector->mRefTouch = m_ref_touch;
@@ -1238,19 +1242,19 @@ namespace BOSS
         return StackBinder(this, ST_Color);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_mask(MaskRole mask)
+    ZayPanel::StackBinder ZayPanel::_push_mask(MaskRole role)
     {
         MaskRole& NewMask = m_stack_mask.AtAdding();
-        NewMask = mask;
+        NewMask = role;
 
         Platform::Graphics::SetMask(NewMask);
         return StackBinder(this, ST_Mask);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_shader(ShaderRole shader)
+    ZayPanel::StackBinder ZayPanel::_push_shader(ShaderRole role)
     {
         ShaderRole& NewShader = m_stack_shader.AtAdding();
-        NewShader = shader;
+        NewShader = role;
 
         Platform::Graphics::SetShader(NewShader);
         return StackBinder(this, ST_Shader);
@@ -1291,43 +1295,85 @@ namespace BOSS
         return StackBinder(this, ST_Font);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_zoom(float zoom)
+    template<typename TYPE>
+    static void ChangeOrientation(TYPE& l, TYPE& t, TYPE& r, TYPE& b, const sint32 w, const sint32 h, const OrientationRole oldrole, const OrientationRole newrole)
     {
-        float& NewZoom = m_stack_zoom.AtAdding();
-        const float LastZoom = m_stack_zoom[-2];
-        NewZoom = LastZoom * zoom;
-        Platform::Graphics::SetZoom(NewZoom);
+        if(oldrole == newrole) return;
+        TYPE RealL, RealT, RealR, RealB;
+        switch(oldrole)
+        {
+        case OR_Normal:
+            RealL = 0 + l; RealT = 0 + t; RealR = 0 + r; RealB = 0 + b;
+            break;
+        case OR_CW90:
+            RealL = w - b; RealT = 0 + l; RealR = w - t; RealB = 0 + r;
+            break;
+        case OR_CW180:
+            RealL = w - r; RealT = h - b; RealR = w - l; RealB = h - t;
+            break;
+        case OR_CW270:
+            RealL = 0 + t; RealT = h - r; RealR = 0 + b; RealB = h - l;
+            break;
+        }
+        switch(newrole)
+        {
+        case OR_Normal:
+            l = 0 + RealL; t = 0 + RealT; r = 0 + RealR; b = 0 + RealB;
+            break;
+        case OR_CW90:
+            l = 0 + RealT; t = w - RealR; r = 0 + RealB; b = w - RealL;
+            break;
+        case OR_CW180:
+            l = w - RealR; t = h - RealB; r = w - RealL; b = h - RealT;
+            break;
+        case OR_CW270:
+            l = h - RealB; t = 0 + RealL; r = h - RealT; b = 0 + RealR;
+            break;
+        }
+    }
+
+    ZayPanel::StackBinder ZayPanel::_push_zoom(float zoom, OrientationRole orientation)
+    {
+        auto& NewZoom = m_stack_zoom.AtAdding();
+        const auto LastZoom = m_stack_zoom[-2];
+        NewZoom.scale = LastZoom.scale * zoom;
+        NewZoom.orientation = OrientationRole((LastZoom.orientation + orientation) % OR_Max);
+        Platform::Graphics::SetZoom(NewZoom.scale, NewZoom.orientation);
 
         Clip& NewClip = m_stack_clip.AtAdding();
         const Clip& LastClip = m_stack_clip[-2];
         NewClip = Clip(LastClip.l / zoom, LastClip.t / zoom, LastClip.r / zoom, LastClip.b / zoom, true);
+        ChangeOrientation(NewClip.l, NewClip.t, NewClip.r, NewClip.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
         m_clipped_width = NewClip.Width();
         m_clipped_height = NewClip.Height();
 
         Rect& NewScissor = m_stack_scissor.AtAdding();
         const Rect& LastScissor = m_stack_scissor[-2];
         NewScissor = Rect(LastScissor.l / zoom, LastScissor.t / zoom, LastScissor.r / zoom, LastScissor.b / zoom);
-
+        ChangeOrientation(NewScissor.l, NewScissor.t, NewScissor.r, NewScissor.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
         Platform::Graphics::SetScissor(NewScissor.l, NewScissor.t, NewScissor.Width(), NewScissor.Height());
         return StackBinder(this, ST_Zoom);
     }
 
     ZayPanel::StackBinder ZayPanel::_push_zoom_clear()
     {
-        m_stack_zoom.AtAdding() = 1;
-        const float LastZoom = m_stack_zoom[-2];
+        auto& NewZoom = m_stack_zoom.AtAdding();
+        NewZoom.scale = 1;
+        NewZoom.orientation = OR_Normal;
+        const auto LastZoom = m_stack_zoom[-2];
         Platform::Graphics::SetZoom(1);
 
         Clip& NewClip = m_stack_clip.AtAdding();
         const Clip& LastClip = m_stack_clip[-2];
-        NewClip = Clip(LastClip.l * LastZoom, LastClip.t * LastZoom, LastClip.r * LastZoom, LastClip.b * LastZoom, true);
+        NewClip = Clip(LastClip.l * LastZoom.scale, LastClip.t * LastZoom.scale, LastClip.r * LastZoom.scale, LastClip.b * LastZoom.scale, true);
+        ChangeOrientation(NewClip.l, NewClip.t, NewClip.r, NewClip.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
         m_clipped_width = NewClip.Width();
         m_clipped_height = NewClip.Height();
 
         Rect& NewScissor = m_stack_scissor.AtAdding();
         const Rect& LastScissor = m_stack_scissor[-2];
-        NewScissor = Rect(LastScissor.l * LastZoom, LastScissor.t * LastZoom, LastScissor.r * LastZoom, LastScissor.b * LastZoom);
-
+        NewScissor = Rect(LastScissor.l * LastZoom.scale, LastScissor.t * LastZoom.scale, LastScissor.r * LastZoom.scale, LastScissor.b * LastZoom.scale);
+        ChangeOrientation(NewScissor.l, NewScissor.t, NewScissor.r, NewScissor.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
         Platform::Graphics::SetScissor(NewScissor.l, NewScissor.t, NewScissor.Width(), NewScissor.Height());
         return StackBinder(this, ST_Zoom);
     }
@@ -1405,8 +1451,8 @@ namespace BOSS
         BOSS_ASSERT("Pop할 잔여스택이 없습니다", 1 < m_stack_zoom.Count());
         m_stack_zoom.SubtractionOne();
 
-        const float& LastZoom = m_stack_zoom[-1];
-        Platform::Graphics::SetZoom(LastZoom);
+        const auto& LastZoom = m_stack_zoom[-1];
+        Platform::Graphics::SetZoom(LastZoom.scale, LastZoom.orientation);
         _pop_clip();
     }
 
@@ -1422,12 +1468,12 @@ namespace BOSS
             LastClip.b = Math::MinF(LastClip.b, LastScissor.b);
             if(0 < LastClip.Width() && 0 < LastClip.Height())
             {
-                const float& LastZoom = m_stack_zoom[-1];
+                const auto& LastZoom = m_stack_zoom[-1];
                 if(auto CurCollector = (TouchCollector*) m_ref_touch_collector)
                     CurCollector->mTouchRects.AtAdding() =
-                        TouchRect::Create(uiname, LastClip.l, LastClip.t, LastClip.r, LastClip.b, LastZoom, cb, scrollsense, hoverpass);
+                        TouchRect::Create(uiname, LastClip.l, LastClip.t, LastClip.r, LastClip.b, LastZoom.scale, cb, scrollsense, hoverpass);
                 else if(auto CurTouch = (ZayView::Touch*) m_ref_touch)
-                    CurTouch->update(uiname, LastClip.l, LastClip.t, LastClip.r, LastClip.b, LastZoom, cb, scrollsense, hoverpass);
+                    CurTouch->update(uiname, LastClip.l, LastClip.t, LastClip.r, LastClip.b, LastZoom.scale, cb, scrollsense, hoverpass);
             }
         }
     }
@@ -1741,6 +1787,21 @@ namespace BOSS
         jump(!Result.CompareNoCase("BlurStrong")) return SR_BlurStrong;
         error = true;
         return SR_Normal;
+    }
+
+    OrientationRole ZayExtend::Payload::ParamToOrientation(sint32 i, bool& error) const
+    {
+        String Result = mParams[i].ToText();
+        if(!String::CompareNoCase(Result, "OR_", 3))
+            Result = Result.Right(Result.Length() - 3);
+
+        branch;
+        jump(!Result.CompareNoCase("Normal")) return OR_Normal;
+        jump(!Result.CompareNoCase("CW90")) return OR_CW90;
+        jump(!Result.CompareNoCase("CW180")) return OR_CW180;
+        jump(!Result.CompareNoCase("CW270")) return OR_CW270;
+        error = true;
+        return OR_Normal;
     }
 
     const ZayExtend::Renderer* ZayExtend::Payload::TakeRenderer() const
