@@ -23,6 +23,7 @@ namespace BOSS
         void Reload(chars assetname = nullptr);
         void Render(ZayPanel& panel);
         bool TickOnce();
+        bool GlueCall(chars name, const Strings params);
 
     public:
         inline const String& viewname() const {return mZaySonViewName;}

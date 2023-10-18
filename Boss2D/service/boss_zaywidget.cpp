@@ -205,6 +205,19 @@ namespace BOSS
         return false;
     }
 
+    bool ZayWidget::GlueCall(chars name, const Strings params)
+    {
+        if(auto OneGlue = mZaySon.FindGlue(name))
+        {
+            ZayExtend::Payload ParamCollector = OneGlue->MakePayload();
+            for(sint32 i = 0, iend = params.Count(); i < iend; ++i)
+                ParamCollector(params[i]);
+            // ParamCollector가 소멸되면서 Glue함수가 호출됨
+            return true;
+        }
+        return false;
+    }
+
     void ZayWidget::SetAssetPath(id_assetpath assetpath)
     {
         AssetPath::Release(gAssetPath);
