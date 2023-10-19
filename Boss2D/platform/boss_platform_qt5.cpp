@@ -1746,16 +1746,16 @@
             switch(orientation)
             {
             case OR_CW90:
-                NewMatrix.translate(Width, 0);
-                NewMatrix.rotate(89.9999999); // QT버그대응
+                NewMatrix.translate(Width / zoom, 0);
+                NewMatrix.rotate(89.999999); // QT버그대응
                 break;
             case OR_CW180:
-                NewMatrix.translate(Width, Height);
+                NewMatrix.translate(Width / zoom, Height / zoom);
                 NewMatrix.rotate(180);
                 break;
             case OR_CW270:
-                NewMatrix.translate(0, Height);
-                NewMatrix.rotate(-89.9999999); // QT버그대응
+                NewMatrix.translate(0, Height / zoom);
+                NewMatrix.rotate(-89.999999); // QT버그대응
                 break;
             }
             CanvasClass::get()->painter().setMatrix(NewMatrix);

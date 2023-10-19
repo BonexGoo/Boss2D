@@ -1343,14 +1343,16 @@ namespace BOSS
         Clip& NewClip = m_stack_clip.AtAdding();
         const Clip& LastClip = m_stack_clip[-2];
         NewClip = Clip(LastClip.l / zoom, LastClip.t / zoom, LastClip.r / zoom, LastClip.b / zoom, true);
-        ChangeOrientation(NewClip.l, NewClip.t, NewClip.r, NewClip.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
+        ChangeOrientation(NewClip.l, NewClip.t, NewClip.r, NewClip.b,
+            m_width / LastZoom.scale, m_height / LastZoom.scale, LastZoom.orientation, NewZoom.orientation);
         m_clipped_width = NewClip.Width();
         m_clipped_height = NewClip.Height();
 
         Rect& NewScissor = m_stack_scissor.AtAdding();
         const Rect& LastScissor = m_stack_scissor[-2];
         NewScissor = Rect(LastScissor.l / zoom, LastScissor.t / zoom, LastScissor.r / zoom, LastScissor.b / zoom);
-        ChangeOrientation(NewScissor.l, NewScissor.t, NewScissor.r, NewScissor.b, m_width, m_height, LastZoom.orientation, NewZoom.orientation);
+        ChangeOrientation(NewScissor.l, NewScissor.t, NewScissor.r, NewScissor.b,
+            m_width / LastZoom.scale, m_height / LastZoom.scale, LastZoom.orientation, NewZoom.orientation);
         Platform::Graphics::SetScissor(NewScissor.l, NewScissor.t, NewScissor.Width(), NewScissor.Height());
         return StackBinder(this, ST_Zoom);
     }
