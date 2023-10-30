@@ -557,7 +557,9 @@ namespace BOSS
 
     SolverValueType SolverValue::GetMergedType(const SolverValue& rhs) const
     {
-        return (SolverValueType) Math::Max((sint32) mType, (sint32) rhs.mType);
+        const SolverValueType MyType = (mType == SolverValueType::Range)? SolverValueType::Float : mType;
+        const SolverValueType RhsType = (rhs.mType == SolverValueType::Range)? SolverValueType::Float : rhs.mType;
+        return (SolverValueType) Math::Max((sint32) MyType, (sint32) RhsType);
     }
 
     SolverValue SolverValue::Addition(const SolverValue& rhs) const

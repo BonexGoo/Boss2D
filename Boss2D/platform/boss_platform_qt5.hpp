@@ -2296,7 +2296,7 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = Platform::Utility::GetPixelRatio();
+            const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
 
             GLuint prevFbo = 0;
             if(fbo != 0)
@@ -2383,7 +2383,7 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = (fbo == 0)? Platform::Utility::GetPixelRatio() : 1;
+            const float DeviceRatio = (fbo == 0)? Platform::Utility::GetReversedGuiRatio() : 1;
 
             GLuint prevFbo = 0;
             if(fbo != 0)
@@ -2460,7 +2460,7 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = Platform::Utility::GetPixelRatio();
+            const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
 
             GLuint prevFbo = 0;
             if(fbo != 0)

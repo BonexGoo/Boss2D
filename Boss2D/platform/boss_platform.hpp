@@ -547,13 +547,17 @@ public:
         /// @return 윈도우의 안쪽인지의 여부
         static bool GetCursorPosInWindow(point64& pos);
 
-        /// @brief OS의 사용자배율 얻기
-        /// @return 사용자배율(1.0, 1.25, 1.5, 1.75, 2.0...)
-        static float GetPixelRatio();
+        /// @brief OS의 논리적 DPI값 얻기
+        /// @return DPI값(96(100%), 120(125%), 144(150%)...)
+        static sint32 GetLogicalDpi();
 
-        /// @brief OS의 DPI값 얻기
-        /// @return DPI값(70, 109...)
+        /// @brief OS의 물리적 DPI값 얻기
+        /// @return DPI값(92, 109, 163...)
         static sint32 GetPhysicalDpi();
+
+        /// @brief OS의 GUI배율값의 역수값 얻기
+        /// @return GUI배율값(1.0, 1.1, 1.2...)
+        static float GetReversedGuiRatio();
 
         /// @brief OS명칭 얻기
         /// @return OS명칭

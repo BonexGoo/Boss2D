@@ -84,7 +84,7 @@ public:
     void RemoveChildrenAll();
     void ClearCompID();
     void ClearParentHook();
-    void ClearChildrenHook(sint32 group);
+    void ClearChildrenHook(sint32 group, bool nearhook);
     void ClearChildrenHookAll();
     void ClearMyHook();
     void MoveMyHook(sint32 addx, sint32 addy);

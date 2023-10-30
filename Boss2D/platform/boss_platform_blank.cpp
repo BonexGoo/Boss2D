@@ -744,16 +744,22 @@
             return false;
         }
 
-        float Platform::Utility::GetPixelRatio()
+        sint32 Platform::Utility::GetLogicalDpi()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return 1;
+            return 96;
         }
 
         sint32 Platform::Utility::GetPhysicalDpi()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return 70;
+            return 92;
+        }
+
+        float Platform::Utility::GetReversedGuiRatio()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return 1;
         }
 
         chars Platform::Utility::GetOSName()

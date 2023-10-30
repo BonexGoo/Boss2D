@@ -914,13 +914,18 @@ void ZEZayBox::ClearParentHook()
     }
 }
 
-void ZEZayBox::ClearChildrenHook(sint32 group)
+void ZEZayBox::ClearChildrenHook(sint32 group, bool nearhook)
 {
     if(auto CurChildren = GetChildrenGroup(group))
     {
         for(sint32 i = 0, iend = CurChildren->Count(); i < iend; ++i)
             if(auto CurBox = TOP().Access((*CurChildren)[i]))
+            {
+                auto OldHookPos = (*CurBox)->hookpos();
                 (*CurBox)->ClearMyHook();
+                if(nearhook)
+                    (*CurBox)->MoveMyHook(OldHookPos.x + 50, OldHookPos.y + 40 * i);
+            }
         CurChildren->Clear();
     }
 }
@@ -928,7 +933,7 @@ void ZEZayBox::ClearChildrenHook(sint32 group)
 void ZEZayBox::ClearChildrenHookAll()
 {
     for(sint32 i = 0, iend = GetChildrenGroupCount(); i < iend; ++i)
-        ClearChildrenHook(i);
+        ClearChildrenHook(i, false);
 }
 
 void ZEZayBox::ClearMyHook()

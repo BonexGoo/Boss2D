@@ -1402,16 +1402,22 @@
                 || ClientRect.right() <= CursorPos.x() || ClientRect.bottom() <= CursorPos.y());
         }
 
-        float Platform::Utility::GetPixelRatio()
+        sint32 Platform::Utility::GetLogicalDpi()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
-            return g_window->devicePixelRatioF();
+            return (g_window)? g_window->logicalDpiX() : 96;
         }
 
         sint32 Platform::Utility::GetPhysicalDpi()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
-            return g_window->physicalDpiX();
+            return (g_window)? g_window->physicalDpiX() : 92;
+        }
+
+        float Platform::Utility::GetReversedGuiRatio()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window);
+            return (g_window)? (96.0 / g_window->logicalDpiX()) * (g_window->physicalDpiX() / 92.0) : 1;
         }
 
         chars Platform::Utility::GetOSName()
@@ -1724,11 +1730,11 @@
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             #if BOSS_MAC_OSX
-                const float Rate = 1.25;
+                const float DeviceRatio = 1.25 * Platform::Utility::GetReversedGuiRatio();
             #else
-                const float Rate = 1.0;
+                const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
             #endif
-            CanvasClass::get()->SetFont(name, (sint32) (size * Rate));
+            CanvasClass::get()->SetFont(name, (sint32) (size * DeviceRatio));
         }
 
         void Platform::Graphics::SetFontForFreeType(chars nickname, sint32 height)

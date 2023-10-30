@@ -76,7 +76,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             const sint32s Values(in);
             const sint32 CurZayBoxID = Values[0];
             const sint32 GroupIndex = Values[1];
-            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(GroupIndex);
+            ZEZayBox::TOP()[CurZayBoxID]->ClearChildrenHook(GroupIndex, true);
         }
         jump(!String::Compare(topic, "ZayBoxMove"))
         {
