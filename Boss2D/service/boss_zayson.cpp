@@ -677,9 +677,12 @@ namespace BOSS
                 mGlueFunction = root.FindGlue(TextTest.Left(PosB - 1));
                 if(!mGlueFunction)
                     root.SendWarningLog("Binding Failed", String::Format(" ● Glue function not found. (%s/Load)", (chars) TextTest.Left(PosB - 1)));
-                auto Params = ZaySonUtility::GetCommaStrings(TextTest.Middle(PosB, PosE - PosB));
-                for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
-                    mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
+                if(PosB < PosE)
+                {
+                    auto Params = ZaySonUtility::GetCommaStrings(TextTest.Middle(PosB, PosE - PosB));
+                    for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
+                        mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
+                }
             }
             else // 변수입력
             {
