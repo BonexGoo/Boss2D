@@ -1392,6 +1392,8 @@ namespace BOSS
     void ZaySon::Reload(const Context& context)
     {
         BOSS_ASSERT("Reload는 Load후 호출가능합니다", 0 < mViewName.Length());
+        Solvers GlobalSolvers;
+        SetGlobalSolvers(GlobalSolvers);
         delete (ZayUIElement*) mUIElement;
         auto NewView = new ZayViewElement();
         NewView->Load(*this, context);
@@ -1530,100 +1532,109 @@ namespace BOSS
 
     void ZaySon::Render(ZayPanel& panel)
     {
-        if(mUIElement)
+        if(!mUIElement) return;
+        Solvers GlobalSolvers;
+        SetGlobalSolvers(GlobalSolvers);
+        ZayUIElement::DebugLogs LogCollector;
+        ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
+
+        // 수집된 점프콜 처리
+        bool HasJumpCall = false;
+        for(sint32 i = 0, iend = mJumpCalls.Count(); i < iend; ++i)
         {
-            ZayUIElement::DebugLogs LogCollector;
-            ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
-
-            // 수집된 점프콜 처리
-            bool HasJumpCall = false;
-            for(sint32 i = 0, iend = mJumpCalls.Count(); i < iend; ++i)
+            const Strings& JumpParams = String::Split(mJumpCalls[i]);
+            const String GateName = JumpParams[0];
+            const sint32 RunIndex = Parser::GetInt(JumpParams[1]);
+            const sint32 RunCount = Parser::GetInt(JumpParams[2]);
+            if(RunIndex < RunCount)
             {
-                const Strings& JumpParams = String::Split(mJumpCalls[i]);
-                const String GateName = JumpParams[0];
-                const sint32 RunIndex = Parser::GetInt(JumpParams[1]);
-                const sint32 RunCount = Parser::GetInt(JumpParams[2]);
-                if(RunIndex < RunCount)
+                HasJumpCall = true;
+                if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(GateName))
                 {
-                    HasJumpCall = true;
-                    if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(GateName))
+                    // 지역변수 수집
+                    Solvers LocalSolvers;
+                    const Point ViewPos = panel.toview(0, 0);
+                    LocalSolvers.AtAdding().Link(mViewName, "pV").Parse(String::FromInteger(RunIndex)).Execute();
+                    if(JumpParams.Count() == 7)
                     {
-                        // 지역변수 수집
-                        Solvers LocalSolvers;
-                        const Point ViewPos = panel.toview(0, 0);
-                        LocalSolvers.AtAdding().Link(mViewName, "pV").Parse(String::FromInteger(RunIndex)).Execute();
-                        if(JumpParams.Count() == 7)
-                        {
-                            LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(JumpParams[3]).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(JumpParams[4]).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(JumpParams[5]).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(JumpParams[6]).Execute();
-                            const float X = Parser::GetFloat(JumpParams[3]);
-                            const float Y = Parser::GetFloat(JumpParams[4]);
-                            const float W = Parser::GetFloat(JumpParams[5]);
-                            const float H = Parser::GetFloat(JumpParams[6]);
-                            ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
-                                CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
-                        }
-                        else
-                        {
-                            LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(String::FromFloat(ViewPos.x)).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(String::FromFloat(ViewPos.y)).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(String::FromFloat(panel.w())).Execute();
-                            LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(JumpParams[3]).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(JumpParams[4]).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(JumpParams[5]).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(JumpParams[6]).Execute();
+                        const float X = Parser::GetFloat(JumpParams[3]);
+                        const float Y = Parser::GetFloat(JumpParams[4]);
+                        const float W = Parser::GetFloat(JumpParams[5]);
+                        const float H = Parser::GetFloat(JumpParams[6]);
+                        ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
                             CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
-                        }
-                    }
-                    // 점프콜 변경
-                    String NextJumpCall = String::Format("%s,%d", (chars) GateName, RunIndex + 1);
-                    for(sint32 i = 2, iend = JumpParams.Count(); i < iend; ++i)
-                        NextJumpCall += ',' + JumpParams[i];
-                    mJumpCalls.At(i) = NextJumpCall;
-                }
-            }
-            if(HasJumpCall)
-                panel.repaint(2);
-            else mJumpCalls.Clear();
-
-            // 수집된 디버그로그(GUI툴에 의한 포커스표현)
-            const Point ViewPos = panel.toview(0, 0);
-            ZAY_ZOOM_CLEAR(panel)
-            ZAY_MOVE(panel, -ViewPos.x, -ViewPos.y)
-            for(sint32 i = 0, iend = LogCollector.Count(); i < iend; ++i)
-            {
-                hook(LogCollector[i])
-                ZAY_RECT(panel, fish.mRect)
-                ZAY_FONT(panel, Math::MaxF(0.8, (fish.mRect.r - fish.mRect.l) * 0.005))
-                {
-                    // 영역표시
-                    if(fish.mFill)
-                    {
-                        ZAY_RGBA(panel, 255, 0, 0, 96)
-                            panel.fill();
                     }
                     else
                     {
-                        ZAY_RGBA(panel, 255, 0, 0, 96)
-                            panel.rect(5);
-                        ZAY_INNER(panel, 5)
-                        ZAY_RGBA(panel, 0, 255, 0, 64)
-                            panel.rect(5);
+                        LocalSolvers.AtAdding().Link(mViewName, "pX").Parse(String::FromFloat(ViewPos.x)).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pY").Parse(String::FromFloat(ViewPos.y)).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pW").Parse(String::FromFloat(panel.w())).Execute();
+                        LocalSolvers.AtAdding().Link(mViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
+                        CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
                     }
+                }
+                // 점프콜 변경
+                String NextJumpCall = String::Format("%s,%d", (chars) GateName, RunIndex + 1);
+                for(sint32 i = 2, iend = JumpParams.Count(); i < iend; ++i)
+                    NextJumpCall += ',' + JumpParams[i];
+                mJumpCalls.At(i) = NextJumpCall;
+            }
+        }
+        if(HasJumpCall)
+            panel.repaint(2);
+        else mJumpCalls.Clear();
 
-                    // UI명칭
-                    if(0 < fish.mUIName.Length())
-                    {
-                        ZAY_RGB(panel, 0, 0, 0)
-                        for(sint32 y = -1; y <= 1; ++y)
-                        for(sint32 x = -1; x <= 1; ++x)
-                            ZAY_MOVE(panel, x, y)
-                                panel.text(panel.w() / 2, panel.h() / 2, fish.mUIName);
-                        ZAY_RGB(panel, 255, 0, 0)
+        // 수집된 디버그로그(GUI툴에 의한 포커스표현)
+        const Point ViewPos = panel.toview(0, 0);
+        ZAY_ZOOM_CLEAR(panel)
+        ZAY_MOVE(panel, -ViewPos.x, -ViewPos.y)
+        for(sint32 i = 0, iend = LogCollector.Count(); i < iend; ++i)
+        {
+            hook(LogCollector[i])
+            ZAY_RECT(panel, fish.mRect)
+            ZAY_FONT(panel, Math::MaxF(0.8, (fish.mRect.r - fish.mRect.l) * 0.005))
+            {
+                // 영역표시
+                if(fish.mFill)
+                {
+                    ZAY_RGBA(panel, 255, 0, 0, 96)
+                        panel.fill();
+                }
+                else
+                {
+                    ZAY_RGBA(panel, 255, 0, 0, 96)
+                        panel.rect(5);
+                    ZAY_INNER(panel, 5)
+                    ZAY_RGBA(panel, 0, 255, 0, 64)
+                        panel.rect(5);
+                }
+
+                // UI명칭
+                if(0 < fish.mUIName.Length())
+                {
+                    ZAY_RGB(panel, 0, 0, 0)
+                    for(sint32 y = -1; y <= 1; ++y)
+                    for(sint32 x = -1; x <= 1; ++x)
+                        ZAY_MOVE(panel, x, y)
                             panel.text(panel.w() / 2, panel.h() / 2, fish.mUIName);
-                    }
+                    ZAY_RGB(panel, 255, 0, 0)
+                        panel.text(panel.w() / 2, panel.h() / 2, fish.mUIName);
                 }
             }
         }
+    }
+
+    void ZaySon::SetGlobalSolvers(Solvers& solvers) const
+    {
+        solvers.AtAdding().Link(mViewName, "gViewName").Parse("'" + mViewName + "'").Execute();
+        solvers.AtAdding().Link(mViewName, "gOSName").Parse(String::Format("'%s'", Platform::Utility::GetOSName())).Execute();
+        solvers.AtAdding().Link(mViewName, "gDeviceID").Parse(String::Format("'%s'", Platform::Utility::GetDeviceID())).Execute();
+        solvers.AtAdding().Link(mViewName, "gLogicalDpi").Parse(String::FromInteger(Platform::Utility::GetLogicalDpi())).Execute();
+        solvers.AtAdding().Link(mViewName, "gPhysicalDpi").Parse(String::FromInteger(Platform::Utility::GetPhysicalDpi())).Execute();
     }
 
     void ZaySon::SendCursor(CursorRole role) const

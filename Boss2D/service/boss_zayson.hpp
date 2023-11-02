@@ -111,6 +111,9 @@ namespace BOSS
         void Render(ZayPanel& panel);
 
     private:
+        void SetGlobalSolvers(Solvers& solvers) const;
+
+    private:
         String mViewName;
         void* mUIElement;
         Map<ZayExtend> mExtendMap;
