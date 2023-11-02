@@ -2296,7 +2296,6 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
 
             GLuint prevFbo = 0;
             if(fbo != 0)
@@ -2342,7 +2341,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const float Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,
@@ -2383,7 +2382,6 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = (fbo == 0)? Platform::Utility::GetReversedGuiRatio() : 1;
 
             GLuint prevFbo = 0;
             if(fbo != 0)
@@ -2395,13 +2393,8 @@
 
             GLint ViewPortValues[4] = {0};
             f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
-            #if BOSS_ANDROID
-                const GLint DstWidth = ViewPortValues[2] / 4;
-                const GLint DstHeight = ViewPortValues[3] / 4;
-            #else
-                const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
-                const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
-            #endif
+            const GLint DstWidth = ViewPortValues[2];
+            const GLint DstHeight = ViewPortValues[3];
 
             auto CurContext = QGLContext::fromOpenGLContext(ctx);
             GLuint CurTexture = CurContext->bindTexture(pixmap);
@@ -2431,7 +2424,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const float Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,
@@ -2460,7 +2453,6 @@
         {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             QOpenGLFunctions* f = ctx->functions();
-            const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
 
             GLuint prevFbo = 0;
             if(fbo != 0)
@@ -2472,13 +2464,8 @@
 
             GLint ViewPortValues[4] = {0};
             f->glGetIntegerv(GL_VIEWPORT, ViewPortValues);
-            #if BOSS_ANDROID
-                const GLint DstWidth = ViewPortValues[2] / 4;
-                const GLint DstHeight = ViewPortValues[3] / 4;
-            #else
-                const GLint DstWidth = ViewPortValues[2] / DeviceRatio;
-                const GLint DstHeight = ViewPortValues[3] / DeviceRatio;
-            #endif
+            const GLint DstWidth = ViewPortValues[2];
+            const GLint DstHeight = ViewPortValues[3];
             BOSS::Rect NewRect;
             NewRect.l = 2 * rect.l / DstWidth - 1;
             NewRect.t = 1 - 2 * rect.t / DstHeight;
@@ -2536,7 +2523,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom() * DeviceRatio;
+            const float Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,
