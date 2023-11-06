@@ -218,6 +218,11 @@ namespace BOSS
         return false;
     }
 
+    void ZayWidget::JumpCall(chars name, sint32 count)
+    {
+        mZaySon.JumpCall(name, count);
+    }
+
     void ZayWidget::SetAssetPath(id_assetpath assetpath)
     {
         AssetPath::Release(gAssetPath);

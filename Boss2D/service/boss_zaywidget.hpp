@@ -24,6 +24,7 @@ namespace BOSS
         void Render(ZayPanel& panel);
         bool TickOnce();
         bool GlueCall(chars name, const Strings params);
+        void JumpCall(chars name, sint32 count = 1);
 
     public:
         inline const String& viewname() const {return mZaySonViewName;}
