@@ -1764,8 +1764,17 @@
                 NewMatrix.rotate(-89.999999); // QT버그대응
                 break;
             }
-            CanvasClass::get()->painter().setMatrix(NewMatrix);
-            CanvasClass::get()->painter().setRenderHint(QPainter::SmoothPixmapTransform, zoom < 1);
+            hook(CanvasClass::get()->painter())
+            {
+                fish.setMatrix(NewMatrix);
+                if(zoom < 1)
+                {
+                    if(!fish.testRenderHint(QPainter::SmoothPixmapTransform))
+                        fish.setRenderHint(QPainter::SmoothPixmapTransform, true);
+                }
+                else if(fish.testRenderHint(QPainter::SmoothPixmapTransform))
+                    fish.setRenderHint(QPainter::SmoothPixmapTransform, false);
+            }
         }
 
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)

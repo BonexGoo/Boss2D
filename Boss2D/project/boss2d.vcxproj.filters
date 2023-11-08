@@ -474,6 +474,9 @@
     <ClCompile Include="..\addon\boss_integration_alembic-1.8.5.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
+    <ClCompile Include="..\addon\boss_integration_libwebp-1.3.2.cpp">
+      <Filter>Boss2D\addon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\element\boss_clip.hpp">
@@ -912,6 +915,9 @@
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
     <ClInclude Include="..\addon\boss_integration_alembic-1.8.5.h">
+      <Filter>Boss2D\addon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addon\boss_integration_libwebp-1.3.2.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
   </ItemGroup>

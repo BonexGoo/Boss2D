@@ -1,0 +1,71 @@
+﻿#pragma once
+#include <boss.h>
+#include <addon/boss_fakewin.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// _BOSS_BATCH_COMMAND_ {"type" : "include-alias", "prm" : "BOSS_WEBP_", "restore-comment" : " //original-code:"}
+#define BOSS_WEBP_U_sharpyuv__sharpyuv_h                  "addon/libwebp-1.3.2_for_boss/sharpyuv/sharpyuv.h"
+#define BOSS_WEBP_U_sharpyuv__sharpyuv_cpu_h              "addon/libwebp-1.3.2_for_boss/sharpyuv/sharpyuv_cpu.h"
+#define BOSS_WEBP_U_sharpyuv__sharpyuv_csp_h              "addon/libwebp-1.3.2_for_boss/sharpyuv/sharpyuv_csp.h"
+#define BOSS_WEBP_U_sharpyuv__sharpyuv_dsp_h              "addon/libwebp-1.3.2_for_boss/sharpyuv/sharpyuv_dsp.h"
+#define BOSS_WEBP_U_sharpyuv__sharpyuv_gamma_h            "addon/libwebp-1.3.2_for_boss/sharpyuv/sharpyuv_gamma.h"
+
+#define BOSS_WEBP_U_src__dec__alphai_dec_h                "addon/libwebp-1.3.2_for_boss/src/dec/alphai_dec.h"
+#define BOSS_WEBP_U_src__dec__common_dec_h                "addon/libwebp-1.3.2_for_boss/src/dec/common_dec.h"
+#define BOSS_WEBP_U_src__dec__vp8i_dec_h                  "addon/libwebp-1.3.2_for_boss/src/dec/vp8i_dec.h"
+#define BOSS_WEBP_U_src__dec__vp8li_dec_h                 "addon/libwebp-1.3.2_for_boss/src/dec/vp8li_dec.h"
+#define BOSS_WEBP_U_src__dec__vp8_dec_h                   "addon/libwebp-1.3.2_for_boss/src/dec/vp8_dec.h"
+#define BOSS_WEBP_U_src__dec__webpi_dec_h                 "addon/libwebp-1.3.2_for_boss/src/dec/webpi_dec.h"
+
+#define BOSS_WEBP_U_src__dsp__common_sse2_h               "addon/libwebp-1.3.2_for_boss/src/dsp/common_sse2.h"
+#define BOSS_WEBP_U_src__dsp__common_sse41_h              "addon/libwebp-1.3.2_for_boss/src/dsp/common_sse41.h"
+#define BOSS_WEBP_U_src__dsp__cpu_h                       "addon/libwebp-1.3.2_for_boss/src/dsp/cpu.h"
+#define BOSS_WEBP_U_src__dsp__dsp_h                       "addon/libwebp-1.3.2_for_boss/src/dsp/dsp.h"
+#define BOSS_WEBP_U_src__dsp__lossless_h                  "addon/libwebp-1.3.2_for_boss/src/dsp/lossless.h"
+#define BOSS_WEBP_U_src__dsp__lossless_common_h           "addon/libwebp-1.3.2_for_boss/src/dsp/lossless_common.h"
+#define BOSS_WEBP_U_src__dsp__mips_macro_h                "addon/libwebp-1.3.2_for_boss/src/dsp/mips_macro.h"
+#define BOSS_WEBP_U_src__dsp__msa_macro_h                 "addon/libwebp-1.3.2_for_boss/src/dsp/msa_macro.h"
+#define BOSS_WEBP_U_src__dsp__neon_h                      "addon/libwebp-1.3.2_for_boss/src/dsp/neon.h"
+#define BOSS_WEBP_U_src__dsp__quant_h                     "addon/libwebp-1.3.2_for_boss/src/dsp/quant.h"
+#define BOSS_WEBP_U_src__dsp__yuv_h                       "addon/libwebp-1.3.2_for_boss/src/dsp/yuv.h"
+
+#define BOSS_WEBP_U_src__enc__backward_references_enc_h   "addon/libwebp-1.3.2_for_boss/src/enc/backward_references_enc.h"
+#define BOSS_WEBP_U_src__enc__cost_enc_h                  "addon/libwebp-1.3.2_for_boss/src/enc/cost_enc.h"
+#define BOSS_WEBP_U_src__enc__histogram_enc_h             "addon/libwebp-1.3.2_for_boss/src/enc/histogram_enc.h"
+#define BOSS_WEBP_U_src__enc__vp8i_enc_h                  "addon/libwebp-1.3.2_for_boss/src/enc/vp8i_enc.h"
+#define BOSS_WEBP_U_src__enc__vp8li_enc_h                 "addon/libwebp-1.3.2_for_boss/src/enc/vp8li_enc.h"
+
+#define BOSS_WEBP_U_src__mux__animi_h                     "addon/libwebp-1.3.2_for_boss/src/mux/animi.h"
+#define BOSS_WEBP_U_src__mux__muxi_h                      "addon/libwebp-1.3.2_for_boss/src/mux/muxi.h"
+
+#define BOSS_WEBP_U_src__utils__bit_reader_inl_utils_h    "addon/libwebp-1.3.2_for_boss/src/utils/bit_reader_inl_utils.h"
+#define BOSS_WEBP_U_src__utils__bit_reader_utils_h        "addon/libwebp-1.3.2_for_boss/src/utils/bit_reader_utils.h"
+#define BOSS_WEBP_U_src__utils__bit_writer_utils_h        "addon/libwebp-1.3.2_for_boss/src/utils/bit_writer_utils.h"
+#define BOSS_WEBP_U_src__utils__color_cache_utils_h       "addon/libwebp-1.3.2_for_boss/src/utils/color_cache_utils.h"
+#define BOSS_WEBP_U_src__utils__endian_inl_utils_h        "addon/libwebp-1.3.2_for_boss/src/utils/endian_inl_utils.h"
+#define BOSS_WEBP_U_src__utils__filters_utils_h           "addon/libwebp-1.3.2_for_boss/src/utils/filters_utils.h"
+#define BOSS_WEBP_U_src__utils__huffman_encode_utils_h    "addon/libwebp-1.3.2_for_boss/src/utils/huffman_encode_utils.h"
+#define BOSS_WEBP_U_src__utils__huffman_utils_h           "addon/libwebp-1.3.2_for_boss/src/utils/huffman_utils.h"
+#define BOSS_WEBP_U_src__utils__palette_h                 "addon/libwebp-1.3.2_for_boss/src/utils/palette.h"
+#define BOSS_WEBP_U_src__utils__quant_levels_dec_utils_h  "addon/libwebp-1.3.2_for_boss/src/utils/quant_levels_dec_utils.h"
+#define BOSS_WEBP_U_src__utils__quant_levels_utils_h      "addon/libwebp-1.3.2_for_boss/src/utils/quant_levels_utils.h"
+#define BOSS_WEBP_U_src__utils__random_utils_h            "addon/libwebp-1.3.2_for_boss/src/utils/random_utils.h"
+#define BOSS_WEBP_U_src__utils__rescaler_utils_h          "addon/libwebp-1.3.2_for_boss/src/utils/rescaler_utils.h"
+#define BOSS_WEBP_U_src__utils__thread_utils_h            "addon/libwebp-1.3.2_for_boss/src/utils/thread_utils.h"
+#define BOSS_WEBP_U_src__utils__utils_h                   "addon/libwebp-1.3.2_for_boss/src/utils/utils.h"
+
+#define BOSS_WEBP_U_src__webp__decode_h                   "addon/libwebp-1.3.2_for_boss/src/webp/decode.h"
+#define BOSS_WEBP_U_src__webp__demux_h                    "addon/libwebp-1.3.2_for_boss/src/webp/demux.h"
+#define BOSS_WEBP_U_src__webp__encode_h                   "addon/libwebp-1.3.2_for_boss/src/webp/encode.h"
+#define BOSS_WEBP_U_src__webp__format_constants_h         "addon/libwebp-1.3.2_for_boss/src/webp/format_constants.h"
+#define BOSS_WEBP_U_src__webp__mux_h                      "addon/libwebp-1.3.2_for_boss/src/webp/mux.h"
+#define BOSS_WEBP_U_src__webp__mux_types_h                "addon/libwebp-1.3.2_for_boss/src/webp/mux_types.h"
+#define BOSS_WEBP_U_src__webp__types_h                    "addon/libwebp-1.3.2_for_boss/src/webp/types.h"
+
+#define BOSS_WEBP_U_webp__decode_h                        "addon/libwebp-1.3.2_for_boss/src/webp/decode.h"
+#define BOSS_WEBP_U_webp__demux_h                         "addon/libwebp-1.3.2_for_boss/src/webp/demux.h"
+#define BOSS_WEBP_U_webp__encode_h                        "addon/libwebp-1.3.2_for_boss/src/webp/encode.h"
+#define BOSS_WEBP_U_webp__format_constants_h              "addon/libwebp-1.3.2_for_boss/src/webp/format_constants.h"
+#define BOSS_WEBP_U_webp__mux_h                           "addon/libwebp-1.3.2_for_boss/src/webp/mux.h"
+#define BOSS_WEBP_U_webp__mux_types_h                     "addon/libwebp-1.3.2_for_boss/src/webp/mux_types.h"
+#define BOSS_WEBP_U_webp__types_h                         "addon/libwebp-1.3.2_for_boss/src/webp/types.h"

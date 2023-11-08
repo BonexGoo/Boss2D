@@ -52,6 +52,7 @@
     <ClCompile Include="..\addon\boss_integration_libsrtp-2.2.0.c" />
     <ClCompile Include="..\addon\boss_integration_libssh2-1.6.0.c" />
     <ClCompile Include="..\addon\boss_integration_libvorbis-1.3.6.c" />
+    <ClCompile Include="..\addon\boss_integration_libwebp-1.3.2.cpp" />
     <ClCompile Include="..\addon\boss_integration_libyuv-20211215.cpp" />
     <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0.cpp" />
     <ClCompile Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.c" />
@@ -197,6 +198,7 @@
     <ClInclude Include="..\addon\boss_integration_libsrtp-2.2.0.h" />
     <ClInclude Include="..\addon\boss_integration_libssh2-1.6.0.h" />
     <ClInclude Include="..\addon\boss_integration_libvorbis-1.3.6.h" />
+    <ClInclude Include="..\addon\boss_integration_libwebp-1.3.2.h" />
     <ClInclude Include="..\addon\boss_integration_libyuv-20211215.h" />
     <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0.h" />
     <ClInclude Include="..\addon\boss_integration_openalpr-2.3.0_3rdparty_liblept.h" />
