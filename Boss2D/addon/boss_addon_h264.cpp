@@ -600,6 +600,7 @@ bytes H264DecoderPrivate::GetBsBuf(bool nalu, bytes chunk, sint32 chunksize, sin
                 if(ChunkEnd < (ChunkFocus += PsSize))
                 {
                     delete collector;
+                    collector = nullptr;
                     return nullptr;
                 }
             }

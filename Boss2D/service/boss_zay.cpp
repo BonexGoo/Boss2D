@@ -1386,7 +1386,7 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-2];
         NewClip = Clip(LastClip.l, LastClip.t, LastClip.r, LastClip.b, true);
 
-        if(!_push_scissor_copy(NewClip.l, NewClip.t, NewClip.r, NewClip.b))
+        if(!_push_scissor_copy(0, 0, m_width, m_height))
         {
             m_stack_clip.SubtractionOne();
             return StackBinder(this); // 하위진입불가
@@ -1502,8 +1502,10 @@ namespace BOSS
     bool ZayPanel::_push_scissor_copy(float l, float t, float r, float b)
     {
         Rect& NewScissor = m_stack_scissor.AtAdding();
-        const Rect& LastScissor = m_stack_scissor[-2];
-        NewScissor = LastScissor;
+        NewScissor.l = l;
+        NewScissor.t = t;
+        NewScissor.r = r;
+        NewScissor.b = b;
 
         if(m_test_scissor && (NewScissor.r <= NewScissor.l || NewScissor.b <= NewScissor.t))
         {
