@@ -12,7 +12,7 @@ class ZEZayBox
 {
 public:
     enum class ChildType {None, Inner, Insider, Setter};
-    enum class ClickMode {Click, Click_DoubleClick, Click_LongPress, Click_DoubleClick_LongPress, Touch, Error};
+    enum class ClickMode {Click, Click_DoubleClick, Click_LongPress, Click_Swipe, Click_DoubleClick_LongPress, Touch, Error};
     typedef std::function<ZEZayBoxObject(chars compname)> CreatorCB;
 
 public:

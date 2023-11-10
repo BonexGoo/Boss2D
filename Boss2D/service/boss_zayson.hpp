@@ -44,9 +44,11 @@ namespace BOSS
         static void SetCursor(sint32 elementid, CursorRole role);
         static bool SetVariable(sint32 elementid, chars uiname, chars key, chars value);
         static bool SendPress(sint32 elementid, chars uiname);
-        static bool SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool outreleased, bool cancelreleased);
+        static bool SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed,
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased);
         static bool IsValidDoubleClick(sint32 elementid);
         static bool IsValidLongPress(sint32 elementid);
+        static bool IsValidSwipe(sint32 elementid);
     };
 
     /// @brief 뷰스크립트 원형
@@ -54,7 +56,9 @@ namespace BOSS
     {
     public:
         enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed,
-            IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed, IfOutReleased, IfCancelReleased, Else, Endif};
+            IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed,
+            IfUpSwiped, IfNUpSwiped, IfDownSwiped, IfNDownSwiped, IfLeftSwiped, IfNLeftSwiped, IfRightSwiped, IfNRightSwiped,
+            IfOutReleased, IfCancelReleased, Else, Endif};
         enum class RequestType {Unknown, Function, Variable};
 
     public:

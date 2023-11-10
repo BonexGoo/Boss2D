@@ -2464,6 +2464,7 @@ void ZEZayBoxLayout::ReadJson(const Context& json)
         jump(!ClickType.CompareNoCase("Click")) mClickMode = ClickMode::Click;
         jump(!ClickType.CompareNoCase("Click_DoubleClick")) mClickMode = ClickMode::Click_DoubleClick;
         jump(!ClickType.CompareNoCase("Click_LongPress")) mClickMode = ClickMode::Click_LongPress;
+        jump(!ClickType.CompareNoCase("Click_Swipe")) mClickMode = ClickMode::Click_Swipe;
         jump(!ClickType.CompareNoCase("Click_DoubleClick_LongPress")) mClickMode = ClickMode::Click_DoubleClick_LongPress;
         else mClickMode = ClickMode::Error;
     }
@@ -2493,6 +2494,7 @@ void ZEZayBoxLayout::WriteJson(Context& json, bool makeid) const
         branch;
         jump(mClickMode == ClickMode::Click_DoubleClick) json.At("clicktype").Set("Click_DoubleClick");
         jump(mClickMode == ClickMode::Click_LongPress) json.At("clicktype").Set("Click_LongPress");
+        jump(mClickMode == ClickMode::Click_Swipe) json.At("clicktype").Set("Click_Swipe");
         jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) json.At("clicktype").Set("Click_DoubleClick_LongPress");
         jump(mClickMode == ClickMode::Error) json.At("clicktype").Set("Error");
     }
@@ -2535,6 +2537,8 @@ void ZEZayBoxLayout::Render(ZayPanel& panel)
                         mClickGroup.RenderValueGroup(panel, "OnClick/D", &mTouchGroup, true);
                     jump(mClickMode == ClickMode::Click_LongPress)
                         mClickGroup.RenderValueGroup(panel, "OnClick/L", &mTouchGroup, true);
+                    jump(mClickMode == ClickMode::Click_Swipe)
+                        mClickGroup.RenderValueGroup(panel, "OnClick/S", &mTouchGroup, true);
                     jump(mClickMode == ClickMode::Click_DoubleClick_LongPress)
                         mClickGroup.RenderValueGroup(panel, "OnClick/D/L", &mTouchGroup, true);
                     jump(mClickMode == ClickMode::Touch)
@@ -2583,7 +2587,8 @@ void ZEZayBoxLayout::OnClickMode()
     branch;
     jump(mClickMode == ClickMode::Click) mClickMode = ClickMode::Click_DoubleClick;
     jump(mClickMode == ClickMode::Click_DoubleClick) mClickMode = ClickMode::Click_LongPress;
-    jump(mClickMode == ClickMode::Click_LongPress) mClickMode = ClickMode::Click_DoubleClick_LongPress;
+    jump(mClickMode == ClickMode::Click_LongPress) mClickMode = ClickMode::Click_Swipe;
+    jump(mClickMode == ClickMode::Click_Swipe) mClickMode = ClickMode::Click_DoubleClick_LongPress;
     jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) mClickMode = ClickMode::Click;
 }
 
@@ -2944,6 +2949,7 @@ void ZEZayBoxError::ReadJson(const Context& json)
         jump(!ClickType.CompareNoCase("Click")) mClickMode = ClickMode::Click;
         jump(!ClickType.CompareNoCase("Click_DoubleClick")) mClickMode = ClickMode::Click_DoubleClick;
         jump(!ClickType.CompareNoCase("Click_LongPress")) mClickMode = ClickMode::Click_LongPress;
+        jump(!ClickType.CompareNoCase("Click_Swipe")) mClickMode = ClickMode::Click_Swipe;
         jump(!ClickType.CompareNoCase("Click_DoubleClick_LongPress")) mClickMode = ClickMode::Click_DoubleClick_LongPress;
         else mClickMode = ClickMode::Error;
     }
@@ -2970,6 +2976,7 @@ void ZEZayBoxError::WriteJson(Context& json, bool makeid) const
         branch;
         jump(mClickMode == ClickMode::Click_DoubleClick) json.At("clicktype").Set("Click_DoubleClick");
         jump(mClickMode == ClickMode::Click_LongPress) json.At("clicktype").Set("Click_LongPress");
+        jump(mClickMode == ClickMode::Click_Swipe) json.At("clicktype").Set("Click_Swipe");
         jump(mClickMode == ClickMode::Click_DoubleClick_LongPress) json.At("clicktype").Set("Click_DoubleClick_LongPress");
         jump(mClickMode == ClickMode::Error) json.At("clicktype").Set("Error");
     }

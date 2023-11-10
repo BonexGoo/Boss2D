@@ -1608,10 +1608,13 @@ namespace BOSS
     ZayPanel::SubGestureCB ZayExtend::Payload::MakeGesture() const
     {
         auto ElementID = mElementID;
-        return ZAY_GESTURE_VNT(v, n, t, ElementID)
+        return ZAY_GESTURE_VNTXY(v, n, t, x, y, ElementID)
             {
                 static bool PressMode = false;
                 static bool HasLongPress = false;
+                static const sint32 SwipeGap = 50;
+                static sint32 OldSwipeX = 0;
+                static sint32 OldSwipeY = 0;
                 static String ReleaseUIName;
                 static uint64 ReleaseMsec = 0;
                 if(t == GT_Moving || t == GT_MovingIdle)
@@ -1626,6 +1629,27 @@ namespace BOSS
                         ZaySonElementCall::SetCursor(ElementID, CR_Busy);
                     }
                     HasLongPress = false;
+                    OldSwipeX = x;
+                    OldSwipeY = y;
+                }
+                else if(!PressMode && (t == GT_InDragging || t == GT_OutDragging))
+                {
+                    if(ZaySonElementCall::IsValidSwipe(ElementID))
+                    {
+                        sint32 SwipeID = 0;
+                        if(y < OldSwipeY - SwipeGap) SwipeID = 1; // Up
+                        else if(OldSwipeY + SwipeGap < y) SwipeID = 2; // Down
+                        else if(x < OldSwipeX - SwipeGap) SwipeID = 3; // Left
+                        else if(OldSwipeX + SwipeGap < x) SwipeID = 4; // Right
+                        if(SwipeID != 0)
+                        {
+                            OldSwipeX = x;
+                            OldSwipeY = y;
+                            if(ZaySonElementCall::SendClick(ElementID, n, false, false,
+                                (SwipeID == 1), (SwipeID == 2), (SwipeID == 3), (SwipeID == 4), false, false))
+                                v->invalidate();
+                        }
+                    }
                 }
                 else if(t == GT_InReleased || (PressMode && (t == GT_OutReleased || t == GT_CancelReleased)))
                 {
@@ -1635,14 +1659,14 @@ namespace BOSS
                         const bool HasDoubleClick = (CurReleaseMsec < ReleaseMsec + 300 && ReleaseUIName == n);
                         if(HasDoubleClick && ZaySonElementCall::IsValidDoubleClick(ElementID))
                         {
-                            if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false))
+                            if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false, false, false, false, false))
                                 ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
                             ReleaseUIName.Empty();
                             ReleaseMsec = 0;
                         }
                         else
                         {
-                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, t == GT_OutReleased, t == GT_CancelReleased))
+                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, false, false, false, false, t == GT_OutReleased, t == GT_CancelReleased))
                                 ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
                             ReleaseUIName = n;
                             ReleaseMsec = CurReleaseMsec;
@@ -1654,7 +1678,7 @@ namespace BOSS
                 {
                     if(ZaySonElementCall::IsValidLongPress(ElementID))
                     {
-                        if(ZaySonElementCall::SendClick(ElementID, n, false, true, false, false))
+                        if(ZaySonElementCall::SendClick(ElementID, n, false, true, false, false, false, false, false, false))
                             v->invalidate();
                         HasLongPress = true;
                     }
