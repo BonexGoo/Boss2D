@@ -10,7 +10,7 @@ namespace BOSS
     enum NotifyType {NT_Normal, NT_KeyPress, NT_KeyRelease,
         NT_WindowWeb, NT_FileContent, NT_SocketReceive, NT_Summit, NT_GLState,
         NT_BluetoothSearch, NT_BluetoothDevice, NT_BluetoothService, NT_BluetoothReceive,
-        NT_CameraCapture, NT_TrayPopup, NT_ZayWidget, NT_AddOn};
+        NT_Serial, NT_CameraCapture, NT_TrayPopup, NT_ZayWidget, NT_AddOn};
     enum TouchType {TT_Null,
         // 일반
         TT_Moving, TT_MovingIdle, TT_Press, TT_Dragging, TT_DraggingIdle, TT_Release,

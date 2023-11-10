@@ -1994,12 +1994,12 @@ public:
 
         /// @brief 시리얼통신ID 할당
         /// @param name : 시리얼포트이름(없으면 첫번째 시리얼포트찾음)
-        /// @param baudrate : 통신속도
+        /// @param baudrate : 통신속도(디폴트는 -1)
         /// @param dec : 읽기시 
         /// @param enc :
         /// @return 시리얼통신ID(nullptr은 실패)
         /// @see Close
-        static id_serial Open(chars name = "", sint32 baudrate = 115200,
+        static id_serial Open(chars name = "", sint32 baudrate = -1,
             SerialDecodeCB dec = nullptr, SerialEncodeCB enc = nullptr);
 
         /// @brief 시리얼통신ID 반환

@@ -6004,300 +6004,7 @@
         };
     #endif
 
-    #if BOSS_ANDROID & defined(QT_HAVE_SERIALPORT)
-        typedef QSerialPortInfo SerialPortInfoClass;
-        class SerialPortForAndroid
-        {
-        public:
-            enum BaudRate {
-                Baud1200 = QSerialPort::Baud1200,
-                Baud2400 = QSerialPort::Baud2400,
-                Baud4800 = QSerialPort::Baud4800,
-                Baud9600 = QSerialPort::Baud9600,
-                Baud19200 = QSerialPort::Baud19200,
-                Baud38400 = QSerialPort::Baud38400,
-                Baud57600 = QSerialPort::Baud57600,
-                Baud115200 = QSerialPort::Baud115200,
-                UnknownBaud = QSerialPort::UnknownBaud};
-            enum DataBits {
-                Data5 = QSerialPort::Data5,
-                Data6 = QSerialPort::Data6,
-                Data7 = QSerialPort::Data7,
-                Data8 = QSerialPort::Data8,
-                UnknownDataBits = QSerialPort::UnknownDataBits};
-            enum Parity {
-                NoParity = QSerialPort::NoParity,
-                EvenParity = QSerialPort::EvenParity,
-                OddParity = QSerialPort::OddParity,
-                SpaceParity = QSerialPort::SpaceParity,
-                MarkParity = QSerialPort::MarkParity,
-                UnknownParity = QSerialPort::UnknownParity};
-            enum StopBits {
-                OneStop = QSerialPort::OneStop,
-                OneAndHalfStop = QSerialPort::OneAndHalfStop,
-                TwoStop = QSerialPort::TwoStop,
-                UnknownStopBits = QSerialPort::UnknownStopBits};
-            enum FlowControl {
-                NoFlowControl = QSerialPort::NoFlowControl,
-                HardwareControl = QSerialPort::HardwareControl,
-                SoftwareControl = QSerialPort::SoftwareControl,
-                UnknownFlowControl = QSerialPort::UnknownFlowControl};
-            enum SerialPortError {
-                NoError = QSerialPort::NoError,
-                DeviceNotFoundError = QSerialPort::DeviceNotFoundError,
-                PermissionError = QSerialPort::PermissionError,
-                OpenError = QSerialPort::OpenError,
-                ParityError = QSerialPort::ParityError,
-                FramingError = QSerialPort::FramingError,
-                BreakConditionError = QSerialPort::BreakConditionError,
-                WriteError = QSerialPort::WriteError,
-                ReadError = QSerialPort::ReadError,
-                ResourceError = QSerialPort::ResourceError,
-                UnsupportedOperationError = QSerialPort::UnsupportedOperationError,
-                UnknownError = QSerialPort::UnknownError,
-                TimeoutError = QSerialPort::TimeoutError,
-                NotOpenError = QSerialPort::NotOpenError};
-        public:
-            SerialPortForAndroid(const SerialPortInfoClass& info)
-            {
-                mPortName = info.portName().toUtf8().constData();
-                mLocation = info.systemLocation().toUtf8().constData();
-                mBaudRate = UnknownBaud;
-                mDataBits = UnknownDataBits;
-                mParity = UnknownParity;
-                mStopBits = UnknownStopBits;
-                mFlowControl = UnknownFlowControl;
-                mFd = -1;
-            }
-            ~SerialPortForAndroid()
-            {
-                close();
-            }
-
-        public:
-            bool open(QIODevice::OpenModeFlag flag)
-            {
-                close();
-                int mode = 0;
-                switch(flag)
-                {
-                case QIODevice::ReadOnly: mode = O_RDONLY | O_NOCTTY | O_NONBLOCK; break;
-                case QIODevice::WriteOnly: mode = O_WRONLY | O_NOCTTY | O_NONBLOCK; break;
-                case QIODevice::ReadWrite: mode = O_RDWR | O_NOCTTY | O_NONBLOCK; break;
-                default: BOSS_ASSERT("알 수 없는 flag값입니다", false); return false;
-                }
-                const int fd = ::open(mLocation, mode);
-                BOSS_TRACE("SerialPortForAndroid::open(%s, %d) fd = %d", (chars) mLocation, mode, fd);
-                if(fd == -1)
-                {
-                    if(errno == EINTR) // Recurse because this is a recoverable error
-                        return open(flag);
-                    return false;
-                }
-                mFd = reconfigurePort(fd);
-                return true;
-            }
-            void close()
-            {
-                if(mFd != -1)
-                {
-                    ::close(mFd);
-                    mFd = -1;
-                }
-            }
-            QByteArray readAll()
-            {
-                QByteArray Result;
-                if(mFd != -1)
-                {
-                    char buf[1024];
-                    ssize_t bytes_read = ::read(mFd, buf, sizeof(buf));
-                    if(0 < bytes_read)
-                        Result.append(buf, bytes_read);
-                }
-                return Result;
-            }
-            qint64 write(const char* data, qint64 len)
-            {
-                if(mFd == -1) return 0;
-                size_t data_focus = 0;
-                while(data_focus < len)
-                {
-                    fd_set writefds;
-                    FD_ZERO(&writefds);
-                    FD_SET(mFd, &writefds);
-                    timespec timeout_ts(timespec_from_ms(10));
-                    int ret = pselect(mFd + 1, nullptr, &writefds, nullptr, &timeout_ts, nullptr);
-                    if(ret < 0)
-                    {
-                        if(errno == EINTR) continue;
-                        return false;
-                    }
-                    else if(0 < ret)
-                    {
-                        if(FD_ISSET(mFd, &writefds) != 0)
-                        {
-                            const ssize_t bytes_written_now = ::write(mFd, data + data_focus, len - data_focus);
-                            if(bytes_written_now < 1) break;
-                            data_focus += bytes_written_now;
-                        }
-                    }
-                }
-                return data_focus;
-            }
-            bool flush()
-            {
-                return (mFd != -1);
-            }
-
-        public: // setter
-            void setBaudRate(BaudRate baudrate) {mBaudRate = baudrate;}
-            void setDataBits(DataBits databits) {mDataBits = databits;}
-            void setParity(Parity parity) {mParity = parity;}
-            void setStopBits(StopBits stopbits) {mStopBits = stopbits;}
-            void setFlowControl(FlowControl flowcontrol) {mFlowControl = flowcontrol;}
-
-        public: // getter
-            QString portName() {return (chars) mPortName;}
-            QString errorString() {return "NoError";}
-            SerialPortError error() {return NoError;}
-
-        private:
-            String mPortName;
-            String mLocation;
-            BaudRate mBaudRate;
-            DataBits mDataBits;
-            Parity mParity;
-            StopBits mStopBits;
-            FlowControl mFlowControl;
-            int mFd;
-
-        private:
-            int reconfigurePort(const int fd)
-            {
-                struct termios options;
-                if(tcgetattr(fd, &options) == -1)
-                {
-                    ::close(fd);
-                    return -1;
-                }
-
-                // set up raw mode / no echo / binary
-                options.c_cflag |= (tcflag_t)  (CLOCAL | CREAD);
-                options.c_lflag &= (tcflag_t) ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG | IEXTEN);
-                options.c_oflag &= (tcflag_t) ~(OPOST);
-                options.c_iflag &= (tcflag_t) ~(INLCR | IGNCR | ICRNL | IGNBRK);
-                #ifdef IUCLC
-                    options.c_iflag &= (tcflag_t) ~IUCLC;
-                #endif
-                #ifdef PARMRK
-                    options.c_iflag &= (tcflag_t) ~PARMRK;
-                #endif
-
-                // setup baud rate
-                speed_t baud;
-                switch(mBaudRate)
-                {
-                case Baud1200: baud = B1200; break;
-                case Baud2400: baud = B2400; break;
-                case Baud4800: baud = B4800; break;
-                default: BOSS_ASSERT("알 수 없는 mBaudRate값입니다", false);
-                case Baud9600: baud = B9600; break;
-                case Baud19200: baud = B19200; break;
-                case Baud38400: baud = B38400; break;
-                case Baud57600: baud = B57600; break;
-                case Baud115200: baud = B115200; break;
-                }
-                #ifdef _BSD_SOURCE
-                    ::cfsetspeed(&options, baud);
-                #else
-                    ::cfsetispeed(&options, baud);
-                    ::cfsetospeed(&options, baud);
-                #endif
-
-                // setup char len
-                options.c_cflag &= (tcflag_t) ~CSIZE;
-                switch(mDataBits)
-                {
-                case Data5: options.c_cflag |= CS5; break;
-                case Data6: options.c_cflag |= CS6; break;
-                case Data7: options.c_cflag |= CS7; break;
-                default: BOSS_ASSERT("알 수 없는 mDataBits값입니다", false);
-                case Data8: options.c_cflag |= CS8; break;
-                }
-
-                // setup stopbits
-                switch(mStopBits)
-                {
-                default: BOSS_ASSERT("알 수 없는 mStopBits값입니다", false);
-                case OneStop: options.c_cflag &= (tcflag_t) ~(CSTOPB); break;
-                case OneAndHalfStop: options.c_cflag |= (CSTOPB); break;
-                case TwoStop: options.c_cflag |= (CSTOPB); break;
-                }
-
-                // setup parity
-                options.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP);
-                switch(mParity)
-                {
-                default: BOSS_ASSERT("알 수 없는 mParity값입니다", false);
-                case NoParity: options.c_cflag &= (tcflag_t) ~(PARENB | PARODD); break;
-                case EvenParity: options.c_cflag &= (tcflag_t) ~(PARODD); options.c_cflag |= (PARENB); break;
-                case OddParity: options.c_cflag |= (PARENB | PARODD); break;
-                case SpaceParity: options.c_cflag |= (PARENB | CMSPAR); options.c_cflag &= (tcflag_t) ~(PARODD); break;
-                case MarkParity: options.c_cflag |= (PARENB | CMSPAR | PARODD); break;
-                }
-                #ifndef CMSPAR
-                    if(mParity == SpaceParity || mParity == MarkParity)
-                        BOSS_ASSERT("OS에서 지원하지 않는 mParity값입니다", false);
-                #endif
-
-                // setup flow control
-                bool xonxoff, rtscts;
-                switch(mFlowControl)
-                {
-                default: BOSS_ASSERT("알 수 없는 mFlowControl값입니다", false);
-                case NoFlowControl: xonxoff = false; rtscts = false; break;
-                case HardwareControl: xonxoff = false; rtscts = true; break;
-                case SoftwareControl: xonxoff = true; rtscts = false; break;
-                }
-                // xonxoff
-                #ifdef IXANY
-                    if(xonxoff) options.c_iflag |= (IXON | IXOFF);
-                    else options.c_iflag &= (tcflag_t) ~(IXON | IXOFF | IXANY);
-                #else
-                    if(xonxoff) options.c_iflag |= (IXON | IXOFF);
-                    else options.c_iflag &= (tcflag_t) ~(IXON | IXOFF);
-                #endif
-                // rtscts
-                #ifdef CRTSCTS
-                    if(rtscts) options.c_cflag |= (CRTSCTS);
-                    else options.c_cflag &= (unsigned long) ~(CRTSCTS);
-                #elif defined CNEW_RTSCTS
-                    if(rtscts) options.c_cflag |= (CNEW_RTSCTS);
-                    else options.c_cflag &= (unsigned long) ~(CNEW_RTSCTS);
-                #else
-                    BOSS_ASSERT("OS에서 지원하지 않는 rtscts값입니다", false);
-                #endif
-
-                options.c_cc[VMIN] = 0;
-                options.c_cc[VTIME] = 0;
-                if(tcsetattr(fd, TCSANOW, &options) == -1)
-                {
-                    ::close(fd);
-                    return -1;
-                }
-                return fd;
-            }
-            timespec timespec_from_ms(const uint32_t millis)
-            {
-                timespec time;
-                time.tv_sec = millis / 1e3;
-                time.tv_nsec = (millis - (time.tv_sec * 1e3)) * 1e6;
-                return time;
-            }
-        };
-        typedef SerialPortForAndroid SerialPortClass;
-    #elif defined(QT_HAVE_SERIALPORT)
+    #if defined(QT_HAVE_SERIALPORT)
         typedef QSerialPortInfo SerialPortInfoClass;
         typedef QSerialPort SerialPortClass;
     #else
@@ -6360,10 +6067,11 @@
         typedef SerialPortForBlank SerialPortClass;
     #endif
 
-    class SerialClass
+    class SerialClass : public SerialPortClass
     {
+        Q_OBJECT
+
     private:
-        SerialPortClass* mSerial;
         SerialDecodeCB mDec;
         SerialEncodeCB mEnc;
         uint08s mReadStream;
@@ -6458,9 +6166,14 @@
         }
 
     public:
+        SerialClass()
+        {
+            mDec = DefaultSerialDecode;
+            mEnc = DefaultSerialEncode;
+            mLastDecodedDataFocus = 0;
+        }
         SerialClass(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
-            mSerial = nullptr;
             mDec = (dec)? dec : DefaultSerialDecode;
             mEnc = (enc)? enc : DefaultSerialEncode;
             mLastDecodedDataFocus = 0;
@@ -6469,22 +6182,28 @@
             {
                 if(*name == '\0' || CurPort.portName() == name || CurPort.description() == name)
                 {
-                    mSerial = new SerialPortClass(CurPort);
-                    mSerial->setBaudRate((SerialPortClass::BaudRate) baudrate);
-                    mSerial->setDataBits(SerialPortClass::Data8);
-                    mSerial->setParity(SerialPortClass::NoParity);
-                    mSerial->setStopBits(SerialPortClass::OneStop);
-                    mSerial->setFlowControl(SerialPortClass::NoFlowControl);
-                    if(!mSerial->open(QIODevice::ReadWrite))
+                    if(baudrate != -1)
                     {
-                        BOSS_ASSERT(String::Format("QSerialPort error: port=%s, error=%s(%d)",
-                            mSerial->portName().toUtf8().constData(),
-                            mSerial->errorString().toUtf8().constData(),
-                            (sint32) mSerial->error()), false);
-                        delete mSerial;
-                        mSerial = nullptr;
+                        setPortName(CurPort.portName());
+                        setBaudRate((SerialPortClass::BaudRate) baudrate);
+                        setDataBits(SerialPortClass::Data8);
+                        setParity(SerialPortClass::NoParity);
+                        setStopBits(SerialPortClass::OneStop);
+                        setFlowControl(SerialPortClass::NoFlowControl);
+                    }
+                    else setPort(CurPort);
+
+                    if(!open(QIODevice::ReadWrite))
+                    {
+                        BOSS_TRACE("SerialClass error: port=%s, error=%s(%d)",
+                            portName().toUtf8().constData(), errorString().toUtf8().constData(), (sint32) error());
                         if(*name == '\0')
                             continue;
+                    }
+                    else
+                    {
+                        connect(this, &QSerialPort::errorOccurred, this, &SerialClass::OnErrorOccurred);
+                        connect(this, &QSerialPort::readyRead, this, &SerialClass::OnRead);
                     }
                     break;
                 }
@@ -6493,28 +6212,39 @@
 
         ~SerialClass()
         {
-            delete mSerial;
+        }
+
+    private slots:
+        void OnErrorOccurred(QSerialPort::SerialPortError error)
+        {
+            Platform::BroadcastNotify("error", nullptr, NT_Serial);
+        }
+
+        void OnRead()
+        {
+            QByteArray NewArray = readAll();
+            if(0 < NewArray.length())
+            {
+                Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
+                Platform::BroadcastNotify("message", nullptr, NT_Serial);
+            }
         }
 
     public:
         bool IsValid()
         {
-            return (mSerial != nullptr);
+            return isOpen();
         }
 
         bool Connected()
         {
-            auto ErrorCode = mSerial->error();
+            auto ErrorCode = error();
             return (ErrorCode == SerialPortClass::NoError);
         }
 
         bool ReadReady(sint32* gettype)
         {
-            // 데이터수신시 읽기스트림에 추가연결
-            QByteArray NewArray = mSerial->readAll();
-            if(0 < NewArray.length())
-                Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
-
+            OnRead();
             // 읽기스트림의 처리
             if(0 < mReadStream.Count())
             {
@@ -6522,7 +6252,8 @@
                 const sint32 UsedLength = mDec(&mReadStream[0], mReadStream.Count(), mLastDecodedData, gettype);
                 if(0 < UsedLength)
                 {
-                    BOSS_ASSERT("SerialDecodeCB의 리턴값이 허용범위를 초과합니다", UsedLength <= mReadStream.Count());
+                    if(UsedLength <= mReadStream.Count())
+                        BOSS_TRACE("SerialDecodeCB의 리턴값이 허용범위를 초과합니다");
                     const sint32 CopyLength = mReadStream.Count() - UsedLength;
                     if(0 < CopyLength)
                     {
@@ -6745,8 +6476,8 @@
 
                 if(0 < NewEncodedData.Count())
                 {
-                    mSerial->write((const char*) &NewEncodedData[0], NewEncodedData.Count());
-                    mSerial->flush();
+                    write((const char*) &NewEncodedData[0], NewEncodedData.Count());
+                    flush();
                 }
             }
         }
@@ -7937,6 +7668,7 @@
     class BluetoothLEServerClass : public BluetoothClass {Q_OBJECT};
     class BluetoothClientClass : public BluetoothClass {Q_OBJECT};
     class BluetoothLEClientClass : public BluetoothClass {Q_OBJECT};
+    class SerialClass : public SerialPortClass {Q_OBJECT};
     class CameraSurface : public QAbstractVideoSurface {Q_OBJECT};
     class MicrophoneClass : public QAudioProbe {Q_OBJECT};
 
