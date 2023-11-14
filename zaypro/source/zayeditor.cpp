@@ -1507,7 +1507,7 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
             for(sint32 i = 0; i < 8; ++i)
             {
                 ZAY_INNER(panel, -i)
-                ZAY_RGBA(panel, 255, 0, 0, 240 * (8 - i) / 8)
+                ZAY_RGBA(panel, 255, 0, 200, 200 * (8 - i) / 8)
                     panel.rect(1);
             }
         }
@@ -1533,7 +1533,7 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
                 chars Text = ZEZayBox::CommentTagService::GetFocusText();
                 const Color BGColor = ZEZayBox::CommentTagService::GetFocusColor();
                 const sint32 TextWidth = Platform::Graphics::GetStringWidth(Text);
-                const Point TargetPos = ZEZayBox::CommentTagService::GetFocusPos();
+                const Point TargetPos = ZEZayBox::CommentTagService::GetFocusPos() + mWorkViewScroll;
 
                 const String UIName = String::Format("tag-%d", i);
                 ZAY_XYWH(panel, panel.w() - (CurXSum + TextWidth), TextPosY, TextWidth, TextHeight)
