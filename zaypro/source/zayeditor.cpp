@@ -26,12 +26,8 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         if(1 <= Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y))
         {
             Point Drag = Point(m->mWorkViewDrag.x / 20, m->mWorkViewDrag.y / 20);
-            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
-            {
-                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-                (*CurBox)->Move(Drag);
-            }
             m->mWorkViewDrag -= Drag;
+            m->mWorkViewScroll += Drag;
             m->invalidate();
         }
     }
@@ -247,11 +243,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     {
                         auto& OldPos = v->oldxy(n);
                         const Point Drag(x - OldPos.x, y - OldPos.y);
-                        for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
-                        {
-                            auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-                            (*CurBox)->Move(Drag);
-                        }
+                        m->mWorkViewScroll += Drag;
                         v->invalidate();
                         m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
                     }
@@ -283,6 +275,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 }
 
                 // 박스
+                ZAY_MOVE(panel, m->mWorkViewScroll.x, m->mWorkViewScroll.y)
                 for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
                 {
                     auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
@@ -1007,11 +1000,12 @@ void zayeditorData::ResetBoxes()
     // 스타터 입력
     ZEZayBoxObject NewZayBox;
     NewZayBox = ZEZayBoxStarter::Create();
-    NewZayBox->Init(0, "widget", Color(255, 255, 255, 192), "box_title_first", true, 10, 10);
+    NewZayBox->Init(0, "widget", Color(255, 255, 255, 192), "box_title_first", true, 20, 20);
     ZEZayBox::TOP()[0] = NewZayBox;
     mDraggingHook = -1;
     mShowCommentTagMsec = 0;
     mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
+    mWorkViewScroll = Point(); // 스크롤정위치
 }
 
 void zayeditorData::NewProject()
@@ -1048,6 +1042,10 @@ void zayeditorData::LoadCore(const Context& json)
     // 위젯 및 위젯과 연결된 박스로드
     ZEZayBox::TOP()[0]->ReadJson(json);
     ZEZayBox::Load(ZEZayBox::TOP()[0]->children(), json("ui"), ZEZayBox::TOP()[0].ConstPtr(), 0);
+    // 스타터위치로 스크롤이동
+    auto StarterRect = ZEZayBox::TOP()[0]->GetRect();
+    mWorkViewScroll.x = 20 - StarterRect.l;
+    mWorkViewScroll.y = 20 - StarterRect.t;
 
     // 기타 박스로드
     sint32s ExtendIDs;
@@ -1065,12 +1063,22 @@ void zayeditorData::SaveCore(chars filename) const
     sint32s ExtendIDs;
     for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
     {
-        chararray GetID;
-        if(auto CurBox = ZEZayBox::TOP().AccessByOrder(i, &GetID))
+        if(auto CurBox = ZEZayBox::TOP().AccessByOrder(i))
         {
-            const sint32 CurID = MapPath::ToInt(GetID);
+            sint32 CurID = (*CurBox)->id();
             if(CurID != 0 && (*CurBox)->parent() == -1)
-                ExtendIDs.AtAdding() = CurID;
+            {
+                for(sint32 j = 0, jend = ExtendIDs.Count(); j <= jend; ++j)
+                {
+                    if(j == jend)
+                        ExtendIDs.AtAdding() = CurID;
+                    else if(CurID < ExtendIDs[j])
+                    {
+                        ExtendIDs.DeliveryOne(j, ToReference(CurID));
+                        break;
+                    }
+                }
+            }
         }
     }
     if(0 < ExtendIDs.Count())
@@ -1427,7 +1435,7 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
     for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
     {
         auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-        auto CurRect = (*CurBox)->GetRect();
+        auto CurRect = (*CurBox)->GetRect() + mWorkViewScroll;
         SumRect.l = Math::MinF(SumRect.l, CurRect.l);
         SumRect.t = Math::MinF(SumRect.t, CurRect.t);
         SumRect.r = Math::MaxF(SumRect.r, CurRect.r);
@@ -1473,7 +1481,7 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
             for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
             {
                 auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
-                auto CurRect = (*CurBox)->GetRect();
+                auto CurRect = (*CurBox)->GetRect() + mWorkViewScroll;
                 CurRect -= BeginPos;
                 CurRect *= Rate;
                 ZAY_RECT(panel, CurRect)
@@ -1496,10 +1504,10 @@ void zayeditorData::RenderMiniMap(ZayPanel& panel)
             ScreenRect -= BeginPos;
             ScreenRect *= Rate;
             ZAY_RECT(panel, ScreenRect)
+            for(sint32 i = 0; i < 8; ++i)
             {
-                ZAY_RGBA(panel, 255, 255, 255, 64)
-                    panel.fill();
-                ZAY_RGB(panel, 0, 0, 0)
+                ZAY_INNER(panel, -i)
+                ZAY_RGBA(panel, 255, 0, 0, 240 * (8 - i) / 8)
                     panel.rect(1);
             }
         }

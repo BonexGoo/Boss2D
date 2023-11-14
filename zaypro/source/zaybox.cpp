@@ -45,13 +45,6 @@ sint32 ZEZayBox::ValidLastID(sint32 id)
 
 void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox* self, sint32 group)
 {
-    double TopPosX = 0, TopPosY = 0;
-    if(const auto TopBox = TOP().Access(0))
-    {
-        TopPosX = TopBox->ConstValue().mPosX;
-        TopPosY = TopBox->ConstValue().mPosY;
-    }
-
     children.Clear();
     for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
     {
@@ -66,8 +59,8 @@ void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox* self
             auto NewBoxObject = CREATOR()(CurCompName);
             auto& CurBox = NewBoxObject.Value();
             CurBox.mExpanded = (fish("expanded").GetInt(1) != 0);
-            CurBox.mPosX = TopPosX + fish("posx").GetFloat((self)? self->mPosX + self->mBodySize.w + self->mAddW + 30 - TopPosX : 0);
-            CurBox.mPosY = TopPosY + fish("posy").GetFloat((self)? self->mPosY + (TitleBarHeight + 20.0) * i - TopPosY : 0);
+            CurBox.mPosX = fish("posx").GetInt((self)? (sint32) Math::Round(self->mPosX + self->mBodySize.w + self->mAddW + 30) : 0);
+            CurBox.mPosY = fish("posy").GetInt((self)? (sint32) Math::Round(self->mPosY + (TitleBarHeight + 20.0) * i) : 0);
             CurBox.mAddW = fish("addw").GetInt(0);
 
             // 자식의 HookPos설정
@@ -97,23 +90,16 @@ void ZEZayBox::Load(sint32s& children, const Context& json, const ZEZayBox* self
 
 void ZEZayBox::Save(const sint32s& children, Context& json, bool makeid)
 {
-    double TopPosX = 0, TopPosY = 0;
-    if(const auto TopBox = TOP().Access(0))
-    {
-        TopPosX = TopBox->ConstValue().mPosX;
-        TopPosY = TopBox->ConstValue().mPosY;
-    }
-
     for(sint32 i = 0, iend = children.Count(); i < iend; ++i)
     {
-        hook(json.At(i))
+        hook(json.AtAdding())
         if(auto CurBoxObject = TOP().Access(children[i]))
         {
             auto& CurBox = CurBoxObject->ConstValue();
             CurBox.WriteJson(fish, makeid);
             fish.At("expanded").Set(String::FromInteger((CurBox.mExpanded)? 1 : 0));
-            fish.At("posx").Set(String::FromInteger(sint32(CurBox.mPosX - TopPosX + 0.5)));
-            fish.At("posy").Set(String::FromInteger(sint32(CurBox.mPosY - TopPosY + 0.5)));
+            fish.At("posx").Set(String::FromInteger((sint32) Math::Round(CurBox.mPosX)));
+            fish.At("posy").Set(String::FromInteger((sint32) Math::Round(CurBox.mPosY)));
             fish.At("addw").Set(String::FromInteger(CurBox.mAddW));
             if(0 < CurBox.children().Count())
                 ZEZayBox::Save(CurBox.children(), fish.At("ui"), makeid);
@@ -734,12 +720,6 @@ void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
     }
 }
 
-void ZEZayBox::Move(Point drag)
-{
-    mPosX += drag.x;
-    mPosY += drag.y;
-}
-
 void ZEZayBox::Resize(sint32 add)
 {
     add = Math::Max(-mAddW, add);
@@ -1302,13 +1282,16 @@ void ZEZayBox::BodyParamGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mParams.Count(); i < iend; ++i)
     {
-        if(ZaySonUtility::ToCondition(mParams[i]) != ZaySonInterface::ConditionType::Unknown)
-            json.At("compvalues").At(i).Set(mParams[i]);
-        else
+        hook(json.At("compvalues").AtAdding())
         {
-            Strings SubParams = ZaySonUtility::GetCommaStrings(mParams[i]);
-            for(sint32 j = 0; j < SubParams.Count(); ++j)
-                json.At("compvalues").At(i).At(j).Set(SubParams[j]);
+            if(ZaySonUtility::ToCondition(mParams[i]) != ZaySonInterface::ConditionType::Unknown)
+                fish.Set(mParams[i]);
+            else
+            {
+                Strings SubParams = ZaySonUtility::GetCommaStrings(mParams[i]);
+                for(sint32 j = 0; j < SubParams.Count(); ++j)
+                    fish.AtAdding().Set(SubParams[j]);
+            }
         }
     }
 }
@@ -1582,13 +1565,16 @@ void ZEZayBox::BodyInputGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mInputs.Count(); i < iend; ++i)
     {
-        if(ZaySonUtility::ToCondition(mInputs[i].mValue) != ZaySonInterface::ConditionType::Unknown)
-            json.At(i).Set(mInputs[i].mValue);
-        else if(ZaySonUtility::IsFunctionCall(mInputs[i].mValue))
-            json.At(i).Set(mInputs[i].mValue);
-        else if(mInputs[i].mKey.Length() == 0)
-            json.At(i).Set(mInputs[i].mValue);
-        else json.At(i).At(mInputs[i].mKey).Set(mInputs[i].mValue);
+        hook(json.AtAdding())
+        {
+            if(ZaySonUtility::ToCondition(mInputs[i].mValue) != ZaySonInterface::ConditionType::Unknown)
+                fish.Set(mInputs[i].mValue);
+            else if(ZaySonUtility::IsFunctionCall(mInputs[i].mValue))
+                fish.Set(mInputs[i].mValue);
+            else if(mInputs[i].mKey.Length() == 0)
+                fish.Set(mInputs[i].mValue);
+            else fish.At(mInputs[i].mKey).Set(mInputs[i].mValue);
+        }
     }
 }
 
@@ -2062,7 +2048,7 @@ void ZEZayBox::BodyInsideGroup::WriteJson(Context& json, bool makeid) const
 {
     for(sint32 i = 0, iend = mBalls.Count(); i < iend; ++i)
     {
-        hook(json.At("insiders").At(i))
+        hook(json.At("insiders").AtAdding())
         {
             fish.At("name").Set(mBalls[i].mName);
             fish.At("ballposx").Set(String::FromFloat(mBalls[i].mBallPos.x));
@@ -2203,6 +2189,8 @@ ZEZayBoxObject ZEZayBoxStarter::Create()
 void ZEZayBoxStarter::ReadJson(const Context& json)
 {
     mExpanded = (json("expanded").GetInt(1) != 0);
+    mPosX = json("posx").GetInt(0);
+    mPosY = json("posy").GetInt(0);
     mAddW = json("addw").GetInt(0);
 
     mComment.ReadJson(json);
@@ -2212,6 +2200,8 @@ void ZEZayBoxStarter::ReadJson(const Context& json)
 void ZEZayBoxStarter::WriteJson(Context& json, bool makeid) const
 {
     json.At("expanded").Set(String::FromInteger((mExpanded)? 1 : 0));
+    json.At("posx").Set(String::FromInteger((sint32) Math::Round(mPosX)));
+    json.At("posy").Set(String::FromInteger((sint32) Math::Round(mPosY)));
     json.At("addw").Set(String::FromInteger(mAddW));
 
     mComment.WriteJson(json, makeid);

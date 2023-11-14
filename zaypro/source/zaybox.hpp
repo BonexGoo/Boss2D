@@ -73,7 +73,6 @@ public:
     void RenderHookRemoveButton(ZayPanel& panel, chars uiname);
 
 public:
-    void Move(Point drag);
     void Resize(sint32 add);
     void FlushTitleDrag();
     void FlushTitleDragWith(bool withhook);

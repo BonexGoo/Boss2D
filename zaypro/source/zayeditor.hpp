@@ -265,6 +265,7 @@ public:
     uint64 mShowCommentTagMsec;
     Size mWorkViewSize;
     Point mWorkViewDrag;
+    Point mWorkViewScroll;
 
 public: // 윈도우상태
     static const sint32 mTitleHeight = 37;
