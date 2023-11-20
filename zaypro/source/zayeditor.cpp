@@ -250,6 +250,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
                     {
                         // 타이틀바만큼 올림
+                        m->mZaySonAPI.mDraggingComponentRect -= m->mWorkViewScroll;
                         m->mZaySonAPI.mDraggingComponentRect.t -= m->mTitleHeight;
                         m->mZaySonAPI.mDraggingComponentRect.b -= m->mTitleHeight;
 
