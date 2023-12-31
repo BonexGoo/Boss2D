@@ -209,6 +209,57 @@ namespace BOSS
                 #endif
             }
 
+            sint32 Utility_EnumPrograms(Context& programs, bool visible_only)
+            {
+                #if BOSS_WINDOWS
+                    struct Payload
+                    {
+                        Context* mPrograms;
+                        const bool mVisibleOnly;
+                    } OnePayload {&programs, visible_only};
+                    auto EnumWindowsProc = [](HWND hwnd, LPARAM lparam)->BOOL
+                    {
+                        Payload CurPayload = *((Payload*) lparam);
+                        if(!CurPayload.mVisibleOnly || IsWindowVisible(hwnd))
+                        {
+                            Context& Programs = *CurPayload.mPrograms;
+                            IsWindowVisible(hwnd);
+                            auto& NewProgram = Programs.AtAdding();
+                            // 윈도우타이틀
+                            wchar_t WindowTextW[MAX_PATH];
+                            const sint32 WindowTextLength = GetWindowTextW(hwnd, WindowTextW, MAX_PATH);
+                            const String WindowText = String::FromWChars(WindowTextW, WindowTextLength);
+                            NewProgram.At("windowtext").Set(WindowText);
+                            // 윈도우영역
+                            RECT WindowRect;
+                            GetWindowRect(hwnd, &WindowRect);
+                            NewProgram.At("windowrect").At("left").Set(String::FromInteger(WindowRect.left));
+                            NewProgram.At("windowrect").At("top").Set(String::FromInteger(WindowRect.top));
+                            NewProgram.At("windowrect").At("right").Set(String::FromInteger(WindowRect.right));
+                            NewProgram.At("windowrect").At("bottom").Set(String::FromInteger(WindowRect.bottom));
+                            // 프로세스ID
+                            DWORD ProcessID = 0;
+                            GetWindowThreadProcessId(hwnd, &ProcessID); 
+                            NewProgram.At("processid").Set(String::FromInteger((sint64) ProcessID));
+                            // 파일패스
+                            wchar_t FilePathW[MAX_PATH];
+                            DWORD FilePathSize = MAX_PATH;
+                            HANDLE ProcHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, ProcessID);
+                            QueryFullProcessImageNameW(ProcHandle, 0, FilePathW, &FilePathSize);
+                            CloseHandle(ProcHandle);
+                            String FilePath = String::FromWChars(FilePathW, FilePathSize);
+                            FilePath.Replace("\\", "/");
+                            NewProgram.At("filepath").Set(FilePath);
+                        }
+                        return true;
+                    };
+                    EnumWindows((WNDENUMPROC) EnumWindowsProc, (LPARAM) &OnePayload);
+                    return programs.LengthOfIndexable();
+                #else
+                    return 0;
+                #endif
+            }
+
             chars Utility_GetDeviceID()
             {
                 static String DeviceID;
@@ -732,14 +783,14 @@ namespace BOSS
                 #endif
             }
 
-            void Kill_ProgramDialog(ublock pid)
+            void Popup_KillProgramDialog(ublock pid)
             {
                 #if BOSS_WINDOWS
                     TerminateProcess((HANDLE) pid, 1);
                 #endif
             }
 
-            sint64 Find_WindowHandle(chars titlename)
+            sint64 Popup_FindWindowHandle(chars titlename)
             {
                 #if BOSS_WINDOWS
                     // 윈도우핸들 찾기
@@ -768,7 +819,7 @@ namespace BOSS
                 #endif
             }
 
-            bool Move_Window(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
+            bool Popup_MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
             {
                 #if BOSS_WINDOWS
                     if(hwnd != -1)
@@ -779,7 +830,7 @@ namespace BOSS
                 #endif
             }
 
-            bool Move_WindowGroup(sint64s windowparams)
+            bool Popup_MoveWindowGroup(sint64s windowparams)
             {
                 #if BOSS_WINDOWS
                     const sint32 WindowCount = windowparams.Count() / 5;
@@ -803,7 +854,45 @@ namespace BOSS
                     }
                     return FALSE;
                 #else
-                    return false;
+                    return FALSE;
+                #endif
+            }
+
+            bool Popup_MoveWindowGroupCaptured(sint64s windowparams, bool release)
+            {
+                #if BOSS_WINDOWS
+                    const sint32 WindowCount = windowparams.Count() / 5;
+                    if(0 < WindowCount)
+                    {
+                        // TOPMOST옵션으로 순서정렬후
+                        HDWP DeferHandle = BeginDeferWindowPos(WindowCount);
+                        for(sint32 i = 0; i < WindowCount; ++i)
+                        {
+                            HWND CurHandle = (HWND) windowparams[5 * i + 0];
+                            const sint32 Left = (sint32) windowparams[5 * i + 1];
+                            const sint32 Top = (sint32) windowparams[5 * i + 2];
+                            const sint32 Right = (sint32) windowparams[5 * i + 3];
+                            const sint32 Bottom = (sint32) windowparams[5 * i + 4];
+                            DeferWindowPos(DeferHandle, CurHandle, HWND_TOPMOST, Left, Top, Right - Left, Bottom - Top, SWP_SHOWWINDOW);
+                        }
+                        EndDeferWindowPos(DeferHandle);
+
+                        // TOPMOST옵션 제거
+                        if(release)
+                        {
+                            DeferHandle = BeginDeferWindowPos(WindowCount);
+                            for(sint32 i = 0; i < WindowCount; ++i)
+                            {
+                                HWND CurHandle = (HWND)windowparams[5 * i + 0];
+                                DeferWindowPos(DeferHandle, CurHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+                            }
+                            EndDeferWindowPos(DeferHandle);
+                        }
+                        return TRUE;
+                    }
+                    return FALSE;
+                #else
+                    return FALSE;
                 #endif
             }
 

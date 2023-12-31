@@ -36,7 +36,7 @@
     <ClInclude Include="..\source-gen\boss_buildtag.hpp">
       <Filter>source-gen</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\zayeditor.hpp">
+    <ClInclude Include="..\source\zaypro.hpp">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source\resource.hpp">
@@ -47,7 +47,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\zayeditor.cpp">
+    <ClCompile Include="..\source\zaypro.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\source\main.cpp">

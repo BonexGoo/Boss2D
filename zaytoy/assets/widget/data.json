@@ -1,0 +1,61 @@
+{
+	"trigger" : 
+	[
+		{
+			"title" : "Door",
+			"model" : "trigger",
+			"atlas" : "ico_triggerdoor_a_n"
+		},
+		{
+			"title" : "CMF",
+			"model" : "trigger",
+			"atlas" : "ico_triggercmf_a_n"
+		},
+		{
+			"title" : "Tray",
+			"model" : "trigger",
+			"atlas" : "ico_triggertray_a_n"
+		}
+	
+	],
+	"joint" : 
+	[
+		{
+			"title" : "Test",
+			"model" : "joint",
+			"atlas" : "ico_joint_a_n"
+		},
+		{
+			"title" : "Knee",
+			"model" : "knee",
+			"atlas" : "ico_joint_a_n"
+		},
+		{
+			"title" : "Neck",
+			"model" : "neck",
+			"atlas" : "ico_rotate_a_n"
+		},
+		{
+			"title" : "Slide",
+			"model" : "slide",
+			"atlas" : "ico_tray_a_n"
+		}
+	],
+	"fonts":
+	[
+		{"path" : "font/KIA_Bold.ttf"},
+		{"path" : "font/KIA_Light.ttf"},
+		{"path" : "font/KIA_Medium.ttf"},
+		{"path" : "font/KIA_MortorsMedium.ttf"},
+		{"path" : "font/KiaSignature_Bold.ttf"},
+		{"path" : "font/KiaSignature_Regular.ttf"},
+		{"path" : "font/KiaSignature_Light.ttf"},
+		{"path" : "font/HyundaiSansHeadOffice-Bold.ttf"},
+		{"path" : "font/HyundaiSansHeadOffice-Light.ttf"},
+		{"path" : "font/HyundaiSansHeadOffice-Medium.ttf"},
+		{"path" : "font/HyundaiSansHeadOffice-Regular.ttf"},
+		{"path" : "font/HyundaiSansTextOffice-Bold.ttf"},
+		{"path" : "font/HyundaiSansTextOffice-Medium.ttf"},
+		{"path" : "font/HyundaiSansTextOffice-Regular.ttf"}		
+	]
+}

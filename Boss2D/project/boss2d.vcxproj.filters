@@ -477,6 +477,9 @@
     <ClCompile Include="..\addon\boss_integration_libwebp-1.3.2.cpp">
       <Filter>Boss2D\addon</Filter>
     </ClCompile>
+    <ClCompile Include="..\service\boss_whisper.cpp">
+      <Filter>Boss2D\service</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\element\boss_clip.hpp">
@@ -920,23 +923,26 @@
     <ClInclude Include="..\addon\boss_integration_libwebp-1.3.2.h">
       <Filter>Boss2D\addon</Filter>
     </ClInclude>
+    <ClInclude Include="..\service\boss_whisper.hpp">
+      <Filter>Boss2D\service</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\platform\boss_platform_qt5.hpp">
+    <QtMoc Include="..\platform\boss_platform_qt5.hpp">
       <Filter>Boss2D\platform</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\platform\qt5\qtlottie\src\bodymovin\bmconstants_p.h">
+    </QtMoc>
+    <QtMoc Include="..\platform\qt5\qtlottie\src\bodymovin\bmconstants_p.h">
       <Filter>Boss2D\platform\qt5\qtlottie\src\bodymovin</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
+    </QtMoc>
+    <QtMoc Include="..\platform\qt5\qtlottie\src\imports\rasterrenderer\batchrenderer.h">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports\rasterrenderer</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.h">
+    </QtMoc>
+    <QtMoc Include="..\platform\qt5\qtlottie\src\imports\lottieanimation.h">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.h">
+    </QtMoc>
+    <QtMoc Include="..\platform\qt5\qtlottie\src\imports\fake_QQuick.h">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
-    </CustomBuild>
+    </QtMoc>
     <CustomBuild Include="..\platform\qt5\qtlottie\src\imports\bmconstants_p.cpp">
       <Filter>Boss2D\platform\qt5\qtlottie\src\imports</Filter>
     </CustomBuild>

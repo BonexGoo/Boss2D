@@ -532,22 +532,27 @@
 
         void Platform::Popup::CloseProgramDialog(ublock pid)
         {
-            PlatformImpl::Wrap::Kill_ProgramDialog(pid);
+            PlatformImpl::Wrap::Popup_KillProgramDialog(pid);
         }
 
         sint64 Platform::Popup::FindWindowHandle(chars titlename)
         {
-            return PlatformImpl::Wrap::Find_WindowHandle(titlename);
+            return PlatformImpl::Wrap::Popup_FindWindowHandle(titlename);
         }
 
         bool Platform::Popup::MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
         {
-            return PlatformImpl::Wrap::Move_Window(hwnd, left, top, right, bottom, repaint);
+            return PlatformImpl::Wrap::Popup_MoveWindow(hwnd, left, top, right, bottom, repaint);
         }
 
         bool Platform::Popup::MoveWindowGroup(sint64s windowparams)
         {
-            return PlatformImpl::Wrap::Move_WindowGroup(windowparams);
+            return PlatformImpl::Wrap::Popup_MoveWindowGroup(windowparams);
+        }
+
+        bool Platform::Popup::MoveWindowGroupCaptured(sint64s windowparams, bool release)
+        {
+            return PlatformImpl::Wrap::Popup_MoveWindowGroupCaptured(windowparams, release);
         }
 
         void Platform::Popup::SetTrackerFont(chars family, sint32 pointsize)
@@ -802,9 +807,20 @@
             return PlatformImpl::Wrap::Utility_GetOSName();
         }
 
+        sint32 Platform::Utility::EnumPrograms(Context& programs, bool visible_only)
+        {
+            return PlatformImpl::Wrap::Utility_EnumPrograms(programs, visible_only);
+        }
+
         chars Platform::Utility::GetDeviceID()
         {
             return PlatformImpl::Wrap::Utility_GetDeviceID();
+        }
+
+        sint64 Platform::Utility::GetProcessID()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
         }
 
         void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
@@ -2170,7 +2186,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PIPE
         ////////////////////////////////////////////////////////////////////////////////
-        id_pipe Platform::Pipe::Open(chars name)
+        id_pipe Platform::Pipe::Open(chars name, EventCB cb, payload data)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

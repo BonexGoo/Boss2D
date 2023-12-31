@@ -4194,11 +4194,13 @@
             Q_OBJECT
 
         public:
-            PipeClass(SharedMemoryClass* semaphore)
+            PipeClass(SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data)
             {
                 mStatus = CS_Connecting;
                 mTempContext = nullptr;
                 mSemaphore = semaphore;
+                mEventCB = cb;
+                mCBData = data;
             }
             virtual ~PipeClass()
             {
@@ -4269,6 +4271,8 @@
             chararray mData;
             Context* mTempContext;
             SharedMemoryClass* mSemaphore;
+            Platform::Pipe::EventCB mEventCB;
+            payload mCBData;
         };
 
         class PipeServerClass : public PipeClass
@@ -4276,7 +4280,7 @@
             Q_OBJECT
 
         public:
-            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore) : PipeClass(semaphore)
+            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) : PipeClass(semaphore, cb, data)
             {
                 mServer = server;
                 mLastClient = nullptr;
@@ -4312,6 +4316,8 @@
                 {
                     mStatus = CS_Connected;
                     mLastClient = NewClient;
+                    if(mEventCB)
+                        mEventCB(Platform::Pipe::Connected, mCBData);
                     connect(mLastClient, &QLocalSocket::readyRead, this, &PipeServerClass::OnReadyRead);
                     connect(mLastClient, &QLocalSocket::disconnected, this, &PipeServerClass::OnDisconnected);
                 }
@@ -4322,11 +4328,15 @@
                 mLastClient = (QLocalSocket*) sender();
                 if(sint64 PacketSize = mLastClient->bytesAvailable())
                     mLastClient->read((char*) mData.AtDumpingAdded(PacketSize), PacketSize);
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Received, mCBData);
             }
             void OnDisconnected()
             {
                 mStatus = CS_Connecting;
                 mLastClient = nullptr;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Disconnected, mCBData);
             }
 
         private:
@@ -4339,7 +4349,7 @@
             Q_OBJECT
 
         public:
-            PipeClientClass(chars name, SharedMemoryClass* semaphore) : PipeClass(semaphore)
+            PipeClientClass(chars name, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) : PipeClass(semaphore, cb, data)
             {
                 mClient = new QLocalSocket();
                 connect(mClient, &QLocalSocket::readyRead, this, &PipeClientClass::OnReadyRead);
@@ -4373,14 +4383,20 @@
             {
                 if(sint64 PacketSize = mClient->bytesAvailable())
                     mClient->read((char*) mData.AtDumpingAdded(PacketSize), PacketSize);
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Received, mCBData);
             }
             void OnConnected()
             {
                 mStatus = CS_Connected;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Connected, mCBData);
             }
             void OnDisconnected()
             {
                 mStatus = CS_Disconnected;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Disconnected, mCBData);
             }
 
         private:

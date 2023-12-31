@@ -25,6 +25,7 @@ namespace BOSS
             void SubProcedure(sint32 id);
 
             chars Utility_GetOSName();
+            sint32 Utility_EnumPrograms(Context& programs, bool visible_only);
             chars Utility_GetDeviceID();
             sint64 Utility_CurrentAvailableMemory(sint64* totalbytes);
             double Utility_CurrentTrafficCPU();
@@ -43,10 +44,11 @@ namespace BOSS
             sint32 Popup_MessageDialog(chars title, chars text, DialogButtonType type);
             void Popup_WebBrowserDialog(String url);
             void Popup_ProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid = nullptr);
-            void Kill_ProgramDialog(ublock pid);
-            sint64 Find_WindowHandle(chars titlename);
-            bool Move_Window(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint);
-            bool Move_WindowGroup(sint64s windowparams);
+            void Popup_KillProgramDialog(ublock pid);
+            sint64 Popup_FindWindowHandle(chars titlename);
+            bool Popup_MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint);
+            bool Popup_MoveWindowGroup(sint64s windowparams);
+            bool Popup_MoveWindowGroupCaptured(sint64s windowparams, bool release);
 
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash);
             WString File_GetShortName(wchars itemname);

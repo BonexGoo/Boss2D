@@ -135,7 +135,9 @@
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/IArchive.cpp>
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/IData.cpp>
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/IGroup.cpp>
-#include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/IStreams.cpp>
+#define CreateFile CreateFileA
+    #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/IStreams.cpp>
+#define CreateFile
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/OArchive.cpp>
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/OData.cpp>
 #include <addon/alembic-1.8.5_for_boss/lib/Alembic/Ogawa/OGroup.cpp>

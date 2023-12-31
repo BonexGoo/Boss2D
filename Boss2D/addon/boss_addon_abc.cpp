@@ -65,11 +65,14 @@ namespace BOSS
 
     id_abc Customized_AddOn_Abc_Create(chars abcpath)
     {
+        boss_file FileCheck = boss_fopen(abcpath, "rb");
+        if(!FileCheck) return nullptr;
+        boss_fclose(FileCheck);
+
         auto NewAbc = (AbcClass*) Buffer::Alloc<AbcClass>(BOSS_DBG 1);
         NewAbc->mObject = new AbcOpenGL::SceneWrapper(std::string(abcpath));
         NewAbc->mCamera = new AbcOpenGL::GLCamera();
         NewAbc->mCamera->setClippingPlanes(0.1, 100000);
-        NewAbc->mObject->selection(0, 0, *NewAbc->mCamera);
         NewAbc->mCamera->frame(NewAbc->mObject->bounds());
         return (id_abc) NewAbc;
     }

@@ -16,7 +16,7 @@ bool PlatformInit()
 
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("ZAYPRO");
-    Platform::SetWindowView("zayeditorView");
+    Platform::SetWindowView("zayproView");
 
     // 윈도우 위치설정
     String WindowInfoString = String::FromAsset("windowinfo.json");

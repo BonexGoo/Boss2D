@@ -954,22 +954,27 @@
 
         void Platform::Popup::CloseProgramDialog(ublock pid)
         {
-            PlatformImpl::Wrap::Kill_ProgramDialog(pid);
+            PlatformImpl::Wrap::Popup_KillProgramDialog(pid);
         }
 
         sint64 Platform::Popup::FindWindowHandle(chars titlename)
         {
-            return PlatformImpl::Wrap::Find_WindowHandle(titlename);
+            return PlatformImpl::Wrap::Popup_FindWindowHandle(titlename);
         }
 
         bool Platform::Popup::MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint)
         {
-            return PlatformImpl::Wrap::Move_Window(hwnd, left, top, right, bottom, repaint);
+            return PlatformImpl::Wrap::Popup_MoveWindow(hwnd, left, top, right, bottom, repaint);
         }
 
         bool Platform::Popup::MoveWindowGroup(sint64s windowparams)
         {
-            return PlatformImpl::Wrap::Move_WindowGroup(windowparams);
+            return PlatformImpl::Wrap::Popup_MoveWindowGroup(windowparams);
+        }
+
+        bool Platform::Popup::MoveWindowGroupCaptured(sint64s windowparams, bool release)
+        {
+            return PlatformImpl::Wrap::Popup_MoveWindowGroupCaptured(windowparams, release);
         }
 
         static QString g_tracker_fontfamily;
@@ -1425,9 +1430,19 @@
             return PlatformImpl::Wrap::Utility_GetOSName();
         }
 
+        sint32 Platform::Utility::EnumPrograms(Context& programs, bool visible_only)
+        {
+            return PlatformImpl::Wrap::Utility_EnumPrograms(programs, visible_only);
+        }
+
         chars Platform::Utility::GetDeviceID()
         {
             return PlatformImpl::Wrap::Utility_GetDeviceID();
+        }
+
+        sint64 Platform::Utility::GetProcessID()
+        {
+            return QCoreApplication::applicationPid();
         }
 
         chars Platform::Utility::GetLocaleBCP47()
@@ -4462,7 +4477,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PIPE
         ////////////////////////////////////////////////////////////////////////////////
-        id_pipe Platform::Pipe::Open(chars name)
+        id_pipe Platform::Pipe::Open(chars name, EventCB cb, payload data)
         {
             // 서버
             SharedMemoryClass* Semaphore = new SharedMemoryClass(name);
@@ -4470,7 +4485,7 @@
             {
                 QLocalServer* NewServer = new QLocalServer();
                 if(NewServer->listen(name))
-                    return (id_pipe)(PipeClass*) new PipeServerClass(NewServer, Semaphore);
+                    return (id_pipe)(PipeClass*) new PipeServerClass(NewServer, Semaphore, cb, data);
                 delete NewServer;
             }
             delete Semaphore;
@@ -4478,7 +4493,7 @@
             // 클라이언트
             Semaphore = new SharedMemoryClass((chars) (String(name) + ".client"));
             if(!Semaphore->attach() && Semaphore->create(1))
-                return (id_pipe)(PipeClass*) new PipeClientClass(name, Semaphore);
+                return (id_pipe)(PipeClass*) new PipeClientClass(name, Semaphore, cb, data);
             delete Semaphore;
             return nullptr;
         }

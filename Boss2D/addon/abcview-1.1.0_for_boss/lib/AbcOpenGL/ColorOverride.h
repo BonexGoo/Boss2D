@@ -60,8 +60,7 @@ public:
     C3f color_override ( const std::string &comparison_string, const C3f &no_match_color ) const;    
 
 protected:
-    static std::map<std::string, C3f> m_color_overrides;
-
+    std::map<std::string, C3f> m_color_overrides; //removed by BOSS: static
 };
 
 } // End namespace ABCOPENGL_VERSION_NS

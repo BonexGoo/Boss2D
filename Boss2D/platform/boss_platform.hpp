@@ -377,6 +377,12 @@ public:
         /// @return 정상실행여부
         static bool MoveWindowGroup(sint64s windowparams);
 
+        /// @brief 다수 응용프로그램들의 동시적 윈도우영역 설정(캡쳐식)
+        /// @param windowparams : 윈도우핸들, Left(px), Top(px), Right(px), Bottom(px)의 배열
+        /// @param release : 캡쳐릴리즈 여부
+        /// @return 정상실행여부
+        static bool MoveWindowGroupCaptured(sint64s windowparams, bool release);
+
         /// @brief 트래커에 쓰일 폰트지정
         /// @param family : 폰트패밀리명
         /// @param pointsize : 사이즈값
@@ -563,9 +569,19 @@ public:
         /// @return OS명칭
         static chars GetOSName();
 
+        /// @brief 현재 실행중인 프로그램들의 정보
+        /// @param programs : 프로그램들의 정보를 받을 변수
+        /// @param visible_only : 보여지는 프로그램만으로 제한
+        /// @return 프로그램들의 수량
+        static sint32 EnumPrograms(Context& programs, bool visible_only);
+
         /// @brief 디바이스ID 얻기
         /// @return 디바이스ID
         static chars GetDeviceID();
+
+        /// @brief 프로세스ID 얻기
+        /// @return 프로세스ID
+        static sint64 GetProcessID();
 
         /// @brief 지역별 언어명칭(ko, en-GB등) 얻기
         /// @return 언어명칭
@@ -1714,11 +1730,16 @@ public:
     class Pipe
     {
     public:
+        enum EventType {Connected, Disconnected, Received};
+        typedef void (*EventCB)(EventType type, payload data);
+
         /// @brief 파이프 열기
         /// @param name : 파이프명칭
+        /// @param cb : 콜백함수
+        /// @param data : 콜백함수에 전달할 데이터
         /// @return 파이프ID(nullptr은 실패)
         /// @see Close
-        static id_pipe Open(chars name);
+        static id_pipe Open(chars name, EventCB cb = nullptr, payload data = nullptr);
 
         /// @brief 파이프 닫기
         /// @param pipe : 파이프ID
