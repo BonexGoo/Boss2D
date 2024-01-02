@@ -418,7 +418,7 @@ zaytoyData::zaytoyData()
 
     mWidgetMain = new ZayWidget();
     InitWidget(*mWidgetMain, "Main");
-    mWidgetMain->Reload("widget/main.zp1");
+    mWidgetMain->Reload("widget/main.zwidget");
 
     mWhisper.AddRecvCB("ToyList",
         [this](const Context& data)->void

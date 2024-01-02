@@ -1,0 +1,47 @@
+﻿{
+	"object":
+	{
+		"obj001":
+		{
+			"asset": "abc/xyz_01.abc",
+			"child":
+			{
+				"x.Cylinder_x": ["color", "#ff0000"],
+				"y.Cylinder_y": ["color", "#00ff00"],
+				"z.Cylinder_z": ["color", "#0000ff"],
+				"Cube.Cube_002": ["hidden"]
+			}
+		},
+		"obj002":
+		{
+			"asset": "abc/xyz_01.abc",
+			"child":
+			{
+				"x.Cylinder_x": ["hidden"],
+				"y.Cylinder_y": ["hidden"],
+				"z.Cylinder_z": ["hidden"],
+				"Cube.Cube_002": ["color", "#ffffff"]
+			}
+		},
+		"obj003":
+		{
+			"asset": "abc/octopus_toy.abc",
+			"child":
+			{
+				"Octopus.Sphere": ["color", "#8000ff"]
+			}
+		}
+	},
+	"script":
+	{
+		"box001":
+		{
+		},
+		"box002":
+		{
+		},
+		"box003":
+		{
+		}
+	}
+}
