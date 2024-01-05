@@ -50,21 +50,28 @@ ColorOverride::~ColorOverride() {
 //! ...
 void ColorOverride::pushColorOverride( std::string const override_string, C3f const color_override ){
     m_color_overrides[override_string]=color_override;
-};
+}
+
+void ColorOverride::pushHiddenOverride( std::string const override_string, bool hidden ) //added by BOSS
+{
+    m_hidden_overrides[override_string]=hidden;
+}
 
 //! Remove from map
 //! ...
 void ColorOverride::popColorOverride( std::string const override_string){
     m_color_overrides.erase(override_string);
+    m_hidden_overrides.erase(override_string);
 }
 
 //! Clear map
 //! ...
 void ColorOverride::clearColorOverride(){
     m_color_overrides.clear();
+    m_hidden_overrides.clear();
 }
 
-C3f ColorOverride::color_override( const std::string &comparison_string, const C3f &no_match_color ) const
+C3f ColorOverride::color_override( const std::string &comparison_string, const C3f &no_match_color, bool *hidden ) const
 {
     C3f result_color=no_match_color;
     std::map<std::string, C3f>::const_iterator it; //modified by BOSS: iterator ¡æ const_iterator
@@ -73,7 +80,17 @@ C3f ColorOverride::color_override( const std::string &comparison_string, const C
     {
          // We have a match therefore set a color
          result_color = it -> second;
-    }    
+    }
+
+    //added by BOSS
+    if(hidden)
+    {
+        std::map<std::string, bool>::const_iterator it;
+        it = m_hidden_overrides.find(comparison_string);
+        if(it != m_hidden_overrides.end())
+            *hidden = it -> second;
+        else *hidden = false;
+    }
     return result_color;
 }
 

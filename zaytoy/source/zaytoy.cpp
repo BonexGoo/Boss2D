@@ -5,6 +5,7 @@
 #include <service/boss_zaywidget.hpp>
 #include <format/boss_bmp.hpp>
 #include <format/boss_flv.hpp>
+#include "model/zm_joint.hpp"
 
 ZAY_DECLARE_VIEW_CLASS("zaytoyView", zaytoyData)
 
@@ -20,7 +21,6 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
     {
         if(ZayWidgetDOM::GetValue("whisper.select").ToText().Length() == 0)
             m->UpdateWhisper();
-        m->invalidate();
     }
     else if(type == CT_Size)
     {
@@ -52,6 +52,16 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         // 위젯 틱실행
         if(m->mWidgetMain && m->mWidgetMain->TickOnce())
             m->invalidate();
+
+        // 아트박스 애니메이션
+        ABJoint::SetAnimateNow(CurMsec);
+        for(sint32 i = 0, iend = m->mZayModelOrder.Count(); i < iend; ++i)
+        {
+            const String CurClassID = m->mZayModelOrder[i];
+            if(auto CurBox = m->mZayModels(CurClassID).Value())
+            if(CurBox->IsAnimating())
+                m->AnimateZayModelMatrix(*CurBox);
+        }
     }
 }
 
@@ -113,11 +123,7 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 if(auto CurBox = m->mZayModels(ClassID).Value())
                 {
                     CurBox->SetStatus(Status);
-                    // 송신
-                    Strings ChildCollector;
-                    for(sint32 i = 0, iend = CurBox->ChildCount(); i < iend; ++i)
-                        ChildCollector.AtAdding() = CurBox->Child(i);
-                    m->Send_SetChildStatus(CurBox->ObjectID(), ChildCollector, Status);
+                    m->SendWhisper_SetChildStatus(Status, *CurBox);
                 }
             }
             return;
@@ -425,6 +431,37 @@ zaytoyData::zaytoyData()
         {
             ZayWidgetDOM::SetJson(data("toy"), "whispertoy.");
         });
+    mWhisper.AddRecvCB("Toy",
+        [this](const Context& data)->void
+        {
+            ValidZayModelRoot();
+            for(sint32 i = 0, iend = data("object").LengthOfIndexable(); i < iend; ++i)
+            {
+                hook(data("object")[i])
+                {
+                    const String ObjectID = fish("id").GetText();
+                    const String FileName = fish("file").GetText();
+                    if(ZayModel* NewBox = ZayModel::CreateBox("child", ZayModel::CreateID()))
+                    {
+                        Context NewJson;
+                        NewJson.At("title").Set(ObjectID);
+                        NewJson.At("x").Set(String::FromInteger(100 + 50 * i));
+                        NewJson.At("y").Set(String::FromInteger(100 + 50 * i));
+                        NewJson.At("object").Set(ObjectID);
+                        NewJson.At("comment").Set(FileName);
+                        for(sint32 j = 0, jend = fish("children").LengthOfIndexable(); j < jend; ++j)
+                            NewJson.At("children").AtAdding().Set(fish("children")[j].GetText());
+                        NewBox->Import(NewJson);
+                        NewBox->LoadDefault();
+                        NewBox->UpdateDOM();
+                        mZayModels(NewBox->ID()).CreateValue(NewBox);
+                        mZayModelOrder.AtAdding() = NewBox->ID();
+                        UpdateZayModelOrderDOM();
+                        UpdateZayModelMatrix(*NewBox);
+                    }
+                }
+            }
+        });
 }
 
 zaytoyData::~zaytoyData()
@@ -620,8 +657,8 @@ void zaytoyData::InitWidget(ZayWidget& widget, chars name)
                 const String Spot = params.Param(0).ToText();
                 if(mWhisper.OpenForConnector(Spot))
                 {
-                    mWhisper.Send("EnumToy");
                     ZayWidgetDOM::SetValue("whisper.select", "'" + Spot + "'");
+                    SendWhisper_EnumToy();
                 }
                 else
                 {
@@ -631,7 +668,6 @@ void zaytoyData::InitWidget(ZayWidget& widget, chars name)
                     ZayWidgetDOM::SetValue("whispertoy.opened", "''");
                     UpdateWhisper();
                 }
-                invalidate();
             }
         })
 
@@ -644,7 +680,6 @@ void zaytoyData::InitWidget(ZayWidget& widget, chars name)
             ZayWidgetDOM::SetValue("whispertoy.count", "0");
             ZayWidgetDOM::SetValue("whispertoy.opened", "''");
             UpdateWhisper();
-            invalidate();
         })
 
         // 위스퍼토이 열기
@@ -653,10 +688,9 @@ void zaytoyData::InitWidget(ZayWidget& widget, chars name)
             if(params.ParamCount() == 1)
             {
                 const String Toy = params.Param(0).ToText();
-                mWhisper.Send("LoadToy");
                 ZayWidgetDOM::SetValue("whispertoy.opened", "'" + Toy + "'");
+                SendWhisper_LoadToy(Toy);
             }
-            invalidate();
         })
 
         // 위스퍼토이 닫기
@@ -909,6 +943,57 @@ void zaytoyData::UpdateWhisper(rect128 window)
     for(sint32 i = ConnectedCount; i < OldCount; ++i)
         ZayWidgetDOM::RemoveVariables(String::Format("whisper.%d", i));
     ZayWidgetDOM::SetValue("whisper.count", String::FromInteger(ConnectedCount));
+    invalidate();
+}
+
+void zaytoyData::SendWhisper_EnumToy()
+{
+    mWhisper.Send("EnumToy");
+    invalidate();
+}
+
+void zaytoyData::SendWhisper_LoadToy(chars toy)
+{
+    Context Data;
+    Data.At("name").Set(toy);
+    mWhisper.Send("LoadToy", Data);
+    invalidate();
+}
+
+void zaytoyData::SendWhisper_SetChildStatus(chars status, const ZayModel& box)
+{
+    Context Data;
+    Data.At("status").Set(status);
+    Data.At("objectid").Set(box.ObjectID());
+    for(sint32 i = 0, iend = box.ChildCount(); i < iend; ++i)
+        Data.At("children").AtAdding().Set(box.Child(i));
+    mWhisper.Send("SetChildStatus", Data);
+    invalidate();
+}
+
+void zaytoyData::SendWhisper_SetChildMatrix(ZayModel& box)
+{
+    // 행렬 재계산 및 송신
+    auto Parent = mZayModels(box.ParentID()).Value();
+    auto& CalcedMatrix = box.CalcMatrix((Parent)? Parent->Matrix(false) : ZMMatrix());
+    Context Data;
+    Data.At("matrix").Set(CalcedMatrix.ToText());
+    Data.At("objectid").Set(box.ObjectID());
+    for(sint32 i = 0, iend = box.ChildCount(); i < iend; ++i)
+        Data.At("children").AtAdding().Set(box.Child(i));
+    mWhisper.Send("SetChildMatrix", Data);
+
+    // 서포터 동시처리
+    if(auto CurMatrix = box.SupportMatrix())
+    {
+        Context DataS;
+        DataS.At("matrix").Set(CurMatrix->ToText());
+        DataS.At("objectid").Set(box.ObjectID());
+        for(sint32 i = 0, iend = box.ChildCount(); i < iend; ++i)
+            DataS.At("children").AtAdding().Set(box.Child(i) + 's');
+        mWhisper.Send("SetChildMatrix", DataS);
+    }
+    invalidate();
 }
 
 void zaytoyData::ValidZayModelRoot()
@@ -937,21 +1022,7 @@ void zaytoyData::UpdateZayModelOrderDOM()
 
 void zaytoyData::UpdateZayModelMatrix(ZayModel& box)
 {
-    // 행렬 재계산 및 송신
-    auto Parent = mZayModels(box.ParentID()).Value();
-    auto& CalcedMatrix = box.CalcMatrix((Parent)? Parent->Matrix(false) : ZMMatrix());
-    Strings ChildCollector;
-    for(sint32 i = 0, iend = box.ChildCount(); i < iend; ++i)
-        ChildCollector.AtAdding() = box.Child(i);
-    Send_SetChildMatrix(box.ObjectID(), ChildCollector, CalcedMatrix);
-    // 서포터 동시처리
-    if(auto CurMatrix = box.SupportMatrix())
-    {
-        Strings SupportCollector;
-        for(sint32 i = 0, iend = ChildCollector.Count(); i < iend; ++i)
-            SupportCollector.AtAdding() = ChildCollector[i] + "s";
-        Send_SetChildMatrix(box.ObjectID(), SupportCollector, *CurMatrix);
-    }
+    SendWhisper_SetChildMatrix(box);
 
     // 해당 박스가 부모인 자식들로 재귀
     const String BoxID = box.ID();
@@ -966,21 +1037,7 @@ void zaytoyData::UpdateZayModelMatrix(ZayModel& box)
 
 void zaytoyData::AnimateZayModelMatrix(ZayModel& box)
 {
-    // 행렬 재계산 및 송신
-    auto Parent = mZayModels(box.ParentID()).Value();
-    auto& CalcedMatrix = box.CalcMatrix((Parent)? Parent->Matrix(false) : ZMMatrix());
-    Strings ChildCollector;
-    for(sint32 i = 0, iend = box.ChildCount(); i < iend; ++i)
-        ChildCollector.AtAdding() = box.Child(i);
-    Send_SetChildMatrix(box.ObjectID(), ChildCollector, CalcedMatrix);
-    // 서포터 동시처리
-    if(auto CurMatrix = box.SupportMatrix())
-    {
-        Strings SupportCollector;
-        for(sint32 i = 0, iend = ChildCollector.Count(); i < iend; ++i)
-            SupportCollector.AtAdding() = ChildCollector[i] + "s";
-        Send_SetChildMatrix(box.ObjectID(), SupportCollector, *CurMatrix);
-    }
+    SendWhisper_SetChildMatrix(box);
 
     // 해당 박스가 부모인 애니메이션중이 아닌 자식들로 재귀
     const String BoxID = box.ID();
@@ -994,7 +1051,7 @@ void zaytoyData::AnimateZayModelMatrix(ZayModel& box)
     }
 }
 
-MessageCache& zaytoyData::NewMessageCache(String& msgid, chars type, chars mission)
+/*MessageCache& zaytoyData::NewMessageCache(String& msgid, chars type, chars mission)
 {
     static sint32 LastMsgID = 10000 + (Platform::Utility::Random() % 10000);
     if(mission) msgid = String::Format("%d/%s", ++LastMsgID, mission);
@@ -1126,7 +1183,7 @@ void zaytoyData::Send_RemoveToolChild(chars child)
     NewPacket.At("objectid").Set("tool");
     NewPacket.At("child").Set(child);
     SendJson(NewPacket.SaveJson());
-}
+}*/
 
 bool zaytoyData::RenderUC_ZayModelIconButton(ZayPanel& panel, chars type, chars title, chars model, chars atlas, sint32 elementid, String uiname)
 {
@@ -1159,7 +1216,7 @@ bool zaytoyData::RenderUC_ZayModelIconButton(ZayPanel& panel, chars type, chars 
                     // 송신
                     static sint32 LastChildIndex = -1;
                     const String ChildName = String::Format("child%03d", ++LastChildIndex);
-                    Send_CreateToolChild(ChildName, Model);
+                    //Send_CreateToolChild(ChildName, Model);
 
                     Context NewJson;
                     NewJson.At("title").Set(Title);

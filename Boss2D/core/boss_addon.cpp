@@ -71,9 +71,8 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Create, id_abc, return nullptr, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Release, void, return, id_abc)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, SetColor, void, return, id_abc, chars, double, double, double)
-    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetButton, void, return, id_abc, chars, double, double, double, double)
-    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetAction, void, return, id_abc, chars)
-    BOSS_DEFINE_ADDON_FUNCTION(Abc, AddRotation, void, return, id_abc, double, double, double)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetHidden, void, return, id_abc, chars, bool)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetMatrix, void, return, id_abc, double*)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Render, void, return, id_abc, sint32, sint32, sint32, sint32, AddOn::Abc::ButtonCB, payload)
 
     id_abc AddOn::Abc::Create(chars abcpath)
@@ -85,14 +84,11 @@ namespace BOSS
     void AddOn::Abc::SetColor(id_abc abc, chars name, double r, double g, double b)
     {Core_AddOn_Abc_SetColor()(abc, name, r, g, b);}
 
-    void AddOn::Abc::SetButton(id_abc abc, chars name, double x, double y, double z, double r)
-    {Core_AddOn_Abc_SetButton()(abc, name, x, y, z, r);}
+    void AddOn::Abc::SetHidden(id_abc abc, chars name, bool hidden)
+    {Core_AddOn_Abc_SetHidden()(abc, name, hidden);}
 
-    void AddOn::Abc::SetAction(id_abc abc, chars name)
-    {Core_AddOn_Abc_SetAction()(abc, name);}
-
-    void AddOn::Abc::AddRotation(id_abc abc, double x, double y, double z)
-    {Core_AddOn_Abc_AddRotation()(abc, x, y, z);}
+    void AddOn::Abc::SetMatrix(id_abc abc, double* m16)
+    {Core_AddOn_Abc_SetMatrix()(abc, m16);}
 
     void AddOn::Abc::Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h, ButtonCB cb, payload data)
     {Core_AddOn_Abc_Render()(abc, x, y, w, h, cb, data);}

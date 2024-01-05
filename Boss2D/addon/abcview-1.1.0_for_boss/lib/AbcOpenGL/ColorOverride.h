@@ -54,13 +54,15 @@ public:
     //! ...
     virtual ~ColorOverride();
     virtual void pushColorOverride( std::string const override_string, C3f const color_override );
+    virtual void pushHiddenOverride( std::string const override_string, bool hidden ); //added by BOSS
     virtual void popColorOverride( std::string const override_string);
     virtual void clearColorOverride();
-    const std::map<std::string, C3f> &overrides() const{ return m_color_overrides ;}
-    C3f color_override ( const std::string &comparison_string, const C3f &no_match_color ) const;    
+    const std::map<std::string, C3f> &overrides() const{ return m_color_overrides; }
+    C3f color_override( const std::string &comparison_string, const C3f &no_match_color, bool *hidden ) const; //added by BOSS: bool *hidden
 
 protected:
     std::map<std::string, C3f> m_color_overrides; //removed by BOSS: static
+    std::map<std::string, bool> m_hidden_overrides; //added by BOSS
 };
 
 } // End namespace ABCOPENGL_VERSION_NS

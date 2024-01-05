@@ -268,10 +268,8 @@ void Scene::draw( SceneState &s_state, bool visibleOnly, bool boundsOnly )
     dctx.setPointSize( s_state.pointSize );
     dctx.setVisibleOnly( visibleOnly );
     dctx.setBoundsOnly( boundsOnly );
-    
-    //ColorOverride currentOverrides=m_color_overrides;
-    
     dctx.setColorOverrides( m_color_overrides );
+    dctx.setZayMatrix( m_zay_matrix ); //added by BOSS
 
     m_drawable->draw( dctx );
 }
@@ -280,6 +278,11 @@ void Scene::draw( SceneState &s_state, bool visibleOnly, bool boundsOnly )
 void Scene::addOverrideColorString( const std::string override_string, const C3f override_color )
 {
     m_color_overrides.pushColorOverride(override_string, override_color);
+}
+
+void Scene::addOverrideHiddenString( const std::string override_string, const bool override_hidden) //added by BOSS
+{
+    m_color_overrides.pushHiddenOverride(override_string, override_hidden);
 }
 
 //-*****************************************************************************
@@ -297,6 +300,14 @@ void Scene::clearOverrideColorString()
 ColorOverride Scene::getColorOverrides()
 {
     return m_color_overrides;
+}
+
+void Scene::setZayMatrix(double* m16) //added by BOSS
+{
+    m_zay_matrix[0] = m16[0]; m_zay_matrix[1] = m16[1]; m_zay_matrix[2] = m16[2]; m_zay_matrix[3] = m16[3];
+    m_zay_matrix[4] = m16[4]; m_zay_matrix[5] = m16[5]; m_zay_matrix[6] = m16[6]; m_zay_matrix[7] = m16[7];
+    m_zay_matrix[8] = m16[8]; m_zay_matrix[9] = m16[9]; m_zay_matrix[10] = m16[10]; m_zay_matrix[11] = m16[11];
+    m_zay_matrix[12] = m16[12]; m_zay_matrix[13] = m16[13]; m_zay_matrix[14] = m16[14]; m_zay_matrix[15] = m16[15];
 }
 
 } // End namespace ABCOPENGL_VERSION_NS

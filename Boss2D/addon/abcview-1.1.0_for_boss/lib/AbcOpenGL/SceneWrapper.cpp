@@ -121,6 +121,10 @@ public:
         m_scene.addOverrideColorString(override_string, override_color);
     }
 
+    void addOverrideHiddenString( const std::string override_string, const bool override_hidden) { //added by BOSS
+        m_scene.addOverrideHiddenString(override_string, override_hidden);
+    }
+
     void removeOverrideColorString( const std::string override_string){
         m_scene.removeOverrideColorString(override_string);
     }
@@ -131,6 +135,10 @@ public:
 
     ColorOverride getColorOverrides() {
         return m_scene.getColorOverrides();
+    }
+
+    void setZayMatrix(double* m16) { //added by BOSS
+        m_scene.setZayMatrix(m16);
     }
 
     Scene m_scene;
@@ -214,6 +222,11 @@ void SceneWrapper::addOverrideColorString( const std::string override_string, co
     m_state->addOverrideColorString(override_string, override_color);
 }
 
+void SceneWrapper::addOverrideHiddenString( const std::string override_string, const bool override_hidden) //added by BOSS
+{
+    m_state->addOverrideHiddenString(override_string, override_hidden);
+}
+
 void SceneWrapper::removeOverrideColorString( const std::string override_string)
 {
     m_state->removeOverrideColorString(override_string);
@@ -228,7 +241,12 @@ ColorOverride SceneWrapper::getColorOverrides()
 {
     return m_state->getColorOverrides();
 }
-    
+
+void SceneWrapper::setZayMatrix(double* m16) //added by BOSS
+{
+    m_state->setZayMatrix(m16);
+}
+
 double_vec SceneWrapper::min_bounds()
 {
     Imath::Vec3<double> v = m_state->bounds().min;

@@ -141,8 +141,10 @@ void INuPatchDrw::draw( const DrawContext &iCtx )
 
     float previous_color[4];
     glGetFloatv(GL_CURRENT_COLOR,previous_color);
+    bool hidden = false; //added by BOSS
     C3f cur_color = iCtx.getColorOverrides().color_override(m_fullName,
-            C3f(previous_color[0],previous_color[1],previous_color[2]));
+            C3f(previous_color[0],previous_color[1],previous_color[2]), &hidden); //added by BOSS: &hidden
+    if(hidden) return; //added by BOSS
     glColor3f(cur_color[0],cur_color[1],cur_color[2]);
     gluBeginSurface(nurb);
 

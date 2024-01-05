@@ -77,12 +77,25 @@ public:
     const ColorOverride &getColorOverrides() const{ return m_ctx_color_overrides; }
     void setColorOverrides(const ColorOverride & color_overrides){ m_ctx_color_overrides = color_overrides; }
 
+    //added by BOSS
+    const M44d& getZayMatrix() const { return m_zayMatrix; }
+    void setZayMatrix(const double* m16)
+    {
+        M44d NewMatrix(
+            m16[0], m16[1], m16[2], m16[3],
+            m16[4], m16[5], m16[6], m16[7],
+            m16[8], m16[9], m16[10], m16[11],
+            m16[12], m16[13], m16[14], m16[15]);
+        m_zayMatrix = NewMatrix;
+    }
+
 protected:
     M44d m_worldToCamera;
     float m_pointSize;
     bool m_visibleOnly;
     bool m_boundsOnly;
     ColorOverride m_ctx_color_overrides;
+    M44d m_zayMatrix; //added by BOSS
 };
 
 } // End namespace ABCOPENGL_VERSION_NS

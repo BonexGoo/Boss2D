@@ -3,45 +3,39 @@
 	{
 		"obj001":
 		{
-			"asset": "abc/xyz_01.abc",
 			"child":
 			{
 				"x.Cylinder_x": ["color", "#ff0000"],
 				"y.Cylinder_y": ["color", "#00ff00"],
 				"z.Cylinder_z": ["color", "#0000ff"],
 				"Cube.Cube_002": ["hidden"]
-			}
+			},
+			"file": "xyz_01.abc",
+			"matrix": "M_identity"
 		},
 		"obj002":
 		{
-			"asset": "abc/xyz_01.abc",
 			"child":
 			{
 				"x.Cylinder_x": ["hidden"],
 				"y.Cylinder_y": ["hidden"],
 				"z.Cylinder_z": ["hidden"],
-				"Cube.Cube_002": ["color", "#ffffff"]
-			}
+				"Cube.Cube_002": ["color", "#ffff00"]
+			},
+			"file": "xyz_01.abc",
+			"matrix": "M_identity"
 		},
 		"obj003":
 		{
-			"asset": "abc/octopus_toy.abc",
 			"child":
 			{
 				"Octopus.Sphere": ["color", "#8000ff"]
-			}
+			},
+			"file": "octopus_toy.abc",
+			"matrix": "M_1_0_0_0.1_0_1_0_0.1_0_0_1_0_0_0_0_1"
 		}
 	},
 	"script":
 	{
-		"box001":
-		{
-		},
-		"box002":
-		{
-		},
-		"box003":
-		{
-		}
 	}
 }

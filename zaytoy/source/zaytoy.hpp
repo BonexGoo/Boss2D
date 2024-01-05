@@ -31,6 +31,10 @@ public:
     void ReloadDOM();
     void InitWidget(ZayWidget& widget, chars name);
     void UpdateWhisper(rect128 window = Platform::GetWindowRect());
+    void SendWhisper_EnumToy();
+    void SendWhisper_LoadToy(chars toy);
+    void SendWhisper_SetChildStatus(chars status, const ZayModel& box);
+    void SendWhisper_SetChildMatrix(ZayModel& box);
 
 public:
     uint64 mUpdateMsec {0};
@@ -48,7 +52,7 @@ public:
     void UpdateZayModelOrderDOM();
     void UpdateZayModelMatrix(ZayModel& box);
     void AnimateZayModelMatrix(ZayModel& box);
-    MessageCache& NewMessageCache(String& msgid, chars type, chars mission = nullptr);
+    /*MessageCache& NewMessageCache(String& msgid, chars type, chars mission = nullptr);
     sint32 MessageCacheCount() const;
     String MessageCacheInfo(sint32 i, String& type, String& error) const;
     void MessageCacheFlush(MessageCache& msg, const Context& json) const;
@@ -57,7 +61,7 @@ public:
     void Send_SetChildStatus(chars objectid, const Strings& children, chars status);
     void Send_SetChildMatrix(chars objectid, const Strings& children, const ZMMatrix& matrix);
     void Send_CreateToolChild(chars child, chars model);
-    void Send_RemoveToolChild(chars child);
+    void Send_RemoveToolChild(chars child);*/
     bool RenderUC_ZayModelIconButton(ZayPanel& panel, chars type, chars title, chars model, chars atlas, sint32 elementid, String uiname);
     bool RenderUC_ZayModelBg(ZayPanel& panel, chars classid);
     bool RenderUC_ZayModelWire(ZayPanel& panel, sint32 x1, sint32 y1, sint32 x2, sint32 y2, float thick);

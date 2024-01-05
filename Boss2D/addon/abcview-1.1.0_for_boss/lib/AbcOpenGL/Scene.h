@@ -122,6 +122,7 @@ public:
     //! Adds override color string to map of override strings
     //! ...
     void addOverrideColorString( const std::string override_string, const C3f override_color);
+    void addOverrideHiddenString( const std::string override_string, const bool override_hidden); //added by BOSS
     //! Removes override color string to map of override strings
     //! ...
     void removeOverrideColorString( const std::string override_string);
@@ -131,6 +132,8 @@ public:
     //! Return map of keys of string and C3f as values
     //! ...       
     ColorOverride getColorOverrides();
+
+    void setZayMatrix(double* m16); //added by BOSS
     
 protected:
     std::string m_fileName;
@@ -143,6 +146,7 @@ protected:
 
     DrawablePtr m_drawable;
     ColorOverride m_color_overrides;
+    double m_zay_matrix[16] {1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1}; //added by BOSS
 };
 
 } // End namespace ABCOPENGL_VERSION_NS

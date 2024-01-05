@@ -2,6 +2,8 @@
 #include <service/boss_zay.hpp>
 #include <service/boss_whisper.hpp>
 
+#include "zayscene.hpp"
+
 class zay3dData : public ZayObject
 {
 public:
@@ -23,6 +25,5 @@ public:
     rect128 mSavedNormalRect {0, 0, 0, 0};
     CursorRole mNowCursor {CR_Arrow};
     Whisper mWhisper;
-    id_abc mXyzABC {nullptr};
-    id_abc mOctopusABC {nullptr};
+    ZayScene mScene;
 };

@@ -284,8 +284,10 @@ void MeshDrwHelper::drawBounds( const DrawContext & iCtx ) const
 {
     float previous_color[4];
     glGetFloatv(GL_CURRENT_COLOR,previous_color);
+    bool hidden = false; //added by BOSS
     C3f cur_color = iCtx.getColorOverrides().color_override(m_full_path,
-            C3f(previous_color[0],previous_color[1],previous_color[2]));
+            C3f(previous_color[0],previous_color[1],previous_color[2]), &hidden); //added by BOSS: &hidden
+    if(hidden) return; //added by BOSS
     glColor3f(cur_color[0],cur_color[1],cur_color[2]);
 
     drawBoundingBox( m_bounds );
@@ -360,10 +362,10 @@ void MeshDrwHelper::draw( const DrawContext & iCtx ) const
 {
     float previous_color[4];
     glGetFloatv(GL_CURRENT_COLOR, previous_color);
-
+    bool hidden = false; //added by BOSS
     C3f cur_color = iCtx.getColorOverrides().color_override(m_full_path,
-           C3f(previous_color[0], previous_color[1], previous_color[2]));
-
+           C3f(previous_color[0], previous_color[1], previous_color[2]), &hidden); //added by BOSS: &hidden
+    if(hidden) return; //added by BOSS
     glColor3f(cur_color[0], cur_color[1], cur_color[2]);
 
     if ( !m_valid || m_triangles.size() < 1 || !m_meshP )

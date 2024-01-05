@@ -23,19 +23,20 @@ void ABChild::Import(const Context& json)
 {
     ABTransform::Import(json);
     mObjectID = json("object").GetText();
-    mChildIDs.Clear();
-    for(sint32 i = 0, iend = json("children").LengthOfIndexable(); i < iend; ++i)
-        mChildIDs.AtAdding() = json("children")[i].GetText();
     mComment = json("comment").GetText();
+    Strings Children;
+    for(sint32 i = 0, iend = json("children").LengthOfIndexable(); i < iend; ++i)
+        Children.AtAdding() = json("children")[i].GetText();
+    SetChildren(Children);
 }
 
 void ABChild::Export(Context& json) const
 {
     ABTransform::Export(json);
     json.At("object").Set(mObjectID);
+    json.At("comment").Set(mComment);
     for(sint32 i = 0, iend = mChildIDs.Count(); i < iend; ++i)
         json.At("children").AtAdding().Set(mChildIDs[i]);
-    json.At("comment").Set(mComment);
 }
 
 const sint32 ABChild::ChildCount() const

@@ -17,9 +17,8 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Abc, Create, id_abc, chars)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, Release, void, id_abc)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, SetColor, void, id_abc, chars, double, double, double)
-    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetButton, void, id_abc, chars, double, double, double, double)
-    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetAction, void, id_abc, chars)
-    BOSS_DECLARE_ADDON_FUNCTION(Abc, AddRotation, void, id_abc, double, double, double)
+    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetHidden, void, id_abc, chars, bool)
+    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetMatrix, void, id_abc, double*)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, Render, void, id_abc, sint32, sint32, sint32, sint32, AddOn::Abc::ButtonCB, payload)
 
     static autorun Bind_AddOn_Abc()
@@ -27,9 +26,8 @@ namespace BOSS
         Core_AddOn_Abc_Create() = Customized_AddOn_Abc_Create;
         Core_AddOn_Abc_Release() = Customized_AddOn_Abc_Release;
         Core_AddOn_Abc_SetColor() = Customized_AddOn_Abc_SetColor;
-        Core_AddOn_Abc_SetButton() = Customized_AddOn_Abc_SetButton;
-        Core_AddOn_Abc_SetAction() = Customized_AddOn_Abc_SetAction;
-        Core_AddOn_Abc_AddRotation() = Customized_AddOn_Abc_AddRotation;
+        Core_AddOn_Abc_SetHidden() = Customized_AddOn_Abc_SetHidden;
+        Core_AddOn_Abc_SetMatrix() = Customized_AddOn_Abc_SetMatrix;
         Core_AddOn_Abc_Render() = Customized_AddOn_Abc_Render;
         return true;
     }
@@ -91,25 +89,21 @@ namespace BOSS
         CurAbc->mObject->addOverrideColorString((chars) OverrideText, Alembic::Abc::C3f(r, g, b));
     }
 
-    void Customized_AddOn_Abc_SetButton(id_abc abc, chars name, double x, double y, double z, double r)
+    void Customized_AddOn_Abc_SetHidden(id_abc abc, chars name, bool hidden)
     {
         auto CurAbc = (AbcClass*) abc;
         if(!CurAbc) return;
+
+        const String OverrideText = "/" + String(name).Replace(".", "/");
+        CurAbc->mObject->addOverrideHiddenString((chars) OverrideText, hidden);
     }
 
-    void Customized_AddOn_Abc_SetAction(id_abc abc, chars name)
-    {
-        auto CurAbc = (AbcClass*) abc;
-        if(!CurAbc) return;
-    }
-
-    void Customized_AddOn_Abc_AddRotation(id_abc abc, double x, double y, double z)
+    void Customized_AddOn_Abc_SetMatrix(id_abc abc, double* m16)
     {
         auto CurAbc = (AbcClass*) abc;
         if(!CurAbc) return;
 
-        auto OldValue = CurAbc->mCamera->rotation();
-        CurAbc->mCamera->setRotation(Alembic::Abc::V3d(OldValue.x + x, OldValue.y + y, OldValue.z + z));
+        CurAbc->mObject->setZayMatrix(m16);
     }
 
     void Customized_AddOn_Abc_Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h, AddOn::Abc::ButtonCB cb, payload data)

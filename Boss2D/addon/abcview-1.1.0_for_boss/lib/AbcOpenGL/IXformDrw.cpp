@@ -151,8 +151,10 @@ void IXformDrw::draw( const DrawContext & iCtx )
     if ( !valid() ) { return; }
     float previous_color[4];
     glGetFloatv(GL_CURRENT_COLOR,previous_color);
+    bool hidden = false; //added by BOSS
     C3f cur_color = iCtx.getColorOverrides().color_override(m_fullName,
-            C3f(previous_color[0],previous_color[1],previous_color[2]));
+            C3f(previous_color[0],previous_color[1],previous_color[2]), &hidden); //added by BOSS: &hidden
+    if(hidden) return; //added by BOSS
     glColor3f(cur_color[0],cur_color[1],cur_color[2]);
     M44d idenMatrix; // Defaults to identity.
     idenMatrix.makeIdentity();
@@ -172,13 +174,14 @@ void IXformDrw::draw( const DrawContext & iCtx )
     // deep deep hierarchy that exhausts the max stack depth quickly.
     glMatrixMode( GL_MODELVIEW );
 
+    const M44d LocalToParent = m_localToParent * iCtx.getZayMatrix(); //added by BOSS: 행렬곱 파이프라인 추가
     if ( m_inherits )
     {
-        glMultMatrixd( ( const GLdouble * )&m_localToParent[0][0] );
+        glMultMatrixd( ( const GLdouble * )&LocalToParent[0][0] ); //modified by BOSS: m_localToParent → LocalToParent
     }
     else
     {
-        M44d cameraLocal = iCtx.getWorldToCamera() * m_localToParent;
+        M44d cameraLocal = iCtx.getWorldToCamera() * LocalToParent; //modified by BOSS: m_localToParent → LocalToParent
         glLoadMatrixd( ( const GLdouble * )&cameraLocal[0][0] );
     }
     //Note all children will get same colour

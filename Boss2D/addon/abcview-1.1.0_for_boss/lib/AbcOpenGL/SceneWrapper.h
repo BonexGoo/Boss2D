@@ -77,9 +77,12 @@ public:
     double_vec min_bounds();
     double_vec max_bounds();
     void addOverrideColorString( const std::string override_string, const C3f override_color);
+    void addOverrideHiddenString( const std::string override_string, const bool override_hidden); //added by BOSS
     void removeOverrideColorString( const std::string override_string);
     void clearOverrideColorString(); 
     ColorOverride getColorOverrides();
+
+    void setZayMatrix(double* m16); //added by BOSS
 
 protected:
     class _scn_impl;

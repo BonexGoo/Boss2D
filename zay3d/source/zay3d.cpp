@@ -77,8 +77,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
         if(Platform::Graphics::BeginGL())
         {
-            AddOn::Abc::Render(m->mXyzABC, 0, 0, panel.w(), panel.h());
-            AddOn::Abc::Render(m->mOctopusABC, 0, 0, panel.w(), panel.h());
+            m->mScene.Render(panel);
             Platform::Graphics::EndGL();
         }
 
@@ -94,34 +93,52 @@ zay3dData::zay3dData()
     mWhisper.AddRecvCB("EnumToy",
         [this](const Context& data)->void
         {
-            static const int Count = 5 * Math::Random();
             Context Packet;
-            for(sint32 i = 0, iend = 1 + Count; i < iend; ++i)
-                Packet.At("toy").AtAdding().Set(String::Format("test%d.zt1", i));
+            Packet.At("toy").AtAdding().Set("test1.zscene");
             mWhisper.Send("ToyList", Packet);
         });
     mWhisper.AddRecvCB("LoadToy",
         [this](const Context& data)->void
         {
-            /////////////
+            Context Packet;
+            if(!data("name").GetText().Compare("test1.zscene"))
+            {
+                Packet.At("object").LoadJson(SO_NeedCopy, mScene.GetObjectJson());
+                Packet.At("script").LoadJson(SO_OnlyReference, mScene.GetScriptJson());
+            }
+            mWhisper.Send("Toy", Packet);
+        });
+    mWhisper.AddRecvCB("SetChildStatus",
+        [this](const Context& data)->void
+        {
+            const String Status = data("status").GetText();
+            const String ObjectID = data("objectid").GetText();
+            for(sint32 i = 0, iend = data("children").LengthOfIndexable(); i < iend; ++i)
+            {
+                const String Child = data("children")[i].GetText();
+                mScene.SetObjectStatus(Status, ObjectID, Child);
+                invalidate();
+            }
+        });
+    mWhisper.AddRecvCB("SetChildMatrix",
+        [this](const Context& data)->void
+        {
+            const String Matrix = data("matrix").GetText();
+            const String ObjectID = data("objectid").GetText();
+            for(sint32 i = 0, iend = data("children").LengthOfIndexable(); i < iend; ++i)
+            {
+                const String Child = data("children")[i].GetText();
+                mScene.SetObjectMatrix(Matrix, ObjectID, Child);
+                invalidate();
+            }
         });
     mWhisper.OpenForSpot();
-
-    mXyzABC = AddOn::Abc::Create(Platform::File::RootForAssets() + "abc/xyz_01.abc");
-    AddOn::Abc::SetColor(mXyzABC, "x.Cylinder_x", 1, 0, 0);
-    AddOn::Abc::SetColor(mXyzABC, "y.Cylinder_y", 0, 1, 0);
-    AddOn::Abc::SetColor(mXyzABC, "z.Cylinder_z", 0, 0, 1);
-    AddOn::Abc::SetColor(mXyzABC, "Cube.Cube_002", 1, 1, 1);
-
-    mOctopusABC = AddOn::Abc::Create(Platform::File::RootForAssets() + "abc/octopus_toy.abc");
-    AddOn::Abc::SetColor(mOctopusABC, "Octopus.Sphere", 0.5, 0, 1);
+    mScene.Load(Platform::File::RootForAssets() + "abc/test1.zscene");
 }
 
 zay3dData::~zay3dData()
 {
     mWhisper.Close();
-    AddOn::Abc::Release(mXyzABC);
-    AddOn::Abc::Release(mOctopusABC);
 }
 
 void zay3dData::RenderWindowSystem(ZayPanel& panel)

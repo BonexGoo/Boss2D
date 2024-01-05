@@ -235,10 +235,6 @@
 												]
 											],
 											"expanded":"1",
-											"onclick":
-											[
-												"set_currently('exit_warning', 0)"
-											],
 											"posx":"7707",
 											"posy":"2792",
 											"ui":
@@ -362,11 +358,6 @@
 												]
 											],
 											"expanded":"1",
-											"onclick":
-											[
-												"set_currently('exit_warning', 0)",
-												"go_back('garage')"
-											],
 											"posx":"7700",
 											"posy":"3450",
 											"ui":
@@ -4799,8 +4790,8 @@
 												]
 											],
 											"expanded":"1",
-											"posx":"3657",
-											"posy":"2002",
+											"posx":"4154",
+											"posy":"2056",
 											"ui":
 											[
 												{
@@ -4814,8 +4805,8 @@
 														]
 													],
 													"expanded":"1",
-													"posx":"3958",
-													"posy":"2002",
+													"posx":"4455",
+													"posy":"2056",
 													"ui":
 													[
 														{
@@ -4830,8 +4821,78 @@
 																]
 															],
 															"expanded":"1",
-															"posx":"4275",
-															"posy":"2002"
+															"posx":"4772",
+															"posy":"2056"
+														}
+													]
+												}
+											]
+										},
+										{
+											"addw":"0",
+											"compid":"653",
+											"compname":"ltrb",
+											"compvalues":
+											[
+												[
+													"pH",
+													"0",
+													"pW - pH",
+													"pH"
+												]
+											],
+											"expanded":"1",
+											"posx":"4155",
+											"posy":"2251",
+											"ui":
+											[
+												{
+													"addw":"0",
+													"compid":"654",
+													"compname":"hexcolor",
+													"compvalues":
+													[
+														[
+															"#fafafa"
+														]
+													],
+													"expanded":"1",
+													"posx":"4467",
+													"posy":"2264",
+													"ui":
+													[
+														{
+															"addw":"91",
+															"compid":"655",
+															"compname":"font",
+															"compvalues":
+															[
+																[
+																	"0.9 * font_ratio",
+																	"'Roboto Medium'"
+																]
+															],
+															"expanded":"1",
+															"posx":"4782",
+															"posy":"2269",
+															"ui":
+															[
+																{
+																	"addw":"233",
+																	"compid":"656",
+																	"compname":"text",
+																	"compvalues":
+																	[
+																		[
+																			"''@'d.zaymodel.'+ boxname +'.title'",
+																			"leftmiddle"
+																		]
+																	],
+																	"expanded":"1",
+																	"posx":"5196",
+																	"posy":"2277"
+																}
+															]
 														}
 													]
 												}
@@ -4859,8 +4920,8 @@
 												"else",
 												"zaymodel_set_status(aV, 'show')"
 											],
-											"posx":"3657",
-											"posy":"2192",
+											"posx":"4157",
+											"posy":"2446",
 											"ui":
 											[
 												{
@@ -4874,8 +4935,8 @@
 														]
 													],
 													"expanded":"1",
-													"posx":"4528",
-													"posy":"2192",
+													"posx":"5028",
+													"posy":"2446",
 													"ui":
 													[
 														{
@@ -4896,8 +4957,8 @@
 																]
 															],
 															"expanded":"1",
-															"posx":"4849",
-															"posy":"2192"
+															"posx":"5349",
+															"posy":"2446"
 														}
 													]
 												}
@@ -4929,8 +4990,8 @@
 													"push_dir":"'-'"
 												}
 											],
-											"posx":"3660",
-											"posy":"2482",
+											"posx":"4158",
+											"posy":"2715",
 											"ui":
 											[
 												{
@@ -4946,16 +5007,16 @@
 														]
 													],
 													"expanded":"1",
-													"posx":"4317",
-													"posy":"2482"
+													"posx":"4815",
+													"posy":"2715"
 												},
 												{
 													"addw":"0",
 													"compid":"238",
 													"compname":"jump",
 													"expanded":"1",
-													"posx":"4313",
-													"posy":"2631",
+													"posx":"4811",
+													"posy":"2864",
 													"uiname":"box_wire"
 												}
 											],
@@ -4986,8 +5047,8 @@
 													"push_dir":"'-'"
 												}
 											],
-											"posx":"3660",
-											"posy":"2791",
+											"posx":"4159",
+											"posy":"2985",
 											"ui":
 											[
 												{
@@ -5003,16 +5064,16 @@
 														]
 													],
 													"expanded":"1",
-													"posx":"4317",
-													"posy":"2791"
+													"posx":"4816",
+													"posy":"2985"
 												},
 												{
 													"addw":"0",
 													"compid":"239",
 													"compname":"jump",
 													"expanded":"1",
-													"posx":"4319",
-													"posy":"2955",
+													"posx":"4818",
+													"posy":"3149",
 													"uiname":"box_wire"
 												}
 											],
