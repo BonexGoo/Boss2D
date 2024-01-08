@@ -63,10 +63,11 @@ helloworldData::~helloworldData()
 
 ## How to run
 
-```tsx
-Install QT 5.15.2 : https://www.qt.io/download-qt-installer-oss
-```
+- Install QT 5.15.2 : https://www.qt.io/download-qt-installer-oss
+- DoubleClick : helloworld/project/helloworld.pro
 
-```tsx
-DoubleClick : helloworld/project/helloworld.pro
-```
+### Features
+
+- helloworld : basic project
+- zaycode : code review software
+- zaypro : ui editor software
