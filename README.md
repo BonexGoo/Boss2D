@@ -11,6 +11,18 @@ Boss2D is a GUI framework for app development created using QT.
 ## How to start
 
 ```tsx
+#pragma once
+#include <service/boss_zay.hpp>
+
+class helloworldData : public ZayObject
+{
+public:
+    helloworldData();
+    ~helloworldData();
+};
+```
+
+```tsx
 #include <boss.hpp>
 #include "helloworld.hpp"
 
@@ -47,4 +59,14 @@ helloworldData::helloworldData()
 helloworldData::~helloworldData()
 {
 }
+```
+
+## How to run
+
+```tsx
+Install QT 5.15.2 : https://www.qt.io/download-qt-installer-oss
+```
+
+```tsx
+DoubleClick : helloworld/project/helloworld.pro
 ```
