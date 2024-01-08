@@ -2,7 +2,7 @@
 
 ### Hello World
 
-![boss512](https://user-images.githubusercontent.com/1957880/83536663-7b10d200-a52e-11ea-9a93-883f38f782f0.png)
+![helloworld](https://user-images.githubusercontent.com/1957880/83536663-7b10d200-a52e-11ea-9a93-883f38f782f0.png)
 
 ## Introduction
 
