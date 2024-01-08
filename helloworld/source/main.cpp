@@ -12,14 +12,11 @@ bool PlatformInit()
         Platform::InitForGL();
         if(Asset::RebuildForEmbedded())
             return false;
-
-        //String DataPath = Platform::File::RootForData();
-        //Platform::File::ResetAssetsRemRoot(DataPath);
     #endif
 
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Hello World");
-    Platform::SetWindowView("helloworldView");
+    Platform::SetWindowView("helloworldView"); // 또는 "helloworldWidget"
 
     // 윈도우 위치설정
     String WindowInfoString = String::FromAsset("windowinfo.json");

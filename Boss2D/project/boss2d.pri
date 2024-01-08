@@ -81,6 +81,7 @@ win32-g++: LIBS += -lcomdlg32
 win32-g++: LIBS += -luser32
 win32-g++: LIBS += -lole32
 win32-g++: LIBS += -lshell32
+win32-g++: LIBS += -lpsapi
 android: LIBS += -landroid
 macx|ios: LIBS += -framework CoreFoundation
 linux-g++: CONFIG += link_pkgconfig

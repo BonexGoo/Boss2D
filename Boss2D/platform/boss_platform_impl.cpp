@@ -10,6 +10,8 @@
     #pragma comment(lib, "advapi32.lib")
     #include <pdh.h>
     #pragma comment(lib, "pdh.lib")
+    #include <psapi.h>
+    #pragma comment(lib, "psapi.lib")
 #elif BOSS_LINUX
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         #include <gtk/gtk.h>
@@ -233,19 +235,18 @@ namespace BOSS
                             // 윈도우영역
                             RECT WindowRect;
                             GetWindowRect(hwnd, &WindowRect);
-                            NewProgram.At("windowrect").At("left").Set(String::FromInteger(WindowRect.left));
-                            NewProgram.At("windowrect").At("top").Set(String::FromInteger(WindowRect.top));
-                            NewProgram.At("windowrect").At("right").Set(String::FromInteger(WindowRect.right));
-                            NewProgram.At("windowrect").At("bottom").Set(String::FromInteger(WindowRect.bottom));
+                            NewProgram.At("windowrect").At("left").Set(String::FromInteger((sint32) WindowRect.left));
+                            NewProgram.At("windowrect").At("top").Set(String::FromInteger((sint32) WindowRect.top));
+                            NewProgram.At("windowrect").At("right").Set(String::FromInteger((sint32) WindowRect.right));
+                            NewProgram.At("windowrect").At("bottom").Set(String::FromInteger((sint32) WindowRect.bottom));
                             // 프로세스ID
                             DWORD ProcessID = 0;
                             GetWindowThreadProcessId(hwnd, &ProcessID); 
                             NewProgram.At("processid").Set(String::FromInteger((sint64) ProcessID));
                             // 파일패스
                             wchar_t FilePathW[MAX_PATH];
-                            DWORD FilePathSize = MAX_PATH;
                             HANDLE ProcHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, ProcessID);
-                            QueryFullProcessImageNameW(ProcHandle, 0, FilePathW, &FilePathSize);
+                            DWORD FilePathSize = GetProcessImageFileNameW(ProcHandle, FilePathW, MAX_PATH);
                             CloseHandle(ProcHandle);
                             String FilePath = String::FromWChars(FilePathW, FilePathSize);
                             FilePath.Replace("\\", "/");
