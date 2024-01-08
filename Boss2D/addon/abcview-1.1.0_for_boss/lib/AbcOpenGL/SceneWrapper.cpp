@@ -117,15 +117,19 @@ public:
         m_state.cam.frame(bounds);
     }
 
-    void addOverrideColorString( const std::string override_string, const C3f override_color) {
+    void addOverrideColorString(const std::string override_string, const C3f override_color) {
         m_scene.addOverrideColorString(override_string, override_color);
     }
 
-    void addOverrideHiddenString( const std::string override_string, const bool override_hidden) { //added by BOSS
+    void addOverrideHiddenString(const std::string override_string, const bool override_hidden) { //added by BOSS
         m_scene.addOverrideHiddenString(override_string, override_hidden);
     }
 
-    void removeOverrideColorString( const std::string override_string){
+    void addOverrideMatrixString(const std::string override_string, const double* m16) { //added by BOSS
+        m_scene.addOverrideMatrixString(override_string, m16);
+    }
+
+    void removeOverrideColorString(const std::string override_string){
         m_scene.removeOverrideColorString(override_string);
     }
 
@@ -135,10 +139,6 @@ public:
 
     ColorOverride getColorOverrides() {
         return m_scene.getColorOverrides();
-    }
-
-    void setZayMatrix(double* m16) { //added by BOSS
-        m_scene.setZayMatrix(m16);
     }
 
     Scene m_scene;
@@ -217,17 +217,22 @@ void SceneWrapper::frame(const Box3d &bounds)
     m_state->frame(bounds);
 }
 
-void SceneWrapper::addOverrideColorString( const std::string override_string, const C3f override_color)
+void SceneWrapper::addOverrideColorString(const std::string override_string, const C3f override_color)
 {
     m_state->addOverrideColorString(override_string, override_color);
 }
 
-void SceneWrapper::addOverrideHiddenString( const std::string override_string, const bool override_hidden) //added by BOSS
+void SceneWrapper::addOverrideHiddenString(const std::string override_string, const bool override_hidden) //added by BOSS
 {
     m_state->addOverrideHiddenString(override_string, override_hidden);
 }
 
-void SceneWrapper::removeOverrideColorString( const std::string override_string)
+void SceneWrapper::addOverrideMatrixString(const std::string override_string, const double* m16) //added by BOSS
+{
+    m_state->addOverrideMatrixString(override_string, m16);
+}
+
+void SceneWrapper::removeOverrideColorString(const std::string override_string)
 {
     m_state->removeOverrideColorString(override_string);
 }
@@ -240,11 +245,6 @@ void SceneWrapper::clearOverrideColorString()
 ColorOverride SceneWrapper::getColorOverrides()
 {
     return m_state->getColorOverrides();
-}
-
-void SceneWrapper::setZayMatrix(double* m16) //added by BOSS
-{
-    m_state->setZayMatrix(m16);
 }
 
 double_vec SceneWrapper::min_bounds()

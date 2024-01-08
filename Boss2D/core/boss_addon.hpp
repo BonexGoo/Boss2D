@@ -46,9 +46,9 @@ namespace BOSS
         public:
             static id_abc Create(chars abcpath);
             static void Release(id_abc abc);
-            static void SetColor(id_abc abc, chars name, double r, double g, double b);
-            static void SetHidden(id_abc abc, chars name, bool hidden);
-            static void SetMatrix(id_abc abc, double* m16);
+            static void SetColor(id_abc abc, chars child, double r, double g, double b);
+            static void SetHidden(id_abc abc, chars child, bool hidden);
+            static void SetMatrix(id_abc abc, chars child, const double* m16);
             static void Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h,
                 ButtonCB cb = nullptr, payload data = nullptr);
         };

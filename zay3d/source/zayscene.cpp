@@ -28,23 +28,32 @@ void ZayScene::Load(chars filename)
                 Strings Children;
                 for(sint32 j = 0, jend = fish("child").LengthOfNamable(); j < jend; ++j)
                 {
+                    bool HasHidden = false;
                     chararray ChildID;
                     hook(fish("child")(j, &ChildID))
+                    for(sint32 k = 0, kend = fish.LengthOfIndexable(); k < kend; ++k)
                     {
-                        const String Command = fish[0].GetText();
-                        if(!Command.Compare("color"))
+                        const String Command = fish[k].GetText();
+                        if(!Command.Compare("color") && k + 1 < kend)
                         {
-                            const Color OneColor(fish[1].GetText());
+                            const Color OneColor(fish[k + 1].GetText());
                             AddOn::Abc::SetColor(NewAbcID, &ChildID[0],
                                 OneColor.r / 255.0, OneColor.g / 255.0, OneColor.b / 255.0);
-                            Children.AtAdding() = &ChildID[0];
                         }
                         else if(!Command.Compare("hidden"))
+                        {
                             AddOn::Abc::SetHidden(NewAbcID, &ChildID[0], true);
+                            HasHidden = true;
+                        }
+                        else if(!Command.Compare("matrix") && k + 1 < kend)
+                        {
+                            const String OneMatrix(fish[k + 1].GetText());
+                            SetMatrix(NewAbcID, &ChildID[0], OneMatrix);
+                        }
                     }
+                    if(!HasHidden)
+                        Children.AtAdding() = &ChildID[0];
                 }
-                const String Matrix = fish("matrix").GetText("M_identity");
-                SetMatrix(NewAbcID, Matrix);
                 hook(mObjects(&ObjectID[0]))
                 {
                     fish.mAbcID = NewAbcID;
@@ -85,7 +94,7 @@ void ZayScene::SetObjectStatus(chars status, chars objectid, chars child)
 void ZayScene::SetObjectMatrix(chars matrix, chars objectid, chars child)
 {
     if(auto CurObject = mObjects.Access(objectid))
-        SetMatrix(CurObject->mAbcID, matrix);
+        SetMatrix(CurObject->mAbcID, child, matrix);
 }
 
 const String ZayScene::GetObjectJson() const
@@ -106,12 +115,12 @@ const String ZayScene::GetObjectJson() const
     return Objects.SaveJson();
 }
 
-void ZayScene::SetMatrix(id_abc abcid, chars matrix)
+void ZayScene::SetMatrix(id_abc abcid, chars child, chars matrix)
 {
     if(!String::Compare(matrix, "M_identity"))
     {
         double Matrix[16] {1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
-        AddOn::Abc::SetMatrix(abcid, Matrix);
+        AddOn::Abc::SetMatrix(abcid, child, Matrix);
     }
     else if(matrix[0] == 'M' && matrix[1] == '_')
     {
@@ -120,6 +129,6 @@ void ZayScene::SetMatrix(id_abc abcid, chars matrix)
         if(Values.Count() == 16)
         for(sint32 i = 0; i < 16; ++i)
             Matrix[i] = Parser::GetFloat<double>(Values[i]);
-        AddOn::Abc::SetMatrix(abcid, Matrix);
+        AddOn::Abc::SetMatrix(abcid, child, Matrix);
     }
 }

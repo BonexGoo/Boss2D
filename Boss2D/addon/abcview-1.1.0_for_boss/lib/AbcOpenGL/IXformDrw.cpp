@@ -174,7 +174,8 @@ void IXformDrw::draw( const DrawContext & iCtx )
     // deep deep hierarchy that exhausts the max stack depth quickly.
     glMatrixMode( GL_MODELVIEW );
 
-    const M44d LocalToParent = m_localToParent * iCtx.getZayMatrix(); //added by BOSS: 행렬곱 파이프라인 추가
+    const M44d ZayMatrix = iCtx.getColorOverrides().matrix_override(m_fullName); //added by BOSS: ZayMatrix값으로
+    const M44d LocalToParent = m_localToParent * ZayMatrix; //added by BOSS: 행렬곱 파이프라인 추가
     if ( m_inherits )
     {
         glMultMatrixd( ( const GLdouble * )&LocalToParent[0][0] ); //modified by BOSS: m_localToParent → LocalToParent

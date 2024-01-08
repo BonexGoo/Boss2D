@@ -5,34 +5,36 @@
 		{
 			"child":
 			{
+				"x": ["matrix", "M_2_0_0_0_0_2_0_0_0_0_2_0_0_0_0_1"],
+				"y": ["matrix", "M_2_0_0_0_0_2_0_0_0_0_2_0_0_0_0_1"],
+				"z": ["matrix", "M_1.5_0_0_0_0_1.5_0_0_0_0_1.5_0_0_0_0_1"],
 				"x.Cylinder_x": ["color", "#ff0000"],
 				"y.Cylinder_y": ["color", "#00ff00"],
 				"z.Cylinder_z": ["color", "#0000ff"],
 				"Cube.Cube_002": ["hidden"]
 			},
-			"file": "xyz_01.abc",
-			"matrix": "M_identity"
+			"file": "xyz_01.abc"
 		},
 		"obj002":
 		{
 			"child":
 			{
+				"Cube": ["matrix", "M_2_0_0_0_0_2_0_0_0_0_2_0_0_0_0_1"],
+				"Cube.Cube_002": ["color", "#ffff00"],
 				"x.Cylinder_x": ["hidden"],
 				"y.Cylinder_y": ["hidden"],
-				"z.Cylinder_z": ["hidden"],
-				"Cube.Cube_002": ["color", "#ffff00"]
+				"z.Cylinder_z": ["hidden"]
 			},
-			"file": "xyz_01.abc",
-			"matrix": "M_identity"
+			"file": "xyz_01.abc"
 		},
 		"obj003":
 		{
 			"child":
 			{
+				"Octopus": ["matrix", "M_0.5_0_0_0_0_0.5_0_0_0_0_0.5_0_0_0_0_1"],
 				"Octopus.Sphere": ["color", "#8000ff"]
 			},
-			"file": "octopus_toy.abc",
-			"matrix": "M_1_0_0_0.1_0_1_0_0.1_0_0_1_0_0_0_0_1"
+			"file": "octopus_toy.abc"
 		}
 	},
 	"script":

@@ -48,30 +48,40 @@ ColorOverride::~ColorOverride() {
 
 //! Add to map
 //! ...
-void ColorOverride::pushColorOverride( std::string const override_string, C3f const color_override ){
+void ColorOverride::pushColorOverride(std::string const override_string, C3f const color_override){
     m_color_overrides[override_string]=color_override;
 }
 
-void ColorOverride::pushHiddenOverride( std::string const override_string, bool hidden ) //added by BOSS
-{
+void ColorOverride::pushHiddenOverride(std::string const override_string, bool hidden){//added by BOSS
     m_hidden_overrides[override_string]=hidden;
+}
+
+void ColorOverride::pushMatrixOverride(std::string const override_string, const double* m16){//added by BOSS
+    const M44d NewMatrix(
+        m16[0], m16[1], m16[2], m16[3],
+        m16[4], m16[5], m16[6], m16[7],
+        m16[8], m16[9], m16[10], m16[11],
+        m16[12], m16[13], m16[14], m16[15]);
+    m_matrix_overrides[override_string] = NewMatrix;
 }
 
 //! Remove from map
 //! ...
-void ColorOverride::popColorOverride( std::string const override_string){
+void ColorOverride::popOverride(std::string const override_string){ //modified by BOSS: popColorOverride ¡æ popOverride
     m_color_overrides.erase(override_string);
     m_hidden_overrides.erase(override_string);
+    m_matrix_overrides.erase(override_string);
 }
 
 //! Clear map
 //! ...
-void ColorOverride::clearColorOverride(){
+void ColorOverride::clearOverride(){ //modified by BOSS: clearColorOverride ¡æ clearOverride
     m_color_overrides.clear();
     m_hidden_overrides.clear();
+    m_matrix_overrides.clear();
 }
 
-C3f ColorOverride::color_override( const std::string &comparison_string, const C3f &no_match_color, bool *hidden ) const
+C3f ColorOverride::color_override(const std::string &comparison_string, const C3f &no_match_color, bool *hidden) const
 {
     C3f result_color=no_match_color;
     std::map<std::string, C3f>::const_iterator it; //modified by BOSS: iterator ¡æ const_iterator
@@ -92,6 +102,16 @@ C3f ColorOverride::color_override( const std::string &comparison_string, const C
         else *hidden = false;
     }
     return result_color;
+}
+
+M44d ColorOverride::matrix_override(const std::string &comparison_string) const //added by BOSS
+{
+    M44d result_matrix;
+    std::map<std::string, M44d>::const_iterator it;
+    it = m_matrix_overrides.find(comparison_string);
+    if(it != m_matrix_overrides.end())
+         result_matrix = it->second;
+    return result_matrix;
 }
 
 //removed by BOSS: std::map<std::string, C3f> ColorOverride::m_color_overrides;

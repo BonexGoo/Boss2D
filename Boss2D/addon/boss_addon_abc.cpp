@@ -18,7 +18,7 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Abc, Release, void, id_abc)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, SetColor, void, id_abc, chars, double, double, double)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, SetHidden, void, id_abc, chars, bool)
-    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetMatrix, void, id_abc, double*)
+    BOSS_DECLARE_ADDON_FUNCTION(Abc, SetMatrix, void, id_abc, chars, const double*)
     BOSS_DECLARE_ADDON_FUNCTION(Abc, Render, void, id_abc, sint32, sint32, sint32, sint32, AddOn::Abc::ButtonCB, payload)
 
     static autorun Bind_AddOn_Abc()
@@ -80,30 +80,31 @@ namespace BOSS
         Buffer::Free((buffer) abc);
     }
 
-    void Customized_AddOn_Abc_SetColor(id_abc abc, chars name, double r, double g, double b)
+    void Customized_AddOn_Abc_SetColor(id_abc abc, chars child, double r, double g, double b)
     {
         auto CurAbc = (AbcClass*) abc;
         if(!CurAbc) return;
 
-        const String OverrideText = "/" + String(name).Replace(".", "/");
+        const String OverrideText = "/" + String(child).Replace(".", "/");
         CurAbc->mObject->addOverrideColorString((chars) OverrideText, Alembic::Abc::C3f(r, g, b));
     }
 
-    void Customized_AddOn_Abc_SetHidden(id_abc abc, chars name, bool hidden)
+    void Customized_AddOn_Abc_SetHidden(id_abc abc, chars child, bool hidden)
     {
         auto CurAbc = (AbcClass*) abc;
         if(!CurAbc) return;
 
-        const String OverrideText = "/" + String(name).Replace(".", "/");
+        const String OverrideText = "/" + String(child).Replace(".", "/");
         CurAbc->mObject->addOverrideHiddenString((chars) OverrideText, hidden);
     }
 
-    void Customized_AddOn_Abc_SetMatrix(id_abc abc, double* m16)
+    void Customized_AddOn_Abc_SetMatrix(id_abc abc, chars child, const double* m16)
     {
         auto CurAbc = (AbcClass*) abc;
         if(!CurAbc) return;
 
-        CurAbc->mObject->setZayMatrix(m16);
+        const String OverrideText = "/" + String(child).Replace(".", "/");
+        CurAbc->mObject->addOverrideMatrixString((chars) OverrideText, m16);
     }
 
     void Customized_AddOn_Abc_Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h, AddOn::Abc::ButtonCB cb, payload data)

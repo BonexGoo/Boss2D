@@ -29,7 +29,7 @@ public:
 public:
     const String GetObjectJson() const;
     const String& GetScriptJson() const {return mScript;}
-    void SetMatrix(id_abc abcid, chars matrix);
+    void SetMatrix(id_abc abcid, chars child, chars matrix);
 
 public:
     Map<ZaySceneObject> mObjects; // [obj001]

@@ -72,7 +72,7 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Release, void, return, id_abc)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, SetColor, void, return, id_abc, chars, double, double, double)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, SetHidden, void, return, id_abc, chars, bool)
-    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetMatrix, void, return, id_abc, double*)
+    BOSS_DEFINE_ADDON_FUNCTION(Abc, SetMatrix, void, return, id_abc, chars, const double*)
     BOSS_DEFINE_ADDON_FUNCTION(Abc, Render, void, return, id_abc, sint32, sint32, sint32, sint32, AddOn::Abc::ButtonCB, payload)
 
     id_abc AddOn::Abc::Create(chars abcpath)
@@ -81,14 +81,14 @@ namespace BOSS
     void AddOn::Abc::Release(id_abc abc)
     {Core_AddOn_Abc_Release()(abc);}
 
-    void AddOn::Abc::SetColor(id_abc abc, chars name, double r, double g, double b)
-    {Core_AddOn_Abc_SetColor()(abc, name, r, g, b);}
+    void AddOn::Abc::SetColor(id_abc abc, chars child, double r, double g, double b)
+    {Core_AddOn_Abc_SetColor()(abc, child, r, g, b);}
 
-    void AddOn::Abc::SetHidden(id_abc abc, chars name, bool hidden)
-    {Core_AddOn_Abc_SetHidden()(abc, name, hidden);}
+    void AddOn::Abc::SetHidden(id_abc abc, chars child, bool hidden)
+    {Core_AddOn_Abc_SetHidden()(abc, child, hidden);}
 
-    void AddOn::Abc::SetMatrix(id_abc abc, double* m16)
-    {Core_AddOn_Abc_SetMatrix()(abc, m16);}
+    void AddOn::Abc::SetMatrix(id_abc abc, chars child, const double* m16)
+    {Core_AddOn_Abc_SetMatrix()(abc, child, m16);}
 
     void AddOn::Abc::Render(id_abc abc, sint32 x, sint32 y, sint32 w, sint32 h, ButtonCB cb, payload data)
     {Core_AddOn_Abc_Render()(abc, x, y, w, h, cb, data);}
