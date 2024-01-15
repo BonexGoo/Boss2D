@@ -277,4 +277,5 @@ public: // 윈도우상태
     bool mNcTopBorder;
     bool mNcRightBorder;
     bool mNcBottomBorder;
+    sint32 mZoomPercent;
 };

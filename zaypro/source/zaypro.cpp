@@ -227,8 +227,6 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
-    if(type == GT_Moving || type == GT_MovingIdle)
-        m->SetCursor(CR_Arrow);
 }
 
 ZAY_VIEW_API OnRender(ZayPanel& panel)
@@ -248,7 +246,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             ZAY_XYWH_UI(panel, 0, 0, panel.w() - 240, panel.h(), "workspace",
                 ZAY_GESTURE_VNTXY(v, n, t, x, y)
                 {
-                    if(t == GT_Pressed)
+                    if(t == GT_Moving || t == GT_MovingIdle)
+                        m->SetCursor(CR_Arrow);
+                    else if(t == GT_Pressed)
                         m->clearCapture();
                     else if(t == GT_InDragging || t == GT_OutDragging)
                     {
@@ -270,17 +270,33 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         ZEZayBoxObject NewZayBox = ZEZayBox::CREATOR()(CurComponent.mName);
                         ZEZayBox::TOP()[NewZayBox->id()] = NewZayBox;
                     }
+                    else if(t == GT_WheelUp)
+                    {
+                        m->mZoomPercent = Math::Min(m->mZoomPercent + 5, 500);
+                        v->invalidate();
+                    }
+                    else if(t == GT_WheelDown)
+                    {
+                        m->mZoomPercent = Math::Max(50, m->mZoomPercent - 5);
+                        v->invalidate();
+                    }
                 })
             {
-                ZAY_INNER(panel, 10)
-                ZAY_FONT(panel, 1.5)
-                ZAY_RGB(panel, 51 * 0.75, 61 * 0.75, 73 * 0.75)
+                ZAY_INNER(panel, 20)
+                ZAY_FONT(panel, 2.0)
                 {
-                    // 버전
-                    panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
-                    // 랜더카운트
-                    static sint32 RenderCount = 0;
-                    panel.text(String::Format("RENDER_%04d", RenderCount++ % 10000), UIFA_RightBottom, UIFE_Left);
+                    ZAY_RGBA(panel, 31, 198, 253, 32)
+                    {
+                        // 버전
+                        panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
+                        // 랜더카운트
+                        static sint32 RenderCount = 0;
+                        panel.text(String::Format("RENDER:%04d", RenderCount++ % 10000), UIFA_RightBottom, UIFE_Left);
+                    }
+                    // 배율정보(100%가 아닐때만)
+                    if(m->mZoomPercent != 100)
+                    ZAY_RGBA(panel, 31, 198, 253, 128)
+                        panel.text(String::Format("ZOOM:%03d%%", m->mZoomPercent), UIFA_CenterTop, UIFE_Right);
                 }
 
                 m->mWorkViewSize = Size(panel.w(), panel.h());
@@ -292,6 +308,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 }
 
                 // 박스
+                ZAY_ZOOM(panel, m->mZoomPercent * 0.01)
                 ZAY_MOVE(panel, m->mWorkViewScroll.x, m->mWorkViewScroll.y)
                 for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
                 {
@@ -1018,6 +1035,7 @@ zayproData::zayproData() : mEasySaveEffect(updater())
     mNcTopBorder = false;
     mNcRightBorder = false;
     mNcBottomBorder = false;
+    mZoomPercent = 100;
 }
 
 zayproData::~zayproData()
@@ -1668,24 +1686,27 @@ void zayproData::RenderTitleBar(ZayPanel& panel)
         {
             static point64 OldCursorPos;
             static rect128 OldWindowRect;
-            if(t == GT_Moving || t == GT_MovingIdle)
-                SetCursor(CR_SizeAll);
-            else if(t == GT_MovingLosed)
-                SetCursor(CR_Arrow);
-            else if(t == GT_Pressed)
+            if(!Platform::Utility::IsFullScreen())
             {
-                Platform::Utility::GetCursorPos(OldCursorPos);
-                OldWindowRect = Platform::GetWindowRect();
-                clearCapture();
-            }
-            else if(t == GT_InDragging || t == GT_OutDragging)
-            {
-                point64 CurCursorPos;
-                Platform::Utility::GetCursorPos(CurCursorPos);
-                Platform::SetWindowPos(
-                    OldWindowRect.l + CurCursorPos.x - OldCursorPos.x,
-                    OldWindowRect.t + CurCursorPos.y - OldCursorPos.y);
-                invalidate();
+                if(t == GT_Moving || t == GT_MovingIdle)
+                    SetCursor(CR_SizeAll);
+                else if(t == GT_MovingLosed)
+                    SetCursor(CR_Arrow);
+                else if(t == GT_Pressed)
+                {
+                    Platform::Utility::GetCursorPos(OldCursorPos);
+                    OldWindowRect = Platform::GetWindowRect();
+                    clearCapture();
+                }
+                else if(t == GT_InDragging || t == GT_OutDragging)
+                {
+                    point64 CurCursorPos;
+                    Platform::Utility::GetCursorPos(CurCursorPos);
+                    Platform::SetWindowPos(
+                        OldWindowRect.l + CurCursorPos.x - OldCursorPos.x,
+                        OldWindowRect.t + CurCursorPos.y - OldCursorPos.y);
+                    invalidate();
+                }
             }
         })
     {
@@ -1797,31 +1818,34 @@ void zayproData::RenderOutline(ZayPanel& panel)
     #define RESIZING_MODULE(C, L, T, R, B, BORDER) do {\
         static point64 OldMousePos; \
         static rect128 OldWindowRect; \
-        if(t == GT_Pressed) \
+        if(!Platform::Utility::IsFullScreen()) \
         { \
-            Platform::Utility::GetCursorPos(OldMousePos); \
-            OldWindowRect = Platform::GetWindowRect(); \
-        } \
-        else if(t == GT_InDragging || t == GT_OutDragging || t == GT_InReleased || t == GT_OutReleased || t == GT_CancelReleased) \
-        { \
-            point64 NewMousePos; \
-            Platform::Utility::GetCursorPos(NewMousePos); \
-            const rect128 NewWindowRect = {L, T, R, B}; \
-            Platform::SetWindowRect(NewWindowRect.l, NewWindowRect.t, \
-                NewWindowRect.r - NewWindowRect.l, NewWindowRect.b - NewWindowRect.t); \
-        } \
-        else if(t == GT_Moving) \
-        { \
-            SetCursor(C); \
-            mNcLeftBorder = false; \
-            mNcTopBorder = false; \
-            mNcRightBorder = false; \
-            mNcBottomBorder = false; \
-            BORDER = true; \
-        } \
-        else if(t == GT_MovingLosed) \
-        { \
-            SetCursor(CR_Arrow); \
+            if(t == GT_Moving) \
+            { \
+                SetCursor(C); \
+                mNcLeftBorder = false; \
+                mNcTopBorder = false; \
+                mNcRightBorder = false; \
+                mNcBottomBorder = false; \
+                BORDER = true; \
+            } \
+            else if(t == GT_MovingLosed) \
+            { \
+                SetCursor(CR_Arrow); \
+            } \
+            else if(t == GT_Pressed) \
+            { \
+                Platform::Utility::GetCursorPos(OldMousePos); \
+                OldWindowRect = Platform::GetWindowRect(); \
+            } \
+            else if(t == GT_InDragging || t == GT_OutDragging || t == GT_InReleased || t == GT_OutReleased || t == GT_CancelReleased) \
+            { \
+                point64 NewMousePos; \
+                Platform::Utility::GetCursorPos(NewMousePos); \
+                const rect128 NewWindowRect = {L, T, R, B}; \
+                Platform::SetWindowRect(NewWindowRect.l, NewWindowRect.t, \
+                    NewWindowRect.r - NewWindowRect.l, NewWindowRect.b - NewWindowRect.t); \
+            } \
         }} while(false);
 
     // 윈도우 리사이징 꼭지점
