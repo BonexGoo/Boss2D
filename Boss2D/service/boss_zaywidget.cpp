@@ -724,7 +724,7 @@ namespace BOSS
                 else if(CurState & (PS_Focused | PS_Dragging)) InsiderName = "focus";
 
                 ZAY_INNER_UI(panel, 0, UIName)
-                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(InsiderName, panel))
+                if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIName, InsiderName, panel))
                     RenderErrorBox(panel);
                 return panel._push_pass();
             },
@@ -789,7 +789,7 @@ namespace BOSS
                             {
                                 ZAY_LTRB(panel, panel.w() * x / StageCount, ContentBorder + ContentSize * y,
                                     panel.w() * (x + 1) / StageCount, ContentBorder + ContentSize * (y + 1))
-                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIName, "content", panel, i))
                                         RenderErrorBox(panel);
                             }
                         }
@@ -815,7 +815,7 @@ namespace BOSS
                                 }
                             })
                         {
-                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIScrollBgName, "scrollbg", panel))
                                 RenderErrorBox(panel);
 
                             // 스크롤바
@@ -851,7 +851,7 @@ namespace BOSS
                                             v->moveScroll(UIName, 0, ScrollPos, 0, ScrollTarget, 1.0, false);
                                         }
                                     })
-                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIScrollBarName, "scrollbar", panel))
                                         RenderErrorBox(panel);
                             }
                         }
@@ -890,7 +890,7 @@ namespace BOSS
                             {
                                 ZAY_LTRB(panel, ContentBorder + ContentSize * x, panel.h() * y / StageCount,
                                     ContentBorder + ContentSize * (x + 1), panel.h() * (y + 1) / StageCount)
-                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("content", panel, i))
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIName, "content", panel, i))
                                         RenderErrorBox(panel);
                             }
                         }
@@ -916,7 +916,7 @@ namespace BOSS
                                 }
                             })
                         {
-                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbg", panel))
+                            if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIScrollBgName, "scrollbg", panel))
                                 RenderErrorBox(panel);
 
                             // 스크롤바
@@ -952,7 +952,7 @@ namespace BOSS
                                             v->moveScroll(UIName, ScrollPos, 0, ScrollTarget, 0, 1.0, false);
                                         }
                                     })
-                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider("scrollbar", panel))
+                                    if(!pay.TakeRenderer() || !pay.TakeRenderer()->RenderInsider(UIScrollBarName, "scrollbar", panel))
                                         RenderErrorBox(panel);
                             }
                         }
@@ -1000,20 +1000,20 @@ namespace BOSS
 
                     if(pay.TakeRenderer())
                     {
-                        if(pay.TakeRenderer()->HasInsider("always"))
+                        if(pay.TakeRenderer()->HasInsider(UIName, "always"))
                         {
                             ZAY_MAKE_SUBPANEL(panel, fish.mSurface)
                             {
-                                pay.TakeRenderer()->RenderInsider("always", panel);
+                                pay.TakeRenderer()->RenderInsider(UIName, "always", panel);
                                 auto LastBitmap = Platform::Graphics::GetBitmapFromSurface(fish.mSurface);
                                 fish.mLastImage.LoadBitmap(LastBitmap);
                             }
                         }
-                        else if(pay.TakeRenderer()->HasInsider("once"))
+                        else if(pay.TakeRenderer()->HasInsider(UIName, "once"))
                         {
                             ZAY_MAKE_SUBPANEL_UI(panel, fish.mSurface, UIName)
                             {
-                                pay.TakeRenderer()->RenderInsider("once", panel);
+                                pay.TakeRenderer()->RenderInsider(UIName, "once", panel);
                                 auto LastBitmap = Platform::Graphics::GetBitmapFromSurface(fish.mSurface);
                                 fish.mLastImage.LoadBitmap(LastBitmap);
                             }
@@ -1451,7 +1451,7 @@ namespace BOSS
                 {
                     ZAY_XYWH(panel, CurPos, (panel.h() - CursorHeight) / 2, CursorWidth, CursorHeight)
                     {
-                        if(!renderer || !renderer->RenderInsider("cursor", panel))
+                        if(!renderer || !renderer->RenderInsider(uiname, "cursor", panel))
                         {
                             ZAY_RGBA(panel, 128, 128, 128, 10 + 110 * CursorAniValue)
                                 panel.fill();
@@ -1500,7 +1500,7 @@ namespace BOSS
                     ZAY_MOVE(panel, -panel.toview(0, 0).x, 0)
                     ZAY_XYWH(panel, CopyX, (panel.h() - CursorHeight) / 2, CopyWidth, CursorHeight)
                     {
-                        if(!renderer || !renderer->RenderInsider("copying", panel))
+                        if(!renderer || !renderer->RenderInsider(uiname, "copying", panel))
                         ZAY_RGBA(panel, 128, 128, 128, 128 * Self.mCopyAni / mCopyAniMax)
                         ZAY_INNER(panel, CursorEffect * Self.mCopyAni / mCopyAniMax - CursorEffect + CursorEffectWidth)
                             panel.rect(CursorEffectWidth);
@@ -1515,14 +1515,25 @@ namespace BOSS
         else
         {
             ZAY_INNER_UI(panel, 0, uiname,
-                ZAY_GESTURE_VNTXY(v, n, t, x, y, domname)
+                ZAY_GESTURE_VNTXY(v, n, t, x, y, domname, renderer)
                 {
                     // 캡쳐화
                     if(t == GT_Pressed)
                     {
                         auto& Self = ST();
-                        v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname); // OnReleaseCapture를 호출
-
+                        // ReleaseCapture시 방식결정(에디터 → DOM)
+                        if(renderer && renderer->DomName(n))
+                        {
+                            auto NewInfo = (ReleaseCaptureInfo*) Buffer::Alloc<ReleaseCaptureInfo>(BOSS_DBG 1);
+                            NewInfo->mUIName = n;
+                            NewInfo->mRenderer = (ZayExtend::Renderer*) renderer;
+                            v->setCapture(n, Self.OnReleaseCaptureByRenderer, (payload) NewInfo);
+                        }
+                        else v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname);
+                        // 가능하다면 DOM업데이트
+                        if(chars CurText = (renderer)? renderer->GetText(n) : nullptr)
+                            ZayWidgetDOM::SetComment(domname, CurText);
+                        // DOM → 에디터
                         const String FieldText = ZayWidgetDOM::GetComment(domname);
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
@@ -1562,12 +1573,20 @@ namespace BOSS
                             v->invalidate();
                         }
                     }
+                    else if(t == GT_ToolTip)
+                    {
+                        if(renderer)
+                            renderer->ShowTip(n);
+                    }
                 })
             {
-                const String FieldText = ZayWidgetDOM::GetComment(domname);
+                String FieldText;
+                if(chars CurText = (renderer)? renderer->GetText(uiname) : nullptr)
+                    FieldText = CurText;
+                else FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(ispassword, FieldText);
                 sint32 iCursor = 0;
-                if(0 < VisualText.Length() || !renderer || !renderer->RenderInsider("default", panel))
+                if(!renderer || !renderer->RenderInsider(uiname, (0 < VisualText.Length())? "content" : "default", panel))
                     Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, CursorHeight, renderer);
             }
         }
@@ -1634,7 +1653,7 @@ namespace BOSS
             if(height != 0 && cursor == CurRenderInfo.GetFocus() && *text)
             ZAY_XYWH(panel, pos - 1, (panel.h() - height) / 2, 2, height)
             {
-                if(!renderer || !renderer->RenderInsider("focus", panel))
+                if(!renderer || !renderer->RenderInsider(uiname, "focus", panel))
                 ZAY_RGBA(panel, 128, 128, 128, 32)
                     panel.fill();
             }
@@ -1763,6 +1782,19 @@ namespace BOSS
         auto& Self = ST();
         if(olddata)
             Self.FlushSavedIME(String((id_cloned_share) olddata));
+    }
+
+    void ZayControl::OnReleaseCaptureByRenderer(payload olddata, payload newdata)
+    {
+        auto& Self = ST();
+        if(olddata)
+        {
+            auto OldInfo = (ReleaseCaptureInfo*) olddata;
+            const String CurDomName = OldInfo->mRenderer->DomName(OldInfo->mUIName);
+            Self.FlushSavedIME(CurDomName);
+            OldInfo->mRenderer->SetText(OldInfo->mUIName, ZayWidgetDOM::GetComment(CurDomName));
+            Buffer::Free((buffer) OldInfo);
+        }
     }
 
     String ZayControl::AddToIME(char key)

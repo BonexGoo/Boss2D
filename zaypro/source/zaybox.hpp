@@ -140,14 +140,18 @@ protected:
     ////////////////////////////////////////////////////////////////////////////////
     // BodyElement
     ////////////////////////////////////////////////////////////////////////////////
-    class BodyElement
+    class BodyElement : public ZayExtend::Renderer
     {
     public:
         BodyElement(ZEZayBox& box);
-        ~BodyElement();
+        virtual ~BodyElement();
     public:
         BodyElement& operator=(const BodyElement&)
         {BOSS_ASSERT("잘못된 시나리오입니다", false); return *this;}
+    public:
+        chars DomName(chars uiname) const override {return "editor";}
+        bool HasInsider(chars uiname, chars rendername) const override {return false;}
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override {return false;}
     public:
         virtual void ReadJson(const Context& json) = 0;
         virtual void WriteJson(Context& json, bool makeid) const = 0;
@@ -163,12 +167,17 @@ protected:
     {
     public:
         BodyComment(ZEZayBox& box);
-        ~BodyComment();
+        ~BodyComment() override;
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderCommentEditor(ZayPanel& panel, chars uiname);
+    public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
     public:
         String mComment;
     };
@@ -180,14 +189,20 @@ protected:
     {
     public:
         BodyNameComment(ZEZayBox& box);
-        ~BodyNameComment();
+        ~BodyNameComment() override;
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderNameCommentEditor(ZayPanel& panel, chars uiname, chars nametype);
     public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
+    public:
         String mName;
+        String mSavedNameType;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +212,7 @@ protected:
     {
     public:
         BodyParamGroup(ZEZayBox& box);
-        ~BodyParamGroup();
+        ~BodyParamGroup() override;
     public:
         void AddParam(chars param);
         void SubParam(sint32 i);
@@ -207,11 +222,16 @@ protected:
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderParamGroup(ZayPanel& panel);
         void RenderParamEditor(ZayPanel& panel, chars uiname, sint32 i);
-        void RenderParamComments(ZayPanel& panel, chars uiname, chars comments);
+        void RenderParamComments(ZayPanel& panel, chars uiname, chars comments) const;
+    public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
     public:
         Strings mParams;
         String mComments;
-        sint32s mParamCommentDefaults;
+        mutable sint32s mParamCommentDefaults;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +241,7 @@ protected:
     {
     public:
         BodyInputGroup(ZEZayBox& box);
-        ~BodyInputGroup();
+        ~BodyInputGroup() override;
     public:
         void AddValue(chars key, chars value);
         void SubValue(sint32 i);
@@ -232,6 +252,11 @@ protected:
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderValueGroup(ZayPanel& panel, chars name, BodyInputGroup* sub = nullptr, bool showmode = false);
         void RenderValueEditor(ZayPanel& panel, chars uiname, sint32 i, sint32 extmode);
+    public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
     public:
         class Input
         {
@@ -250,14 +275,20 @@ protected:
     {
     public:
         BodyLoopOperation(ZEZayBox& box);
-        ~BodyLoopOperation();
+        ~BodyLoopOperation() override;
     public:
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname, chars itname);
     public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
+    public:
         String mOperation;
+        String mSavedItName;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -267,13 +298,18 @@ protected:
     {
     public:
         BodyConditionOperation(ZEZayBox& box);
-        ~BodyConditionOperation();
+        ~BodyConditionOperation() override;
     public:
         void Init(chars operation, bool withelse, bool eventflag);
         void ReadJson(const Context& json) override;
         void WriteJson(Context& json, bool makeid) const override;
         sint32 GetCalcedSize(const BodyElement* sub = nullptr) const override;
         void RenderOperationEditor(ZayPanel& panel, chars uiname);
+    public:
+        chars GetText(chars uiname) const override;
+        void SetText(chars uiname, chars text) override;
+        void ShowTip(chars uiname) const override;
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override;
     public:
         bool mWithElse;
         String mOperation;
@@ -287,7 +323,7 @@ protected:
     {
     public:
         BodyInsideGroup(ZEZayBox& box);
-        ~BodyInsideGroup();
+        ~BodyInsideGroup() override;
     public:
         static ZEZayBox*& BOX() {static ZEZayBox* _ = nullptr; return _;}
     public:

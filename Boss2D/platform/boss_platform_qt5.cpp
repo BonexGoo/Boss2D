@@ -982,7 +982,7 @@
         void Platform::Popup::SetTrackerFont(chars family, sint32 pointsize)
         {
             g_tracker_fontfamily = QString::fromUtf8(family);
-            g_tracker_fontsize = pointsize;
+            g_tracker_fontsize = (sint32) Math::Round(pointsize * Platform::Utility::GetReversedGuiRatio());
         }
 
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)

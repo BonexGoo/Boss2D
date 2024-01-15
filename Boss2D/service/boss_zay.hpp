@@ -513,8 +513,13 @@ namespace BOSS
         class Renderer
         {
         public:
-            virtual bool HasInsider(chars name) const = 0;
-            virtual bool RenderInsider(chars name, ZayPanel& panel, sint32 pv = -1) const = 0;
+            virtual chars DomName(chars uiname) const {return nullptr;}
+            virtual chars GetText(chars uiname) const {return nullptr;}
+            virtual void SetText(chars uiname, chars text) {}
+            virtual void ShowTip(chars uiname) const {}
+        public:
+            virtual bool HasInsider(chars uiname, chars rendername) const = 0;
+            virtual bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv = -1) const = 0;
         };
 
     public: // 페이로드

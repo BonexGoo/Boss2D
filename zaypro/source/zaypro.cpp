@@ -31,6 +31,15 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             m->invalidate();
         }
     }
+    else if(type == CT_Activate)
+    {
+        const boolo Actived(in);
+        if(!Actived.ConstValue())
+            m->clearCapture();
+        
+    }
+    else if(type == CT_Size)
+        m->clearCapture();
 }
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -239,13 +248,15 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             ZAY_XYWH_UI(panel, 0, 0, panel.w() - 240, panel.h(), "workspace",
                 ZAY_GESTURE_VNTXY(v, n, t, x, y)
                 {
-                    if(t == GT_InDragging || t == GT_OutDragging)
+                    if(t == GT_Pressed)
+                        m->clearCapture();
+                    else if(t == GT_InDragging || t == GT_OutDragging)
                     {
                         auto& OldPos = v->oldxy(n);
                         const Point Drag(x - OldPos.x, y - OldPos.y);
                         m->mWorkViewScroll += Drag;
-                        v->invalidate();
                         m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
+                        v->invalidate();
                     }
                     else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
                     {
@@ -261,11 +272,16 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     }
                 })
             {
-                // 버전
                 ZAY_INNER(panel, 10)
                 ZAY_FONT(panel, 1.5)
-                ZAY_RGBA(panel, 0, 0, 0, 32)
+                ZAY_RGB(panel, 51 * 0.75, 61 * 0.75, 73 * 0.75)
+                {
+                    // 버전
                     panel.text(m->mBuildTag, UIFA_LeftBottom, UIFE_Right);
+                    // 랜더카운트
+                    static sint32 RenderCount = 0;
+                    panel.text(String::Format("RENDER_%04d", RenderCount++ % 10000), UIFA_RightBottom, UIFE_Left);
+                }
 
                 m->mWorkViewSize = Size(panel.w(), panel.h());
                 if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
@@ -303,7 +319,12 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
 
             // 도구뷰
-            ZAY_XYWH_UI(panel, panel.w() - 240, 0, 240, panel.h(), "apispace")
+            ZAY_XYWH_UI(panel, panel.w() - 240, 0, 240, panel.h(), "apispace",
+                ZAY_GESTURE_T(t)
+                {
+                    if(t == GT_Pressed)
+                        m->clearCapture();
+                })
             {
                 // 버튼 구역
                 ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), 12 + 34 + 6 + 34 + 8)
@@ -316,7 +337,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_LTRB_UI(panel, 14, 12, 14 + 100, 12 + 34, "NEW",
                         ZAY_GESTURE_T(t)
                         {
-                            if(t == GT_InReleased)
+                            if(t == GT_Pressed)
+                                m->clearCapture();
+                            else if(t == GT_InReleased)
                                 m->NewProject();
                         })
                     {
@@ -331,7 +354,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_LTRB_UI(panel, 14 + 100 + 12, 12, 14 + 100 + 12 + 100, 12 + 34, "FSAVE",
                         ZAY_GESTURE_T(t)
                         {
-                            if(t == GT_InReleased)
+                            if(t == GT_Pressed)
+                                m->clearCapture();
+                            else if(t == GT_InReleased)
                                 m->FastSave();
                         })
                     {
@@ -356,13 +381,17 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         #if BOSS_WASM
                             ZAY_GESTURE_T(t)
                             {
-                                if(t == GT_InReleased)
+                                if(t == GT_Pressed)
+                                    m->clearCapture();
+                                else if(t == GT_InReleased)
                                     Platform::Popup::FileContentDialog(L"All File(*.*)\0*.*\0Json File\0*.json\0");
                             };
                         #else
                             ZAY_GESTURE_T(t)
                             {
-                                if(t == GT_InReleased)
+                                if(t == GT_Pressed)
+                                    m->clearCapture();
+                                else if(t == GT_InReleased)
                                 {
                                     String JsonPath;
                                     if(Platform::Popup::FileDialog(DST_FileOpen, JsonPath, nullptr, "Load zui"))
@@ -388,7 +417,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_LTRB_UI(panel, 14 + 100 + 12, 12 + 34 + 6, 14 + 100 + 12 + 100, 12 + 34 + 6 + 34, "SAVE",
                         ZAY_GESTURE_T(t)
                         {
-                            if(t == GT_InReleased)
+                            if(t == GT_Pressed)
+                                m->clearCapture();
+                            else if(t == GT_InReleased)
                             {
                                 String JsonPath;
                                 if(Platform::Popup::FileDialog(DST_FileSave, JsonPath, nullptr, "Save zui"))
@@ -1131,6 +1162,7 @@ void zayproData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool bl
             {
                 mZaySonAPI.mDraggingComponentID = i;
                 mZaySonAPI.mDraggingComponentRect = UIRect;
+                clearCapture();
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
@@ -1644,6 +1676,7 @@ void zayproData::RenderTitleBar(ZayPanel& panel)
             {
                 Platform::Utility::GetCursorPos(OldCursorPos);
                 OldWindowRect = Platform::GetWindowRect();
+                clearCapture();
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {

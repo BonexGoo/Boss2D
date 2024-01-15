@@ -1,7 +1,7 @@
 ﻿#include <boss.hpp>
 #include "zaybox.hpp"
 
-#include <service/boss_zayson.hpp>
+#include <service/boss_zaywidget.hpp>
 #include <resource.hpp>
 
 extern String gTitleFont;
@@ -260,6 +260,8 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
                 Platform::SendNotify(v->view(), "Pipe:CompFocusIn", String::FromInteger(mCompID));
             else if(t == GT_MovingLosed)
                 Platform::SendNotify(v->view(), "Pipe:CompFocusOut", String());
+            else if(t == GT_Pressed)
+                v->clearCapture();
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
                 auto& OldPos = v->oldxy(n);
@@ -381,7 +383,10 @@ void ZEZayBox::RenderHook(ZayPanel& panel, chars uiname)
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
             {
                 if(t == GT_Pressed)
+                {
                     Platform::SendNotify(v->view(), "HookPressed", sint32o(mID));
+                    v->clearCapture();
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
                     auto& OldPos = v->oldxy(n);
@@ -453,7 +458,9 @@ void ZEZayBox::RenderBall(ZayPanel& panel, chars uiname)
         ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, uiname,
             ZAY_GESTURE_VNT(v, n, t, this)
             {
-                if(t == GT_Dropped)
+                if(t == GT_Pressed)
+                    v->clearCapture();
+                else if(t == GT_Dropped)
                 {
                     sint32s Values;
                     Values.AtAdding() = mID;
@@ -486,7 +493,9 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
-            if(t == GT_InDragging || t == GT_OutDragging)
+            if(t == GT_Pressed)
+                v->clearCapture();
+            else if(t == GT_InDragging || t == GT_OutDragging)
             {
                 auto& OldPos = v->oldxy(n);
                 mTitleDrag += Point(x - OldPos.x, y - OldPos.y);
@@ -516,6 +525,7 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
             {
                 Created = false;
                 OldPos = Point(x, y);
+                v->clearCapture();
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
@@ -546,9 +556,11 @@ void ZEZayBox::RenderExpandButton(ZayPanel& panel, chars uiname)
 {
     const bool IsFocused = !!(panel.state(uiname) & PS_Focused);
     ZAY_INNER_UI(panel, -2, uiname,
-        ZAY_GESTURE_T(t, this)
+        ZAY_GESTURE_VNT(v, n, t, this)
         {
-            if(t == GT_InReleased)
+            if(t == GT_Pressed)
+                v->clearCapture();
+            else if(t == GT_InReleased)
                 mExpanded ^= true;
         })
     ZAY_INNER(panel, 2 + 3)
@@ -569,7 +581,9 @@ void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
-            if(t == GT_InDragging || t == GT_OutDragging)
+            if(t == GT_Pressed)
+                v->clearCapture();
+            else if(t == GT_InDragging || t == GT_OutDragging)
             {
                 auto& OldPos = v->oldxy(n);
                 sint32s Values;
@@ -610,6 +624,7 @@ void ZEZayBox::RenderRemoveButton(ZayPanel& panel, chars uiname, bool group)
                 mRemovingUIName = n;
                 mRemovingCount = AniCount;
                 Platform::SendNotify(v->view(), "Update", sint32o(mRemovingCount));
+                v->clearCapture();
             }
             else if(t == GT_InReleased)
             {
@@ -702,7 +717,9 @@ void ZEZayBox::RenderHookRemoveButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, 0, uiname,
         ZAY_GESTURE_VNT(v, n, t, this)
         {
-            if(t == GT_InReleased)
+            if(t == GT_Pressed)
+                v->clearCapture();
+            else if(t == GT_InReleased)
             {
                 const sint32 OldParent = mParent;
                 Platform::SendNotify(v->view(), "ZayBoxHookRemove", sint32o(mID));
@@ -1115,35 +1132,52 @@ void ZEZayBox::BodyComment::RenderCommentEditor(ZayPanel& panel, chars uiname)
     ZAY_RGB(panel, 255, 255, 255)
         panel.fill();
 
-    ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), uiname,
-        ZAY_GESTURE_VNT(v, n, t, this)
-        {
-            if(t == GT_Pressed)
-            {
-                auto CurRect = v->rect(n);
-                String Text = mComment;
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                {
-                    mComment = Text.Trim();
-                    CommentTag::Update(&mBox);
-                    v->invalidate();
-                }
-            }
-            else if(t == GT_ToolTip)
-                Platform::Popup::ShowToolTip(mComment);
-        })
+    ZAY_INNER_SCISSOR(panel, 0)
+    ZAY_LTRB(panel, 3, 0, panel.w() - 3 - 4, panel.h())
     {
-        if(mComment.Length() == 0)
-        {
-            ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text("(Write your comment)", UIFA_LeftMiddle, UIFE_Right);
-        }
-        else ZAY_RGB(panel, 0, 128, 0)
-            panel.text(mComment, UIFA_LeftMiddle, UIFE_Right);
+        ZAY_RGB(panel, 0, 128, 0)
+        if(ZayControl::RenderEditBox(panel, uiname, DomName(uiname), 1, true, false, this))
+            panel.repaint(2);
     }
 
     ZAY_RGB(panel, 0, 0, 0)
         panel.rect(1);
+}
+
+chars ZEZayBox::BodyComment::GetText(chars uiname) const
+{
+    return mComment;
+}
+
+void ZEZayBox::BodyComment::SetText(chars uiname, chars text)
+{
+    mComment = String(text).Trim();
+    CommentTag::Update(&mBox);
+}
+
+void ZEZayBox::BodyComment::ShowTip(chars uiname) const
+{
+    Platform::Popup::ShowToolTip(mComment);
+}
+
+bool ZEZayBox::BodyComment::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            ZAY_RGB(panel, 0, 128, 0)
+                panel.text(mComment, UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text("(Write your comment)", UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1182,53 +1216,82 @@ void ZEZayBox::BodyNameComment::RenderNameCommentEditor(ZayPanel& panel, chars u
     ZAY_RGB(panel, 255, 255, 255)
         panel.fill();
 
-    ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), uiname,
-        ZAY_GESTURE_VNT(v, n, t, this)
-        {
-            if(t == GT_Pressed)
-            {
-                auto CurRect = v->rect(n);
-                String Text = (mComment.Length() == 0)? mName : ((mName.Length() == 0)? "#" + mComment : mName + " #" + mComment);
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                {
-                    const sint32 FindedPos = Text.Find(0, "#");
-                    if(FindedPos != -1)
-                    {
-                        mName = Text.Left(FindedPos).Trim();
-                        mComment = Text.Right(Text.Length() - FindedPos - 1).Trim();
-                    }
-                    else
-                    {
-                        mName = Text.Trim();
-                        mComment.Empty();
-                    }
-                    CommentTag::Update(&mBox);
-                    v->invalidate();
-                }
-            }
-            else if(t == GT_ToolTip)
-                Platform::Popup::ShowToolTip(mName + " #" + mComment);
-        })
+    mSavedNameType = nametype;
+    ZAY_INNER_SCISSOR(panel, 0)
+    ZAY_LTRB(panel, 3, 0, panel.w() - 3 - 4, panel.h())
     {
-        if(mName.Length() == 0 && mComment.Length() == 0)
-        {
-            ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text(String::Format("(Write %s name#comment)", nametype), UIFA_LeftMiddle, UIFE_Right);
-        }
-        else if(0 < mComment.Length())
-        {
-            ZAY_RGB(panel, 0, 0, 0)
-                panel.text(mName, UIFA_LeftMiddle, UIFE_Right);
-            ZAY_LTRB(panel, Platform::Graphics::GetStringWidth(mName), 0, panel.w(), panel.h())
-            ZAY_RGB(panel, 0, 128, 0)
-                panel.text(" #" + mComment, UIFA_LeftMiddle, UIFE_Right);
-        }
-        else ZAY_RGB(panel, 0, 0, 0)
-            panel.text(mName, UIFA_LeftMiddle, UIFE_Right);
+        ZAY_RGB(panel, 0, 0, 0)
+        if(ZayControl::RenderEditBox(panel, uiname, DomName(uiname), 1, true, false, this))
+            panel.repaint(2);
     }
 
     ZAY_RGB(panel, 0, 0, 0)
         panel.rect(1);
+}
+
+chars ZEZayBox::BodyNameComment::GetText(chars uiname) const
+{
+    static String SavedText;
+    SavedText = (mComment.Length() == 0)? mName : ((mName.Length() == 0)? "#" + mComment : mName + " #" + mComment);
+    return SavedText;
+}
+
+void ZEZayBox::BodyNameComment::SetText(chars uiname, chars text)
+{
+    const String Text = String(text);
+    const sint32 FindedPos = Text.Find(0, "#");
+    if(FindedPos != -1)
+    {
+        mName = Text.Left(FindedPos).Trim();
+        mComment = Text.Right(Text.Length() - FindedPos - 1).Trim();
+    }
+    else
+    {
+        mName = Text.Trim();
+        mComment.Empty();
+    }
+    CommentTag::Update(&mBox);
+}
+
+void ZEZayBox::BodyNameComment::ShowTip(chars uiname) const
+{
+    Platform::Popup::ShowToolTip(mName + " #" + mComment);
+}
+
+bool ZEZayBox::BodyNameComment::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            if(0 < mComment.Length())
+            {
+                if(mName.Length() == 0)
+                {
+                    ZAY_RGB(panel, 0, 128, 0)
+                        panel.text("#" + mComment, UIFA_LeftMiddle, UIFE_Right);
+                }
+                else
+                {
+                    ZAY_RGB(panel, 0, 0, 0)
+                        panel.text(mName, UIFA_LeftMiddle, UIFE_Right);
+                    ZAY_LTRB(panel, Platform::Graphics::GetStringWidth(mName), 0, panel.w(), panel.h())
+                    ZAY_RGB(panel, 0, 128, 0)
+                        panel.text(" #" + mComment, UIFA_LeftMiddle, UIFE_Right);
+                }
+            }
+            else ZAY_RGB(panel, 0, 0, 0)
+                panel.text(mName, UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text(String::Format("(Write %s name#comment)", (chars) mSavedNameType), UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1321,9 +1384,11 @@ void ZEZayBox::BodyParamGroup::RenderParamGroup(ZayPanel& panel)
                         const String UIParamAdd = String::Format("%d-param-add", mBox.mID);
                         const sint32 PressMove = (panel.state(UIParamAdd) & PS_Pressed)? 1 : 0;
                         ZAY_XYWH_UI(panel, (panel.w() - ParamAddWidth) / 2, (panel.h() - ParamHeight) / 2, ParamAddWidth - 1, ParamHeight - 1, UIParamAdd,
-                            ZAY_GESTURE_T(t, this)
+                            ZAY_GESTURE_VNT(v, n, t, this)
                             {
-                                if(t == GT_InReleased)
+                                if(t == GT_Pressed)
+                                    v->clearCapture();
+                                else if(t == GT_InReleased)
                                     AddParam("");
                             })
                         {
@@ -1365,37 +1430,15 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
     // 파라미터에디터
     ZAY_RGB(panel, 255, 255, 255)
         panel.fill();
-    ZAY_LTRB_UI(panel, 3, 0, panel.w() - ButtonWidth, panel.h(), uiname,
-        ZAY_GESTURE_VNT(v, n, t, this, i)
-        {
-            if(t == GT_Pressed)
-            {
-                auto CurRect = v->rect(n);
-                String Text = mParams[i];
-                if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                {
-                    mParams.At(i) = ZaySonUtility::GetSafetyString(Text);
-                    v->invalidate();
-                }
-            }
-            else if(t == GT_ToolTip)
-                Platform::Popup::ShowToolTip(mParams[i]);
-        })
+
+    ZAY_INNER_SCISSOR(panel, 0)
+    ZAY_LTRB(panel, 3, 0, panel.w() - ButtonWidth - 4, panel.h())
     {
-        if(mParams[i].Length() == 0)
-        {
-            if(0 < mComments.Length())
-            {
-                ZAY_LTRB_SCISSOR(panel, 10, 3, panel.w(), panel.h() - 3)
-                ZAY_INNER(panel, 1)
-                    RenderParamComments(panel, uiname, mComments);
-            }
-            else ZAY_RGBA(panel, 0, 0, 0, 64)
-                panel.text("(Write your parameter)", UIFA_LeftMiddle, UIFE_Right);
-        }
-        else ZAY_RGB(panel, 0, 0, 0)
-            panel.text(mParams[i], UIFA_LeftMiddle, UIFE_Right);
+        ZAY_RGB(panel, 0, 0, 0)
+        if(ZayControl::RenderEditBox(panel, uiname, DomName(uiname), 1, true, false, this))
+            panel.repaint(2);
     }
+
     ZAY_RGB(panel, 0, 0, 0)
         panel.rect(1);
 
@@ -1404,7 +1447,7 @@ void ZEZayBox::BodyParamGroup::RenderParamEditor(ZayPanel& panel, chars uiname, 
         mBox.RenderRemoveButton(panel, UIRemove, false);
 }
 
-void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname, chars comments)
+void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname, chars comments) const
 {
     sint32 PosX = 0;
     sint32 ParamID = 0;
@@ -1412,7 +1455,7 @@ void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname
     sint32s OptionBegins;
     bool HasSharp = false;
 
-    ZAY_FONT(panel, 0.8)
+    ZAY_FONT(panel, 0.9)
     for(sint32 i = 0; comments[i] != '\0'; ++i)
     switch(comments[i])
     {
@@ -1474,10 +1517,13 @@ void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname
                 const String ToolTipText(&comments[ParamBegin], ParamEnd - ParamBegin);
                 const bool IsOnlyOne = (OptionBegins.Count() == 2);
                 ZAY_XYWH_UI(panel, PosX, 0, TextWidth, panel.h(), UIComment,
-                    ZAY_GESTURE_T(t, this, ParamID, ToolTipText)
+                    ZAY_GESTURE_VNT(v, n, t, this, ParamID, ToolTipText)
                     {
                         if(t == GT_Pressed)
+                        {
                             mParamCommentDefaults.AtWherever(ParamID)++;
+                            v->clearCapture();
+                        }
                         else if(t == GT_ToolTip)
                             Platform::Popup::ShowToolTip(ToolTipText);
                     })
@@ -1506,6 +1552,55 @@ void ZEZayBox::BodyParamGroup::RenderParamComments(ZayPanel& panel, chars uiname
     default:
         break;
     }
+}
+
+chars ZEZayBox::BodyParamGroup::GetText(chars uiname) const
+{
+    const sint32 Pos = String(uiname).Find(0, "-param-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 7]) : 0;
+    return mParams[Index];
+}
+
+void ZEZayBox::BodyParamGroup::SetText(chars uiname, chars text)
+{
+    const sint32 Pos = String(uiname).Find(0, "-param-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 7]) : 0;
+    mParams.At(Index) = ZaySonUtility::GetSafetyString(text);
+}
+
+void ZEZayBox::BodyParamGroup::ShowTip(chars uiname) const
+{
+    const sint32 Pos = String(uiname).Find(0, "-param-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 7]) : 0;
+    Platform::Popup::ShowToolTip(mParams[Index]);
+}
+
+bool ZEZayBox::BodyParamGroup::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    const sint32 Pos = String(uiname).Find(0, "-param-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 7]) : 0;
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text(mParams[Index], UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            if(0 < mComments.Length())
+            {
+                ZAY_LTRB_SCISSOR(panel, 10, 3, panel.w(), panel.h() - 3)
+                ZAY_INNER(panel, 1)
+                    RenderParamComments(panel, uiname, mComments);
+            }
+            else ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text("(Write your parameter)", UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1615,9 +1710,11 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, Bod
                                         panel.rect(1);
                                 }
                                 ZAY_INNER_UI(panel, 0, UIClickMode,
-                                    ZAY_GESTURE_T(t, sub)
+                                    ZAY_GESTURE_VNT(v, n, t, sub)
                                     {
-                                        if(t == GT_InReleased && sub)
+                                        if(t == GT_Pressed)
+                                            v->clearCapture();
+                                        else if(t == GT_InReleased && sub)
                                             sub->TurnClickMode();
                                     })
                                 ZAY_MOVE_IF(panel, 1, 1, IsPressed)
@@ -1632,9 +1729,11 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, Bod
                         const String UIValueAdd = String::Format("%d-value-add", mBox.mID);
                         const sint32 PressMove = (panel.state(UIValueAdd) & PS_Pressed)? 1 : 0;
                         ZAY_XYWH_UI(panel, (panel.w() - ValueAddWidth) / 2, (panel.h() - ValueHeight) / 2, ValueAddWidth - 1, ValueHeight - 1, UIValueAdd,
-                            ZAY_GESTURE_T(t, this)
+                            ZAY_GESTURE_VNT(v, n, t, this)
                             {
-                                if(t == GT_InReleased)
+                                if(t == GT_Pressed)
+                                    v->clearCapture();
+                                else if(t == GT_InReleased)
                                     AddValue("", "");
                             })
                         {
@@ -1660,9 +1759,11 @@ void ZEZayBox::BodyInputGroup::RenderValueGroup(ZayPanel& panel, chars name, Bod
                             const String UIValueAddExt = String::Format("%d-extvalue-add", mBox.mID);
                             const sint32 PressMoveExt = (panel.state(UIValueAddExt) & PS_Pressed)? 1 : 0;
                             ZAY_XYWH_UI(panel, panel.w() - ValueAddWidth + 1, (panel.h() - ValueHeight) / 2, ValueAddWidth - 1, ValueHeight - 1, UIValueAddExt,
-                                ZAY_GESTURE_T(t, this, sub)
+                                ZAY_GESTURE_VNT(v, n, t, this, sub)
                                 {
-                                    if(t == GT_InReleased)
+                                    if(t == GT_Pressed)
+                                        v->clearCapture();
+                                    else if(t == GT_InReleased)
                                         sub->AddValue("", "");
                                 })
                             {
@@ -1724,31 +1825,14 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
         ZAY_RGB_IF(panel, 255, 224, 240, extmode == 2)
             panel.fill();
 
-        ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), UIKey,
-            ZAY_GESTURE_VNT(v, n, t, this, i)
-            {
-                if(t == GT_Pressed)
-                {
-                    auto CurRect = v->rect(n);
-                    String Text = mInputs[i].mKey;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                    {
-                        mInputs.At(i).mKey = ZaySonUtility::GetSafetyString(Text);
-                        v->invalidate();
-                    }
-                }
-                else if(t == GT_ToolTip)
-                    Platform::Popup::ShowToolTip(mInputs[i].mKey);
-            })
+        ZAY_INNER_SCISSOR(panel, 0)
+        ZAY_LTRB(panel, 3, 0, panel.w() - 3 - 4, panel.h())
         {
-            if(mInputs[i].mKey.Length() == 0)
-            {
-                ZAY_RGBA(panel, 0, 0, 0, 64)
-                    panel.text("(Name)", UIFA_LeftMiddle, UIFE_Right);
-            }
-            else ZAY_RGB(panel, 0, 0, 0)
-                panel.text(mInputs[i].mKey, UIFA_LeftMiddle, UIFE_Right);
+            ZAY_RGB(panel, 0, 0, 0)
+            if(ZayControl::RenderEditBox(panel, UIKey, DomName(UIKey), 1, true, false, this))
+                panel.repaint(2);
         }
+
         ZAY_RGB(panel, 0, 0, 0)
             panel.rect(1);
     }
@@ -1761,31 +1845,14 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
         ZAY_RGB_IF(panel, 255, 224, 240, extmode == 2)
             panel.fill();
 
-        ZAY_LTRB_UI(panel, 3, 0, panel.w() - ButtonWidth, panel.h(), UIValue,
-            ZAY_GESTURE_VNT(v, n, t, this, i)
-            {
-                if(t == GT_Pressed)
-                {
-                    auto CurRect = v->rect(n);
-                    String Text = mInputs[i].mValue;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                    {
-                        mInputs.At(i).mValue = ZaySonUtility::GetSafetyString(Text);
-                        v->invalidate();
-                    }
-                }
-                else if(t == GT_ToolTip)
-                    Platform::Popup::ShowToolTip(mInputs[i].mValue);
-            })
+        ZAY_INNER_SCISSOR(panel, 0)
+        ZAY_LTRB(panel, 3, 0, panel.w() - ButtonWidth - 4, panel.h())
         {
-            if(mInputs[i].mValue.Length() == 0)
-            {
-                ZAY_RGBA(panel, 0, 0, 0, 64)
-                    panel.text("(Value)", UIFA_LeftMiddle, UIFE_Right);
-            }
-            else ZAY_RGB(panel, 0, 0, 0)
-                panel.text(mInputs[i].mValue, UIFA_LeftMiddle, UIFE_Right);
+            ZAY_RGB(panel, 0, 0, 0)
+            if(ZayControl::RenderEditBox(panel, UIValue, DomName(UIValue), 1, true, false, this))
+                panel.repaint(2);
         }
+
         ZAY_RGB(panel, 0, 0, 0)
             panel.rect(1);
     }
@@ -1793,6 +1860,56 @@ void ZEZayBox::BodyInputGroup::RenderValueEditor(ZayPanel& panel, chars uiname, 
     // 제거버튼
     ZAY_XYWH(panel, panel.w() - ButtonWidth, 0, ButtonWidth, panel.h())
         mBox.RenderRemoveButton(panel, UIRemove, false);
+}
+
+chars ZEZayBox::BodyInputGroup::GetText(chars uiname) const
+{
+    const sint32 Pos = String(uiname).Find(0, "value-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 6]) : 0;
+    const bool IsKey = (!String(uiname).Right(4).Compare("-key"));
+    if(IsKey) return mInputs[Index].mKey;
+    return mInputs[Index].mValue;
+}
+
+void ZEZayBox::BodyInputGroup::SetText(chars uiname, chars text)
+{
+    const sint32 Pos = String(uiname).Find(0, "value-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 6]) : 0;
+    const bool IsKey = (!String(uiname).Right(4).Compare("-key"));
+    if(IsKey) mInputs.At(Index).mKey = ZaySonUtility::GetSafetyString(text);
+    else mInputs.At(Index).mValue = ZaySonUtility::GetSafetyString(text);
+}
+
+void ZEZayBox::BodyInputGroup::ShowTip(chars uiname) const
+{
+    const sint32 Pos = String(uiname).Find(0, "value-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 6]) : 0;
+    const bool IsKey = (!String(uiname).Right(4).Compare("-key"));
+    if(IsKey) Platform::Popup::ShowToolTip(mInputs[Index].mKey);
+    else Platform::Popup::ShowToolTip(mInputs[Index].mValue);
+}
+
+bool ZEZayBox::BodyInputGroup::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    const sint32 Pos = String(uiname).Find(0, "value-");
+    const sint32 Index = (Pos != -1)? Parser::GetInt(&uiname[Pos + 6]) : 0;
+    const bool IsKey = (!String(uiname).Right(4).Compare("-key"));
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text((IsKey)? mInputs[Index].mKey : mInputs[Index].mValue, UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text((IsKey)? "(Name)" : "(Value)", UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1845,42 +1962,60 @@ void ZEZayBox::BodyLoopOperation::RenderOperationEditor(ZayPanel& panel, chars u
     {
         ZAY_RGB(panel, 255, 255, 255)
             panel.fill();
-        ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), uiname,
-            ZAY_GESTURE_VNT(v, n, t, this)
-            {
-                if(t == GT_Pressed)
-                {
-                    auto CurRect = v->rect(n);
-                    String Text = mOperation;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                    {
-                        mOperation = Text.Trim();
-                        v->invalidate();
-                    }
-                }
-                else if(t == GT_ToolTip)
-                    Platform::Popup::ShowToolTip(mOperation);
-            })
+
+        mSavedItName = itname;
+        ZAY_INNER_SCISSOR(panel, 0)
+        ZAY_LTRB(panel, 3, 0, panel.w() - 3 - 4, panel.h())
         {
-            if(mOperation.Length() == 0)
-            {
-                ZAY_RGBA(panel, 0, 0, 0, 64)
-                    panel.text("(Formula)", UIFA_LeftMiddle, UIFE_Right);
-            }
-            else
-            {
-                ZAY_RGB(panel, 0, 0, 0)
-                    panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
-                const sint32 OperationSize = Platform::Graphics::GetStringWidth(mOperation);
-                if(OperationSize < panel.w())
-                ZAY_RGB(panel, 0, 128, 0)
-                ZAY_LTRB(panel, OperationSize, 0, panel.w(), panel.h())
-                    panel.text(String::Format(" (%sN)", (*itname != '\0')? itname : ""), UIFA_LeftMiddle, UIFE_Right);
-            }
+            ZAY_RGB(panel, 0, 0, 0)
+            if(ZayControl::RenderEditBox(panel, uiname, DomName(uiname), 1, true, false, this))
+                panel.repaint(2);
         }
+
         ZAY_RGB(panel, 0, 0, 0)
             panel.rect(1);
     }
+}
+
+chars ZEZayBox::BodyLoopOperation::GetText(chars uiname) const
+{
+    return mOperation;
+}
+
+void ZEZayBox::BodyLoopOperation::SetText(chars uiname, chars text)
+{
+    mOperation = String(text).Trim();
+}
+
+void ZEZayBox::BodyLoopOperation::ShowTip(chars uiname) const
+{
+    Platform::Popup::ShowToolTip(mOperation);
+}
+
+bool ZEZayBox::BodyLoopOperation::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
+
+            const sint32 OperationSize = Platform::Graphics::GetStringWidth(mOperation);
+            if(OperationSize < panel.w())
+            ZAY_RGB(panel, 0, 128, 0)
+            ZAY_LTRB(panel, OperationSize, 0, panel.w(), panel.h())
+                panel.text(String::Format(" (%sN)", (chars) mSavedItName), UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text("(Formula)", UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1933,10 +2068,13 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
 
     // 체크박스
     ZAY_LTRB_UI(panel, 0, 0, ElseCheckWidth, panel.h(), UIElseCheck,
-        ZAY_GESTURE_T(t, this)
+        ZAY_GESTURE_VNT(v, n, t, this)
         {
             if(t == GT_Pressed)
+            {
                 mWithElse = !mWithElse;
+                v->clearCapture();
+            }
         })
     {
         ZAY_RGB(panel, 255, 255, 255)
@@ -1953,31 +2091,15 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
     {
         ZAY_RGB(panel, 255, 255, 255)
             panel.fill();
-        ZAY_LTRB_UI(panel, 3, 0, panel.w() - 3, panel.h(), uiname,
-            ZAY_GESTURE_VNT(v, n, t, this)
-            {
-                if(t == GT_Pressed)
-                {
-                    auto CurRect = v->rect(n);
-                    String Text = mOperation;
-                    if(Platform::Popup::OpenEditTracker(Text, UIET_String, CurRect.l - 2, CurRect.t + 1, CurRect.r + 2, CurRect.b - 1))
-                    {
-                        mOperation = Text.Trim();
-                        v->invalidate();
-                    }
-                }
-                else if(t == GT_ToolTip)
-                    Platform::Popup::ShowToolTip(mOperation);
-            })
+
+        ZAY_INNER_SCISSOR(panel, 0)
+        ZAY_LTRB(panel, 3, 0, panel.w() - 3 - 4, panel.h())
         {
-            if(mOperation.Length() == 0)
-            {
-                ZAY_RGBA(panel, 0, 0, 0, 64)
-                    panel.text("(Formula)", UIFA_LeftMiddle, UIFE_Right);
-            }
-            else ZAY_RGB(panel, 0, 0, 0)
-                panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
+            ZAY_RGB(panel, 0, 0, 0)
+            if(ZayControl::RenderEditBox(panel, uiname, DomName(uiname), 1, true, false, this))
+                panel.repaint(2);
         }
+
         ZAY_RGB(panel, 0, 0, 0)
             panel.rect(1);
     }
@@ -1991,6 +2113,41 @@ void ZEZayBox::BodyConditionOperation::RenderOperationEditor(ZayPanel& panel, ch
         ZAY_RGB(panel, 0, 0, 0)
             panel.text(RuleText, UIFA_RightMiddle);
     }
+}
+
+chars ZEZayBox::BodyConditionOperation::GetText(chars uiname) const
+{
+    return mOperation;
+}
+
+void ZEZayBox::BodyConditionOperation::SetText(chars uiname, chars text)
+{
+    mOperation = String(text).Trim();
+}
+
+void ZEZayBox::BodyConditionOperation::ShowTip(chars uiname) const
+{
+    Platform::Popup::ShowToolTip(mOperation);
+}
+
+bool ZEZayBox::BodyConditionOperation::RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const
+{
+    ZAY_COLOR_CLEAR(panel)
+    {
+        if(!String::Compare(rendername, "content"))
+        {
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text(mOperation, UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+        else if(!String::Compare(rendername, "default"))
+        {
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.text("(Formula)", UIFA_LeftMiddle, UIFE_Right);
+            return true;
+        }
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2074,7 +2231,9 @@ void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
     ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, UIInsiderAdd,
         ZAY_GESTURE_VNT(v, n, t, this)
         {
-            if(t == GT_InReleased)
+            if(t == GT_Pressed)
+                v->clearCapture();
+            else if(t == GT_InReleased)
                 AddBall();
         })
     ZAY_INNER(panel, 2)
@@ -2118,7 +2277,9 @@ void ZEZayBox::BodyInsideGroup::RenderBalls(ZayPanel& panel)
                     ZAY_XYRR_UI(panel, panel.w() + BallX, panel.h() / 2, 9, 9, UIInsiderBall,
                         ZAY_GESTURE_VNT(v, n, t, this, i)
                         {
-                            if(t == GT_Dropped)
+                            if(t == GT_Pressed)
+                                v->clearCapture();
+                            else if(t == GT_Dropped)
                             {
                                 sint32s Values;
                                 Values.AtAdding() = mBox.mID;

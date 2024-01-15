@@ -71,7 +71,10 @@ namespace BOSS
         NewAbc->mObject = new AbcOpenGL::SceneWrapper(std::string(abcpath));
         NewAbc->mCamera = new AbcOpenGL::GLCamera();
         NewAbc->mCamera->setClippingPlanes(0.1, 100000);
-        NewAbc->mCamera->frame(NewAbc->mObject->bounds());
+        Imath::Box3d Bounds;
+        Bounds.min.x = -1; Bounds.min.y = -1; Bounds.min.z = -1;
+        Bounds.max.x = 1; Bounds.max.y = 1; Bounds.max.z = 1;
+        NewAbc->mCamera->frame(Bounds);
         return (id_abc) NewAbc;
     }
 

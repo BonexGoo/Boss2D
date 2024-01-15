@@ -1318,17 +1318,17 @@ namespace BOSS
         }
 
     public: // ZayExtend::Renderer 구현부
-        bool HasInsider(chars name) const override
+        bool HasInsider(chars uiname, chars rendername) const override
         {
             for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
             {
                 auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
-                if(!CurInsider->mName.Compare(name))
+                if(!CurInsider->mName.Compare(rendername))
                     return true;
             }
             return false;
         }
-        bool RenderInsider(chars name, ZayPanel& panel, sint32 pv) const override
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override
         {
             // 디버깅 정보수집
             auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
@@ -1342,7 +1342,7 @@ namespace BOSS
             for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
             {
                 auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
-                if(!CurInsider->mName.Compare(name))
+                if(!CurInsider->mName.Compare(rendername))
                 {
                     if(mCompID == mRefRoot->debugFocusedCompID())
                         AddDebugLog(*mInsidersLogs, panel, mInsidersComponent->HasContentComponent(), mInsidersComponentName);

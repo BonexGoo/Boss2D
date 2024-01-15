@@ -8,7 +8,7 @@
 				"Octopus": ["matrix", "M_0.5_0_0_0_0_0.5_0_0_0_0_0.5_0_0_0_0_1"],
 				"Octopus.Sphere": ["color", "#8000ff"]
 			},
-			"file": "octopus_toy.abc"
+			"file": "octopus_toy.abc_"
 		},
 		"obj002":
 		{
@@ -19,7 +19,141 @@
 				"y.Cylinder_y": ["color", "#00e000"],
 				"z.Cylinder_z": ["color", "#0000ff"]
 			},
-			"file": "test.abc"
+			"file": "test.abc_"
+		},
+		"joint":
+		{
+			"child":
+			{
+				"Ball": ["matrix", "M_identity"],
+				"Cube": ["matrix", "M_identity"],
+				"Ball.Ball": ["color", "#7070ff"],
+				"Cube.Cube": ["color", "#4040ff"]
+			},
+			"file": "joint.abc"
+		},
+		"body":
+		{
+			"child":
+			{
+				"_RIGING_ROBOT_L2_.1": ["hidden"],
+				"_RIGING_ROBOT_L2_.2": ["hidden"],
+				"_RIGING_ROBOT_L2_.3": ["hidden"],
+				"_RIGING_ROBOT_L2_.4": ["hidden"],
+				"_RIGING_ROBOT_L2_.5": ["hidden"],
+				"_RIGING_ROBOT_L2_.6": ["hidden"],
+				"_RIGING_ROBOT_L2_.7": ["hidden"],
+				"_RIGING_ROBOT_L2_.8": ["hidden"],
+				"_RIGING_ROBOT_L2_.9": ["hidden"],
+				"_RIGING_ROBOT_L2_.10": ["hidden"],
+				"_RIGING_ROBOT_L2_.11": ["hidden"],
+				"_RIGING_ROBOT_L2_.12": ["hidden"],
+				"_RIGING_ROBOT_L2_.13": ["hidden"],
+				"_RIGING_ROBOT_L2_.14": ["hidden"],
+				"_RIGING_ROBOT_L2_.15": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.16": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.HAL_9000_": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.1.Cube_017": ["hidden"],
+				"_RIGING_ROBOT_L2_.2.Cube_016": ["hidden"],
+				"_RIGING_ROBOT_L2_.3.Cube_011": ["hidden"],
+				"_RIGING_ROBOT_L2_.4.Cube_013": ["hidden"],
+				"_RIGING_ROBOT_L2_.5.Cube_012": ["hidden"],
+				"_RIGING_ROBOT_L2_.6.Cube_003": ["hidden"],
+				"_RIGING_ROBOT_L2_.7.Cube_000": ["hidden"],
+				"_RIGING_ROBOT_L2_.8.Cube_004": ["hidden"],
+				"_RIGING_ROBOT_L2_.9.Cube_005": ["hidden"],
+				"_RIGING_ROBOT_L2_.10.Cube_006": ["hidden"],
+				"_RIGING_ROBOT_L2_.11.Cube_007": ["hidden"],
+				"_RIGING_ROBOT_L2_.12.Cube_008": ["hidden"],
+				"_RIGING_ROBOT_L2_.13.Cube_009": ["hidden"],
+				"_RIGING_ROBOT_L2_.14.Cube_010": ["hidden"],
+				"_RIGING_ROBOT_L2_.15.Cube_015": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.16.Cube_002": ["color", "#804080"],
+				"_RIGING_ROBOT_L2_.HAL_9000_.Cube_014": ["color", "#303040"]
+			},
+			"file": "RIGING_MODEL_04.abc_"
+		},
+		"legL":
+		{
+			"child":
+			{
+				"_RIGING_ROBOT_L2_.1": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.2": ["hidden"],
+				"_RIGING_ROBOT_L2_.3": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.4": ["hidden"],
+				"_RIGING_ROBOT_L2_.5": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.6": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.7": ["hidden"],
+				"_RIGING_ROBOT_L2_.8": ["hidden"],
+				"_RIGING_ROBOT_L2_.9": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.10": ["hidden"],
+				"_RIGING_ROBOT_L2_.11": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.12": ["hidden"],
+				"_RIGING_ROBOT_L2_.13": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.14": ["hidden"],
+				"_RIGING_ROBOT_L2_.15": ["hidden"],
+				"_RIGING_ROBOT_L2_.16": ["hidden"],
+				"_RIGING_ROBOT_L2_.HAL_9000_": ["hidden"],
+				"_RIGING_ROBOT_L2_.1.Cube_017": ["color", "#ff00ff"],
+				"_RIGING_ROBOT_L2_.2.Cube_016": ["hidden"],
+				"_RIGING_ROBOT_L2_.3.Cube_011": ["color", "#404040"],
+				"_RIGING_ROBOT_L2_.4.Cube_013": ["hidden"],
+				"_RIGING_ROBOT_L2_.5.Cube_012": ["color", "#808080"],
+				"_RIGING_ROBOT_L2_.6.Cube_003": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.7.Cube_000": ["hidden"],
+				"_RIGING_ROBOT_L2_.8.Cube_004": ["hidden"],
+				"_RIGING_ROBOT_L2_.9.Cube_005": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.10.Cube_006": ["hidden"],
+				"_RIGING_ROBOT_L2_.11.Cube_007": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.12.Cube_008": ["hidden"],
+				"_RIGING_ROBOT_L2_.13.Cube_009": ["color", "#80b030"],
+				"_RIGING_ROBOT_L2_.14.Cube_010": ["hidden"],
+				"_RIGING_ROBOT_L2_.15.Cube_015": ["hidden"],
+				"_RIGING_ROBOT_L2_.16.Cube_002": ["hidden"],
+				"_RIGING_ROBOT_L2_.HAL_9000_.Cube_014": ["hidden"]
+			},
+			"file": "RIGING_MODEL_04.abc_"
+		},
+		"legR":
+		{
+			"child":
+			{
+				"_RIGING_ROBOT_L2_.1": ["hidden"],
+				"_RIGING_ROBOT_L2_.2": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.3": ["hidden"],
+				"_RIGING_ROBOT_L2_.4": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.5": ["hidden"],
+				"_RIGING_ROBOT_L2_.6": ["hidden"],
+				"_RIGING_ROBOT_L2_.7": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.8": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.9": ["hidden"],
+				"_RIGING_ROBOT_L2_.10": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.11": ["hidden"],
+				"_RIGING_ROBOT_L2_.12": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.13": ["hidden"],
+				"_RIGING_ROBOT_L2_.14": ["matrix", "M_identity"],
+				"_RIGING_ROBOT_L2_.15": ["hidden"],
+				"_RIGING_ROBOT_L2_.16": ["hidden"],
+				"_RIGING_ROBOT_L2_.HAL_9000_": ["hidden"],
+				"_RIGING_ROBOT_L2_.1.Cube_017": ["hidden"],
+				"_RIGING_ROBOT_L2_.2.Cube_016": ["color", "#ff00ff"],
+				"_RIGING_ROBOT_L2_.3.Cube_011": ["hidden"],
+				"_RIGING_ROBOT_L2_.4.Cube_013": ["color", "#404040"],
+				"_RIGING_ROBOT_L2_.5.Cube_012": ["hidden"],
+				"_RIGING_ROBOT_L2_.6.Cube_003": ["hidden"],
+				"_RIGING_ROBOT_L2_.7.Cube_000": ["color", "#808080"],
+				"_RIGING_ROBOT_L2_.8.Cube_004": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.9.Cube_005": ["hidden"],
+				"_RIGING_ROBOT_L2_.10.Cube_006": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.11.Cube_007": ["hidden"],
+				"_RIGING_ROBOT_L2_.12.Cube_008": ["color", "#ff80ff"],
+				"_RIGING_ROBOT_L2_.13.Cube_009": ["hidden"],
+				"_RIGING_ROBOT_L2_.14.Cube_010": ["color", "#80b030"],
+				"_RIGING_ROBOT_L2_.15.Cube_015": ["hidden"],
+				"_RIGING_ROBOT_L2_.16.Cube_002": ["hidden"],
+				"_RIGING_ROBOT_L2_.HAL_9000_.Cube_014": ["hidden"]
+			},
+			"file": "RIGING_MODEL_04.abc_"
 		}
 	},
 	"script":
