@@ -53,6 +53,7 @@ public:
     void SubChild(ZEZayBox& child);
     void ChangeChild(ZEZayBox& oldchild, ZEZayBox& newchild);
     inline sint32 id() const {return mID;}
+    inline sint32 compid() const {return mCompID;}
     inline sint32 parent() const {return mParent;}
     inline sint32s& children() {return mChildren;}
     inline const sint32s& children() const {return mChildren;}

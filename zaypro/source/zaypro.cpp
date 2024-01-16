@@ -796,6 +796,22 @@ bool ZEWidgetPipe::TickOnce()
             const String OldVariable = (*NewJson)("variable").GetText();
             mDOM.Remove(OldVariable);
         }
+        else if(!String::Compare(Type, "comp_focused"))
+        {
+            const sint32 CompID = (*NewJson)("compid").GetInt();
+            for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
+            {
+                auto CurBox = ZEZayBox::TOP().AccessByOrder(i);
+                if((*CurBox)->compid() == CompID)
+                {
+                    auto BoxPos = (*CurBox)->GetRect().Center();
+                    const Point TargetPos = Point(BoxPos.x, BoxPos.y) + m->mWorkViewScroll;
+                    m->mWorkViewDrag.x = m->mWorkViewSize.w / 2 - TargetPos.x;
+                    m->mWorkViewDrag.y = m->mWorkViewSize.h / 2 - TargetPos.y;
+                    break;
+                }
+            }
+        }
         else AddLog(Type, (*NewJson)("title").GetText(), (*NewJson)("detail").GetText());
         NeedUpdate = true;
     }
@@ -1519,7 +1535,7 @@ void zayproData::RenderMiniMap(ZayPanel& panel)
                     const Rect MapRect(v->rect(n));
                     const sint32 X = SumRect.l + SumRect.Width() * (x - MapRect.l) / MapRect.Width();
                     const sint32 Y = SumRect.t + SumRect.Height() * (y - MapRect.t) / MapRect.Height();
-                    mWorkViewDrag = Point(mWorkViewSize.w / 2 - X,mWorkViewSize.h / 2 - Y);
+                    mWorkViewDrag = Point(mWorkViewSize.w / 2 - X, mWorkViewSize.h / 2 - Y);
                 }
             })
         {

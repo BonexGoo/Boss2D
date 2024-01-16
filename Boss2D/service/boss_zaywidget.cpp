@@ -1109,6 +1109,7 @@ namespace BOSS
     {
         mHasUpdate = false;
         mHasRemove = false;
+        mHasFocusedCompID = -1;
         mUpdateProcedure = Platform::AddProcedure(PE_100MSEC,
             [](payload data)->void
             {
@@ -1143,9 +1144,19 @@ namespace BOSS
                     }
                 }
 
+                // 포커싱처리
+                if(Self->mHasFocusedCompID != -1)
+                for(sint32 i = 0, iend = Self->mPipeMap.Count(); i < iend; ++i)
+                {
+                    auto CurPipe = *Self->mPipeMap.AccessByOrder(i);
+                    id_pipe PipeID = CurPipe.mRefPipe;
+                    FocusToPipe(PipeID, Self->mHasFocusedCompID);
+                }
+
                 // 초기화
                 Self->mHasUpdate = false;
                 Self->mHasRemove = false;
+                Self->mHasFocusedCompID = -1;
                 Self->mRemoveVariables.Reset();
             }, this);
     }
@@ -1245,6 +1256,12 @@ namespace BOSS
         }
     }
 
+    void ZayWidgetDOM::SetFocus(sint32 compid)
+    {
+        auto& Self = ST();
+        Self.mHasFocusedCompID = compid;
+    }
+
     void ZayWidgetDOM::ConfirmUpdate()
     {
         mHasUpdate = true;
@@ -1271,6 +1288,14 @@ namespace BOSS
         Context Json;
         Json.At("type").Set("dom_removed");
         Json.At("variable").Set(variable);
+        Platform::Pipe::SendJson(pipe, Json.SaveJson());
+    }
+
+    void ZayWidgetDOM::FocusToPipe(id_pipe pipe, sint32 compid)
+    {
+        Context Json;
+        Json.At("type").Set("comp_focused");
+        Json.At("compid").Set(String::FromInteger(compid));
         Platform::Pipe::SendJson(pipe, Json.SaveJson());
     }
 

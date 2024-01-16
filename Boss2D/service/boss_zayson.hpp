@@ -49,6 +49,7 @@ namespace BOSS
         static bool IsValidDoubleClick(sint32 elementid);
         static bool IsValidLongPress(sint32 elementid);
         static bool IsValidSwipe(sint32 elementid);
+        static sint32 GetCompID(sint32 elementid);
     };
 
     /// @brief 뷰스크립트 원형

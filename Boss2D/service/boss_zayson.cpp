@@ -80,9 +80,10 @@ namespace BOSS
             chars key, chars value, bool doubleclicked, bool longpressed,
             bool upswiped, bool downswiped, bool leftswiped, bool rightswiped,
             bool outreleased, bool cancelreleased) {return false;}
-        virtual bool IsValidDoubleClick() {return false;}
-        virtual bool IsValidLongPress() {return false;}
-        virtual bool IsValidSwipe() {return false;}
+        virtual bool IsValidDoubleClick() const {return false;}
+        virtual bool IsValidLongPress() const {return false;}
+        virtual bool IsValidSwipe() const {return false;}
+        virtual sint32 GetCompID() const {return -1;}
 
     public:
         Type mType;
@@ -281,6 +282,13 @@ namespace BOSS
         if(auto CurUIElement = ZayUIElement::Get(elementid))
             return CurUIElement->IsValidSwipe();
         return false;
+    }
+
+    sint32 ZaySonElementCall::GetCompID(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->GetCompID();
+        return -1;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1304,17 +1312,21 @@ namespace BOSS
             }
             return false;
         }
-        bool IsValidDoubleClick() override
+        bool IsValidDoubleClick() const override
         {
             return mValidDoubleClicked;
         }
-        bool IsValidLongPress() override
+        bool IsValidLongPress() const override
         {
             return mValidLongPressed;
         }
-        bool IsValidSwipe() override
+        bool IsValidSwipe() const override
         {
             return mValidSwipe;
+        }
+        sint32 GetCompID() const override
+        {
+            return mCompID;
         }
 
     public: // ZayExtend::Renderer 구현부

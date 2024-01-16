@@ -2,6 +2,7 @@
 #include "boss_zay.hpp"
 
 #include "boss_zayson.hpp"
+#include "boss_zaywidget.hpp"
 
 ZAY_DECLARE_VIEW("_defaultview_")
 ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
@@ -12,6 +13,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 namespace BOSS
 {
+    static sint32 gMovingElementID = -1;
+
     class TouchRect
     {
     public:
@@ -1618,9 +1621,15 @@ namespace BOSS
                 static String ReleaseUIName;
                 static uint64 ReleaseMsec = 0;
                 if(t == GT_Moving || t == GT_MovingIdle)
+                {
                     ZaySonElementCall::SetCursor(ElementID, CR_PointingHand);
+                    gMovingElementID = ElementID;
+                }
                 else if(t == GT_MovingLosed)
+                {
                     ZaySonElementCall::SetCursor(ElementID, CR_Arrow);
+                    gMovingElementID = -1;
+                }
                 else if(t == GT_Pressed)
                 {
                     if(ZaySonElementCall::SendPress(ElementID, n))
@@ -2254,6 +2263,13 @@ namespace BOSS
                 m_ref_func->m_notify(NT_KeyPress, text, sint32o(code), nullptr);
             else m_ref_func->m_notify(NT_KeyRelease, text, sint32o(code), nullptr);
             m_ref_func->m_unlock();
+        }
+
+        // F3을 누르면 ZayPro에 포커싱전달
+        if(code == 114 && pressed && gMovingElementID != -1)
+        {
+            const sint32 CompID = ZaySonElementCall::GetCompID(gMovingElementID);
+            ZayWidgetDOM::SetFocus(CompID);
         }
     }
 

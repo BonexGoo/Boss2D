@@ -147,6 +147,8 @@
 			"ver":"1"
 		}
 	],
+	"posx":"0",
+	"posy":"0",
 	"ui":
 	[
 		{
@@ -448,7 +450,7 @@
 											"insiders":
 											[
 												{
-													"ballposx":"68",
+													"ballposx":"74",
 													"ballposy":"21",
 													"name":"cursor",
 													"ui":
@@ -484,7 +486,7 @@
 													]
 												},
 												{
-													"ballposx":"63",
+													"ballposx":"67",
 													"ballposy":"46",
 													"name":"focus",
 													"ui":
@@ -520,7 +522,7 @@
 													]
 												},
 												{
-													"ballposx":"77",
+													"ballposx":"81",
 													"ballposy":"71",
 													"name":"copying",
 													"ui":
@@ -556,7 +558,7 @@
 													]
 												},
 												{
-													"ballposx":"70",
+													"ballposx":"81",
 													"ballposy":"96",
 													"name":"default",
 													"ui":
@@ -923,7 +925,7 @@
 					"insiders":
 					[
 						{
-							"ballposx":"77",
+							"ballposx":"88",
 							"ballposy":"21",
 							"name":"scrollbg",
 							"ui":
@@ -939,7 +941,7 @@
 							]
 						},
 						{
-							"ballposx":"81",
+							"ballposx":"95",
 							"ballposy":"46",
 							"name":"scrollbar",
 							"ui":
@@ -955,7 +957,7 @@
 							]
 						},
 						{
-							"ballposx":"75",
+							"ballposx":"81",
 							"ballposy":"71",
 							"name":"content",
 							"ui":
