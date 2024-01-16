@@ -2266,11 +2266,8 @@ namespace BOSS
         }
 
         // F3을 누르면 ZayPro에 포커싱전달
-        if(code == 114 && pressed && gMovingElementID != -1)
-        {
-            const sint32 CompID = ZaySonElementCall::GetCompID(gMovingElementID);
-            ZayWidgetDOM::SetFocus(CompID);
-        }
+        if(code == 114 && pressed)
+            _compfocusing();
     }
 
     void ZayView::_checklose(GestureType type, const Element* element, sint32 x, sint32 y)
@@ -2339,6 +2336,15 @@ namespace BOSS
     {
         Touch* CurTouch = (Touch*) ((ZayView*) data)->m_touch;
         return (uiname != nullptr)? CurTouch->find(uiname, 0) : CurTouch->background();
+    }
+
+    void ZayView::_compfocusing()
+    {
+        if(gMovingElementID != -1)
+        {
+            const sint32 CompID = ZaySonElementCall::GetCompID(gMovingElementID);
+            ZayWidgetDOM::SetFocus(CompID);
+        }
     }
 
     ZayView::Element::Element()

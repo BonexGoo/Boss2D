@@ -881,6 +881,9 @@ namespace BOSS
     private:
         static const void* _finder(void* data, chars uiname);
 
+    public:
+        static void _compfocusing();
+
     private:
         const Function* m_ref_func;
         const String m_viewclass;

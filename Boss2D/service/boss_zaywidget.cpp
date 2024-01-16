@@ -201,6 +201,11 @@ namespace BOSS
                 mZaySon.ClearFocusCompID();
                 return true;
             }
+            jump(!String::Compare(Type, "CompFocusing"))
+            {
+                ZayView::_compfocusing();
+                return true;
+            }
         }
         return false;
     }

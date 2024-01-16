@@ -196,6 +196,15 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             m->mWorkViewDrag = Point(-300, 0);
         jump(KeyCode == 40) // Down
             m->mWorkViewDrag = Point(0, -300);
+        jump(KeyCode == 114) // F3: 포커싱요청
+        {
+            if(m->mPipe.IsConnected())
+            {
+                Context Json;
+                Json.At("type").Set("CompFocusing");
+                m->mPipe.SendToClient(Json.SaveJson());
+            }
+        }
         jump(KeyCode == 116) // F5: 간단세이브
             m->FastSave();
     }
