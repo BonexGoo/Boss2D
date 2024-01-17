@@ -1,0 +1,48 @@
+{
+	"common":
+	{
+		"app1_page":"home"
+	},
+	"app1":
+	{
+		"bg":
+		{
+			"home":"BG_Welcome"
+		}
+	},
+	"widgets":
+	[
+		{
+			"name" : "App1",
+			"width" : 600,
+			"height" : 500,
+			"scale" : 100,
+			"path" : "widget/app1.json"
+		}
+	],
+	"server":
+	{
+		"host" : "127.0.0.1",
+		"port" : 9876,
+		"idx" : -1
+	},
+	"serial":
+	{
+		"pass1":
+		{
+			"name" : "COM5",
+			"baudrate" : 9600
+		},
+		"pass2":
+		{
+			"name" : "COM6",
+			"baudrate" : 9600
+		},
+		"sizefield" : 0,
+		"idx" : -1
+	},
+	"fonts":
+	[
+		{"path" : "font/SKYBORI.ttf"}
+	]
+}
