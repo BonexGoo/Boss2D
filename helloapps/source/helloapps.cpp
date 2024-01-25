@@ -370,6 +370,10 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 ZAY_ZOOM_CLEAR(panel)
                     panel.text(10, 10, String::Format("(%dx%d)", WindowRect.l, WindowRect.t), UIFA_LeftTop);
             }
+
+            // 아웃라인
+            if(!m->IsFullScreen())
+                m->RenderWindowOutline(panel);
         }
         // 위젯포커스가 없을 때
         else
@@ -470,8 +474,11 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
 
             // 위젯버튼들
-            ZAY_LTRB(panel, 0, 60, panel.w(), panel.h())
+            ZAY_LTRB_SCISSOR(panel, 20, 80, panel.w() - 20, panel.h() - 80)
             {
+                ZAY_RGB(panel, 240, 240, 240)
+                    panel.fill();
+
                 Point Pos = {20, 20};
                 const sint32 ServerIdx = ZayWidgetDOM::GetValue("data.server.idx").ToInteger();
                 const sint32 WidgetCount = ZayWidgetDOM::GetValue("data.widgets.count").ToInteger();
@@ -504,7 +511,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     }
                     // 다음위치
                     Pos.x += 200 + 20;
-                    if(panel.w() < Pos.x + 200)
+                    if(panel.w() < Pos.x + 200 + 10)
                     {
                         Pos.x = 20;
                         Pos.y += 120 + 20;
@@ -535,6 +542,7 @@ helloappsData::helloappsData()
     ZayWidgetDOM::SetValue("program.width", String::FromInteger(gProgramWidth));
     ZayWidgetDOM::SetValue("program.height", String::FromInteger(gProgramHeight));
     ZayWidgetDOM::SetValue("program.scale", "100");
+    ZayWidgetDOM::SetValue("program.flexible", "1");
     ZayWidgetDOM::SetValue("program.connect", "'x'");
     ZayWidgetDOM::SetValue("program.html", "0");
     ZayWidgetDOM::SetValue("program.mute", "0");
@@ -572,7 +580,38 @@ void helloappsData::SetCursor(CursorRole role)
     {
         mNowCursor = role;
         Platform::Utility::SetCursor(role);
+        if(mNowCursor != CR_SizeVer && mNowCursor != CR_SizeHor && mNowCursor != CR_SizeBDiag && mNowCursor != CR_SizeFDiag && mNowCursor != CR_SizeAll)
+        {
+            mNcLeftBorder = false;
+            mNcTopBorder = false;
+            mNcRightBorder = false;
+            mNcBottomBorder = false;
+        }
     }
+}
+
+sint32 helloappsData::MoveNcLeft(const rect128& rect, sint32 addx)
+{
+    const sint32 NewLeft = rect.l + addx;
+    return rect.r - Math::Max(mMinWindowWidth, rect.r - NewLeft);
+}
+
+sint32 helloappsData::MoveNcTop(const rect128& rect, sint32 addy)
+{
+    const sint32 NewTop = rect.t + addy;
+    return rect.b - Math::Max(mMinWindowHeight, rect.b - NewTop);
+}
+
+sint32 helloappsData::MoveNcRight(const rect128& rect, sint32 addx)
+{
+    const sint32 NewRight = rect.r + addx;
+    return rect.l + Math::Max(mMinWindowWidth, NewRight - rect.l);
+}
+
+sint32 helloappsData::MoveNcBottom(const rect128& rect, sint32 addy)
+{
+    const sint32 NewBottom = rect.b + addy;
+    return rect.t + Math::Max(mMinWindowHeight, NewBottom - rect.t);
 }
 
 void helloappsData::RenderWindowSystem(ZayPanel& panel)
@@ -621,10 +660,171 @@ void helloappsData::RenderWindowSystem(ZayPanel& panel)
     }
 
     // 아웃라인
-    if(!m->IsFullScreen())
+    if(!IsFullScreen())
+        RenderWindowOutline(panel);
+}
+
+void helloappsData::RenderWindowOutline(ZayPanel& panel)
+{
     ZAY_INNER(panel, 1)
     ZAY_RGBA(panel, 0, 0, 0, 32)
         panel.rect(1);
+
+    if(ZayWidgetDOM::GetValue("program.flexible").ToInteger() == 0)
+        return;
+
+    // 리사이징바
+    ZAY_RGBA(panel, 0, 0, 0, 64 + 128 * Math::Abs(((frame() * 2) % 100) - 50) / 50)
+    {
+        if(mNcLeftBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, i, 0, 1, panel.h())
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcTopBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, 0, i, panel.w(), 1)
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcRightBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, panel.w() - 1 - i, 0, 1, panel.h())
+                panel.fill();
+            invalidate(2);
+        }
+        if(mNcBottomBorder)
+        {
+            for(sint32 i = 0; i < 5; ++i)
+            ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
+            ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
+                panel.fill();
+            invalidate(2);
+        }
+    }
+
+    // 윈도우 리사이징 모듈
+    #define RESIZING_MODULE(C, L, T, R, B, BORDER) do {\
+        static point64 OldMousePos; \
+        static rect128 OldWindowRect; \
+        if(t == GT_Moving) \
+        { \
+            SetCursor(C); \
+            mNcLeftBorder = false; \
+            mNcTopBorder = false; \
+            mNcRightBorder = false; \
+            mNcBottomBorder = false; \
+            BORDER = true; \
+        } \
+        else if(t == GT_MovingLosed) \
+        { \
+            SetCursor(CR_Arrow); \
+        } \
+        else if(t == GT_Pressed) \
+        { \
+            Platform::Utility::GetCursorPos(OldMousePos); \
+            OldWindowRect = Platform::GetWindowRect(); \
+        } \
+        else if(t == GT_InDragging || t == GT_OutDragging || t == GT_InReleased || t == GT_OutReleased || t == GT_CancelReleased) \
+        { \
+            point64 NewMousePos; \
+            Platform::Utility::GetCursorPos(NewMousePos); \
+            const rect128 NewWindowRect = {L, T, R, B}; \
+            Platform::SetWindowRect(NewWindowRect.l, NewWindowRect.t, \
+                NewWindowRect.r - NewWindowRect.l, NewWindowRect.b - NewWindowRect.t); \
+        }} while(false);
+
+    // 윈도우 리사이징 꼭지점
+    const sint32 SizeBorder = 10;
+    ZAY_LTRB_UI(panel, 0, 0, SizeBorder, SizeBorder, "NcLeftTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeFDiag,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcLeftBorder = mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, 0, panel.w(), SizeBorder, "NcRightTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeBDiag,
+                OldWindowRect.l,
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.b,
+                mNcRightBorder = mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, 0, panel.h() - SizeBorder, SizeBorder, panel.h(), "NcLeftBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeBDiag,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.t,
+                OldWindowRect.r,
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcLeftBorder = mNcBottomBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, panel.h() - SizeBorder, panel.w(), panel.h(), "NcRightBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeFDiag,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcRightBorder = mNcBottomBorder);
+        });
+
+    // 윈도우 리사이징 모서리
+    ZAY_LTRB_UI(panel, 0, SizeBorder, SizeBorder, panel.h() - SizeBorder, "NcLeft",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeHor,
+                MoveNcLeft(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.t,
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcLeftBorder);
+        });
+    ZAY_LTRB_UI(panel, SizeBorder, 0, panel.w() - SizeBorder, SizeBorder, "NcTop",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeVer,
+                OldWindowRect.l,
+                MoveNcTop(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                OldWindowRect.r,
+                OldWindowRect.b,
+                mNcTopBorder);
+        });
+    ZAY_LTRB_UI(panel, panel.w() - SizeBorder, SizeBorder, panel.w(), panel.h() - SizeBorder, "NcRight",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeHor,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                MoveNcRight(OldWindowRect, NewMousePos.x - OldMousePos.x),
+                OldWindowRect.b,
+                mNcRightBorder);
+        });
+    ZAY_LTRB_UI(panel, SizeBorder, panel.h() - SizeBorder, panel.w() - SizeBorder, panel.h(), "NcBottom",
+        ZAY_GESTURE_T(t, this)
+        {
+            RESIZING_MODULE(CR_SizeVer,
+                OldWindowRect.l,
+                OldWindowRect.t,
+                OldWindowRect.r,
+                MoveNcBottom(OldWindowRect, NewMousePos.y - OldMousePos.y),
+                mNcBottomBorder);
+        });
 }
 
 bool helloappsData::RenderHtmlView(ZayPanel& panel, chars viewid, chars htmlname)
@@ -893,6 +1093,7 @@ void helloappsData::EnterWidget(sint32 index)
     const sint32 CurHeight = ZayWidgetDOM::GetValue(CurHeader + "height").ToInteger();
     const sint32 CurScale = (0 < gFirstScale)? gFirstScale
         : ZayWidgetDOM::GetValue(CurHeader + "scale").ToInteger();
+    const bool CurFlexible = (ZayWidgetDOM::GetValue(CurHeader + "flexible").ToInteger() != 0);
 
     // 서버/클라이언트구성
     const sint32 ServerIdx = ZayWidgetDOM::GetValue("data.server.idx").ToInteger();
@@ -983,6 +1184,7 @@ void helloappsData::EnterWidget(sint32 index)
     SetTitle(CurName);
     ZayWidgetDOM::SetValue("program.scale", String::FromInteger(CurScale));
     Platform::SetWindowSize(CurWidth * CurScale / 100, CurHeight * CurScale / 100 + 1);
+    ZayWidgetDOM::SetValue("program.flexible", (CurFlexible)? "1" : "0");
 
     // 다이렉트위젯저장
     if(gFirstWidget.Length() == 0 && 0 < mDirectlyWidget.Length())
@@ -1308,6 +1510,7 @@ void helloappsData::ExitWidget()
     mWidgetSub = nullptr;
     SetTitle(nullptr);
     ZayWidgetDOM::SetValue("program.scale", "100");
+    ZayWidgetDOM::SetValue("program.flexible", "1");
     Platform::SetWindowSize(1000, 751);
 }
 

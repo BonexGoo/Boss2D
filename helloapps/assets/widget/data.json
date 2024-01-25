@@ -13,10 +13,35 @@
 	"widgets":
 	[
 		{
+			"name" : "계산기",
+			"width" : 600,
+			"height" : 500,
+			"scale" : 100,
+			"flexible" : 0,
+			"path" : "widget/calculator.json"
+		},
+		{
+			"name" : "애니메이션",
+			"width" : 500,
+			"height" : 500,
+			"scale" : 100,
+			"flexible" : 0,
+			"path" : "widget/animation.json"
+		},
+		{
+			"name" : "플렉시블",
+			"width" : 600,
+			"height" : 600,
+			"scale" : 100,
+			"flexible" : 1,
+			"path" : "widget/flexible.json"
+		},
+		{
 			"name" : "App1",
 			"width" : 600,
 			"height" : 500,
 			"scale" : 100,
+			"flexible" : 0,
 			"path" : "widget/app1.json"
 		}
 	],

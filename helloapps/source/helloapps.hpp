@@ -30,7 +30,12 @@ public:
 
 public:
     void SetCursor(CursorRole role);
+    sint32 MoveNcLeft(const rect128& rect, sint32 addx);
+    sint32 MoveNcTop(const rect128& rect, sint32 addy);
+    sint32 MoveNcRight(const rect128& rect, sint32 addx);
+    sint32 MoveNcBottom(const rect128& rect, sint32 addy);
     void RenderWindowSystem(ZayPanel& panel);
+    void RenderWindowOutline(ZayPanel& panel);
     bool RenderHtmlView(ZayPanel& panel, chars viewid, chars htmlname);
     bool RenderLogView(ZayPanel& panel, sint32 maxcount);
     bool RenderSlider(ZayPanel& panel, chars domname, sint32 maxvalue, bool flip);
@@ -103,7 +108,13 @@ public: // 클라이언트
     void ClientSend(const Context& json);
 
 public: // 윈도우
+    static const sint32 mMinWindowWidth = 400;
+    static const sint32 mMinWindowHeight = 400;
     CursorRole mNowCursor {CR_Arrow};
+    bool mNcLeftBorder {false};
+    bool mNcTopBorder {false};
+    bool mNcRightBorder {false};
+    bool mNcBottomBorder {false};
     bool mIsFullScreen {false};
     bool mIsWindowMoving {false};
     rect128 mSavedNormalRect {0, 0, 0, 0};
