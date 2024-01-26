@@ -23,13 +23,14 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             m->invalidate();
         }
         // 드래그 애니메이션
-        if(1 <= Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y))
+        if(5 <= Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y))
         {
             Point Drag = Point(m->mWorkViewDrag.x / 20, m->mWorkViewDrag.y / 20);
             m->mWorkViewDrag -= Drag;
             m->mWorkViewScroll += Drag;
             m->invalidate();
         }
+        else m->mWorkViewDrag = Point();
     }
     else if(type == CT_Activate)
     {
@@ -261,9 +262,11 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         m->clearCapture();
                     else if(t == GT_InDragging || t == GT_OutDragging)
                     {
-                        auto& OldPos = v->oldxy(n);
-                        const Point Drag(x - OldPos.x, y - OldPos.y);
-                        m->mWorkViewScroll += Drag;
+                        auto OldPos = v->oldxy(n);
+                        const float DragX = (x - OldPos.x) * 100 / m->mZoomPercent;
+                        const float DragY = (y - OldPos.y) * 100 / m->mZoomPercent;
+                        m->mWorkViewScroll.x += DragX;
+                        m->mWorkViewScroll.y += DragY;
                         m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
                         v->invalidate();
                     }
@@ -279,14 +282,22 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         ZEZayBoxObject NewZayBox = ZEZayBox::CREATOR()(CurComponent.mName);
                         ZEZayBox::TOP()[NewZayBox->id()] = NewZayBox;
                     }
-                    else if(t == GT_WheelUp)
+                    else if(t == GT_WheelUp || t == GT_WheelDown)
                     {
-                        m->mZoomPercent = Math::Min(m->mZoomPercent + 5, 500);
-                        v->invalidate();
-                    }
-                    else if(t == GT_WheelDown)
-                    {
-                        m->mZoomPercent = Math::Max(50, m->mZoomPercent - 5);
+                        auto CurRect = v->rect(n);
+                        const float OldAddX = (x - CurRect.l) * 100 / m->mZoomPercent;
+                        const float OldAddY = (y - CurRect.t) * 100 / m->mZoomPercent;
+
+                        // 줌변경
+                        if(t == GT_WheelDown)
+                            m->mZoomPercent = Math::Min(m->mZoomPercent + 5, 600);
+                        else m->mZoomPercent = Math::Max(30, m->mZoomPercent - 5);
+
+                        // 스크롤조정
+                        const float NewAddX = (x - CurRect.l) * 100 / m->mZoomPercent;
+                        const float NewAddY = (y - CurRect.t) * 100 / m->mZoomPercent;
+                        m->mWorkViewScroll.x += NewAddX - OldAddX;
+                        m->mWorkViewScroll.y += NewAddY - OldAddY;
                         v->invalidate();
                     }
                 })
@@ -308,7 +319,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         panel.text(String::Format("ZOOM:%03d%%", m->mZoomPercent), UIFA_CenterTop, UIFE_Right);
                 }
 
-                m->mWorkViewSize = Size(panel.w(), panel.h());
+                m->mWorkViewSize.w = panel.w() * 100 / m->mZoomPercent;
+                m->mWorkViewSize.h = panel.h() * 100 / m->mZoomPercent;
                 if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
                 {
                     ZAY_INNER(panel, 4)
@@ -1506,7 +1518,7 @@ void zayproData::RenderDOM(ZayPanel& panel)
 void zayproData::RenderMiniMap(ZayPanel& panel)
 {
     // 최대최소 검사
-    Rect ScreenRect(0, 0, panel.w(), panel.h());
+    Rect ScreenRect(0, 0, mWorkViewSize.w, mWorkViewSize.h);
     Rect SumRect = ScreenRect;
     for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
     {

@@ -13,7 +13,7 @@
 #define BOSS_NEED_ADDON_AAC        0
 #define BOSS_NEED_ADDON_ABC        0
 #define BOSS_NEED_ADDON_ALPR       0
-#define BOSS_NEED_ADDON_CURL       (!BOSS_WASM)
+#define BOSS_NEED_ADDON_CURL       0
 #define BOSS_NEED_ADDON_DLIB       0
 #define BOSS_NEED_ADDON_FREETYPE   0
 #define BOSS_NEED_ADDON_GIT        0
@@ -40,7 +40,7 @@
 #define BOSS_NEED_PROFILE          0
 #define BOSS_NEED_RELEASE_TRACE    1
 #define BOSS_NEED_NATIVE_OPENGL    0
-#define BOSS_NEED_EMBEDDED_ASSET   (BOSS_NDEBUG & 0)
-#define BOSS_NEED_EMBEDDED_CACHE   (BOSS_WASM)
+#define BOSS_NEED_EMBEDDED_ASSET   (BOSS_WASM | BOSS_WINDOWS_MINGW)
+#define BOSS_NEED_EMBEDDED_CACHE   (BOSS_WASM | BOSS_WINDOWS_MINGW)
 #define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5"}
 #define BOSS_SUMMIT_DOMAIN         "summit.hucloud.kr:8109"
