@@ -268,7 +268,6 @@ namespace BOSS
         bool valid(chars uiname = nullptr) const;
         const rect128& rect(chars uiname = nullptr) const;
         const float zoom(chars uiname = nullptr) const;
-        const point64& oldxy(chars uiname = nullptr) const;
         // 스크롤
         Point scrollpos(chars uiname) const;
         void setscroller(chars uiname, ScrollerCB cb);
@@ -667,7 +666,6 @@ namespace BOSS
             bool m_hoverpass;
             sint32 m_hoverid;
             mutable bool m_peekdragging;
-            mutable point64 m_saved_xy;
 
         private:
             mutable sint32 m_saved_updateid_for_state;

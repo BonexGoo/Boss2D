@@ -370,15 +370,20 @@ namespace BOSS
                 return panel._push_scroll_ui(ContentSize, 0, UIName,
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
+                        static float OldPosX;
                         static sint32 FirstX = 0;
                         if(t == GT_Pressed)
+                        {
+                            OldPosX = x;
                             FirstX = v->scrollpos(n).x - x;
+                        }
                         else if(t == GT_InDragging || t == GT_OutDragging)
                         {
                             if(v->isScrollSensing(n))
                                 FirstX = v->scrollpos(n).x - x;
-                            const sint32 VectorX = (x - v->oldxy(n).x) * 20;
+                            const sint32 VectorX = (x - OldPosX) * 20;
                             v->moveScroll(n, FirstX + x, 0, FirstX + x + VectorX, 0, 2.0, true);
+                            OldPosX = x;
                         }
                     }, {(sint32) Sensitive, -1}, SenseBorder, 0 < LoopingSize, LoopingSize, 0);
             },
@@ -401,15 +406,20 @@ namespace BOSS
                 return panel._push_scroll_ui(0, ContentSize, UIName,
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
+                        static float OldPosY;
                         static sint32 FirstY = 0;
                         if(t == GT_Pressed)
+                        {
+                            OldPosY = y;
                             FirstY = v->scrollpos(n).y - y;
+                        }
                         else if(t == GT_InDragging || t == GT_OutDragging)
                         {
                             if(v->isScrollSensing(n))
                                 FirstY = v->scrollpos(n).y - y;
-                            const sint32 VectorY = (y - v->oldxy(n).y) * 20;
+                            const sint32 VectorY = (y - OldPosY) * 20;
                             v->moveScroll(n, 0, FirstY + y, 0, FirstY + y + VectorY, 2.0, true);
+                            OldPosY = y;
                         }
                     }, {-1, (sint32) Sensitive}, SenseBorder, 0 < LoopingSize, LoopingSize, 0);
             },
@@ -768,15 +778,20 @@ namespace BOSS
                         ZAY_SCROLL_UI(panel, 0, TotalContentSize, UIName,
                             ZAY_GESTURE_VNTXY(v, n, t, x, y, WheelSpeed)
                             {
+                                static float OldPosY;
                                 static sint32 FirstY = 0;
                                 if(t == GT_Pressed)
+                                {
+                                    OldPosY = y;
                                     FirstY = v->scrollpos(n).y - y;
+                                }
                                 else if(t == GT_InDragging || t == GT_OutDragging)
                                 {
                                     if(v->isScrollSensing(n))
                                         FirstY = v->scrollpos(n).y - y;
-                                    const sint32 VectorY = (y - v->oldxy(n).y) * 20;
+                                    const sint32 VectorY = (y - OldPosY) * 20;
                                     v->moveScroll(n, 0, FirstY + y, 0, FirstY + y + VectorY, 2.0, true);
+                                    OldPosY = y;
                                 }
                                 else if(t == GT_InReleased || t == GT_OutReleased)
                                     v->clearScrollTouch(n);
@@ -869,15 +884,20 @@ namespace BOSS
                         ZAY_SCROLL_UI(panel, TotalContentSize, 0, UIName,
                             ZAY_GESTURE_VNTXY(v, n, t, x, y, WheelSpeed)
                             {
+                                static float OldPosX;
                                 static sint32 FirstX = 0;
                                 if(t == GT_Pressed)
+                                {
+                                    OldPosX = x;
                                     FirstX = v->scrollpos(n).x - x;
+                                }
                                 else if(t == GT_InDragging || t == GT_OutDragging)
                                 {
                                     if(v->isScrollSensing(n))
                                         FirstX = v->scrollpos(n).x - x;
-                                    const sint32 VectorX = (x - v->oldxy(n).x) * 20;
+                                    const sint32 VectorX = (x - OldPosX) * 20;
                                     v->moveScroll(n, FirstX + x, 0, FirstX + x + VectorX, 0, 2.0, true);
+                                    OldPosX = x;
                                 }
                                 else if(t == GT_InReleased || t == GT_OutReleased)
                                     v->clearScrollTouch(n);

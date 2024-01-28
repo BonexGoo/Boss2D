@@ -6,6 +6,7 @@
 
 extern String gTitleFont;
 extern String gBasicFont;
+extern sint32 gZoomPercent;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZEZayBox
@@ -256,17 +257,21 @@ void ZEZayBox::RenderTitle(ZayPanel& panel, chars title, bool hook,
     ZAY_LTRB_UI(panel, 0, 2, panel.w() - 4, TitleBarHeight - 2, UITitle,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
+            static Point OldPos;
             if(t == GT_Moving)
                 Platform::SendNotify(v->view(), "Pipe:CompFocusIn", String::FromInteger(mCompID));
             else if(t == GT_MovingLosed)
                 Platform::SendNotify(v->view(), "Pipe:CompFocusOut", String());
             else if(t == GT_Pressed)
+            {
+                OldPos = Point(x, y);
                 v->clearCapture();
+            }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
-                auto& OldPos = v->oldxy(n);
-                mTitleDrag += Point(x - OldPos.x, y - OldPos.y);
+                mTitleDrag += Point(x - OldPos.x, y - OldPos.y) * 100 / gZoomPercent;
                 Platform::SendNotify(v->view(), "ZayBoxMove", sint32o(mID));
+                OldPos = Point(x, y);
                 v->invalidate();
             }
             else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
@@ -382,16 +387,18 @@ void ZEZayBox::RenderHook(ZayPanel& panel, chars uiname)
         ZAY_XYRR_UI(panel, mHookPos.x, panel.h() / 2 + mHookPos.y, 8, 8, (mHooked)? "" : uiname,
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
             {
+                static Point OldPos;
                 if(t == GT_Pressed)
                 {
+                    OldPos = Point(x, y);
                     Platform::SendNotify(v->view(), "HookPressed", sint32o(mID));
                     v->clearCapture();
                 }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto& OldPos = v->oldxy(n);
                     mHookDrag.x += x - OldPos.x;
                     mHookDrag.y += y - OldPos.y;
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -493,13 +500,17 @@ void ZEZayBox::RenderGroupMoveButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
+            static Point OldPos;
             if(t == GT_Pressed)
+            {
+                OldPos = Point(x, y);
                 v->clearCapture();
+            }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
-                auto& OldPos = v->oldxy(n);
-                mTitleDrag += Point(x - OldPos.x, y - OldPos.y);
+                mTitleDrag += Point(x - OldPos.x, y - OldPos.y) * 100 / gZoomPercent;
                 Platform::SendNotify(v->view(), "ZayBoxMoveWith", sint32o(mID));
+                OldPos = Point(x, y);
                 v->invalidate();
             }
             else if((t == GT_InReleased || t == GT_OutReleased) && mParent != -1)
@@ -537,9 +548,9 @@ void ZEZayBox::RenderGroupCopyButton(ZayPanel& panel, chars uiname)
                 }
                 if(Created)
                 {
-                    mTitleDrag += Point(x - OldPos.x, y - OldPos.y);
-                    OldPos = Point(x, y);
+                    mTitleDrag += Point(x - OldPos.x, y - OldPos.y) * 100 / gZoomPercent;
                     Platform::SendNotify(v->view(), "ZayBoxMoveWith", sint32o(mID));
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
             }
@@ -581,15 +592,19 @@ void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
+            static Point OldPos;
             if(t == GT_Pressed)
+            {
+                OldPos = Point(x, y);
                 v->clearCapture();
+            }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
-                auto& OldPos = v->oldxy(n);
                 sint32s Values;
                 Values.AtAdding() = mID;
                 Values.AtAdding() = sint32(x - OldPos.x);
                 Platform::SendNotify(v->view(), "ZayBoxResize", Values);
+                OldPos = Point(x, y);
                 v->invalidate();
             }
         })

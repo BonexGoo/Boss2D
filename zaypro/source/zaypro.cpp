@@ -7,6 +7,7 @@ ZAY_DECLARE_VIEW_CLASS("zayproView", zayproData)
 
 String gTitleFont;
 String gBasicFont;
+sint32 gZoomPercent = 100;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
@@ -23,9 +24,11 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             m->invalidate();
         }
         // 드래그 애니메이션
-        if(5 <= Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y))
+        const float DragDist = Math::Distance(0, 0, m->mWorkViewDrag.x, m->mWorkViewDrag.y);
+        if(1 <= DragDist)
         {
-            Point Drag = Point(m->mWorkViewDrag.x / 20, m->mWorkViewDrag.y / 20);
+            const float DragDistMin = Math::Min(20, DragDist);
+            Point Drag = Point(m->mWorkViewDrag.x / DragDistMin, m->mWorkViewDrag.y / DragDistMin);
             m->mWorkViewDrag -= Drag;
             m->mWorkViewScroll += Drag;
             m->invalidate();
@@ -40,7 +43,10 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         
     }
     else if(type == CT_Size)
+    {
+        m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
         m->clearCapture();
+    }
 }
 
 ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
@@ -256,18 +262,22 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             ZAY_XYWH_UI(panel, 0, 0, panel.w() - 240, panel.h(), "workspace",
                 ZAY_GESTURE_VNTXY(v, n, t, x, y)
                 {
+                    static Point OldPos;
                     if(t == GT_Moving || t == GT_MovingIdle)
                         m->SetCursor(CR_Arrow);
                     else if(t == GT_Pressed)
+                    {
+                        OldPos = Point(x, y);
                         m->clearCapture();
+                    }
                     else if(t == GT_InDragging || t == GT_OutDragging)
                     {
-                        auto OldPos = v->oldxy(n);
-                        const float DragX = (x - OldPos.x) * 100 / m->mZoomPercent;
-                        const float DragY = (y - OldPos.y) * 100 / m->mZoomPercent;
+                        const float DragX = (x - OldPos.x) * 100 / gZoomPercent;
+                        const float DragY = (y - OldPos.y) * 100 / gZoomPercent;
                         m->mWorkViewScroll.x += DragX;
                         m->mWorkViewScroll.y += DragY;
                         m->mWorkViewDrag = Point(); // 드래그하던 것이 있다면 중지
+                        OldPos = Point(x, y);
                         v->invalidate();
                     }
                     else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
@@ -285,17 +295,17 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     else if(t == GT_WheelUp || t == GT_WheelDown)
                     {
                         auto CurRect = v->rect(n);
-                        const float OldAddX = (x - CurRect.l) * 100 / m->mZoomPercent;
-                        const float OldAddY = (y - CurRect.t) * 100 / m->mZoomPercent;
+                        const float OldAddX = (x - CurRect.l) * 100 / gZoomPercent;
+                        const float OldAddY = (y - CurRect.t) * 100 / gZoomPercent;
 
                         // 줌변경
                         if(t == GT_WheelDown)
-                            m->mZoomPercent = Math::Min(m->mZoomPercent + 5, 600);
-                        else m->mZoomPercent = Math::Max(30, m->mZoomPercent - 5);
+                            gZoomPercent = Math::Min(gZoomPercent + 5, 600);
+                        else gZoomPercent = Math::Max(30, gZoomPercent - 5);
 
                         // 스크롤조정
-                        const float NewAddX = (x - CurRect.l) * 100 / m->mZoomPercent;
-                        const float NewAddY = (y - CurRect.t) * 100 / m->mZoomPercent;
+                        const float NewAddX = (x - CurRect.l) * 100 / gZoomPercent;
+                        const float NewAddY = (y - CurRect.t) * 100 / gZoomPercent;
                         m->mWorkViewScroll.x += NewAddX - OldAddX;
                         m->mWorkViewScroll.y += NewAddY - OldAddY;
                         v->invalidate();
@@ -314,13 +324,13 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         panel.text(String::Format("RENDER:%04d", RenderCount++ % 10000), UIFA_RightBottom, UIFE_Left);
                     }
                     // 배율정보(100%가 아닐때만)
-                    if(m->mZoomPercent != 100)
+                    if(gZoomPercent != 100)
                     ZAY_RGBA(panel, 31, 198, 253, 128)
-                        panel.text(String::Format("ZOOM:%03d%%", m->mZoomPercent), UIFA_CenterTop, UIFE_Right);
+                        panel.text(String::Format("ZOOM:%03d%%", gZoomPercent), UIFA_CenterTop, UIFE_Right);
                 }
 
-                m->mWorkViewSize.w = panel.w() * 100 / m->mZoomPercent;
-                m->mWorkViewSize.h = panel.h() * 100 / m->mZoomPercent;
+                m->mWorkViewSize.w = panel.w() * 100 / gZoomPercent;
+                m->mWorkViewSize.h = panel.h() * 100 / gZoomPercent;
                 if(m->mZaySonAPI.mDraggingComponentID != -1 && (panel.state("workspace") & PS_Dropping))
                 {
                     ZAY_INNER(panel, 4)
@@ -329,7 +339,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 }
 
                 // 박스
-                ZAY_ZOOM(panel, m->mZoomPercent * 0.01)
+                ZAY_ZOOM(panel, gZoomPercent * 0.01)
                 ZAY_MOVE(panel, m->mWorkViewScroll.x, m->mWorkViewScroll.y)
                 for(sint32 i = 0, iend = ZEZayBox::TOP().Count(); i < iend; ++i)
                 {
@@ -1072,7 +1082,7 @@ zayproData::zayproData() : mEasySaveEffect(updater())
     mNcTopBorder = false;
     mNcRightBorder = false;
     mNcBottomBorder = false;
-    mZoomPercent = 100;
+    gZoomPercent = 100;
 }
 
 zayproData::~zayproData()
@@ -1213,16 +1223,18 @@ void zayproData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool bl
     ZAY_INNER_UI(panel, 0, (enable)? UIName : "",
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this, i, UIRect)
         {
+            static Point OldPos;
             if(t == GT_Pressed)
             {
+                OldPos = Point(x, y);
                 mZaySonAPI.mDraggingComponentID = i;
                 mZaySonAPI.mDraggingComponentRect = UIRect;
                 clearCapture();
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
-                auto& OldPos = v->oldxy(n);
                 mZaySonAPI.mDraggingComponentRect += Point(x - OldPos.x, y - OldPos.y);
+                OldPos = Point(x, y);
                 v->invalidate();
             }
             else if(t == GT_InReleased || t == GT_OutReleased)
@@ -1371,15 +1383,20 @@ void zayproData::RenderDOM(ZayPanel& panel)
                 ZAY_SCROLL_UI(panel, 0, ViewHeight, "dom-body-scroll",
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
+                        static float OldPosY;
                         static sint32 FirstY = 0;
                         if(t == GT_Pressed)
+                        {
+                            OldPosY = y;
                             FirstY = v->scrollpos(n).y - y;
+                        }
                         else if(t == GT_InDragging || t == GT_OutDragging)
                         {
                             if(v->isScrollSensing(n))
                                 FirstY = v->scrollpos(n).y - y;
-                            const sint32 VectorY = (y - v->oldxy(n).y) * 20;
+                            const sint32 VectorY = (y - OldPosY) * 20;
                             v->moveScroll(n, 0, FirstY + y, 0, FirstY + y + VectorY, 2.0, true);
+                            OldPosY = y;
                         }
                         else if(t == GT_WheelUp)
                         {

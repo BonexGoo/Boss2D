@@ -204,15 +204,6 @@ namespace BOSS
         return 1;
     }
 
-    const point64& ZayObject::oldxy(chars uiname) const
-    {
-        BOSS_ASSERT("Finder가 없습니다", m_finder_cb);
-        if(auto CurElement = (const ZayView::Element*) m_finder_cb(m_finder_data, uiname))
-            return CurElement->m_saved_xy;
-        static const point64 NullPoint = {0, 0};
-        return NullPoint;
-    }
-
     Point ZayObject::scrollpos(chars uiname) const
     {
         if(auto CurTouch = (const ZayView::Touch*) ((const ZayView*) m_finder_data)->m_touch)
@@ -2362,8 +2353,6 @@ namespace BOSS
         m_hoverpass = false;
         m_hoverid = -1;
         m_peekdragging = false;
-        m_saved_xy.x = 0;
-        m_saved_xy.y = 0;
         m_saved_updateid_for_state = -1;
         m_saved_state = PS_Null;
         m_saved_state_old = PS_Null;
@@ -2388,8 +2377,6 @@ namespace BOSS
         m_hoverpass = rhs.m_hoverpass;
         m_hoverid = rhs.m_hoverid;
         m_peekdragging = rhs.m_peekdragging;
-        m_saved_xy.x = rhs.m_saved_xy.x;
-        m_saved_xy.y = rhs.m_saved_xy.y;
         m_saved_updateid_for_state = rhs.m_saved_updateid_for_state;
         m_saved_state = rhs.m_saved_state;
         m_saved_state_old = rhs.m_saved_state_old;
@@ -2790,34 +2777,12 @@ namespace BOSS
     void ZayView::Touch::GestureCB(ZayView* manager, const Element* data, GestureType type, sint32 x, sint32 y)
     {
         manager->_gesture(type, x, y);
-        switch(type)
-        {
-        case GT_MovingIdle: case GT_InDraggingIdle: case GT_OutDraggingIdle: case GT_DroppingIdle:
-        case GT_WheelDraggingIdle: case GT_ExtendDraggingIdle: case GT_WheelDraggingIdlePeeked: case GT_ExtendDraggingIdlePeeked:
-            break;
-        default:
-            data->m_saved_xy.x = x;
-            data->m_saved_xy.y = y;
-            break;
-        }
     }
 
     void ZayView::Touch::SubGestureCB(ZayView* manager, const Element* data, GestureType type, sint32 x, sint32 y)
     {
         if(data->m_subcb)
-        {
             data->m_subcb((ZayObject*) manager->GetClass(), data->m_name, type, x, y);
-            switch(type)
-            {
-            case GT_MovingIdle: case GT_InDraggingIdle: case GT_OutDraggingIdle: case GT_DroppingIdle:
-            case GT_WheelDraggingIdle: case GT_ExtendDraggingIdle: case GT_WheelDraggingIdlePeeked: case GT_ExtendDraggingIdlePeeked:
-                break;
-            default:
-                data->m_saved_xy.x = x;
-                data->m_saved_xy.y = y;
-                break;
-            }
-        }
     }
 
     ZayView::Function::Function()

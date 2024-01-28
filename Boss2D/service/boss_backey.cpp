@@ -48,11 +48,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, ButtonSize * 0, panel.h() - ButtonSize * 1, ButtonSize, ButtonSize, "backey:0",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(0);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(0);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -64,11 +69,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, ButtonSize * 0, panel.h() - ButtonSize * 2, ButtonSize, ButtonSize, "backey:1",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(1);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(1);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -80,11 +90,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, ButtonSize * 1, panel.h() - ButtonSize * 1, ButtonSize, ButtonSize, "backey:2",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(2);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(2);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -96,11 +111,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, panel.w() - ButtonSize * 1, panel.h() - ButtonSize * 1, ButtonSize, ButtonSize, "backey:3",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(3);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(3);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -112,11 +132,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, panel.w() - ButtonSize * 1, panel.h() - ButtonSize * 2, ButtonSize, ButtonSize, "backey:4",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(4);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(4);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
@@ -128,11 +153,16 @@ namespace BOSS
         ZAY_XYWH_UI(panel, panel.w() - ButtonSize * 2, panel.h() - ButtonSize * 1, ButtonSize, ButtonSize, "backey:5",
             ZAY_GESTURE_VNTXY(v, n, t, x, y, this, view, ButtonSize)
             {
-                if(t == GT_Pressed) BeginSelector(5);
+                static Point OldPos;
+                if(t == GT_Pressed)
+                {
+                    OldPos = Point(x, y);
+                    BeginSelector(5);
+                }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    auto OldXY = v->oldxy(n);
-                    MoveSelector((x - OldXY.x) / (float) ButtonSize, (y - OldXY.y) / (float) ButtonSize);
+                    MoveSelector((x - OldPos.x) / (float) ButtonSize, (y - OldPos.y) / (float) ButtonSize);
+                    OldPos = Point(x, y);
                     v->invalidate();
                 }
                 else if(t == GT_InReleased || t == GT_OutReleased)
