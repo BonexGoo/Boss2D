@@ -136,7 +136,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             ZAY_RGB(panel, 64, 64, 255)
             {
                 ZAY_XYWH(panel, XPos, YPos, panel.w(), 30)
-                    XPos += m->RenderValue(panel, "PEER", m->mPeerCounter.Count()) + Gap;
+                    XPos += m->RenderValue(panel, "PEER", m->mPeerTokens.Count()) + Gap;
                 ZAY_XYWH(panel, XPos, YPos, panel.w(), 30)
                     XPos += m->RenderValue(panel, "TOKEN", m->mTokens.Count()) + Gap;
             }
@@ -203,6 +203,17 @@ sint32 zaydataData::RenderValue(ZayPanel& panel, chars name, sint32 value)
     return NameWidth + ValueWidth;
 }
 
+void zaydataData::CheckToken(sint32 peerid, chars token)
+{
+    // 동일한 피어가 통신중 토큰을 바꾸면
+    if(!!mPeerTokens[peerid].Compare(token))
+    {
+        // 이전 토큰을 제거
+        mTokens.Remove(mPeerTokens[peerid]);
+        mPeerTokens[peerid] = token;
+    }
+}
+
 void zaydataData::ServerStart()
 {
     mPort = Parser::GetInt(ZayWidgetDOM::GetComment("port"));
@@ -236,11 +247,11 @@ bool zaydataData::OnPacketOnce()
             switch(Platform::Server::GetPacketType(mServer))
             {
             case packettype_entrance:
-                mPeerCounter[CurPeerID];
+                mPeerTokens[CurPeerID];
                 break;
             case packettype_leaved:
             case packettype_kicked:
-                mPeerCounter.Remove(CurPeerID);
+                mPeerTokens.Remove(CurPeerID);
                 break;
             case packettype_message:
                 {
@@ -289,6 +300,8 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         Json.At("author").Set(NewToken.mAuthor);
         Json.At("token").Set(TokenCode);
         SendPacket(peerid, Json);
+        // 토큰확인
+        CheckToken(peerid, TokenCode);
     }
     // 에러처리
     else SendError(peerid, json, "Unregistered device");
@@ -304,6 +317,7 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     mPrograms(ProgramID).mFastLogin(DeviceID) = Author; // DeviceID to Author를 갱신
 
     // 프로필이 있으면 비번체크를 실시
+    bool ProfileCreated = false;
     if(auto CurProfile = mPrograms(ProgramID).mProfiles.Access(Author))
     {
         if(!!CurProfile->mPassword.Compare(Password))
@@ -313,16 +327,17 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
             return;
         }
         else if(HasUserData)
-            CurProfile->mUserData = json("userdata");
+            CurProfile->mData = json("userdata");
     }
     // 프로필이 없으면 프로필을 생성
     else
     {
+        ProfileCreated = true;
         auto& NewProfile = mPrograms(ProgramID).mProfiles(Author);
         NewProfile.mAuthor = Author;
         NewProfile.mPassword = Password;
         if(HasUserData)
-            NewProfile.mUserData = json("userdata");
+            NewProfile.mData = json("userdata");
     }
 
     // 새 토큰을 생성
@@ -338,9 +353,21 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     Json.At("author").Set(NewToken.mAuthor);
     Json.At("token").Set(TokenCode);
     SendPacket(peerid, Json);
+    // 토큰확인
+    CheckToken(peerid, TokenCode);
 
-    if(HasUserData)
-        mPrograms(ProgramID).mProfiles(Author).UpdateAll(mServer, peerid);
+    // 업데이트처리
+    if(ProfileCreated || HasUserData)
+    hook(mPrograms(ProgramID).mProfiles(Author))
+    {
+        // 새 버전 생성
+        const String DirPath = ProgramID + "/profile/" + Author + "/";
+        fish.UpdateVersion(mServer, peerid, DirPath);
+        // 포커싱된 피어들에게 업데이트
+        fish.SendPacketAll(mServer, peerid);
+        // 파일세이브
+        fish.SaveFile(DirPath);
+    }
 }
 
 void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
@@ -348,8 +375,11 @@ void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
     const String Token = PACKET_TEXT("token");
     if(auto CurToken = mTokens.Access(Token))
     {
+        // 토큰확인
+        CheckToken(peerid, Token);
         // DeviceID to Author를 제거
         mPrograms(CurToken->mProgramID).mFastLogin.Remove(CurToken->mDeviceID);
+        mPeerTokens[peerid].Empty();
         mTokens.Remove(Token);
     }
     // 에러처리
@@ -362,10 +392,12 @@ void zaydataData::OnRecv_FocusProfile(sint32 peerid, const Context& json)
     const String Author = PACKET_TEXT("author");
     if(auto CurToken = mTokens.Access(Token))
     {
+        // 토큰확인
+        CheckToken(peerid, Token);
         hook(mPrograms(CurToken->mProgramID).mProfiles(Author))
         {
             fish.Bind(peerid);
-            fish.Update(mServer, peerid); // 포커싱하면 최신데이터전송
+            fish.SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
         }
         CurToken->UpdateExpiry();
     }
@@ -379,6 +411,8 @@ void zaydataData::OnRecv_UnfocusProfile(sint32 peerid, const Context& json)
     const String Author = PACKET_TEXT("author");
     if(auto CurToken = mTokens.Access(Token))
     {
+        // 토큰확인
+        CheckToken(peerid, Token);
         mPrograms(CurToken->mProgramID).mProfiles(Author).Unbind(peerid);
         CurToken->UpdateExpiry();
     }
@@ -408,8 +442,8 @@ void zaydataData::OnRecv_EnumData(sint32 peerid, const Context& json)
 
 void zaydataData::SendPacket(sint32 peerid, const Context& json)
 {
-    const String Message = json.SaveJson();
-    Platform::Server::SendToPeer(mServer, peerid, (chars) Message, Message.Length() + 1, true);
+    const String Packet = json.SaveJson();
+    Platform::Server::SendToPeer(mServer, peerid, (chars) Packet, Packet.Length() + 1, true);
 }
 
 void zaydataData::SendError(sint32 peerid, const Context& json, chars text)

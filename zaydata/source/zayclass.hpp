@@ -17,13 +17,18 @@ public:
 public:
     void Bind(sint32 peerid);
     void Unbind(sint32 peerid);
-    void Update(id_server server, sint32 peerid);
-    void UpdateAll(id_server server, sint32 excluded_peerid = -1);
+    void UpdateVersion(id_server server, sint32 peerid, chars dirpath);
+    void SendPacket(id_server server, sint32 peerid);
+    void SendPacketAll(id_server server, sint32 excluded_peerid = -1);
 
 protected:
     virtual String BuildPacket() const = 0;
 
+public:
+    inline chars version() const {return mVersion;}
+
 private:
+    String mVersion;
     sint32s mPeerIDs;
 };
 
@@ -35,13 +40,16 @@ public:
     ZDProfile();
     ~ZDProfile() override;
 
+public:
+    void SaveFile(chars dirpath) const;
+
 private:
     String BuildPacket() const override;
 
 public:
     String mAuthor;
     String mPassword;
-    Context mUserData;
+    Context mData;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +58,7 @@ class ZDProgram
 {
 public:
     static String CreateTokenCode(chars deviceid);
+    static String CreateTimeCode();
 
 public:
     MapStrings mFastLogin; // [deviceid/ClInavrmjQ] → author

@@ -10,6 +10,7 @@ public:
 
 public:
     sint32 RenderValue(ZayPanel& panel, chars name, sint32 value);
+    void CheckToken(sint32 peerid, chars token);
 
 public:
     void ServerStart();
@@ -32,7 +33,7 @@ public:
     bool mUseWSS;
     id_server mServer;
     id_mutex mPacketMutex;
-    Map<sint32> mPeerCounter;
+    MapStrings mPeerTokens; // [peerid/33]
     ZDTokens mTokens; // [token/ClInavrmjQ357437]
     ZDPrograms mPrograms; // [programid/ZayPro]
 };
