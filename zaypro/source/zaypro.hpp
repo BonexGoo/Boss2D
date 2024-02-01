@@ -277,4 +277,7 @@ public: // 윈도우상태
     bool mNcTopBorder;
     bool mNcRightBorder;
     bool mNcBottomBorder;
+    bool mIsWindowDragging;
+    point64 WindowDraggingPos;
+    size64 WindowDraggingSize;
 };
