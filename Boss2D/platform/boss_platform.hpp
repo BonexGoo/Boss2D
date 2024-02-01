@@ -1300,6 +1300,10 @@ public:
         /// @return 속성값
         static sint32 GetAttributes(wchars itemname, uint64* size = nullptr, uint64* ctime = nullptr, uint64* atime = nullptr, uint64* mtime = nullptr);
 
+        /// @brief 아이템의 속성값에 숨김설정
+        /// @param itemname : 아이템명(파일 또는 폴더)
+        static void SetAttributeHidden(wchars itemname);
+
         /// @brief 아이템의 풀패스명 조사
         /// @param itemname : 아이템명(파일 또는 폴더)
         /// @return 풀패스명

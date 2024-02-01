@@ -897,6 +897,13 @@ namespace BOSS
                 #endif
             }
 
+            void File_SetAttributeHidden(wchars itemname)
+            {
+                #if BOSS_WINDOWS
+                    SetFileAttributesW(itemname, FILE_ATTRIBUTE_HIDDEN);
+                #endif
+            }
+
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash)
             {
                 if(itemname && itemname[0] != L'\0')

@@ -1803,6 +1803,11 @@
             return -1;
         }
 
+        void Platform::File::SetAttributeHidden(wchars itemname)
+        {
+            PlatformImpl::Wrap::File_SetAttributeHidden(itemname);
+        }
+
         WString Platform::File::GetFullPath(wchars itemname)
         {
             const String ItemnameUTF8 = String::FromWChars(PlatformImpl::Core::NormalPathW(itemname, false));

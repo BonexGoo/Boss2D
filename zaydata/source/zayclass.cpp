@@ -31,20 +31,27 @@ void ZDSubscribe::Unbind(sint32 peerid)
         }
 }
 
-void ZDSubscribe::UpdateVersion(id_server server, sint32 peerid, chars dirpath)
+void ZDSubscribe::VersionUp(id_server server, sint32 peerid, chars dirpath)
 {
-    // 최신버전 갱신
-    const String VersionPath = Platform::File::RootForAssets() + dirpath + "version.txt";
-    const String Version = String::FromFile(VersionPath);
-    const sint32 NewVersion = Parser::GetInt(Version) + 1;
-    String::FromInteger(NewVersion).ToFile(VersionPath, true);
+    // 새 버전코드 확보
+    const String AssetDir = Platform::File::RootForAssets() + dirpath;
+    const String LatestPath = AssetDir + ".latest";
+    sint32 NewVersionCode = 1;
+    if(Platform::File::Exist(LatestPath))
+    {
+        const String OldVersion = String::FromFile(LatestPath);
+        const sint32 OldVersionCode = Parser::GetInt(((chars) OldVersion) + 1); // "w1_"
+        NewVersionCode = OldVersionCode + 1;
+    }
 
-    // 버전코드 생성
+    // 새 버전 생성/저장
     const String TimeCode = ZDProgram::CreateTimeCode();
     ip4address GetIP4;
     Platform::Server::GetPeerInfo(server, peerid, &GetIP4);
     mVersion = String::Format("w%d_t%s_a%03d%03d%03d%03d",
-        NewVersion, (chars) TimeCode, GetIP4.ip[0], GetIP4.ip[1], GetIP4.ip[2], GetIP4.ip[3]);
+        NewVersionCode, (chars) TimeCode, GetIP4.ip[0], GetIP4.ip[1], GetIP4.ip[2], GetIP4.ip[3]);
+    mVersion.ToFile(LatestPath, true);
+    Platform::File::SetAttributeHidden(WString::FromChars(LatestPath));
 }
 
 void ZDSubscribe::SendPacket(id_server server, sint32 peerid)
@@ -73,19 +80,27 @@ ZDProfile::~ZDProfile()
 
 void ZDProfile::SaveFile(chars dirpath) const
 {
-    mPassword.ToFile(Platform::File::RootForAssets() + dirpath + "password.txt", true);
-    mData.SaveJson().ToFile(Platform::File::RootForAssets() + dirpath + version() + ".json", true);
+    Context Detail;
+    Detail.At("password").Set(mPassword);
+    Detail.At("written").Set(String::FromInteger(mWritten));
+    Detail.At("like").Set(String::FromInteger(mLike));
+
+    const String AssetDir = Platform::File::RootForAssets() + dirpath;
+    Detail.SaveJson().ToFile(AssetDir + "detail.json", true);
+    mData.SaveJson().ToFile(AssetDir + version() + ".json", true);
 }
 
 String ZDProfile::BuildPacket() const
 {
-    Context Json;
-    Json.At("type").Set("ProfileUpdated");
-    Json.At("author").Set(mAuthor);
-    Json.At("version").Set(version());
+    Context Packet;
+    Packet.At("type").Set("ProfileUpdated");
+    Packet.At("author").Set(mAuthor);
+    Packet.At("written").Set(String::FromInteger(mWritten));
+    Packet.At("like").Set(String::FromInteger(mLike));
+    Packet.At("version").Set(version());
     if(0 < mData.LengthOfNamable())
-        Json.At("userdata") = mData;
-    return Json.SaveJson();
+        Packet.At("userdata") = mData;
+    return Packet.SaveJson();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,6 +124,33 @@ String ZDProgram::CreateTimeCode()
         Platform::Clock::Release(NewClock);
     }
     return String::Format("%04d%02d%02dT%02d%02d%02dZ", Year, Month, Day, Hour, Min, Sec);
+}
+
+void ZDProgram::ValidProfile(chars author, chars dirpath)
+{
+    if(!mProfiles.Access(author))
+    {
+        const String AssetDir = Platform::File::RootForAssets() + dirpath;
+        const String LatestPath = AssetDir + ".latest";
+        if(Platform::File::Exist(LatestPath))
+        {
+            const String DetailJson = String::FromFile(AssetDir + "detail.json");
+            const Context Detail(ST_Json, SO_OnlyReference, DetailJson);
+
+            auto& NewProfile = mProfiles(author);
+            NewProfile.mAuthor = author;
+            NewProfile.mPassword = Detail("password").GetText();
+            NewProfile.mWritten = Detail("written").GetInt();
+            NewProfile.mLike = Detail("like").GetInt();
+            const String CurVersion = String::FromFile(LatestPath);
+            if(0 < CurVersion.Length())
+            {
+                NewProfile.SetVersion(CurVersion);
+                const String DataJson = String::FromFile(AssetDir + CurVersion + ".json");
+                NewProfile.mData.LoadJson(SO_NeedCopy, DataJson);
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

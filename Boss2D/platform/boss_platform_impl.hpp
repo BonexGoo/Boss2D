@@ -50,6 +50,7 @@ namespace BOSS
             bool Popup_MoveWindowGroup(sint64s windowparams);
             bool Popup_MoveWindowGroupCaptured(sint64s windowparams, bool release);
 
+            void File_SetAttributeHidden(wchars itemname);
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash);
             WString File_GetShortName(wchars itemname);
             sint32 File_GetDriveCode();

@@ -17,7 +17,7 @@ public:
 public:
     void Bind(sint32 peerid);
     void Unbind(sint32 peerid);
-    void UpdateVersion(id_server server, sint32 peerid, chars dirpath);
+    void VersionUp(id_server server, sint32 peerid, chars dirpath);
     void SendPacket(id_server server, sint32 peerid);
     void SendPacketAll(id_server server, sint32 excluded_peerid = -1);
 
@@ -25,6 +25,7 @@ protected:
     virtual String BuildPacket() const = 0;
 
 public:
+    inline void SetVersion(chars version) {mVersion = version;}
     inline chars version() const {return mVersion;}
 
 private:
@@ -49,6 +50,8 @@ private:
 public:
     String mAuthor;
     String mPassword;
+    sint32 mWritten {0};
+    sint32 mLike {0};
     Context mData;
 };
 
@@ -59,6 +62,9 @@ class ZDProgram
 public:
     static String CreateTokenCode(chars deviceid);
     static String CreateTimeCode();
+
+public:
+    void ValidProfile(chars author, chars dirpath);
 
 public:
     MapStrings mFastLogin; // [deviceid/ClInavrmjQ] → author

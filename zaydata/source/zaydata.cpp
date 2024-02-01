@@ -294,14 +294,18 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         NewToken.mAuthor = *CurAuthor;
         NewToken.mDeviceID = DeviceID;
         NewToken.UpdateExpiry();
-        // 응답처리
-        Context Json;
-        Json.At("type").Set("Logined");
-        Json.At("author").Set(NewToken.mAuthor);
-        Json.At("token").Set(TokenCode);
-        SendPacket(peerid, Json);
         // 토큰확인
         CheckToken(peerid, TokenCode);
+
+        // 응답처리1
+        Context Json;
+        Json.At("type").Set("Logined");
+        Json.At("author").Set(*CurAuthor);
+        Json.At("token").Set(TokenCode);
+        SendPacket(peerid, Json);
+        // 응답처리2
+        if(auto CurProfile = mPrograms(ProgramID).mProfiles.Access(*CurAuthor))
+            CurProfile->SendPacket(mServer, peerid);
     }
     // 에러처리
     else SendError(peerid, json, "Unregistered device");
@@ -314,20 +318,26 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     const String Author = PACKET_TEXT("author");
     const String Password = PACKET_TEXT("password");
     const bool HasUserData = (0 < json("userdata").LengthOfNamable());
+
+    // 프로필 보장
+    const String DirPath = ProgramID + "/profile/" + Author + "/";
+    mPrograms(ProgramID).ValidProfile(Author, DirPath);
     mPrograms(ProgramID).mFastLogin(DeviceID) = Author; // DeviceID to Author를 갱신
 
     // 프로필이 있으면 비번체크를 실시
     bool ProfileCreated = false;
     if(auto CurProfile = mPrograms(ProgramID).mProfiles.Access(Author))
     {
-        if(!!CurProfile->mPassword.Compare(Password))
+        if(!CurProfile->mPassword.Compare(Password))
         {
-            // 에러처리
+            if(HasUserData)
+                CurProfile->mData = json("userdata");
+        }
+        else // 에러처리
+        {
             SendError(peerid, json, "Wrong password");
             return;
         }
-        else if(HasUserData)
-            CurProfile->mData = json("userdata");
     }
     // 프로필이 없으면 프로필을 생성
     else
@@ -340,34 +350,20 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
             NewProfile.mData = json("userdata");
     }
 
-    // 새 토큰을 생성
-    const String TokenCode = ZDProgram::CreateTokenCode(DeviceID);
-    auto& NewToken = mTokens(TokenCode);
-    NewToken.mProgramID = ProgramID;
-    NewToken.mAuthor = Author;
-    NewToken.mDeviceID = DeviceID;
-    NewToken.UpdateExpiry();
-    // 응답처리
-    Context Json;
-    Json.At("type").Set("Logined");
-    Json.At("author").Set(NewToken.mAuthor);
-    Json.At("token").Set(TokenCode);
-    SendPacket(peerid, Json);
-    // 토큰확인
-    CheckToken(peerid, TokenCode);
-
     // 업데이트처리
     if(ProfileCreated || HasUserData)
     hook(mPrograms(ProgramID).mProfiles(Author))
     {
-        // 새 버전 생성
-        const String DirPath = ProgramID + "/profile/" + Author + "/";
-        fish.UpdateVersion(mServer, peerid, DirPath);
+        // 버전상승
+        fish.VersionUp(mServer, peerid, DirPath);
         // 포커싱된 피어들에게 업데이트
         fish.SendPacketAll(mServer, peerid);
         // 파일세이브
         fish.SaveFile(DirPath);
     }
+
+    // 로그인처리
+    OnRecv_Login(peerid, json);
 }
 
 void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
