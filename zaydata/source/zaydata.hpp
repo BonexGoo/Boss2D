@@ -20,11 +20,11 @@ public:
     void OnRecv_Logout(sint32 peerid, const Context& json);
     void OnRecv_FocusProfile(sint32 peerid, const Context& json);
     void OnRecv_UnfocusProfile(sint32 peerid, const Context& json);
-    void OnRecv_LockData(sint32 peerid, const Context& json);
-    void OnRecv_UnlockData(sint32 peerid, const Context& json);
-    void OnRecv_FocusData(sint32 peerid, const Context& json);
-    void OnRecv_UnfocusData(sint32 peerid, const Context& json);
-    void OnRecv_EnumData(sint32 peerid, const Context& json);
+    void OnRecv_LockAsset(sint32 peerid, const Context& json);
+    void OnRecv_UnlockAsset(sint32 peerid, const Context& json);
+    void OnRecv_FocusAsset(sint32 peerid, const Context& json);
+    void OnRecv_UnfocusAsset(sint32 peerid, const Context& json);
+    void OnRecv_EnumAsset(sint32 peerid, const Context& json);
     void SendPacket(sint32 peerid, const Context& json);
     void SendError(sint32 peerid, const Context& json, chars text);
 

@@ -48,8 +48,8 @@ void ZDSubscribe::VersionUp(id_server server, sint32 peerid, chars dirpath)
     const String TimeCode = ZDProgram::CreateTimeCode();
     ip4address GetIP4;
     Platform::Server::GetPeerInfo(server, peerid, &GetIP4);
-    mVersion = String::Format("w%d_t%s_a%03d%03d%03d%03d",
-        NewVersionCode, (chars) TimeCode, GetIP4.ip[0], GetIP4.ip[1], GetIP4.ip[2], GetIP4.ip[3]);
+    mVersion = String::Format("w%d_t%s_a%03d%03d%03d%03d", NewVersionCode,
+        (chars) TimeCode, GetIP4.ip[0], GetIP4.ip[1], GetIP4.ip[2], GetIP4.ip[3]);
     mVersion.ToFile(LatestPath, true);
     Platform::File::SetAttributeHidden(WString::FromChars(LatestPath));
 }
@@ -57,15 +57,16 @@ void ZDSubscribe::VersionUp(id_server server, sint32 peerid, chars dirpath)
 void ZDSubscribe::SendPacket(id_server server, sint32 peerid)
 {
     const String NewPacket = BuildPacket();
-    Platform::Server::SendToPeer(server, peerid, (chars) NewPacket, NewPacket.Length() + 1, true);
+    Platform::Server::SendToPeer(server, peerid,
+        (chars) NewPacket, NewPacket.Length() + 1, true);
 }
 
-void ZDSubscribe::SendPacketAll(id_server server, sint32 excluded_peerid)
+void ZDSubscribe::SendPacketAll(id_server server)
 {
     const String NewPacket = BuildPacket();
     for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
-        if(mPeerIDs[i] != excluded_peerid)
-            Platform::Server::SendToPeer(server, mPeerIDs[i], (chars) NewPacket, NewPacket.Length() + 1, true);
+        Platform::Server::SendToPeer(server, mPeerIDs[i],
+            (chars) NewPacket, NewPacket.Length() + 1, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,16 +79,31 @@ ZDProfile::~ZDProfile()
 {
 }
 
+void ZDProfile::ValidStatus(id_server server, bool entered)
+{
+    if(mEntered != entered)
+    {
+        mEntered = entered;
+        Context Packet;
+        Packet.At("type").Set("ProfileChanged");
+        Packet.At("author").Set(mAuthor);
+        Packet.At("status").Set((mEntered)? "enter" : "exit");
+        const String NewPacket = Packet.SaveJson();
+        for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
+            Platform::Server::SendToPeer(server, mPeerIDs[i],
+                (chars) NewPacket, NewPacket.Length() + 1, true);
+    }
+}
+
 void ZDProfile::SaveFile(chars dirpath) const
 {
     Context Detail;
     Detail.At("password").Set(mPassword);
     Detail.At("written").Set(String::FromInteger(mWritten));
     Detail.At("like").Set(String::FromInteger(mLike));
-
     const String AssetDir = Platform::File::RootForAssets() + dirpath;
     Detail.SaveJson().ToFile(AssetDir + "detail.json", true);
-    mData.SaveJson().ToFile(AssetDir + version() + ".json", true);
+    mData.SaveJson().ToFile(AssetDir + mVersion + ".json", true);
 }
 
 String ZDProfile::BuildPacket() const
@@ -95,11 +111,41 @@ String ZDProfile::BuildPacket() const
     Context Packet;
     Packet.At("type").Set("ProfileUpdated");
     Packet.At("author").Set(mAuthor);
+    Packet.At("status").Set((mEntered)? "enter" : "exit");
     Packet.At("written").Set(String::FromInteger(mWritten));
     Packet.At("like").Set(String::FromInteger(mLike));
-    Packet.At("version").Set(version());
+    Packet.At("version").Set(mVersion);
     if(0 < mData.LengthOfNamable())
-        Packet.At("userdata") = mData;
+        Packet.At("data") = mData;
+    return Packet.SaveJson();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ZDAsset
+ZDAsset::ZDAsset()
+{
+}
+
+ZDAsset::~ZDAsset()
+{
+}
+
+void ZDAsset::SaveFile(chars dirpath) const
+{
+    const String AssetDir = Platform::File::RootForAssets() + dirpath;
+    mData.SaveJson().ToFile(AssetDir + mVersion + ".json", true);
+}
+
+String ZDAsset::BuildPacket() const
+{
+    Context Packet;
+    Packet.At("type").Set("AssetUpdated");
+    Packet.At("author").Set(mAuthor);
+    Packet.At("status").Set((mLocked)? "lock" : "unlock");
+    Packet.At("route").Set(mRoute);
+    Packet.At("version").Set(mVersion);
+    if(0 < mData.LengthOfNamable())
+        Packet.At("data") = mData;
     return Packet.SaveJson();
 }
 
@@ -126,7 +172,7 @@ String ZDProgram::CreateTimeCode()
     return String::Format("%04d%02d%02dT%02d%02d%02dZ", Year, Month, Day, Hour, Min, Sec);
 }
 
-void ZDProgram::ValidProfile(chars author, chars dirpath)
+ZDProfile* ZDProgram::ValidProfile(chars author, chars dirpath, bool entering)
 {
     if(!mProfiles.Access(author))
     {
@@ -139,18 +185,20 @@ void ZDProgram::ValidProfile(chars author, chars dirpath)
 
             auto& NewProfile = mProfiles(author);
             NewProfile.mAuthor = author;
+            NewProfile.mEntered = entering;
             NewProfile.mPassword = Detail("password").GetText();
             NewProfile.mWritten = Detail("written").GetInt();
             NewProfile.mLike = Detail("like").GetInt();
             const String CurVersion = String::FromFile(LatestPath);
             if(0 < CurVersion.Length())
             {
-                NewProfile.SetVersion(CurVersion);
+                NewProfile.mVersion = CurVersion;
                 const String DataJson = String::FromFile(AssetDir + CurVersion + ".json");
                 NewProfile.mData.LoadJson(SO_NeedCopy, DataJson);
             }
         }
     }
+    return mProfiles.Access(author);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

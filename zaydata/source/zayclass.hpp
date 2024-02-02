@@ -3,6 +3,7 @@
 
 typedef Map<String> MapStrings;
 typedef Map<class ZDProfile> ZDProfiles;
+typedef Map<class ZDAsset> ZDAssets;
 typedef Map<class ZDProgram> ZDPrograms;
 typedef Map<class ZDToken> ZDTokens;
 
@@ -19,17 +20,18 @@ public:
     void Unbind(sint32 peerid);
     void VersionUp(id_server server, sint32 peerid, chars dirpath);
     void SendPacket(id_server server, sint32 peerid);
-    void SendPacketAll(id_server server, sint32 excluded_peerid = -1);
+    void SendPacketAll(id_server server);
 
 protected:
+    virtual void SaveFile(chars dirpath) const = 0;
     virtual String BuildPacket() const = 0;
 
 public:
-    inline void SetVersion(chars version) {mVersion = version;}
-    inline chars version() const {return mVersion;}
+    String mAuthor; // BonexGoo
+    String mVersion; // w1_t20240129T102834Z_a210034020003
+    Context mData;
 
-private:
-    String mVersion;
+protected:
     sint32s mPeerIDs;
 };
 
@@ -42,17 +44,36 @@ public:
     ~ZDProfile() override;
 
 public:
-    void SaveFile(chars dirpath) const;
+    void ValidStatus(id_server server, bool entered);
+    void SaveFile(chars dirpath) const override;
 
 private:
     String BuildPacket() const override;
 
 public:
-    String mAuthor;
+    bool mEntered {false};
     String mPassword;
     sint32 mWritten {0};
     sint32 mLike {0};
-    Context mData;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// ZDAsset
+class ZDAsset : public ZDSubscribe
+{
+public:
+    ZDAsset();
+    ~ZDAsset() override;
+
+public:
+    void SaveFile(chars dirpath) const override;
+
+private:
+    String BuildPacket() const override;
+
+public:
+    bool mLocked {false};
+    String mRoute; // board.post.33, board.[first], board.[last], board.[next]
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +85,7 @@ public:
     static String CreateTimeCode();
 
 public:
-    void ValidProfile(chars author, chars dirpath);
+    ZDProfile* ValidProfile(chars author, chars dirpath, bool entering);
 
 public:
     MapStrings mFastLogin; // [deviceid/ClInavrmjQ] → author

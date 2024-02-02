@@ -251,6 +251,16 @@ bool zaydataData::OnPacketOnce()
                 break;
             case packettype_leaved:
             case packettype_kicked:
+                // 로그인된 상태였다면
+                if(0 < mPeerTokens[CurPeerID].Length())
+                {
+                    // ValidStatus처리
+                    if(auto CurToken = mTokens.Access(mPeerTokens[CurPeerID]))
+                    {
+                        auto& CurProfile = mPrograms(CurToken->mProgramID).mProfiles(CurToken->mAuthor);
+                        CurProfile.ValidStatus(mServer, false);
+                    }
+                }
                 mPeerTokens.Remove(CurPeerID);
                 break;
             case packettype_message:
@@ -266,11 +276,11 @@ bool zaydataData::OnPacketOnce()
                     jump(!Type.Compare("Logout")) OnRecv_Logout(CurPeerID, RecvJson);
                     jump(!Type.Compare("FocusProfile")) OnRecv_FocusProfile(CurPeerID, RecvJson);
                     jump(!Type.Compare("UnfocusProfile")) OnRecv_UnfocusProfile(CurPeerID, RecvJson);
-                    jump(!Type.Compare("LockData")) OnRecv_LockData(CurPeerID, RecvJson);
-                    jump(!Type.Compare("UnlockData")) OnRecv_UnlockData(CurPeerID, RecvJson);
-                    jump(!Type.Compare("FocusData")) OnRecv_FocusData(CurPeerID, RecvJson);
-                    jump(!Type.Compare("UnfocusData")) OnRecv_UnfocusData(CurPeerID, RecvJson);
-                    jump(!Type.Compare("EnumData")) OnRecv_EnumData(CurPeerID, RecvJson);
+                    jump(!Type.Compare("LockAsset")) OnRecv_LockAsset(CurPeerID, RecvJson);
+                    jump(!Type.Compare("UnlockAsset")) OnRecv_UnlockAsset(CurPeerID, RecvJson);
+                    jump(!Type.Compare("FocusAsset")) OnRecv_FocusAsset(CurPeerID, RecvJson);
+                    jump(!Type.Compare("UnfocusAsset")) OnRecv_UnfocusAsset(CurPeerID, RecvJson);
+                    jump(!Type.Compare("EnumAsset")) OnRecv_EnumAsset(CurPeerID, RecvJson);
                 }
                 break;
             }
@@ -304,8 +314,13 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         Json.At("token").Set(TokenCode);
         SendPacket(peerid, Json);
         // 응답처리2
-        if(auto CurProfile = mPrograms(ProgramID).mProfiles.Access(*CurAuthor))
+        const String DirPath = ProgramID + "/profile/" + *CurAuthor + "/";
+        if(auto CurProfile = mPrograms(ProgramID).ValidProfile(*CurAuthor, DirPath, true))
+        {
             CurProfile->SendPacket(mServer, peerid);
+            // 혹시 입장상태가 아니었다면 포커싱된 피어들에게 알림
+            CurProfile->ValidStatus(mServer, true);
+        }
     }
     // 에러처리
     else SendError(peerid, json, "Unregistered device");
@@ -317,21 +332,23 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     const String DeviceID = PACKET_TEXT("deviceid");
     const String Author = PACKET_TEXT("author");
     const String Password = PACKET_TEXT("password");
-    const bool HasUserData = (0 < json("userdata").LengthOfNamable());
+    const bool HasData = (0 < json("data").LengthOfNamable());
 
-    // 프로필 보장
-    const String DirPath = ProgramID + "/profile/" + Author + "/";
-    mPrograms(ProgramID).ValidProfile(Author, DirPath);
-    mPrograms(ProgramID).mFastLogin(DeviceID) = Author; // DeviceID to Author를 갱신
+    // DeviceID to Author를 갱신
+    mPrograms(ProgramID).mFastLogin(DeviceID) = Author;
 
     // 프로필이 있으면 비번체크를 실시
     bool ProfileCreated = false;
-    if(auto CurProfile = mPrograms(ProgramID).mProfiles.Access(Author))
+    const String DirPath = ProgramID + "/profile/" + Author + "/";
+    if(auto CurProfile = mPrograms(ProgramID).ValidProfile(Author, DirPath, true))
     {
         if(!CurProfile->mPassword.Compare(Password))
         {
-            if(HasUserData)
-                CurProfile->mData = json("userdata");
+            if(HasData)
+            {
+                CurProfile->mEntered = true; // 어차피 업데이트할 것이라서 ValidStatus가 불필요
+                CurProfile->mData = json("data");
+            }
         }
         else // 에러처리
         {
@@ -345,19 +362,20 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
         ProfileCreated = true;
         auto& NewProfile = mPrograms(ProgramID).mProfiles(Author);
         NewProfile.mAuthor = Author;
+        NewProfile.mEntered = true;
         NewProfile.mPassword = Password;
-        if(HasUserData)
-            NewProfile.mData = json("userdata");
+        if(HasData)
+            NewProfile.mData = json("data");
     }
 
     // 업데이트처리
-    if(ProfileCreated || HasUserData)
+    if(ProfileCreated || HasData)
     hook(mPrograms(ProgramID).mProfiles(Author))
     {
         // 버전상승
         fish.VersionUp(mServer, peerid, DirPath);
         // 포커싱된 피어들에게 업데이트
-        fish.SendPacketAll(mServer, peerid);
+        fish.SendPacketAll(mServer);
         // 파일세이브
         fish.SaveFile(DirPath);
     }
@@ -373,8 +391,13 @@ void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
     {
         // 토큰확인
         CheckToken(peerid, Token);
-        // DeviceID to Author를 제거
-        mPrograms(CurToken->mProgramID).mFastLogin.Remove(CurToken->mDeviceID);
+        hook(mPrograms(CurToken->mProgramID))
+        {
+            // DeviceID to Author를 제거
+            fish.mFastLogin.Remove(CurToken->mDeviceID);
+            // ValidStatus처리
+            fish.mProfiles(CurToken->mAuthor).ValidStatus(mServer, false);
+        }
         mPeerTokens[peerid].Empty();
         mTokens.Remove(Token);
     }
@@ -390,11 +413,13 @@ void zaydataData::OnRecv_FocusProfile(sint32 peerid, const Context& json)
     {
         // 토큰확인
         CheckToken(peerid, Token);
-        hook(mPrograms(CurToken->mProgramID).mProfiles(Author))
+        const String DirPath = CurToken->mProgramID + "/profile/" + Author + "/";
+        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(Author, DirPath, false))
         {
-            fish.Bind(peerid);
-            fish.SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+            CurProfile->Bind(peerid);
+            CurProfile->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
         }
+        else SendError(peerid, json, "Unregistered author");
         CurToken->UpdateExpiry();
     }
     // 에러처리
@@ -409,30 +434,33 @@ void zaydataData::OnRecv_UnfocusProfile(sint32 peerid, const Context& json)
     {
         // 토큰확인
         CheckToken(peerid, Token);
-        mPrograms(CurToken->mProgramID).mProfiles(Author).Unbind(peerid);
+        const String DirPath = CurToken->mProgramID + "/profile/" + Author + "/";
+        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(Author, DirPath, false))
+            CurProfile->Unbind(peerid);
+        else SendError(peerid, json, "Unregistered author");
         CurToken->UpdateExpiry();
     }
     // 에러처리
     else SendError(peerid, json, "Expired token");
 }
 
-void zaydataData::OnRecv_LockData(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_LockAsset(sint32 peerid, const Context& json)
 {
 }
 
-void zaydataData::OnRecv_UnlockData(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_UnlockAsset(sint32 peerid, const Context& json)
 {
 }
 
-void zaydataData::OnRecv_FocusData(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_FocusAsset(sint32 peerid, const Context& json)
 {
 }
 
-void zaydataData::OnRecv_UnfocusData(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_UnfocusAsset(sint32 peerid, const Context& json)
 {
 }
 
-void zaydataData::OnRecv_EnumData(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_EnumAsset(sint32 peerid, const Context& json)
 {
 }
 
