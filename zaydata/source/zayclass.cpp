@@ -245,52 +245,121 @@ ZDProfile* ZDProgram::ValidProfile(chars programid, chars author, bool entering)
 
 String ZDProgram::ValidAssetRoute(chars programid, chars route_requested)
 {
-    String Route = String(route_requested).Replace(".", "/"); // board.post.[next]
+    String Route = String(route_requested).Replace(".", "/"); // board.post.[first], board.post.[last], board.post.[next]
     while(true)
     {
+        const sint32 FirstPos = Route.Find(0, "[first]");
+        const sint32 LastPos = Route.Find(0, "[last]");
         const sint32 NextPos = Route.Find(0, "[next]");
-        if(NextPos == -1) break;
+        const sint32 BestPosFL = (uint32(FirstPos) < uint32(LastPos))? FirstPos : LastPos;
+        const sint32 BestPos = (uint32(BestPosFL) < uint32(NextPos))? BestPosFL : NextPos;
+        if(BestPos == -1) break;
 
         struct Payload
         {
             String mDataDir;
-            MapStrings mCollector;
+            Strings mCollector;
         } NewPayload;
         NewPayload.mDataDir = ZDAsset::MakeDataDir(programid,
-            (NextPos == 0)? nullptr : (chars) Route.Left(NextPos - 1));
+            (BestPos == 0)? nullptr : (chars) Route.Left(BestPos - 1));
 
-        // 하위폴더를 MapStrings으로 소팅하여 수집
+        // 하위폴더의 수집
         Platform::File::Search(NewPayload.mDataDir + '*', [](chars itemname, payload data)->void
             {
                 Payload& OnePayload = *((Payload*) data);
                 if(Platform::File::ExistForDir(OnePayload.mDataDir + itemname))
-                    OnePayload.mCollector(itemname) = itemname;
+                    OnePayload.mCollector.AtAdding() = itemname;
             }, &NewPayload, false);
 
-        // NextName제작
+        // []명령어의 치환
         const sint32 Count = NewPayload.mCollector.Count();
         if(Count == 0) // 하위폴더가 없을 경우
-            Route.Replace("[next]", "0");
-        else if(auto LastFolder = NewPayload.mCollector.AccessByOrder(Count - 1))
         {
-            chars FolderName = *LastFolder;
-            String NextName;
-            for(sint32 i = 0, iend = LastFolder->Length(); i < iend; ++i)
+            if(BestPos == FirstPos)
+                Route.Replace("[first]", "0");
+            else if(BestPos == LastPos)
+                Route.Replace("[last]", "0");
+            else Route.Replace("[next]", "0");
+        }
+        else
+        {
+            if(BestPos == FirstPos)
+                Route.Replace("[first]", NewPayload.mCollector[0]);
+            else if(BestPos == LastPos)
+                Route.Replace("[last]", NewPayload.mCollector[-1]);
+            else
             {
-                if('0' <= FolderName[i] && FolderName[i] <= '9') // 숫자가 등장하면 다음숫자로 변경
+                const String LastFolder = NewPayload.mCollector[Count - 1];
+                String NextName;
+                for(sint32 i = 0, iend = LastFolder.Length(); i < iend; ++i)
                 {
-                    sint32 Offset = i;
-                    const sint32 Number = Parser::GetInt(FolderName, iend, &Offset); // "aa123bb"일 경우 5
-                    NextName = LastFolder->Left(i) + String::FromInteger(Number + 1) + LastFolder->Offset(Offset);
-                    break;
+                    if('0' <= LastFolder[i] && LastFolder[i] <= '9') // 숫자가 등장하면 다음숫자로 변경
+                    {
+                        sint32 Offset = i; // "aa123bb"일 경우 Offset는 5
+                        const sint32 Number = Parser::GetInt((chars) LastFolder, iend, &Offset);
+                        NextName = LastFolder.Left(i) + String::FromInteger(Number + 1) + LastFolder.Offset(Offset);
+                        break;
+                    }
                 }
+                if(NextName.Length() == 0) // FolderName에 숫자가 하나도 없을 경우
+                    Route.Replace("[next]", LastFolder + '0');
+                else Route.Replace("[next]", NextName);
             }
-            if(NextName.Length() == 0) // FolderName에 숫자가 하나도 없을 경우
-                Route.Replace("[next]", *LastFolder + '0');
-            else Route.Replace("[next]", NextName);
         }
     }
     return Route.Replace("/", ".");
+}
+
+Strings ZDProgram::EnumAssetRoutes(chars programid, chars route, sint32 maxcount, sint32& totalcount)
+{
+    const String Route = String(route).Replace(".", "/");
+    sint32 LastRoutePos = 0;
+    for(sint32 i = Route.Length() - 1; 1 < i; --i) // 첫슬래시의 앞과 끝슬래시의 뒤엔 최소 1글자 존재
+        if(Route[i - 1] == '/')
+        {
+            LastRoutePos = i;
+            break;
+        }
+
+    struct Payload
+    {
+        String mDataDir;
+        Strings mCollector;
+    } NewPayload;
+    NewPayload.mDataDir = ZDAsset::MakeDataDir(programid,
+        (LastRoutePos == 0)? nullptr : (chars) Route.Left(LastRoutePos - 1));
+
+    // 하위폴더의 수집
+    Platform::File::Search(NewPayload.mDataDir + '*', [](chars itemname, payload data)->void
+        {
+            Payload& OnePayload = *((Payload*) data);
+            if(Platform::File::ExistForDir(OnePayload.mDataDir + itemname))
+                OnePayload.mCollector.AtAdding() = itemname;
+        }, &NewPayload, false);
+
+    // 결과의 수집
+    totalcount = NewPayload.mCollector.Count();
+    const String BaseRoute = Route.Left(LastRoutePos).Replace("/", "."); // board.post.33일 경우 "board.post."
+    const String LastRoute = Route.Offset(LastRoutePos); // board.post.33일 경우 "33"
+    Strings Results;
+    for(sint32 i = 0; i < totalcount; ++i)
+    {
+        if(!NewPayload.mCollector[i].Compare(LastRoute))
+        {
+            if(0 < maxcount) // 오름차순
+            {
+                for(sint32 j = i, jend = Math::Min(i + maxcount, totalcount); j < jend; ++j)
+                    Results.AtAdding() = BaseRoute + NewPayload.mCollector[j];
+            }
+            else if(maxcount < 0) // 내림차순
+            {
+                for(sint32 j = i, jbegin = Math::Max(-1, i + maxcount); jbegin < j; --j)
+                    Results.AtAdding() = BaseRoute + NewPayload.mCollector[j];
+            }
+            break;
+        }
+    }
+    return Results;
 }
 
 ZDAsset* ZDProgram::ValidAsset(chars programid, chars route)

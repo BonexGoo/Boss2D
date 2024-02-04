@@ -17,6 +17,15 @@ extern bool gStartSSL;
             return; \
         } \
     } while(false)
+#define PACKET_INT(NAME) \
+    json(NAME).GetInt(); \
+    do { \
+        if(!json(NAME).HasValue()) \
+        { \
+            SendError(peerid, json, "Packet lacks content(" NAME ")"); \
+            return; \
+        } \
+    } while(false)
 
 ZAY_DECLARE_VIEW_CLASS("zaydataView", zaydataData)
 
@@ -545,10 +554,23 @@ void zaydataData::OnRecv_UnfocusAsset(sint32 peerid, const Context& json)
 
 void zaydataData::OnRecv_EnumAsset(sint32 peerid, const Context& json)
 {
-    ////////////////////////////
-    ////////////////////////////
-    ////////////////////////////
-    ////////////////////////////
+    const String Token = PACKET_TEXT("token");
+    const String RouteRequested = PACKET_TEXT("route");
+    const sint32 MaxCount = PACKET_INT("maxcount");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        sint32 TotalCount = 0;
+        const String Route = mPrograms(CurToken->mProgramID).ValidAssetRoute(CurToken->mProgramID, RouteRequested);
+        const Strings Routes = mPrograms(CurToken->mProgramID).EnumAssetRoutes(CurToken->mProgramID, Route, MaxCount, TotalCount);
+        // 응답처리
+        Context Json;
+        Json.At("type").Set("AssetEnumed");
+        Json.At("totalcount").Set(String::FromInteger(TotalCount));
+        for(sint32 i = 0, iend = Routes.Count(); i < iend; ++i)
+            Json.At("routes").AtAdding().Set(Routes[i]);
+        SendPacket(peerid, Json);
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::SendPacket(sint32 peerid, const Context& json)

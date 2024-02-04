@@ -97,6 +97,7 @@ public:
 public:
     ZDProfile* ValidProfile(chars programid, chars author, bool entering);
     String ValidAssetRoute(chars programid, chars route_requested);
+    Strings EnumAssetRoutes(chars programid, chars route, sint32 maxcount, sint32& totalcount);
     ZDAsset* ValidAsset(chars programid, chars route);
 
 public:
