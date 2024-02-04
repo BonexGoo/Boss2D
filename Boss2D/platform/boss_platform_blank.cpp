@@ -1812,6 +1812,13 @@
             return Result;
         }
 
+        const String Platform::File::RootForDocuments()
+        {
+            String Result = "";
+            BOSS_ASSERT("Further development is needed.", false);
+            return Result;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////

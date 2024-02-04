@@ -18,12 +18,13 @@ public:
 public:
     void Bind(sint32 peerid);
     void Unbind(sint32 peerid);
-    void VersionUp(id_server server, sint32 peerid, chars dirpath);
+    void VersionUp(chars programid, id_server server, sint32 peerid);
     void SendPacket(id_server server, sint32 peerid);
     void SendPacketAll(id_server server);
 
 protected:
-    virtual void SaveFile(chars dirpath) const = 0;
+    virtual void SaveFile(chars programid) const = 0;
+    virtual String DataDir(chars programid) const = 0;
     virtual String BuildPacket() const = 0;
 
 public:
@@ -45,9 +46,13 @@ public:
 
 public:
     void ValidStatus(id_server server, bool entered);
-    void SaveFile(chars dirpath) const override;
+    void SaveFile(chars programid) const override;
+
+public:
+    static String MakeDataDir(chars programid, chars author);
 
 private:
+    String DataDir(chars programid) const override;
     String BuildPacket() const override;
 
 public:
@@ -66,9 +71,14 @@ public:
     ~ZDAsset() override;
 
 public:
-    void SaveFile(chars dirpath) const override;
+    bool Locking(id_server server, chars author);
+    void SaveFile(chars programid) const override;
+
+public:
+    static String MakeDataDir(chars programid, chars route);
 
 private:
+    String DataDir(chars programid) const override;
     String BuildPacket() const override;
 
 public:
@@ -82,14 +92,17 @@ class ZDProgram
 {
 public:
     static String CreateTokenCode(chars deviceid);
-    static String CreateTimeCode();
+    static String CreateTimeTag();
 
 public:
-    ZDProfile* ValidProfile(chars author, chars dirpath, bool entering);
+    ZDProfile* ValidProfile(chars programid, chars author, bool entering);
+    String ValidAssetRoute(chars programid, chars route_requested);
+    ZDAsset* ValidAsset(chars programid, chars route);
 
 public:
     MapStrings mFastLogin; // [deviceid/ClInavrmjQ] → author
     ZDProfiles mProfiles; // [author/BonexGoo] → profile
+    ZDAssets mAssets; // [route/board.post.33] → asset
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +117,7 @@ public:
     String mProgramID; // ZayPro
     String mAuthor; // BonexGoo
     String mDeviceID; // ClInavrmjQ
+    MapStrings mLockedRoutes; // [lockid/123456] → board.post.33
 
 private:
     uint64 mExpiryMsec {0}; // 만료시각

@@ -203,15 +203,23 @@ sint32 zaydataData::RenderValue(ZayPanel& panel, chars name, sint32 value)
     return NameWidth + ValueWidth;
 }
 
-void zaydataData::CheckToken(sint32 peerid, chars token)
+ZDToken* zaydataData::ValidToken(sint32 peerid, chars token)
 {
     // 동일한 피어가 통신중 토큰을 바꾸면
     if(!!mPeerTokens[peerid].Compare(token))
     {
-        // 이전 토큰을 제거
-        mTokens.Remove(mPeerTokens[peerid]);
+        // 이전 토큰이 있을 경우 제거
+        if(0 < mPeerTokens[peerid].Length())
+            mTokens.Remove(mPeerTokens[peerid]);
         mPeerTokens[peerid] = token;
     }
+    // 유효기간갱신
+    if(auto OneToken = mTokens.Access(token))
+    {
+        OneToken->UpdateExpiry();
+        return OneToken;
+    }
+    return nullptr;
 }
 
 void zaydataData::ServerStart()
@@ -303,9 +311,8 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         NewToken.mProgramID = ProgramID;
         NewToken.mAuthor = *CurAuthor;
         NewToken.mDeviceID = DeviceID;
-        NewToken.UpdateExpiry();
-        // 토큰확인
-        CheckToken(peerid, TokenCode);
+        // 피어에 토큰등록 및 유효기간갱신
+        ValidToken(peerid, TokenCode);
 
         // 응답처리1
         Context Json;
@@ -314,15 +321,13 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         Json.At("token").Set(TokenCode);
         SendPacket(peerid, Json);
         // 응답처리2
-        const String DirPath = ProgramID + "/profile/" + *CurAuthor + "/";
-        if(auto CurProfile = mPrograms(ProgramID).ValidProfile(*CurAuthor, DirPath, true))
+        if(auto CurProfile = mPrograms(ProgramID).ValidProfile(ProgramID, *CurAuthor, true))
         {
             CurProfile->SendPacket(mServer, peerid);
             // 혹시 입장상태가 아니었다면 포커싱된 피어들에게 알림
             CurProfile->ValidStatus(mServer, true);
         }
     }
-    // 에러처리
     else SendError(peerid, json, "Unregistered device");
 }
 
@@ -339,8 +344,7 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
 
     // 프로필이 있으면 비번체크를 실시
     bool ProfileCreated = false;
-    const String DirPath = ProgramID + "/profile/" + Author + "/";
-    if(auto CurProfile = mPrograms(ProgramID).ValidProfile(Author, DirPath, true))
+    if(auto CurProfile = mPrograms(ProgramID).ValidProfile(ProgramID, Author, true))
     {
         if(!CurProfile->mPassword.Compare(Password))
         {
@@ -350,7 +354,7 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
                 CurProfile->mData = json("data");
             }
         }
-        else // 에러처리
+        else
         {
             SendError(peerid, json, "Wrong password");
             return;
@@ -373,11 +377,11 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     hook(mPrograms(ProgramID).mProfiles(Author))
     {
         // 버전상승
-        fish.VersionUp(mServer, peerid, DirPath);
-        // 포커싱된 피어들에게 업데이트
+        fish.VersionUp(ProgramID, mServer, peerid);
+        // 포커싱된 피어들에게 ProfileUpdated전파
         fish.SendPacketAll(mServer);
         // 파일세이브
-        fish.SaveFile(DirPath);
+        fish.SaveFile(ProgramID);
     }
 
     // 로그인처리
@@ -387,10 +391,8 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
 void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
-    if(auto CurToken = mTokens.Access(Token))
+    if(auto CurToken = ValidToken(peerid, Token))
     {
-        // 토큰확인
-        CheckToken(peerid, Token);
         hook(mPrograms(CurToken->mProgramID))
         {
             // DeviceID to Author를 제거
@@ -401,7 +403,6 @@ void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
         mPeerTokens[peerid].Empty();
         mTokens.Remove(Token);
     }
-    // 에러처리
     else SendError(peerid, json, "Expired token");
 }
 
@@ -409,20 +410,15 @@ void zaydataData::OnRecv_FocusProfile(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
     const String Author = PACKET_TEXT("author");
-    if(auto CurToken = mTokens.Access(Token))
+    if(auto CurToken = ValidToken(peerid, Token))
     {
-        // 토큰확인
-        CheckToken(peerid, Token);
-        const String DirPath = CurToken->mProgramID + "/profile/" + Author + "/";
-        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(Author, DirPath, false))
+        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(CurToken->mProgramID, Author, false))
         {
             CurProfile->Bind(peerid);
             CurProfile->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
         }
         else SendError(peerid, json, "Unregistered author");
-        CurToken->UpdateExpiry();
     }
-    // 에러처리
     else SendError(peerid, json, "Expired token");
 }
 
@@ -430,38 +426,129 @@ void zaydataData::OnRecv_UnfocusProfile(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
     const String Author = PACKET_TEXT("author");
-    if(auto CurToken = mTokens.Access(Token))
+    if(auto CurToken = ValidToken(peerid, Token))
     {
-        // 토큰확인
-        CheckToken(peerid, Token);
-        const String DirPath = CurToken->mProgramID + "/profile/" + Author + "/";
-        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(Author, DirPath, false))
+        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(CurToken->mProgramID, Author, false))
             CurProfile->Unbind(peerid);
         else SendError(peerid, json, "Unregistered author");
-        CurToken->UpdateExpiry();
     }
-    // 에러처리
     else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::OnRecv_LockAsset(sint32 peerid, const Context& json)
 {
+    const String Token = PACKET_TEXT("token");
+    const String LockID = PACKET_TEXT("lockid");
+    const String RouteRequested = PACKET_TEXT("route"); // board.post.[next]도 가능
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        bool Locked = false;
+        const String Route = mPrograms(CurToken->mProgramID).ValidAssetRoute(CurToken->mProgramID, RouteRequested);
+        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
+        {
+            if(!CurAsset->mLocked)
+            {
+                if(!CurToken->mLockedRoutes.Access(LockID))
+                {
+                    if(CurAsset->Locking(mServer, CurToken->mAuthor)) // 포커싱된 피어들에게 AssetChanged전파
+                        Locked = true;
+                    else SendError(peerid, json, "No asset match author");
+                }
+                else SendError(peerid, json, "LockID already in use");
+            }
+            else SendError(peerid, json, "Asset already locked");
+        }
+        // 어셋이 없으면 어셋을 생성
+        else
+        {
+            Locked = true;
+            auto& NewAsset = mPrograms(CurToken->mProgramID).mAssets(Route);
+            NewAsset.mAuthor = CurToken->mAuthor;
+            NewAsset.mLocked = true;
+            NewAsset.mRoute = Route;
+        }
+
+        // 잠금처리
+        if(Locked)
+        {
+            CurToken->mLockedRoutes(LockID) = Route;
+            // 응답처리
+            Context Json;
+            Json.At("type").Set("AssetLocked");
+            Json.At("lockid").Set(LockID);
+            Json.At("route").Set(Route);
+            SendPacket(peerid, Json);
+        }
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::OnRecv_UnlockAsset(sint32 peerid, const Context& json)
 {
+    const String Token = PACKET_TEXT("token");
+    const String LockID = PACKET_TEXT("lockid");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        if(auto CurRoute = CurToken->mLockedRoutes.Access(LockID))
+        {
+            const String OneRoute = *CurRoute;
+            if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, OneRoute))
+            {
+                CurToken->mLockedRoutes.Remove(LockID);
+                CurAsset->mLocked = false;
+                CurAsset->mData = json("data");
+                hook(mPrograms(CurToken->mProgramID).mAssets(OneRoute))
+                {
+                    // 버전상승
+                    fish.VersionUp(CurToken->mProgramID, mServer, peerid);
+                    // 포커싱된 피어들에게 업데이트
+                    fish.SendPacketAll(mServer);
+                    // 파일세이브
+                    fish.SaveFile(CurToken->mProgramID);
+                }
+            }
+            else SendError(peerid, json, "No asset matching the route");
+        }
+        else SendError(peerid, json, "Expired lockID");
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::OnRecv_FocusAsset(sint32 peerid, const Context& json)
 {
+    const String Token = PACKET_TEXT("token");
+    const String Route = PACKET_TEXT("route");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
+        {
+            CurAsset->Bind(peerid);
+            CurAsset->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+        }
+        else SendError(peerid, json, "No asset matching the route");
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::OnRecv_UnfocusAsset(sint32 peerid, const Context& json)
 {
+    const String Token = PACKET_TEXT("token");
+    const String Route = PACKET_TEXT("route");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
+            CurAsset->Unbind(peerid);
+        else SendError(peerid, json, "No asset matching the route");
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::OnRecv_EnumAsset(sint32 peerid, const Context& json)
 {
+    ////////////////////////////
+    ////////////////////////////
+    ////////////////////////////
+    ////////////////////////////
 }
 
 void zaydataData::SendPacket(sint32 peerid, const Context& json)

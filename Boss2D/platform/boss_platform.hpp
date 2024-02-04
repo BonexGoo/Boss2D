@@ -1471,6 +1471,10 @@ public:
         /// @brief 스타트업 경로얻기
         /// @return 경로
         static const String RootForStartup();
+
+        /// @brief 도큐먼트 경로얻기
+        /// @return 경로
+        static const String RootForDocuments();
     };
 
     ////////////////////////////////////////////////////////////////////////////////

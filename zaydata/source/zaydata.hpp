@@ -10,7 +10,7 @@ public:
 
 public:
     sint32 RenderValue(ZayPanel& panel, chars name, sint32 value);
-    void CheckToken(sint32 peerid, chars token);
+    ZDToken* ValidToken(sint32 peerid, chars token);
 
 public:
     void ServerStart();

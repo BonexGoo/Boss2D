@@ -3824,6 +3824,14 @@
             return NewPath;
         }
 
+        const String Platform::File::RootForDocuments()
+        {
+            String NewPath = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).value(0).toUtf8().constData();
+            NewPath = PlatformImpl::Core::NormalPath(NewPath + '/', false);
+            _CreateMiddleDir(NewPath);
+            return NewPath;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////

@@ -37,7 +37,7 @@ bool PlatformInit()
     }
 
     Platform::SetViewCreator(ZayView::Creator);
-    Platform::SetWindowName("ZatData");
+    Platform::SetWindowName("ZayData");
     Platform::SetWindowView("zaydataView");
 
     // 윈도우 위치설정
