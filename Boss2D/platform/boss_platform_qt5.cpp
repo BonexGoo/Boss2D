@@ -750,7 +750,7 @@
 
         id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
-            BOSS_TRACE("SendNotify(%s)", topic);
+            //BOSS_TRACE("SendNotify(%s)", topic);
             if(!g_data || !g_window)
                 return nullptr;
 
@@ -761,7 +761,7 @@
 
         void Platform::SendDirectNotify(h_view view, chars topic, id_share in)
         {
-            BOSS_TRACE("SendDirectNotify(%s)", topic);
+            //BOSS_TRACE("SendDirectNotify(%s)", topic);
             if(!g_data || !g_window)
                 return;
             ((ViewAPI*) view.get())->sendDirectNotify(NT_Normal, topic, in);
@@ -769,7 +769,7 @@
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
         {
-            BOSS_TRACE("BroadcastNotify(%s)", topic);
+            //BOSS_TRACE("BroadcastNotify(%s)", topic);
             if(!g_data || !g_window)
                 return;
 
@@ -796,7 +796,7 @@
 
         void Platform::SendKeyEvent(h_view view, sint32 code, chars text, bool pressed)
         {
-            BOSS_TRACE("SendKeyEvent(%d, %s)", code, (pressed)? "pressed" : "released");
+            //BOSS_TRACE("SendKeyEvent(%d, %s)", code, (pressed)? "pressed" : "released");
             if(!g_data || !g_window)
                 return;
             ((ViewAPI*) view.get())->key(code, text, pressed);

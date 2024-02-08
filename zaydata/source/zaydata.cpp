@@ -348,9 +348,6 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
     const String Password = PACKET_TEXT("password");
     const bool HasData = (0 < json("data").LengthOfNamable());
 
-    // DeviceID to Author를 갱신
-    mPrograms(ProgramID).mFastLogin(DeviceID) = Author;
-
     // 프로필이 있으면 비번체크를 실시
     bool ProfileCreated = false;
     if(auto CurProfile = mPrograms(ProgramID).ValidProfile(ProgramID, Author, true))
@@ -392,6 +389,9 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
         // 파일세이브
         fish.SaveFile(ProgramID);
     }
+
+    // DeviceID to Author를 갱신
+    mPrograms(ProgramID).mFastLogin(DeviceID) = Author;
 
     // 로그인처리
     OnRecv_Login(peerid, json);
