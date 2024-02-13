@@ -24,7 +24,8 @@ public:
     void OnRecv_UnlockAsset(sint32 peerid, const Context& json);
     void OnRecv_FocusAsset(sint32 peerid, const Context& json);
     void OnRecv_UnfocusAsset(sint32 peerid, const Context& json);
-    void OnRecv_EnumAsset(sint32 peerid, const Context& json);
+    void OnRecv_FocusRange(sint32 peerid, const Context& json);
+    void OnRecv_UnfocusRange(sint32 peerid, const Context& json);
     void SendPacket(sint32 peerid, const Context& json);
     void SendError(sint32 peerid, const Context& json, chars text);
 
@@ -33,7 +34,7 @@ public:
     bool mUseWSS;
     id_server mServer;
     id_mutex mPacketMutex;
-    MapStrings mPeerTokens; // [peerid/33]
-    ZDTokens mTokens; // [token/ClInavrmjQ357437]
-    ZDPrograms mPrograms; // [programid/ZayPro]
+    Map<String> mPeerTokens; // [peerid:33]
+    ZDTokens mTokens; // [token:ClInavrmjQ357437]
+    ZDPrograms mPrograms; // [programid:ZayPro]
 };

@@ -274,8 +274,11 @@ bool zaydataData::OnPacketOnce()
                     // ValidStatus처리
                     if(auto CurToken = mTokens.Access(mPeerTokens[CurPeerID]))
                     {
-                        auto& CurProfile = mPrograms(CurToken->mProgramID).mProfiles(CurToken->mAuthor);
-                        CurProfile.ValidStatus(mServer, false);
+                        hook(mPrograms(CurToken->mProgramID))
+                        {
+                            auto& CurProfile = fish.mProfiles(CurToken->mAuthor);
+                            CurProfile.ValidStatus(mServer, false);
+                        }
                     }
                 }
                 mPeerTokens.Remove(CurPeerID);
@@ -297,7 +300,8 @@ bool zaydataData::OnPacketOnce()
                     jump(!Type.Compare("UnlockAsset")) OnRecv_UnlockAsset(CurPeerID, RecvJson);
                     jump(!Type.Compare("FocusAsset")) OnRecv_FocusAsset(CurPeerID, RecvJson);
                     jump(!Type.Compare("UnfocusAsset")) OnRecv_UnfocusAsset(CurPeerID, RecvJson);
-                    jump(!Type.Compare("EnumAsset")) OnRecv_EnumAsset(CurPeerID, RecvJson);
+                    jump(!Type.Compare("FocusRange")) OnRecv_FocusRange(CurPeerID, RecvJson);
+                    jump(!Type.Compare("UnfocusRange")) OnRecv_UnfocusRange(CurPeerID, RecvJson);
                 }
                 break;
             }
@@ -330,7 +334,7 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
         Json.At("token").Set(TokenCode);
         SendPacket(peerid, Json);
         // 응답처리2
-        if(auto CurProfile = mPrograms(ProgramID).ValidProfile(ProgramID, *CurAuthor, true))
+        if(auto CurProfile = mPrograms(ProgramID).GetProfile(ProgramID, *CurAuthor, true))
         {
             CurProfile->SendPacket(mServer, peerid);
             // 혹시 입장상태가 아니었다면 포커싱된 피어들에게 알림
@@ -350,14 +354,14 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
 
     // 프로필이 있으면 비번체크를 실시
     bool ProfileCreated = false;
-    if(auto CurProfile = mPrograms(ProgramID).ValidProfile(ProgramID, Author, true))
+    if(auto CurProfile = mPrograms(ProgramID).GetProfile(ProgramID, Author, true))
     {
         if(!CurProfile->mPassword.Compare(Password))
         {
             if(HasData)
             {
                 CurProfile->mEntered = true; // 어차피 업데이트할 것이라서 ValidStatus가 불필요
-                CurProfile->mData = json("data");
+                CurProfile->mData.LoadJson(SO_NeedCopy, json("data").SaveJson());
             }
         }
         else
@@ -375,7 +379,7 @@ void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
         NewProfile.mEntered = true;
         NewProfile.mPassword = Password;
         if(HasData)
-            NewProfile.mData = json("data");
+            NewProfile.mData.LoadJson(SO_NeedCopy, json("data").SaveJson());
     }
 
     // 업데이트처리
@@ -421,12 +425,15 @@ void zaydataData::OnRecv_FocusProfile(sint32 peerid, const Context& json)
     const String Author = PACKET_TEXT("author");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(CurToken->mProgramID, Author, false))
+        hook(mPrograms(CurToken->mProgramID))
         {
-            CurProfile->Bind(peerid);
-            CurProfile->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+            if(auto CurProfile = fish.GetProfile(CurToken->mProgramID, Author, false))
+            {
+                CurProfile->Bind(peerid);
+                CurProfile->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+            }
+            else SendError(peerid, json, "Unregistered author");
         }
-        else SendError(peerid, json, "Unregistered author");
     }
     else SendError(peerid, json, "Expired token");
 }
@@ -437,9 +444,12 @@ void zaydataData::OnRecv_UnfocusProfile(sint32 peerid, const Context& json)
     const String Author = PACKET_TEXT("author");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        if(auto CurProfile = mPrograms(CurToken->mProgramID).ValidProfile(CurToken->mProgramID, Author, false))
-            CurProfile->Unbind(peerid);
-        else SendError(peerid, json, "Unregistered author");
+        hook(mPrograms(CurToken->mProgramID))
+        {
+            if(auto CurProfile = fish.GetProfile(CurToken->mProgramID, Author, false))
+                CurProfile->Unbind(peerid);
+            else SendError(peerid, json, "Unregistered author");
+        }
     }
     else SendError(peerid, json, "Expired token");
 }
@@ -448,45 +458,48 @@ void zaydataData::OnRecv_LockAsset(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
     const String LockID = PACKET_TEXT("lockid");
-    const String RouteRequested = PACKET_TEXT("route"); // board.post.[next]도 가능
+    const String Route = PACKET_TEXT("route"); // board.post<next>도 가능
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        bool Locked = false;
-        const String Route = mPrograms(CurToken->mProgramID).ValidAssetRoute(CurToken->mProgramID, RouteRequested);
-        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
+        hook(mPrograms(CurToken->mProgramID))
         {
-            if(!CurAsset->mLocked)
+            bool Locked = false;
+            const ZDRoute ParsedRoute = fish.ParseRoute(CurToken->mProgramID, Route, mServer);
+            if(auto CurAsset = fish.GetAsset(CurToken->mProgramID, ParsedRoute))
             {
-                if(!CurToken->mLockedRoutes.Access(LockID))
+                if(!CurAsset->mLocked)
                 {
-                    if(CurAsset->Locking(mServer, CurToken->mAuthor)) // 포커싱된 피어들에게 AssetChanged전파
-                        Locked = true;
-                    else SendError(peerid, json, "No asset match author");
+                    if(!CurToken->mLockedRoutes.Access(LockID))
+                    {
+                        if(CurAsset->Locking(mServer, CurToken->mAuthor)) // 포커싱된 피어들에게 AssetChanged전파
+                            Locked = true;
+                        else SendError(peerid, json, "No asset match author");
+                    }
+                    else SendError(peerid, json, "LockID already in use");
                 }
-                else SendError(peerid, json, "LockID already in use");
+                else SendError(peerid, json, "Asset already locked");
             }
-            else SendError(peerid, json, "Asset already locked");
-        }
-        // 어셋이 없으면 어셋을 생성
-        else
-        {
-            Locked = true;
-            auto& NewAsset = mPrograms(CurToken->mProgramID).mAssets(Route);
-            NewAsset.mAuthor = CurToken->mAuthor;
-            NewAsset.mLocked = true;
-            NewAsset.mRoute = Route;
-        }
+            // 어셋이 없으면 어셋을 생성
+            else
+            {
+                Locked = true;
+                auto& NewAsset = fish.mAssets(ParsedRoute.mPath);
+                NewAsset.mAuthor = CurToken->mAuthor;
+                NewAsset.mLocked = true;
+                NewAsset.mRoute = ParsedRoute;
+            }
 
-        // 잠금처리
-        if(Locked)
-        {
-            CurToken->mLockedRoutes(LockID) = Route;
-            // 응답처리
-            Context Json;
-            Json.At("type").Set("AssetLocked");
-            Json.At("lockid").Set(LockID);
-            Json.At("route").Set(Route);
-            SendPacket(peerid, Json);
+            // 잠금처리
+            if(Locked)
+            {
+                CurToken->mLockedRoutes(LockID) = ParsedRoute;
+                // 응답처리
+                Context Json;
+                Json.At("type").Set("AssetLocked");
+                Json.At("lockid").Set(LockID);
+                Json.At("route").Set(ParsedRoute.mNormal);
+                SendPacket(peerid, Json);
+            }
         }
     }
     else SendError(peerid, json, "Expired token");
@@ -500,23 +513,25 @@ void zaydataData::OnRecv_UnlockAsset(sint32 peerid, const Context& json)
     {
         if(auto CurRoute = CurToken->mLockedRoutes.Access(LockID))
         {
-            const String OneRoute = *CurRoute;
-            if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, OneRoute))
+            hook(mPrograms(CurToken->mProgramID))
             {
-                CurToken->mLockedRoutes.Remove(LockID);
-                CurAsset->mLocked = false;
-                CurAsset->mData = json("data");
-                hook(mPrograms(CurToken->mProgramID).mAssets(OneRoute))
+                if(auto CurAsset = fish.GetAsset(CurToken->mProgramID, *CurRoute))
                 {
-                    // 버전상승
-                    fish.VersionUp(CurToken->mProgramID, mServer, peerid);
-                    // 포커싱된 피어들에게 업데이트
-                    fish.SendPacketAll(mServer);
-                    // 파일세이브
-                    fish.SaveFile(CurToken->mProgramID);
+                    CurAsset->mLocked = false;
+                    CurAsset->mData.LoadJson(SO_NeedCopy, json("data").SaveJson());
+                    hook(fish.mAssets(CurRoute->mPath))
+                    {
+                        // 버전상승
+                        fish.VersionUp(CurToken->mProgramID, mServer, peerid);
+                        // 포커싱된 피어들에게 업데이트
+                        fish.SendPacketAll(mServer);
+                        // 파일세이브
+                        fish.SaveFile(CurToken->mProgramID);
+                    }
+                    CurToken->mLockedRoutes.Remove(LockID);
                 }
+                else SendError(peerid, json, "No asset matching the route");
             }
-            else SendError(peerid, json, "No asset matching the route");
         }
         else SendError(peerid, json, "Expired lockID");
     }
@@ -529,12 +544,16 @@ void zaydataData::OnRecv_FocusAsset(sint32 peerid, const Context& json)
     const String Route = PACKET_TEXT("route");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
+        hook(mPrograms(CurToken->mProgramID))
         {
-            CurAsset->Bind(peerid);
-            CurAsset->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+            const ZDRoute ParsedRoute = fish.ParseRoute(CurToken->mProgramID, Route);
+            if(auto CurAsset = fish.GetAsset(CurToken->mProgramID, ParsedRoute))
+            {
+                CurAsset->Bind(peerid);
+                CurAsset->SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+            }
+            else SendError(peerid, json, "No asset matching the route");
         }
-        else SendError(peerid, json, "No asset matching the route");
     }
     else SendError(peerid, json, "Expired token");
 }
@@ -545,30 +564,46 @@ void zaydataData::OnRecv_UnfocusAsset(sint32 peerid, const Context& json)
     const String Route = PACKET_TEXT("route");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        if(auto CurAsset = mPrograms(CurToken->mProgramID).ValidAsset(CurToken->mProgramID, Route))
-            CurAsset->Unbind(peerid);
-        else SendError(peerid, json, "No asset matching the route");
+        hook(mPrograms(CurToken->mProgramID))
+        {
+            const ZDRoute ParsedRoute = fish.ParseRoute(CurToken->mProgramID, Route);
+            if(auto CurAsset = fish.GetAsset(CurToken->mProgramID, ParsedRoute))
+                CurAsset->Unbind(peerid);
+            else SendError(peerid, json, "No asset matching the route");
+        }
     }
     else SendError(peerid, json, "Expired token");
 }
 
-void zaydataData::OnRecv_EnumAsset(sint32 peerid, const Context& json)
+void zaydataData::OnRecv_FocusRange(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
-    const String RouteRequested = PACKET_TEXT("route");
-    const sint32 MaxCount = PACKET_INT("maxcount");
+    const String Route = PACKET_TEXT("route");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        sint32 TotalCount = 0;
-        const String Route = mPrograms(CurToken->mProgramID).ValidAssetRoute(CurToken->mProgramID, RouteRequested);
-        const Strings Routes = mPrograms(CurToken->mProgramID).EnumAssetRoutes(CurToken->mProgramID, Route, MaxCount, TotalCount);
-        // 응답처리
-        Context Json;
-        Json.At("type").Set("AssetEnumed");
-        Json.At("totalcount").Set(String::FromInteger(TotalCount));
-        for(sint32 i = 0, iend = Routes.Count(); i < iend; ++i)
-            Json.At("routes").AtAdding().Set(Routes[i]);
-        SendPacket(peerid, Json);
+        hook(mPrograms(CurToken->mProgramID))
+        {
+            const ZDRoute ParsedRoute = fish.ParseRoute(CurToken->mProgramID, Route);
+            auto& CurRange = fish.ValidRange(CurToken->mProgramID, ParsedRoute);
+            CurRange.Bind(peerid);
+            CurRange.SendPacket(mServer, peerid); // 포커싱하면 최신데이터전송
+        }
+    }
+    else SendError(peerid, json, "Expired token");
+}
+
+void zaydataData::OnRecv_UnfocusRange(sint32 peerid, const Context& json)
+{
+    const String Token = PACKET_TEXT("token");
+    const String Route = PACKET_TEXT("route");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        hook(mPrograms(CurToken->mProgramID))
+        {
+            const ZDRoute ParsedRoute = fish.ParseRoute(CurToken->mProgramID, Route);
+            auto& CurRange = fish.ValidRange(CurToken->mProgramID, ParsedRoute);
+            CurRange.Unbind(peerid);
+        }
     }
     else SendError(peerid, json, "Expired token");
 }

@@ -4,16 +4,16 @@
 #include <platform/boss_platform.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
-// ZDSubscribe
-ZDSubscribe::ZDSubscribe()
+// ZDFocusable
+ZDFocusable::ZDFocusable()
 {
 }
 
-ZDSubscribe::~ZDSubscribe()
+ZDFocusable::~ZDFocusable()
 {
 }
 
-void ZDSubscribe::Bind(sint32 peerid)
+void ZDFocusable::Bind(sint32 peerid)
 {
     for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
         if(mPeerIDs[i] == peerid)
@@ -21,7 +21,7 @@ void ZDSubscribe::Bind(sint32 peerid)
     mPeerIDs.AtAdding() = peerid;
 }
 
-void ZDSubscribe::Unbind(sint32 peerid)
+void ZDFocusable::Unbind(sint32 peerid)
 {
     for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
         if(mPeerIDs[i] == peerid)
@@ -31,7 +31,75 @@ void ZDSubscribe::Unbind(sint32 peerid)
         }
 }
 
-void ZDSubscribe::VersionUp(chars programid, id_server server, sint32 peerid)
+void ZDFocusable::SendPacket(id_server server, sint32 peerid)
+{
+    const String NewPacket = BuildPacket();
+    Platform::Server::SendToPeer(server, peerid,
+        (chars) NewPacket, NewPacket.Length() + 1, true);
+}
+
+void ZDFocusable::SendPacketAll(id_server server)
+{
+    const String NewPacket = BuildPacket();
+    for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
+        Platform::Server::SendToPeer(server, mPeerIDs[i],
+            (chars) NewPacket, NewPacket.Length() + 1, true);
+}
+
+String ZDFocusable::MakeProfileDir(chars programid, chars author)
+{
+    return Platform::File::RootForDocuments() + "ZayData/" + programid + "/profile/" + author + "/";
+}
+
+String ZDFocusable::MakeAssetDir(chars programid, chars path)
+{
+    if(path == nullptr || *path == '\0')
+        return Platform::File::RootForDocuments() + "ZayData/" + programid + "/asset/";
+    return Platform::File::RootForDocuments() + "ZayData/" + programid + "/asset/" + path + "/";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ZDRange
+ZDRange::ZDRange()
+{
+}
+
+ZDRange::~ZDRange()
+{
+}
+
+void ZDRange::SaveFile(chars programid) const
+{
+    String::Format("%d:%d", mFirst, mLast).ToFile(DataDir(programid) + ".range", true);
+}
+
+String ZDRange::BuildPacket() const
+{
+    const bool HasRange = (mFirst <= mLast);
+    Context Packet;
+    Packet.At("type").Set("RangeUpdated");
+    Packet.At("route").Set(mRoute.mNormal);
+    Packet.At("first").Set(String::FromInteger((HasRange)? mFirst : 0));
+    Packet.At("last").Set(String::FromInteger((HasRange)? mLast : 0));
+    return Packet.SaveJson();
+}
+
+String ZDRange::DataDir(chars programid) const
+{
+    return MakeAssetDir(programid, mRoute.mPath);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ZDRecordable
+ZDRecordable::ZDRecordable()
+{
+}
+
+ZDRecordable::~ZDRecordable()
+{
+}
+
+void ZDRecordable::VersionUp(chars programid, id_server server, sint32 peerid)
 {
     const String LatestPath = DataDir(programid) + ".latest";
 
@@ -52,21 +120,6 @@ void ZDSubscribe::VersionUp(chars programid, id_server server, sint32 peerid)
         (chars) TimeTag, GetIP4.ip[0], GetIP4.ip[1], GetIP4.ip[2], GetIP4.ip[3]);
     mVersion.ToFile(LatestPath, true);
     Platform::File::SetAttributeHidden(WString::FromChars(LatestPath));
-}
-
-void ZDSubscribe::SendPacket(id_server server, sint32 peerid)
-{
-    const String NewPacket = BuildPacket();
-    Platform::Server::SendToPeer(server, peerid,
-        (chars) NewPacket, NewPacket.Length() + 1, true);
-}
-
-void ZDSubscribe::SendPacketAll(id_server server)
-{
-    const String NewPacket = BuildPacket();
-    for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
-        Platform::Server::SendToPeer(server, mPeerIDs[i],
-            (chars) NewPacket, NewPacket.Length() + 1, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,16 +159,6 @@ void ZDProfile::SaveFile(chars programid) const
     mData.SaveJson().ToFile(DataDir(programid) + mVersion + ".json", true);
 }
 
-String ZDProfile::MakeDataDir(chars programid, chars author)
-{
-    return Platform::File::RootForDocuments() + "ZayData/" + programid + "/profile/" + author + "/";
-}
-
-String ZDProfile::DataDir(chars programid) const
-{
-    return MakeDataDir(programid, mAuthor);
-}
-
 String ZDProfile::BuildPacket() const
 {
     Context Packet;
@@ -128,6 +171,11 @@ String ZDProfile::BuildPacket() const
     if(0 < mData.LengthOfNamable())
         Packet.At("data") = mData;
     return Packet.SaveJson();
+}
+
+String ZDProfile::DataDir(chars programid) const
+{
+    return MakeProfileDir(programid, mAuthor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +195,7 @@ bool ZDAsset::Locking(id_server server, chars author)
         mLocked = true;
         Context Packet;
         Packet.At("type").Set("AssetChanged");
-        Packet.At("route").Set(mRoute);
+        Packet.At("route").Set(mRoute.mNormal);
         Packet.At("status").Set("lock");
         const String NewPacket = Packet.SaveJson();
         for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
@@ -166,29 +214,22 @@ void ZDAsset::SaveFile(chars programid) const
     mData.SaveJson().ToFile(DataDir(programid) + mVersion + ".json", true);
 }
 
-String ZDAsset::MakeDataDir(chars programid, chars route)
-{
-    if(route == nullptr)
-        return Platform::File::RootForDocuments() + "ZayData/" + programid + "/asset/";
-    return Platform::File::RootForDocuments() + "ZayData/" + programid + "/asset/" + String(route).Replace(".", "/") + "/";
-}
-
-String ZDAsset::DataDir(chars programid) const
-{
-    return MakeDataDir(programid, mRoute);
-}
-
 String ZDAsset::BuildPacket() const
 {
     Context Packet;
     Packet.At("type").Set("AssetUpdated");
     Packet.At("author").Set(mAuthor);
-    Packet.At("route").Set(mRoute);
+    Packet.At("route").Set(mRoute.mNormal);
     Packet.At("status").Set((mLocked)? "lock" : "unlock");
     Packet.At("version").Set(mVersion);
     if(0 < mData.LengthOfNamable())
         Packet.At("data") = mData;
     return Packet.SaveJson();
+}
+
+String ZDAsset::DataDir(chars programid) const
+{
+    return MakeAssetDir(programid, mRoute.mPath);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -214,17 +255,17 @@ String ZDProgram::CreateTimeTag()
     return String::Format("%04d%02d%02dT%02d%02d%02dZ", Year, Month, Day, Hour, Min, Sec);
 }
 
-ZDProfile* ZDProgram::ValidProfile(chars programid, chars author, bool entering)
+ZDProfile* ZDProgram::GetProfile(chars programid, chars author, bool entering)
 {
     if(!mProfiles.Access(author))
     {
-        const String DataDir = ZDProfile::MakeDataDir(programid, author);
+        const String DataDir = ZDFocusable::MakeProfileDir(programid, author);
         const String LatestPath = DataDir + ".latest";
         if(Platform::File::Exist(LatestPath))
         {
             const String DetailJson = String::FromFile(DataDir + "detail.json");
             const Context Detail(ST_Json, SO_OnlyReference, DetailJson);
-
+            // 새 프로필
             auto& NewProfile = mProfiles(author);
             NewProfile.mAuthor = Detail("author").GetText();
             NewProfile.mEntered = entering;
@@ -243,137 +284,18 @@ ZDProfile* ZDProgram::ValidProfile(chars programid, chars author, bool entering)
     return mProfiles.Access(author);
 }
 
-String ZDProgram::ValidAssetRoute(chars programid, chars route_requested)
+ZDAsset* ZDProgram::GetAsset(chars programid, const ZDRoute& route)
 {
-    String Route = String(route_requested).Replace(".", "/"); // board.post.[first], board.post.[last], board.post.[next]
-    while(true)
+    if(!mAssets.Access(route.mPath))
     {
-        const sint32 FirstPos = Route.Find(0, "[first]");
-        const sint32 LastPos = Route.Find(0, "[last]");
-        const sint32 NextPos = Route.Find(0, "[next]");
-        const sint32 BestPosFL = (uint32(FirstPos) < uint32(LastPos))? FirstPos : LastPos;
-        const sint32 BestPos = (uint32(BestPosFL) < uint32(NextPos))? BestPosFL : NextPos;
-        if(BestPos == -1) break;
-
-        struct Payload
-        {
-            String mDataDir;
-            Strings mCollector;
-        } NewPayload;
-        NewPayload.mDataDir = ZDAsset::MakeDataDir(programid,
-            (BestPos == 0)? nullptr : (chars) Route.Left(BestPos - 1));
-
-        // 하위폴더의 수집
-        Platform::File::Search(NewPayload.mDataDir + '*', [](chars itemname, payload data)->void
-            {
-                Payload& OnePayload = *((Payload*) data);
-                if(Platform::File::ExistForDir(OnePayload.mDataDir + itemname))
-                    OnePayload.mCollector.AtAdding() = itemname;
-            }, &NewPayload, false);
-
-        // []명령어의 치환
-        const sint32 Count = NewPayload.mCollector.Count();
-        if(Count == 0) // 하위폴더가 없을 경우
-        {
-            if(BestPos == FirstPos)
-                Route.Replace("[first]", "0");
-            else if(BestPos == LastPos)
-                Route.Replace("[last]", "0");
-            else Route.Replace("[next]", "0");
-        }
-        else
-        {
-            if(BestPos == FirstPos)
-                Route.Replace("[first]", NewPayload.mCollector[0]);
-            else if(BestPos == LastPos)
-                Route.Replace("[last]", NewPayload.mCollector[-1]);
-            else
-            {
-                const String LastFolder = NewPayload.mCollector[Count - 1];
-                String NextName;
-                for(sint32 i = 0, iend = LastFolder.Length(); i < iend; ++i)
-                {
-                    if('0' <= LastFolder[i] && LastFolder[i] <= '9') // 숫자가 등장하면 다음숫자로 변경
-                    {
-                        sint32 Offset = i; // "aa123bb"일 경우 Offset는 5
-                        const sint32 Number = Parser::GetInt((chars) LastFolder, iend, &Offset);
-                        NextName = LastFolder.Left(i) + String::FromInteger(Number + 1) + LastFolder.Offset(Offset);
-                        break;
-                    }
-                }
-                if(NextName.Length() == 0) // FolderName에 숫자가 하나도 없을 경우
-                    Route.Replace("[next]", LastFolder + '0');
-                else Route.Replace("[next]", NextName);
-            }
-        }
-    }
-    return Route.Replace("/", ".");
-}
-
-Strings ZDProgram::EnumAssetRoutes(chars programid, chars route, sint32 maxcount, sint32& totalcount)
-{
-    const String Route = String(route).Replace(".", "/");
-    sint32 LastRoutePos = 0;
-    for(sint32 i = Route.Length() - 1; 1 < i; --i) // 첫슬래시의 앞과 끝슬래시의 뒤엔 최소 1글자 존재
-        if(Route[i - 1] == '/')
-        {
-            LastRoutePos = i;
-            break;
-        }
-
-    struct Payload
-    {
-        String mDataDir;
-        Strings mCollector;
-    } NewPayload;
-    NewPayload.mDataDir = ZDAsset::MakeDataDir(programid,
-        (LastRoutePos == 0)? nullptr : (chars) Route.Left(LastRoutePos - 1));
-
-    // 하위폴더의 수집
-    Platform::File::Search(NewPayload.mDataDir + '*', [](chars itemname, payload data)->void
-        {
-            Payload& OnePayload = *((Payload*) data);
-            if(Platform::File::ExistForDir(OnePayload.mDataDir + itemname))
-                OnePayload.mCollector.AtAdding() = itemname;
-        }, &NewPayload, false);
-
-    // 결과의 수집
-    totalcount = NewPayload.mCollector.Count();
-    const String BaseRoute = Route.Left(LastRoutePos).Replace("/", "."); // board.post.33일 경우 "board.post."
-    const String LastRoute = Route.Offset(LastRoutePos); // board.post.33일 경우 "33"
-    Strings Results;
-    for(sint32 i = 0; i < totalcount; ++i)
-    {
-        if(!NewPayload.mCollector[i].Compare(LastRoute))
-        {
-            if(0 < maxcount) // 오름차순
-            {
-                for(sint32 j = i, jend = Math::Min(i + maxcount, totalcount); j < jend; ++j)
-                    Results.AtAdding() = BaseRoute + NewPayload.mCollector[j];
-            }
-            else if(maxcount < 0) // 내림차순
-            {
-                for(sint32 j = i, jbegin = Math::Max(-1, i + maxcount); jbegin < j; --j)
-                    Results.AtAdding() = BaseRoute + NewPayload.mCollector[j];
-            }
-            break;
-        }
-    }
-    return Results;
-}
-
-ZDAsset* ZDProgram::ValidAsset(chars programid, chars route)
-{
-    if(!mAssets.Access(route))
-    {
-        const String DataDir = ZDAsset::MakeDataDir(programid, route);
+        const String DataDir = ZDFocusable::MakeAssetDir(programid, route.mPath);
         const String LatestPath = DataDir + ".latest";
         if(Platform::File::Exist(LatestPath))
         {
             const String DetailJson = String::FromFile(DataDir + "detail.json");
             const Context Detail(ST_Json, SO_OnlyReference, DetailJson);
-
-            auto& NewAsset = mAssets(route);
+            // 새 어셋
+            auto& NewAsset = mAssets(route.mPath);
             NewAsset.mAuthor = Detail("author").GetText();
             NewAsset.mRoute = route;
             const String CurVersion = String::FromFile(LatestPath);
@@ -385,7 +307,104 @@ ZDAsset* ZDProgram::ValidAsset(chars programid, chars route)
             }
         }
     }
-    return mAssets.Access(route);
+    return mAssets.Access(route.mPath);
+}
+
+ZDRange& ZDProgram::ValidRange(chars programid, const ZDRoute& route)
+{
+    if(!mRanges.Access(route.mPath))
+    {
+        const String DataDir = ZDAsset::MakeAssetDir(programid, route.mPath);
+        const String Range = String::FromFile(DataDir + ".range");
+        const sint32 ColonPos = Range.Find(0, ":");
+        // 새 범위
+        auto& NewRange = mRanges(route.mPath);
+        NewRange.mRoute = route;
+        NewRange.mFirst = (ColonPos == -1)? 1 : Parser::GetInt(Range.Left(ColonPos));
+        NewRange.mLast = (ColonPos == -1)? -1 : Parser::GetInt(Range.Offset(ColonPos + 1));
+    }
+    return mRanges(route.mPath);
+}
+
+ZDRoute ZDProgram::ParseRoute(chars programid, chars route, id_server writable_server)
+{
+    if(*route == '\0')
+        return {"", ""};
+
+    // ".<first>.a.b<last>.c..d.<prev><next>e."의 경우
+    chararray Path; // "0/a/b/1/c/d/-1/2/e"가 됨
+    chararray Normal; // "<0>a.b<1>c.d<-1><2>e"가 됨
+    do
+    {
+        if(*route == '<')
+        {
+            chars RouteNext = route;
+            while(RouteNext[0] != '>' && RouteNext[1] != '\0')
+                RouteNext++;
+
+            // first, last, prev, next는 4글자이상
+            if(4 <= RouteNext - route - 1)
+            {
+                // 마지막 기호제거
+                if(0 < Path.Count() && Path[-1] == '/')
+                    Path.SubtractionOne();
+                if(0 < Normal.Count() && Normal[-1] == '.')
+                    Normal.SubtractionOne();
+
+                // 범위정보 열람
+                auto& CurRange = ValidRange(programid, {String(&Path[0], Path.Count()), String(&Normal[0], Normal.Count())});
+                const bool HasRange = (CurRange.mFirst <= CurRange.mLast);
+
+                // 명령어파싱
+                sint32 Number = 0;
+                if(!String::Compare(route, strpair("<first>"))) Number = (HasRange)? CurRange.mFirst : 0;
+                else if(!String::Compare(route, strpair("<last>"))) Number = (HasRange)? CurRange.mLast : 0;
+                else if(!String::Compare(route, strpair("<prev>"))) Number = CurRange.mFirst - 1;
+                else if(!String::Compare(route, strpair("<next>"))) Number = CurRange.mLast + 1;
+                else Number = Parser::GetInt(route + 1);
+
+                // 범위정보 갱신
+                if(writable_server && (Number < CurRange.mFirst || CurRange.mLast < Number))
+                {
+                    CurRange.mFirst = Math::Min(CurRange.mFirst, Number);
+                    CurRange.mLast = Math::Max(CurRange.mLast, Number);
+                    // 포커싱된 피어들에게 업데이트
+                    CurRange.SendPacketAll(writable_server);
+                    // 파일세이브
+                    CurRange.SaveFile(programid);
+                }
+
+                // 패스화 및 노말화
+                if(0 < Path.Count())
+                    Path = chararray((id_cloned_share) String::Format("%.*s/%d/", Path.Count(), &Path[0], Number));
+                else Path = chararray((id_cloned_share) String::Format("%d/", Number));
+                if(0 < Normal.Count())
+                    Normal = chararray((id_cloned_share) String::Format("%.*s<%d>", Normal.Count(), &Normal[0], Number));
+                else Normal = chararray((id_cloned_share) String::Format("<%d>", Number));
+            }
+            route = RouteNext;
+        }
+        else if(*route == '.')
+        {
+            if(0 < Path.Count() && Path[-1] != '/')
+                Path.AtAdding() = '/';
+            if(0 < Normal.Count() && Normal[-1] != '.' && Normal[-1] != '>')
+                Normal.AtAdding() = '.';
+        }
+        else
+        {
+            Path.AtAdding() = *route;
+            Normal.AtAdding() = *route;
+        }
+    }
+    while(*(++route) != '\0');
+
+    // 마지막 기호제거
+    if(0 < Path.Count() && Path[-1] == '/')
+        Path.SubtractionOne();
+    if(0 < Normal.Count() && Normal[-1] == '.')
+        Normal.SubtractionOne();
+    return {String(&Path[0], Path.Count()), String(&Normal[0], Normal.Count())};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
