@@ -75,12 +75,11 @@ void ZDRange::SaveFile(chars programid) const
 
 String ZDRange::BuildPacket() const
 {
-    const bool HasRange = (mFirst <= mLast);
     Context Packet;
     Packet.At("type").Set("RangeUpdated");
-    Packet.At("route").Set(mRoute.mNormal);
-    Packet.At("first").Set(String::FromInteger((HasRange)? mFirst : 0));
-    Packet.At("last").Set(String::FromInteger((HasRange)? mLast : 0));
+    Packet.At("path").Set(mRoute.mPath);
+    Packet.At("first").Set(String::FromInteger(mFirst));
+    Packet.At("last").Set(String::FromInteger(mLast));
     return Packet.SaveJson();
 }
 
@@ -195,7 +194,7 @@ bool ZDAsset::Locking(id_server server, chars author)
         mLocked = true;
         Context Packet;
         Packet.At("type").Set("AssetChanged");
-        Packet.At("route").Set(mRoute.mNormal);
+        Packet.At("path").Set(mRoute.mPath);
         Packet.At("status").Set("lock");
         const String NewPacket = Packet.SaveJson();
         for(sint32 i = 0, iend = mPeerIDs.Count(); i < iend; ++i)
@@ -219,7 +218,7 @@ String ZDAsset::BuildPacket() const
     Context Packet;
     Packet.At("type").Set("AssetUpdated");
     Packet.At("author").Set(mAuthor);
-    Packet.At("route").Set(mRoute.mNormal);
+    Packet.At("path").Set(mRoute.mPath);
     Packet.At("status").Set((mLocked)? "lock" : "unlock");
     Packet.At("version").Set(mVersion);
     if(0 < mData.LengthOfNamable())
@@ -378,9 +377,11 @@ ZDRoute ZDProgram::ParseRoute(chars programid, chars route, id_server writable_s
                 if(0 < Path.Count())
                     Path = chararray((id_cloned_share) String::Format("%.*s/%d/", Path.Count(), &Path[0], Number));
                 else Path = chararray((id_cloned_share) String::Format("%d/", Number));
+                Path.SubtractionOne(); // '\0' 제거
                 if(0 < Normal.Count())
                     Normal = chararray((id_cloned_share) String::Format("%.*s<%d>", Normal.Count(), &Normal[0], Number));
                 else Normal = chararray((id_cloned_share) String::Format("<%d>", Number));
+                Normal.SubtractionOne(); // '\0' 제거
             }
             route = RouteNext;
         }

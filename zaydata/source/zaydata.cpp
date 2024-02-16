@@ -169,7 +169,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 zaydataData::zaydataData()
 {
-    mPort = (*gAppName)? gStartPort : 8000;
+    mPort = (*gAppName)? gStartPort : 8981;
     mUseWSS = gStartSSL;
     mServer = nullptr;
     mPacketMutex = Mutex::Open();
@@ -497,7 +497,7 @@ void zaydataData::OnRecv_LockAsset(sint32 peerid, const Context& json)
                 Context Json;
                 Json.At("type").Set("AssetLocked");
                 Json.At("lockid").Set(LockID);
-                Json.At("route").Set(ParsedRoute.mNormal);
+                Json.At("path").Set(ParsedRoute.mPath);
                 SendPacket(peerid, Json);
             }
         }
