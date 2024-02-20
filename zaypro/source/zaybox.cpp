@@ -396,8 +396,10 @@ void ZEZayBox::RenderHook(ZayPanel& panel, chars uiname)
                 }
                 else if(t == GT_InDragging || t == GT_OutDragging)
                 {
-                    mHookDrag.x += x - OldPos.x;
-                    mHookDrag.y += y - OldPos.y;
+                    const float DragX = (x - OldPos.x) * 100 / gZoomPercent;
+                    const float DragY = (y - OldPos.y) * 100 / gZoomPercent;
+                    mHookDrag.x += DragX;
+                    mHookDrag.y += DragY;
                     OldPos = Point(x, y);
                     v->invalidate();
                 }
@@ -592,19 +594,22 @@ void ZEZayBox::RenderResizeButton(ZayPanel& panel, chars uiname)
     ZAY_INNER_UI(panel, -2, uiname,
         ZAY_GESTURE_VNTXY(v, n, t, x, y, this)
         {
-            static Point OldPos;
+            static sint32 OldX;
+            static float FirstX;
             if(t == GT_Pressed)
             {
-                OldPos = Point(x, y);
+                OldX = 0;
+                FirstX = x;
                 v->clearCapture();
             }
             else if(t == GT_InDragging || t == GT_OutDragging)
             {
+                const sint32 NewX = sint32((x - FirstX) * 100 / gZoomPercent);
                 sint32s Values;
                 Values.AtAdding() = mID;
-                Values.AtAdding() = sint32(x - OldPos.x);
+                Values.AtAdding() = NewX - OldX;
                 Platform::SendNotify(v->view(), "ZayBoxResize", Values);
-                OldPos = Point(x, y);
+                OldX = NewX;
                 v->invalidate();
             }
         })

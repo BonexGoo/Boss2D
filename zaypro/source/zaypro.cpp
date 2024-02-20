@@ -15,14 +15,14 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
     {
         // 파이프통신
         if(m->mPipe.TickOnce())
-            m->invalidate(2);
+            m->invalidate();
 
         // 코멘트태그 애니메이션
         if(m->mShowCommentTagMsec != 0)
         {
             if(m->mShowCommentTagMsec <= Platform::Utility::CurrentTimeMsec())
                 m->mShowCommentTagMsec = 0;
-            m->invalidate(2);
+            m->invalidate();
         }
 
         // 드래그 애니메이션
@@ -33,7 +33,7 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             Point Drag = Point(m->mWorkViewDrag.x / DragDistMin, m->mWorkViewDrag.y / DragDistMin);
             m->mWorkViewDrag -= Drag;
             m->mWorkViewScroll += Drag;
-            m->invalidate(2);
+            m->invalidate();
         }
         else m->mWorkViewDrag = Point();
 
@@ -301,7 +301,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     else if(t == GT_Dropped && m->mZaySonAPI.mDraggingComponentID != -1)
                     {
                         // 타이틀바만큼 올림
-                        m->mZaySonAPI.mDraggingComponentRect -= m->mWorkViewScroll;
+                        m->mZaySonAPI.mDraggingComponentRect -= m->mWorkViewScroll * gZoomPercent / 100;
                         m->mZaySonAPI.mDraggingComponentRect.t -= m->mTitleHeight;
                         m->mZaySonAPI.mDraggingComponentRect.b -= m->mTitleHeight;
 
@@ -531,7 +531,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                                 const sint32 OldPos = v->scrollpos("apispace-scroll").y;
                                 const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 300 : -300);
                                 v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
-                                v->invalidate(2);
+                                v->invalidate();
                             }
                         }, {-1, 5}, 20)
                     for(sint32 i = 0; i < ComponentCount; ++i)
@@ -634,7 +634,7 @@ ZEFakeZaySon::ZEFakeZaySon()
 
         const sint32 NewID = ++mLastBoxID;
         NewZayBox->Init(NewID, NewName, NewColor, NewColorRes, true,
-            mDraggingComponentRect.l, mDraggingComponentRect.t);
+            mDraggingComponentRect.l * 100 / gZoomPercent, mDraggingComponentRect.t * 100 / gZoomPercent);
         return NewZayBox;
     };
     ResetBoxInfo();
@@ -1267,7 +1267,7 @@ void zayproData::RenderComponent(ZayPanel& panel, sint32 i, bool enable, bool bl
                 const sint32 OldPos = v->scrollpos("apispace-scroll").y;
                 const sint32 NewPos = OldPos + ((t == GT_WheelUp)? 300 : -300);
                 v->moveScroll("apispace-scroll", 0, OldPos, 0, NewPos, 1.0, true);
-                v->invalidate(2);
+                v->invalidate();
             }
         })
     {
@@ -1538,10 +1538,10 @@ void zayproData::RenderDOM(ZayPanel& panel)
                     if(mPipe.domcount() != NewPayload.count)
                     {
                         mPipe.SetDOMCount(NewPayload.count);
-                        invalidate(2);
+                        invalidate();
                     }
                     if(NewPayload.needupdate)
-                        invalidate(2);
+                        invalidate();
                 }
             }
 
@@ -1754,7 +1754,7 @@ void zayproData::RenderLogList(ZayPanel& panel)
 
 void zayproData::RenderTitleBar(ZayPanel& panel)
 {
-    ZAY_LTRB_UI(panel, 0, 0, panel.w(), mTitleHeight, "ui_title",
+    ZAY_LTRB_UI(panel, 0, 0, panel.w(), mTitleHeight + 1, "ui_title",
         ZAY_GESTURE_T(t, this)
         {
             static point64 OldCursorPos;
@@ -1871,7 +1871,7 @@ void zayproData::RenderOutline(ZayPanel& panel)
             ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
             ZAY_XYWH(panel, i, 0, 1, panel.h())
                 panel.fill();
-            invalidate(2);
+            invalidate();
         }
         if(mNcTopBorder)
         {
@@ -1879,7 +1879,7 @@ void zayproData::RenderOutline(ZayPanel& panel)
             ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
             ZAY_XYWH(panel, 0, i, panel.w(), 1)
                 panel.fill();
-            invalidate(2);
+            invalidate();
         }
         if(mNcRightBorder)
         {
@@ -1887,7 +1887,7 @@ void zayproData::RenderOutline(ZayPanel& panel)
             ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
             ZAY_XYWH(panel, panel.w() - 1 - i, 0, 1, panel.h())
                 panel.fill();
-            invalidate(2);
+            invalidate();
         }
         if(mNcBottomBorder)
         {
@@ -1895,7 +1895,7 @@ void zayproData::RenderOutline(ZayPanel& panel)
             ZAY_RGBA(panel, 128, 128, 128, 128 - i * 25)
             ZAY_XYWH(panel, 0, panel.h() - 1 - i, panel.w(), 1)
                 panel.fill();
-            invalidate(2);
+            invalidate();
         }
     }
 
