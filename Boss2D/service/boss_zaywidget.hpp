@@ -25,6 +25,7 @@ namespace BOSS
         bool TickOnce();
         bool GlueCall(chars name, const Strings params);
         void JumpCall(chars name, sint32 count = 1);
+        void SendLog(chars text);
 
     public:
         inline const String& viewname() const {return mZaySonViewName;}

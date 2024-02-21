@@ -555,7 +555,7 @@ namespace BOSS
             const String ConditionText = context.GetText();
             mConditionType = ZaySonUtility::ToCondition(ConditionText, &mWithElse);
             if(mConditionType == ZaySonInterface::ConditionType::Unknown)
-                root.SendErrorLog("Script Parsing Failed", String::Format(" ● Unknown conditional statement. (%s/Load)", (chars) ConditionText));
+                root.SendErrorLog("Script Parsing Failed", String::Format("Unknown conditional statement. (%s/Load)", (chars) ConditionText));
 
             sint32 PosB, PosE;
             if(ZaySonUtility::IsFunctionCall(ConditionText, &PosB, &PosE)) // ()사용여부와 파라미터 발라내기
@@ -780,7 +780,7 @@ namespace BOSS
                 mRequestType = ZaySonInterface::RequestType::Function;
                 mGlueFunction = root.FindGlue(TextTest.Left(PosB - 1));
                 if(!mGlueFunction)
-                    root.SendWarningLog("Binding Failed", String::Format(" ● Glue function not found. (%s/Load)", (chars) TextTest.Left(PosB - 1)));
+                    root.SendWarningLog("Binding Failed", String::Format("Glue function not found. (%s/Load)", (chars) TextTest.Left(PosB - 1)));
                 if(PosB < PosE)
                 {
                     auto Params = ZaySonUtility::GetCommaStrings(TextTest.Middle(PosB, PosE - PosB));
@@ -859,7 +859,7 @@ namespace BOSS
                     FindedSolver->Parse(mRSolvers[0].ExecuteOnly().ToText(true));
                     FindedSolver->Execute();
                 }
-                else mRefRoot->SendErrorLog("Update Failed", String::Format(" ● Variable not found. (%s/Transaction)",
+                else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)",
                     (chars) mLSolver.ExecuteVariableName()));
             }
             else if(mRequestType == ZaySonInterface::RequestType::Function)
@@ -1241,7 +1241,7 @@ namespace BOSS
                     }
                 }
             }
-            else mRefRoot->SendWarningLog("Rendering Failed", String::Format(" ● Component not found. (%s/Render)", (chars) mCompName));
+            else mRefRoot->SendWarningLog("Rendering Failed", String::Format("Component not found. (%s/Render)", (chars) mCompName));
         }
         void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
         {
@@ -1529,16 +1529,16 @@ namespace BOSS
         NewView->Load(*this, context);
         mUIElement = NewView;
 
-        SendInfoLog("ZaySon Loaded", String::Format(" ● %s (Reload)", (chars) mViewName));
+        SendInfoLog("ZaySon Loaded", String::Format("%s (Reload)", (chars) mViewName));
         auto ComponentNames = AllComponentNames();
         for(sint32 i = 0, iend = ComponentNames.Count(); i < iend; ++i)
-            SendInfoLog("Component Added", String::Format(" ● %s", (chars) ComponentNames[i]));
+            SendInfoLog("Component Added", ComponentNames[i]);
         auto GlueNames = AllGlueNames();
         for(sint32 i = 0, iend = GlueNames.Count(); i < iend; ++i)
-            SendInfoLog("Glue Added", String::Format(" ● %s", (chars) GlueNames[i]));
+            SendInfoLog("Glue Added", GlueNames[i]);
         auto GateNames = AllGateNames();
         for(sint32 i = 0, iend = GateNames.Count(); i < iend; ++i)
-            SendInfoLog("Gate Added", String::Format(" ● %s", (chars) GateNames[i]));
+            SendInfoLog("Gate Added", GateNames[i]);
     }
 
     void ZaySon::SetLogger(LoggerCB cb)

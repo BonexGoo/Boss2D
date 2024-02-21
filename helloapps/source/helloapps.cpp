@@ -1224,13 +1224,14 @@ void helloappsData::InitWidget(ZayWidget& widget, chars name)
                     mUpdateMsec = UpdateMsec;
             }
         })
-        // 변수값을 확인하기 위한 개발용 팝업
-        .AddGlue("popup", ZAY_DECLARE_GLUE(params, this)
+        // 로그출력
+        .AddGlue("log", ZAY_DECLARE_GLUE(params, this)
         {
             if(params.ParamCount() == 1)
             {
-                const String Message = params.Param(0).ToText();
-                Platform::Popup::MessageDialog("DevMessage", Message);
+                const String Text = params.Param(0).ToText();
+                if(mWidgetMain)
+                    mWidgetMain->SendLog(Text);
             }
         })
         // 이벤트

@@ -228,6 +228,11 @@ namespace BOSS
         mZaySon.JumpCall(name, count);
     }
 
+    void ZayWidget::SendLog(chars text)
+    {
+        mZaySon.SendInfoLog("Message", text);
+    }
+
     void ZayWidget::SetAssetPath(id_assetpath assetpath)
     {
         AssetPath::Release(gAssetPath);
@@ -1677,7 +1682,7 @@ namespace BOSS
         if(ispassword)
         {
             String Collector;
-            while(*(text++)) Collector += "●";
+            while(*(text++)) Collector += "★";
             return Collector;
         }
         return text;

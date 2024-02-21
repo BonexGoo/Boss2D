@@ -913,28 +913,31 @@ public:
     ~ZELogTitle() override {}
 
 private:
-    void RenderCore(ZayPanel& panel) override
+    void Render(ZayPanel& panel, sint32 index) override
     {
         const Color UIColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 0, 224)};
-        const Color& CurFontColor = UIColors[mGroupID & 0xF];
-        const String UIName = String::Format("log-%d", mGroupID);
+        const String UIName = String::Format("log-%d", index);
 
-        ZAY_INNER_UI(panel, 0, UIName,
+        ZAY_LTRB_UI(panel, 5, 3, panel.w() - 5, panel.h() - 3, UIName,
             ZAY_GESTURE_T(t, this)
             {
-                if(t == GT_Moving)
-                    focusid() = mGroupID;
-                else if(t == GT_MovingLosed)
-                    focusid() = -1;
+                if(t == GT_InReleased)
+                {
+                    if(!checked())
+                        unfocusmap().Remove(mGroupID);
+                    else unfocusmap()[mGroupID] = true;
+                }
             })
         {
-            ZAY_RGBA(panel, 0, 0, 0, (focusid() == mGroupID)? 255 : 128)
+            ZAY_RGBA(panel, 0, 0, 0, (checked())? 255 : 64)
                 panel.fill();
+
             // 텍스트
-            ZAY_COLOR(panel, CurFontColor)
+            ZAY_COLOR(panel, UIColors[mGroupID & 0xF])
             ZAY_RGB(panel, 224, 224, 224)
-            ZAY_LTRB(panel, 10, 0, panel.w() - panel.h(), panel.h())
+            ZAY_LTRB(panel, 5, 0, panel.w() - panel.h(), panel.h())
                 panel.text(String::Format("%s (%d)", (chars) mText, mDetailCount), UIFA_LeftMiddle, UIFE_Left);
+
             // 종료버튼
             const String UIRemoveName = UIName + "-remove";
             ZAY_LTRB_UI(panel, panel.w() - panel.h(), 0, panel.w(), panel.h(), UIRemoveName,
@@ -943,7 +946,7 @@ private:
                     if(t == GT_InReleased)
                         Platform::BroadcastNotify("RemoveLog", sint32o(mGroupID));
                 })
-            ZAY_INNER(panel, 4)
+            ZAY_INNER(panel, 3)
             {
                 ZAY_RGB(panel, 0, 0, 0)
                 ZAY_RGB_IF(panel, 180, 180, 180, panel.state(UIRemoveName) & PS_Pressed)
@@ -960,41 +963,57 @@ private:
     bool valid() const override {return true;}
 
 public:
+    bool checked() const {return !unfocusmap().Access(mGroupID);}
+
+public:
     sint32 mDetailCount;
 };
 
 class ZELogDetail : public ZEWidgetPipe::LogElement
 {
 public:
-    ZELogDetail(sint32 groupid, chars detail) : ZEWidgetPipe::LogElement(detail, groupid),
-        mBeginMsec(Platform::Utility::CurrentTimeMsec()), mEndMsec(mBeginMsec + 5000) {}
+    ZELogDetail(sint32 groupid, chars detail) : ZEWidgetPipe::LogElement(detail, groupid) {}
     ~ZELogDetail() override {}
 
 private:
-    void RenderCore(ZayPanel& panel) override
+    void Render(ZayPanel& panel, sint32 index) override
     {
-        const Color UIColors[3] = {Color(255, 0, 0), Color(0, 0, 255), Color(224, 0, 224)};
-        const Color& CurBGColor = UIColors[mGroupID & 0xF];
+        const Color UIColors[3] = {Color(255, 210, 210), Color(210, 210, 255), Color(224, 200, 224)};
+        const String UIName = String::Format("log-%d", index);
+        const String FullText = " ● " + mText;
+        const sint32 FullTextSize = Platform::Graphics::GetStringWidth(FullText);
+        const bool NeedToolTop = (panel.w() < FullTextSize);
 
-        ZAY_COLOR(panel, CurBGColor)
-        ZAY_RGBA(panel, 64, 64, 64, 92)
-            panel.fill();
-        // 텍스트
-        ZAY_RGB(panel, 255, 255, 128)
-        ZAY_LTRB(panel, 10, 0, panel.w() - 10 - panel.h(), panel.h())
-            panel.text(mText, UIFA_LeftMiddle, UIFE_Right);
+        ZAY_INNER_UI_SCISSOR(panel, 0, UIName,
+            ZAY_GESTURE_T(t, this, NeedToolTop)
+            {
+                if(t == GT_ToolTip)
+                {
+                    if(NeedToolTop)
+                        Platform::Popup::ShowToolTip(mText);
+                }
+                else if(t == GT_Pressed)
+                    Platform::Utility::SendToTextClipboard(mText);
+            })
+        {
+            // 배경색
+            if(index & 1)
+            ZAY_RGBA(panel, 0, 0, 0, 16)
+                panel.fill();
+            // 포커싱효과
+            if(panel.state(UIName) & PS_Focused)
+            ZAY_RGBA(panel, 0, 0, 0, 64)
+                panel.fill();
+            // 스트링
+            ZAY_MOVE_IF(panel, 1, 1, panel.state(UIName) & PS_Pressed)
+            ZAY_COLOR(panel, UIColors[mGroupID & 0xF])
+                panel.text(FullText, UIFA_LeftMiddle, UIFE_Right);
+        }
     }
     bool valid() const override
     {
-        if(focusid() != -1)
-            return (focusid() == mGroupID);
-        const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-        return (mBeginMsec <= CurMsec && CurMsec < mEndMsec);
+        return (!unfocusmap().Access(mGroupID));
     }
-
-public:
-    const uint64 mBeginMsec;
-    const uint64 mEndMsec;
 };
 
 void ZEWidgetPipe::AddLog(chars type, chars title, chars detail)
@@ -1012,13 +1031,26 @@ void ZEWidgetPipe::AddLog(chars type, chars title, chars detail)
         GroupID = mLogTitleTop.Attach(NewTitle);
     }
     auto NewDetail = new ZELogDetail(GroupID, detail);
-    mLogDetailTop.AttachLast(NewDetail);
+    mLogDetailTop.Attach(NewDetail);
 }
 
 void ZEWidgetPipe::RemoveLog(sint32 groupid)
 {
     mLogTitleTop.Remove(groupid);
     mLogDetailTop.Remove(groupid);
+}
+
+sint32 ZEWidgetPipe::GetCalcedLogCount()
+{
+    sint32 Result = 0;
+    ZELogTitle* CurTitle = (ZELogTitle*) &mLogTitleTop;
+    while(CurTitle = (ZELogTitle*) CurTitle->next())
+    {
+        if(CurTitle->checked())
+            Result += 1 + CurTitle->mDetailCount;
+        else Result += 1;
+    }
+    return Result;
 }
 
 ZEWidgetPipe::LogElement* ZEWidgetPipe::GetLogElement()
@@ -1319,7 +1351,7 @@ void zayproData::RenderDOM(ZayPanel& panel)
                 ZAY_RGB(panel, 0, 0, 0)
                     panel.fill();
                 ZAY_RGB(panel, 255, 255, 255)
-                    panel.text(5, panel.h() / 2 - 2, "dom", UIFA_LeftMiddle);
+                    panel.text(5, panel.h() / 2 - 1, "dom", UIFA_LeftMiddle);
 
                 // 검색기능
                 ZAY_XYWH_UI(panel, panel.w() - 50 - 200, 2, 200, panel.h() - 5, "dom-search",
@@ -1397,8 +1429,9 @@ void zayproData::RenderDOM(ZayPanel& panel)
             if(mPipe.expanddom())
             ZAY_XYWH_SCISSOR(panel, 0, TitleHeight, panel.w(), Math::Max(ElementHeight, panel.h() - TitleHeight))
             {
-                ZAY_RGBA(panel, 0, 0, 0, 128)
+                ZAY_RGBA(panel, 0, 0, 0, 192)
                     panel.fill();
+
                 ZAY_SCROLL_UI(panel, 0, ViewHeight, "dom-body-scroll",
                     ZAY_GESTURE_VNTXY(v, n, t, x, y)
                     {
@@ -1508,11 +1541,11 @@ void zayproData::RenderDOM(ZayPanel& panel)
                                     Data.needupdate |= (CurAni < 255);
                                     // 배경색
                                     if(Data.i & 1)
-                                    ZAY_RGBA(*Data.panel, 0, 0, 0, 8)
+                                    ZAY_RGBA(*Data.panel, 0, 0, 0, 16)
                                         Data.panel->fill();
                                     // 포커싱효과
                                     if(Data.panel->state(UIName) & PS_Focused)
-                                        ZAY_RGBA(*Data.panel, 0, 0, 0, 32)
+                                        ZAY_RGBA(*Data.panel, 0, 0, 0, 64)
                                             Data.panel->fill();
                                     // 스트링
                                     ZAY_MOVE_IF(*Data.panel, 1, 1, Data.panel->state(UIName) & PS_Pressed)
@@ -1578,7 +1611,7 @@ void zayproData::RenderMiniMap(ZayPanel& panel)
             ZAY_RGB(panel, 0, 0, 0)
                 panel.fill();
             ZAY_RGB(panel, 255, 255, 255)
-                panel.text(5, panel.h() / 2 - 2, "map", UIFA_LeftMiddle);
+                panel.text(5, panel.h() / 2 - 1, "map", UIFA_LeftMiddle);
         }
 
         // 바디
@@ -1596,7 +1629,7 @@ void zayproData::RenderMiniMap(ZayPanel& panel)
                 }
             })
         {
-            ZAY_RGBA(panel, 0, 0, 0, 128)
+            ZAY_RGBA(panel, 0, 0, 0, 192)
                 panel.fill();
 
             // 출력
@@ -1698,25 +1731,28 @@ void zayproData::RenderLogList(ZayPanel& panel)
     auto CurElement = mPipe.GetLogElement();
     if(CurElement)
     {
-        const sint32 TitleHeight = 23;
+        const sint32 TitleHeight = 22;
+        const sint32 ElementHeight = 22;
         const sint32 ViewWidth = 300;
-        ZAY_XYWH(panel, panel.w() - 10 - ViewWidth, panel.h() - 10 - TitleHeight, ViewWidth, TitleHeight)
+        const sint32 ViewHeight = (mPipe.expandlog())? mPipe.GetCalcedLogCount() * ElementHeight + 4 : 0;
+        const sint32 ViewHeightMin = Math::Min(ViewHeight, panel.h() - 255 - TitleHeight);
+        ZAY_LTRB(panel, panel.w() - 10 - ViewWidth, panel.h() - 10 - TitleHeight - ViewHeightMin, panel.w() - 10, panel.h() - 10)
         {
             // 타이틀
-            ZAY_INNER_UI_SCISSOR(panel, 0, "log-title")
+            ZAY_LTRB_UI_SCISSOR(panel, 0, panel.h() - TitleHeight, panel.w(), panel.h(), "log-title")
             {
                 ZAY_RGB(panel, 0, 0, 0)
                     panel.fill();
                 ZAY_RGB(panel, 255, 255, 255)
-                    panel.text(5, panel.h() / 2 - 2, "log", UIFA_LeftMiddle);
+                    panel.text(5, panel.h() / 2 - 1, "log", UIFA_LeftMiddle);
                 // 열기/닫기
-                ZAY_LTRB_UI(panel, panel.w() - 25 - 1, 1, panel.w() - 1, panel.h(), "log-expand",
+                ZAY_LTRB_UI(panel, panel.w() - 25, 0, panel.w(), panel.h(), "log-expand",
                     ZAY_GESTURE_T(t, this)
                     {
                         if(t == GT_InReleased)
                             mPipe.SetExpandLog(!mPipe.expandlog());
                     })
-                ZAY_LTRB(panel, 3, 3, panel.w() - 3, panel.h() - 4)
+                ZAY_LTRB(panel, 3, 4, panel.w() - 3, panel.h() - 3)
                 {
                     const bool IsFocused = !!(panel.state("log-expand") & PS_Focused);
                     const bool IsDragging = !!(panel.state("log-expand") & PS_Dragging);
@@ -1734,20 +1770,25 @@ void zayproData::RenderLogList(ZayPanel& panel)
                 }
             }
 
-            // 로그들
+            // 바디
             if(mPipe.expandlog())
+            ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h() - TitleHeight)
             {
-                const sint32 InnerGap = 3;
-                const sint32 ElementHeight = 22 + InnerGap * 2;
-                ZAY_XYWH(panel, 1 - InnerGap, -ElementHeight - InnerGap, panel.w() + InnerGap * 2 - 2, ElementHeight)
-                for(sint32 y = 0; CurElement && 0 < panel.toview(0, 0).y + y + panel.h(); y -= ElementHeight)
+                ZAY_RGBA(panel, 0, 0, 0, 192)
+                    panel.fill();
+
+                // 로그들
+                ZAY_XYWH(panel, 0, panel.h() - ElementHeight - 2, panel.w(), ElementHeight)
+                for(sint32 i = 0, y = 0; CurElement && 0 < panel.toview(0, 0).y + y + panel.h(); ++i, y -= ElementHeight)
                 {
                     ZAY_MOVE(panel, 0, y)
-                    ZAY_INNER(panel, 3)
-                        CurElement->Render(panel);
+                        CurElement->Render(panel, i);
                     CurElement = mPipe.NextLogElement(CurElement);
                 }
             }
+
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.rect(1);
         }
     }
 }

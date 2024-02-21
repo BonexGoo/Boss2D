@@ -93,8 +93,6 @@ public:
             if(groupid == -1)
                 mGroupID = (++LastID) << 4;
             else mGroupID = groupid;
-            mRenderPos = 0;
-            mRenderTarget = 0;
             mValidValue = true;
             mNext = nullptr;
         }
@@ -110,14 +108,6 @@ public:
             }
         }
     public:
-        void Render(ZayPanel& panel)
-        {
-            mRenderTarget = (panel.screen_h() - panel.toview(0, 0).y);
-            if(mRenderPos == 0) mRenderPos = mRenderTarget;
-            const sint32 MovePos = mRenderPos - mRenderTarget + 0.5;
-            ZAY_MOVE(panel, 0, -MovePos)
-                RenderCore(panel);
-        }
         LogElement* Detach(chars text)
         {
             LogElement* CurElement = this;
@@ -141,13 +131,6 @@ public:
             mNext = element;
             return element->mGroupID;
         }
-        void AttachLast(LogElement* element)
-        {
-            LogElement* CurElement = this;
-            while(CurElement->mNext)
-                CurElement = CurElement->mNext;
-            CurElement->mNext = element;
-        }
         void Remove(sint32 groupid)
         {
             LogElement* CurElement = this;
@@ -162,8 +145,8 @@ public:
                 }
                 else CurElement = CurElement->mNext;
             }
-            if(focusid() == groupid)
-                focusid() = -1;
+            if(unfocusmap().Access(mGroupID))
+                unfocusmap().Remove(mGroupID);
         }
         bool TickOnce()
         {
@@ -171,10 +154,6 @@ public:
             LogElement* CurElement = this;
             while(CurElement = CurElement->mNext)
             {
-                const sint32 OldPos = CurElement->mRenderPos - CurElement->mRenderTarget + 0.5;
-                CurElement->mRenderPos = CurElement->mRenderPos * 0.9 + CurElement->mRenderTarget * 0.1;
-                const sint32 NewPos = CurElement->mRenderPos - CurElement->mRenderTarget + 0.5;
-                NeedUpdate |= (OldPos != NewPos);
                 const bool NewValid = CurElement->valid();
                 NeedUpdate |= (CurElement->mValidValue != NewValid);
                 CurElement->mValidValue = NewValid;
@@ -182,16 +161,14 @@ public:
             return NeedUpdate;
         }
     public:
+        virtual void Render(ZayPanel& panel, sint32 index) {}
+    public:
         LogElement* next() const {return mNext;}
-        sint32& focusid() const {static sint32 _ = -1; return _;}
+        Map<bool>& unfocusmap() const {static Map<bool> _; return _;}
         virtual bool valid() const {return true;}
-    protected:
-        virtual void RenderCore(ZayPanel& panel) {}
     protected:
         String mText;
         sint32 mGroupID;
-        float mRenderPos;
-        float mRenderTarget;
         bool mValidValue;
         LogElement* mNext;
     };
@@ -199,6 +176,7 @@ public:
 public:
     void AddLog(chars type, chars title, chars detail);
     void RemoveLog(sint32 groupid);
+    sint32 GetCalcedLogCount();
     LogElement* GetLogElement();
     LogElement* NextLogElement(LogElement* element);
     void SetDOMSearch(chars text);
