@@ -936,7 +936,11 @@ private:
             ZAY_COLOR(panel, UIColors[mGroupID & 0xF])
             ZAY_RGB(panel, 224, 224, 224)
             ZAY_LTRB(panel, 5, 0, panel.w() - panel.h(), panel.h())
-                panel.text(String::Format("%s (%d)", (chars) mText, mDetailCount), UIFA_LeftMiddle, UIFE_Left);
+            {
+                const String OneText = String::Format("%s%s (%d)",
+                    (checked())? "ⓥ " : "", (chars) mText, mDetailCount);
+                panel.text(OneText, UIFA_LeftMiddle, UIFE_Left);
+            }
 
             // 종료버튼
             const String UIRemoveName = UIName + "-remove";
@@ -1429,7 +1433,7 @@ void zayproData::RenderDOM(ZayPanel& panel)
             if(mPipe.expanddom())
             ZAY_XYWH_SCISSOR(panel, 0, TitleHeight, panel.w(), Math::Max(ElementHeight, panel.h() - TitleHeight))
             {
-                ZAY_RGBA(panel, 0, 0, 0, 192)
+                ZAY_RGBA(panel, 0, 0, 0, 160)
                     panel.fill();
 
                 ZAY_SCROLL_UI(panel, 0, ViewHeight, "dom-body-scroll",
@@ -1629,7 +1633,7 @@ void zayproData::RenderMiniMap(ZayPanel& panel)
                 }
             })
         {
-            ZAY_RGBA(panel, 0, 0, 0, 192)
+            ZAY_RGBA(panel, 0, 0, 0, 160)
                 panel.fill();
 
             // 출력
@@ -1774,7 +1778,7 @@ void zayproData::RenderLogList(ZayPanel& panel)
             if(mPipe.expandlog())
             ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h() - TitleHeight)
             {
-                ZAY_RGBA(panel, 0, 0, 0, 192)
+                ZAY_RGBA(panel, 0, 0, 0, 160)
                     panel.fill();
 
                 // 로그들
