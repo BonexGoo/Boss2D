@@ -24,14 +24,16 @@ namespace BOSS
         AtlasSet& operator=(const AtlasSet& rhs)
         {
             KeyFileName = rhs.KeyFileName;
-            MapFileName = rhs.MapFileName;
+            AtlasFileName = rhs.AtlasFileName;
+            AtlasFolderName = rhs.AtlasFolderName;
             FileSize = rhs.FileSize;
             ModifyTime = rhs.ModifyTime;
             return *this;
         }
     public:
         String KeyFileName;
-        String MapFileName;
+        String AtlasFileName;
+        String AtlasFolderName;
         sint32 FileSize;
         sint32 ModifyTime;
     };
@@ -48,12 +50,18 @@ namespace BOSS
         if(!mImage)
         {
             mImage = &gImageMap(name);
-            Exist = true;
+            // 파일형 이미지 로딩시도
             String Path = gAtlasDir + name;
-            if(!mImage->SetName(Path).Load(gAssetPath))
-            if(!mImage->SetName(Path.Replace('.', '/')).Load(gAssetPath))
+            Exist = mImage->SetName(Path.Replace('.', '/')).Load(gAssetPath);
+            // 아틀라스형 이미지들 로딩시도
+            for(sint32 i = gAtlasSets.Count() - 1; 0 <= i && !Exist; --i)
             {
-                Exist = false;
+                Path = gAtlasDir + gAtlasSets[i].AtlasFolderName + '/' + name;
+                Exist = mImage->SetName(Path).Load(gAssetPath);
+            }
+            // 로딩실패시
+            if(!Exist)
+            {
                 if(id_asset_read PngAsset = Asset::OpenForRead(gAtlasDir + "noimg.png"))
                 {
                     const sint32 PngSize = Asset::Size(PngAsset);
@@ -91,21 +99,40 @@ namespace BOSS
         else gAtlasDir = String::Format("%s/", dirname);
     }
 
+    void R::ClearAll(bool withcache)
+    {
+        gImageMap.Reset();
+        gExistMap.Reset();
+        gAtlasSets.Clear();
+        if(withcache)
+        {
+            const String AtlasPath = (Platform::File::RootForAssetsRem() + gAtlasDir).SubTail(1);
+            Platform::File::Search(AtlasPath,
+                [](chars itemname, payload data)->void
+                {
+                    if(Platform::File::Exist(itemname))
+                        Platform::File::Remove(WString::FromChars(itemname), false);
+                }, nullptr, true);
+            Platform::File::RemoveDir(WString::FromChars(AtlasPath), true);
+        }
+    }
+
     void R::AddAtlas(chars key_filename, chars map_filename, const Context& ctx)
     {
-        gAtlasSets.AtAdding();
-        gAtlasSets.At(-1).KeyFileName = key_filename;
-        gAtlasSets.At(-1).MapFileName = map_filename;
-        gAtlasSets.At(-1).FileSize = ctx(map_filename)("filesize").GetInt(0);
-        gAtlasSets.At(-1).ModifyTime = ctx(map_filename)("modifytime").GetInt(0);
+        auto& NewAtlasSet = gAtlasSets.AtAdding();
+        NewAtlasSet.KeyFileName = key_filename;
+        NewAtlasSet.AtlasFileName = map_filename;
+        NewAtlasSet.AtlasFolderName = String(map_filename).Replace('.', '_');
+        NewAtlasSet.FileSize = ctx(map_filename)("filesize").GetInt(0);
+        NewAtlasSet.ModifyTime = ctx(map_filename)("modifytime").GetInt(0);
     }
 
     void R::SaveAtlas(Context& ctx)
     {
         for(sint32 i = 0, iend = gAtlasSets.Count(); i < iend; ++i)
         {
-            ctx.At(gAtlasSets[i].MapFileName).At("filesize").Set(String::FromInteger(gAtlasSets[i].FileSize));
-            ctx.At(gAtlasSets[i].MapFileName).At("modifytime").Set(String::FromInteger(gAtlasSets[i].ModifyTime));
+            ctx.At(gAtlasSets[i].AtlasFileName).At("filesize").Set(String::FromInteger(gAtlasSets[i].FileSize));
+            ctx.At(gAtlasSets[i].AtlasFileName).At("modifytime").Set(String::FromInteger(gAtlasSets[i].ModifyTime));
         }
     }
 
@@ -113,10 +140,11 @@ namespace BOSS
     {
         for(sint32 i = 0, iend = gAtlasSets.Count(); i < iend; ++i)
         {
-            String FullPath = gAtlasDir + gAtlasSets[i].MapFileName;
+            const auto& CurAtlasSet = gAtlasSets[i];
+            String FullPath = gAtlasDir + CurAtlasSet.AtlasFileName;
             uint64 FileSize = 0, ModifyTime = 0;
             if(Asset::Exist(FullPath, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
-            if(gAtlasSets[i].FileSize != (FileSize & 0x7FFFFFFF) || gAtlasSets[i].ModifyTime != (ModifyTime & 0x7FFFFFFF))
+            if(CurAtlasSet.FileSize != (FileSize & 0x7FFFFFFF) || CurAtlasSet.ModifyTime != (ModifyTime & 0x7FFFFFFF))
                 return true;
         }
         return false;
@@ -125,19 +153,18 @@ namespace BOSS
     void R::RebuildAll()
     {
         gImageMap.Reset();
-        BoxrBuilder Builder;
         for(sint32 i = 0, iend = gAtlasSets.Count(); i < iend; ++i)
         {
-            String FullPath = gAtlasDir + gAtlasSets[i].MapFileName;
+            BoxrBuilder Builder;
             uint64 FileSize = 0, ModifyTime = 0;
-            if(Asset::Exist(FullPath, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
-            if(Builder.LoadAtlas(gAtlasDir + gAtlasSets[i].KeyFileName, gAtlasDir + gAtlasSets[i].MapFileName, 0 < i))
+            if(Asset::Exist(gAtlasDir + gAtlasSets[i].AtlasFileName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
+            if(Builder.LoadAtlas(gAtlasDir + gAtlasSets[i].KeyFileName, gAtlasDir + gAtlasSets[i].AtlasFileName, 0 < i))
             {
                 gAtlasSets.At(i).FileSize = (sint32) (FileSize & 0x7FFFFFFF);
                 gAtlasSets.At(i).ModifyTime = (sint32) (ModifyTime & 0x7FFFFFFF);
             }
+            Builder.SaveSubImages(gAtlasDir + gAtlasSets[i].AtlasFolderName);
         }
-        Builder.SaveSubImages(gAtlasDir);
     }
 
     void R::ClearImages(Strings names)

@@ -12,6 +12,8 @@ bool PlatformInit()
         Platform::InitForGL(true);
         if(Asset::RebuildForEmbedded())
             return false;
+        String DataPath = Platform::File::RootForData();
+        Platform::File::ResetAssetsRemRoot(DataPath);
     #endif
 
     Platform::SetViewCreator(ZayView::Creator);
@@ -33,7 +35,7 @@ bool PlatformInit()
     Platform::SetWindowRect(ScreenRect.l + WindowX, ScreenRect.t + WindowY, WindowWidth, WindowHeight);
 
     // 아틀라스 동적로딩
-    String AtlasInfoString = String::FromAsset("atlasinfo.json");
+    const String AtlasInfoString = String::FromAsset("atlasinfo.json");
     Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
     R::AddAtlas("ui_atlaskey.png", "zaypro_atlas.png", AtlasInfo);

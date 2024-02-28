@@ -118,6 +118,7 @@ public: // 윈도우
     bool mIsFullScreen {false};
     bool mIsWindowMoving {false};
     rect128 mSavedNormalRect {0, 0, 0, 0};
+    size64 mSavedLobbySize {0, 0};
     String mDirectlyWidget;
     Strings mDebugLogs;
 

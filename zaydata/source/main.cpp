@@ -59,7 +59,7 @@ bool PlatformInit()
     else Platform::SetWindowRect(gStartX, gStartY, gStartWidth, gStartHeight);
 
     // 아틀라스 동적로딩
-    String AtlasInfoString = String::FromAsset("atlasinfo.json");
+    const String AtlasInfoString = String::FromAsset("atlasinfo.json");
     Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
     R::AddAtlas("ui_atlaskey.png", "atlas.png", AtlasInfo);

@@ -12,6 +12,7 @@ namespace BOSS
     public:
         static void SetAssetPath(id_assetpath assetpath);
         static void SetAtlasDir(chars dirname);
+        static void ClearAll(bool withcache);
         static void AddAtlas(chars key_filename, chars map_filename, const Context& ctx);
         static void SaveAtlas(Context& ctx);
         static bool IsAtlasUpdated();

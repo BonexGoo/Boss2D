@@ -1177,14 +1177,36 @@ void helloappsData::EnterWidget(sint32 index)
         }
     }
 
+    // 아틀라스 동적로딩
+    const sint32 CurAtlasCount = ZayWidgetDOM::GetValue(CurHeader + "atlas.count").ToInteger();
+    if(0 < CurAtlasCount)
+    {
+        const String AtlasInfoString = String::FromAsset("atlasinfo.json");
+        Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
+        R::SaveAtlas(AtlasInfo); // 최신정보의 병합
+        for(sint32 i = 0; i < CurAtlasCount; ++i)
+        {
+            const String AtlasFileName = ZayWidgetDOM::GetValue(CurHeader + String::Format("atlas.%d", i)).ToText();
+            R::AddAtlas("ui_atlaskey.png", AtlasFileName, AtlasInfo);
+        }
+        if(R::IsAtlasUpdated())
+            R::RebuildAll();
+    }
+
     // 위젯생성
     mWidgetMain = new ZayWidget();
     InitWidget(*mWidgetMain, CurName);
     mWidgetMain->Reload(CurPath);
     SetTitle(CurName);
     ZayWidgetDOM::SetValue("program.scale", String::FromInteger(CurScale));
-    Platform::SetWindowSize(CurWidth * CurScale / 100, CurHeight * CurScale / 100 + 1);
     ZayWidgetDOM::SetValue("program.flexible", (CurFlexible)? "1" : "0");
+    if(!IsFullScreen())
+    {
+        const auto WindowRect = Platform::GetWindowRect();
+        mSavedLobbySize.w = WindowRect.r - WindowRect.l;
+        mSavedLobbySize.h = WindowRect.b - WindowRect.t;
+        Platform::SetWindowSize(CurWidth * CurScale / 100, CurHeight * CurScale / 100 + 1);
+    }
 
     // 다이렉트위젯저장
     if(gFirstWidget.Length() == 0 && 0 < mDirectlyWidget.Length())
@@ -1512,7 +1534,8 @@ void helloappsData::ExitWidget()
     SetTitle(nullptr);
     ZayWidgetDOM::SetValue("program.scale", "100");
     ZayWidgetDOM::SetValue("program.flexible", "1");
-    Platform::SetWindowSize(1000, 751);
+    if(!IsFullScreen())
+        Platform::SetWindowSize(mSavedLobbySize.w, mSavedLobbySize.h);
 }
 
 void helloappsData::CallScript(chars filename, const Strings& args) const

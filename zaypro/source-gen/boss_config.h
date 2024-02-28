@@ -26,6 +26,7 @@
 #define BOSS_NEED_ADDON_TENSORFLOW 0
 #define BOSS_NEED_ADDON_TESSERACT  0
 #define BOSS_NEED_ADDON_TIF        0
+#define BOSS_NEED_ADDON_WEBP       0
 #define BOSS_NEED_ADDON_WEBRTC     0
 #define BOSS_NEED_ADDON_WEBSOCKET  0
 #define BOSS_NEED_ADDON_ZIP        0
@@ -43,4 +44,4 @@
 #define BOSS_NEED_EMBEDDED_ASSET   (BOSS_WASM | BOSS_WINDOWS_MINGW)
 #define BOSS_NEED_EMBEDDED_CACHE   (BOSS_WASM | BOSS_WINDOWS_MINGW)
 #define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5"}
-#define BOSS_SUMMIT_DOMAIN         "summit.hucloud.kr:8109"
+#define BOSS_SUMMIT_DOMAIN         "summit.zaylab.com:8109"

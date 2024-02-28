@@ -1,14 +1,8 @@
 {
-	"common":
+	"kiosk":
 	{
-		"app1_page":"home"
-	},
-	"app1":
-	{
-		"bg":
-		{
-			"home":"BG_Welcome"
-		}
+		"name":"중국집",
+		"menu":["짜장면", "짬뽕", "탕수육", "팔보채"]
 	},
 	"widgets":
 	[
@@ -37,6 +31,24 @@
 			"path" : "widget/flexible.json"
 		},
 		{
+			"name" : "키오스크_테이블",
+			"width" : 1000,
+			"height" : 800,
+			"scale" : 100,
+			"flexible" : 1,
+			"path" : "widget/kiosk_table.json",
+			"atlas" : ["a.png"]
+		},
+		{
+			"name" : "키오스크_데스크",
+			"width" : 1000,
+			"height" : 800,
+			"scale" : 100,
+			"flexible" : 1,
+			"path" : "widget/kiosk_desk.json",
+			"atlas" : ["b.png"]
+		},
+		{
 			"name" : "App1",
 			"width" : 600,
 			"height" : 500,
@@ -49,7 +61,7 @@
 	{
 		"host" : "127.0.0.1",
 		"port" : 9876,
-		"idx" : -1
+		"idx" : 4
 	},
 	"serial":
 	{
