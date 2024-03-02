@@ -6,10 +6,16 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_APP_FILE" Value="[#zaypro.exe]"/>
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_COLOR_DISABLED_TEXT" Value="3026478" MultiBuildValue="DefaultBuild:4605640" MsiKey="AI_COLOR_DISABLED_TEXT"/>
+    <ROW Property="AI_CONTROL_VISUAL_STYLE" Value="2960685;4276545;6776679;16176031" MultiBuildValue="DefaultBuild:2039761;2237162;16777215;16777215" MsiKey="AI_CONTROL_VISUAL_STYLE"/>
+    <ROW Property="AI_CONTROL_VISUAL_STYLE_EX" Value="1513239;3026478;3026478" MultiBuildValue="DefaultBuild:1776574;4605640;4605640" MsiKey="AI_CONTROL_VISUAL_STYLE_EX"/>
     <ROW Property="AI_EXTERNALUIUNINSTALLERNAME" MultiBuildValue="DefaultBuild:aiui"/>
     <ROW Property="AI_FINDEXE_TITLE" Value="[|ProductName]에 해당하는 설치 패키지를 선택하십시오." ValueLocId="AI.Property.FindExeTitle"/>
+    <ROW Property="AI_FrameBtnsColor" Value="metroblack" MultiBuildValue="DefaultBuild:metrored" MsiKey="AI_FrameBtnsColor"/>
+    <ROW Property="AI_FrameColor" Value="metroblack" MultiBuildValue="DefaultBuild:metrored" MsiKey="AI_FrameColor"/>
     <ROW Property="AI_PRODUCTNAME_ARP" Value="[|ProductName]"/>
     <ROW Property="AI_README_FILE" Value="https://cafe.naver.com/zaypro/3"/>
+    <ROW Property="AI_ThemeStyle" Value="default" MultiBuildValue="DefaultBuild:metrored" MsiKey="AI_ThemeStyle"/>
     <ROW Property="AI_UNINSTALLER" Value="msiexec.exe"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="이 설치 관리자 데이터베이스에는 [|ProductName] 설치에 필요한 논리와 데이터가 들어있습니다." ValueLocId="*"/>
@@ -17,13 +23,13 @@
     <ROW Property="ARPPRODUCTICON" Value="main.exe" Type="8"/>
     <ROW Property="ARPSYSTEMCOMPONENT" Value="1"/>
     <ROW Property="AiSkipExitDlg" Value="1"/>
-    <ROW Property="AppLogoIcon" Value="applogoicon.bmp" MultiBuildValue="DefaultBuild:logo.jpg" Type="1" MsiKey="AppLogoIcon"/>
+    <ROW Property="AppLogoIcon" Value="applogoicon.bmp" MultiBuildValue="DefaultBuild:aether.jpg" Type="1" MsiKey="AppLogoIcon"/>
     <ROW Property="CTRLS" Value="3"/>
     <ROW Property="Manufacturer" Value="AETHER"/>
-    <ROW Property="ProductCode" Value="1042:{E02511D6-3A8C-4748-AE53-C54895D35F6E} " Type="16"/>
+    <ROW Property="ProductCode" Value="1042:{A9ADDB51-5038-45B9-96FE-D836E290CF90} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1042"/>
     <ROW Property="ProductName" Value="ZAYPRO"/>
-    <ROW Property="ProductVersion" Value="2024.02.29.1" Options="32"/>
+    <ROW Property="ProductVersion" Value="2024.03.01" Options="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{C8B25A87-8550-4DB0-9113-961EC6633F68}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -38,194 +44,14 @@
     <ROW Property="WindowsTypeNT60Display" MultiBuildValue="DefaultBuild:Windows Vista/Server 2008" ValueLocId="-"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
-    <ROW Directory="AAOS_Dir" Directory_Parent="Trim_Dir" DefaultDir="AAOS"/>
     <ROW Directory="AETHER_1_Dir" Directory_Parent="ProgramFilesFolder" DefaultDir="AETHER"/>
     <ROW Directory="AETHER_Dir" Directory_Parent="ProgramMenuFolder" DefaultDir="AETHER"/>
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
-    <ROW Directory="Apps_Dir" Directory_Parent="Trim_Dir" DefaultDir="Apps"/>
-    <ROW Directory="Arrival_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Arrival"/>
-    <ROW Directory="Arrival_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Arrival"/>
-    <ROW Directory="AutomationSetting_Dir" Directory_Parent="Trim_Dir" DefaultDir="AUTOMA~1|Automation Setting"/>
-    <ROW Directory="CallBooked_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="CALLBO~1|CallBooked"/>
-    <ROW Directory="CallBooked_Dir" Directory_Parent="contents_1_Dir" DefaultDir="CALLBO~1|CallBooked"/>
-    <ROW Directory="Call_Dir" Directory_Parent="Apps_Dir" DefaultDir="Call"/>
-    <ROW Directory="Calling1_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Calling1"/>
-    <ROW Directory="Calling1_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Calling1"/>
-    <ROW Directory="Calling1_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Calling1"/>
-    <ROW Directory="Calling1_Dir" Directory_Parent="contents_Dir" DefaultDir="Calling1"/>
-    <ROW Directory="Calling2_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Calling2"/>
-    <ROW Directory="Calling2_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Calling2"/>
-    <ROW Directory="Calling2_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Calling2"/>
-    <ROW Directory="Calling2_Dir" Directory_Parent="contents_Dir" DefaultDir="Calling2"/>
-    <ROW Directory="Calling3_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Calling3"/>
-    <ROW Directory="Calling3_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Calling3"/>
-    <ROW Directory="Calling3_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Calling3"/>
-    <ROW Directory="Calling3_Dir" Directory_Parent="contents_Dir" DefaultDir="Calling3"/>
-    <ROW Directory="CarControl_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="CARCON~1|CarControl"/>
-    <ROW Directory="CarControl_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="CARCON~1|CarControl"/>
-    <ROW Directory="CarControl_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="CARCON~1|CarControl"/>
-    <ROW Directory="CarControl_Dir" Directory_Parent="contents_Dir" DefaultDir="CARCON~1|CarControl"/>
-    <ROW Directory="Care_Dir" Directory_Parent="Apps_Dir" DefaultDir="Care"/>
-    <ROW Directory="CertFail_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="CertFail"/>
-    <ROW Directory="CertFail_Dir" Directory_Parent="contents_1_Dir" DefaultDir="CertFail"/>
-    <ROW Directory="CertSuccess_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="CERTSU~1|CertSuccess"/>
-    <ROW Directory="CertSuccess_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="CERTSU~1|CertSuccess"/>
-    <ROW Directory="CertSuccess_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="CERTSU~1|CertSuccess"/>
-    <ROW Directory="CertSuccess_Dir" Directory_Parent="contents_Dir" DefaultDir="CERTSU~1|CertSuccess"/>
-    <ROW Directory="Certifying_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="CERTIF~1|Certifying"/>
-    <ROW Directory="Certifying_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="CERTIF~1|Certifying"/>
-    <ROW Directory="Certifying_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="CERTIF~1|Certifying"/>
-    <ROW Directory="Certifying_Dir" Directory_Parent="contents_Dir" DefaultDir="CERTIF~1|Certifying"/>
-    <ROW Directory="Change1_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Change1"/>
-    <ROW Directory="Change1_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Change1"/>
-    <ROW Directory="Change1_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Change1"/>
-    <ROW Directory="Change1_Dir" Directory_Parent="contents_Dir" DefaultDir="Change1"/>
-    <ROW Directory="Change2_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Change2"/>
-    <ROW Directory="Change2_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Change2"/>
-    <ROW Directory="Change2_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Change2"/>
-    <ROW Directory="Change2_Dir" Directory_Parent="contents_Dir" DefaultDir="Change2"/>
-    <ROW Directory="Change3_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Change3"/>
-    <ROW Directory="Change3_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Change3"/>
-    <ROW Directory="Change3_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Change3"/>
-    <ROW Directory="Change3_Dir" Directory_Parent="contents_Dir" DefaultDir="Change3"/>
-    <ROW Directory="Climate_Dir" Directory_Parent="Trim_Dir" DefaultDir="Climate"/>
-    <ROW Directory="Common_1_Dir" Directory_Parent="Mobile_1_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_2_Dir" Directory_Parent="Apps_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_3_Dir" Directory_Parent="Climate_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_4_Dir" Directory_Parent="Trim_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_5_Dir" Directory_Parent="depth_2_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_6_Dir" Directory_Parent="Navigation_Dir" DefaultDir="Common"/>
-    <ROW Directory="Common_Dir" Directory_Parent="Mobile_Dir" DefaultDir="Common"/>
-    <ROW Directory="Control_Dir" Directory_Parent="Youtube_Dir" DefaultDir="Control"/>
-    <ROW Directory="Data1_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data1"/>
-    <ROW Directory="Data1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data1"/>
-    <ROW Directory="Data2_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data2"/>
-    <ROW Directory="Data2_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data2"/>
-    <ROW Directory="Data3_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data3"/>
-    <ROW Directory="Data3_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data3"/>
-    <ROW Directory="Data4_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data4"/>
-    <ROW Directory="Data4_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data4"/>
-    <ROW Directory="Data5_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data5"/>
-    <ROW Directory="Data5_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data5"/>
-    <ROW Directory="Data6_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Data6"/>
-    <ROW Directory="Data6_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Data6"/>
-    <ROW Directory="Datalink1_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="DATALI~1|Datalink1"/>
-    <ROW Directory="Datalink1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="DATALI~1|Datalink1"/>
-    <ROW Directory="Datalink2_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="DATALI~2|Datalink2"/>
-    <ROW Directory="Datalink2_Dir" Directory_Parent="contents_1_Dir" DefaultDir="DATALI~2|Datalink2"/>
-    <ROW Directory="Datalink3_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="DATALI~3|Datalink3"/>
-    <ROW Directory="Datalink3_Dir" Directory_Parent="contents_1_Dir" DefaultDir="DATALI~3|Datalink3"/>
-    <ROW Directory="DeSetting_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="DESETT~1|DeSetting"/>
-    <ROW Directory="DeSetting_Dir" Directory_Parent="contents_1_Dir" DefaultDir="DESETT~1|DeSetting"/>
-    <ROW Directory="Default_Dir" Directory_Parent="depth_2_Dir" DefaultDir="Default"/>
-    <ROW Directory="Desettings_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="DESETT~1|Desettings"/>
-    <ROW Directory="Desettings_Dir" Directory_Parent="contents_Dir" DefaultDir="DESETT~1|Desettings"/>
     <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
-    <ROW Directory="DoorClose_Dir" Directory_Parent="Trim_Dir" DefaultDir="DOORCL~1|DoorClose"/>
-    <ROW Directory="DoorFail_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="DoorFail"/>
-    <ROW Directory="DoorFail_Dir" Directory_Parent="contents_Dir" DefaultDir="DoorFail"/>
-    <ROW Directory="DoorOpen_Dir" Directory_Parent="Trim_Dir" DefaultDir="DoorOpen"/>
-    <ROW Directory="EndRide_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="EndRide"/>
-    <ROW Directory="EndRide_2_Dir" Directory_Parent="contents_3_Dir" DefaultDir="EndRide"/>
-    <ROW Directory="EndRide_Dir" Directory_Parent="contents_Dir" DefaultDir="EndRide"/>
-    <ROW Directory="Guide1_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Guide1"/>
-    <ROW Directory="Guide1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Guide1"/>
-    <ROW Directory="Guide2_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Guide2"/>
-    <ROW Directory="Guide2_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Guide2"/>
-    <ROW Directory="Guide3_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Guide3"/>
-    <ROW Directory="Guide3_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Guide3"/>
-    <ROW Directory="Guide4_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Guide4"/>
-    <ROW Directory="Guide4_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Guide4"/>
-    <ROW Directory="Guide_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="Guide"/>
-    <ROW Directory="Guide_Dir" Directory_Parent="contents_Dir" DefaultDir="Guide"/>
-    <ROW Directory="Home_1_Dir" Directory_Parent="Scene2_1_Dir" DefaultDir="Home"/>
-    <ROW Directory="Home_2_Dir" Directory_Parent="Scene1_3_Dir" DefaultDir="Home"/>
-    <ROW Directory="Home_3_Dir" Directory_Parent="Scene2_3_Dir" DefaultDir="Home"/>
-    <ROW Directory="Home_4_Dir" Directory_Parent="Trim_Dir" DefaultDir="Home"/>
-    <ROW Directory="Home_Dir" Directory_Parent="Scene1_1_Dir" DefaultDir="Home"/>
-    <ROW Directory="IntergratedControl_Dir" Directory_Parent="Trim_Dir" DefaultDir="INTERG~1|Intergrated Control"/>
-    <ROW Directory="Key_pass_1_Dir" Directory_Parent="Common_1_Dir" DefaultDir="Key_pass"/>
-    <ROW Directory="Key_pass_Dir" Directory_Parent="Common_Dir" DefaultDir="Key_pass"/>
-    <ROW Directory="Kids_Dir" Directory_Parent="Apps_Dir" DefaultDir="Kids"/>
-    <ROW Directory="LinkCode_Dir" Directory_Parent="Trim_Dir" DefaultDir="LinkCode"/>
-    <ROW Directory="Link_Dir" Directory_Parent="Trim_Dir" DefaultDir="Link"/>
-    <ROW Directory="List_1_Dir" Directory_Parent="Youtube_Dir" DefaultDir="List"/>
-    <ROW Directory="List_Dir" Directory_Parent="Music_Dir" DefaultDir="List"/>
-    <ROW Directory="Main_1_Dir" Directory_Parent="Navigation_Dir" DefaultDir="Main"/>
-    <ROW Directory="Main_Dir" Directory_Parent="Apps_Dir" DefaultDir="Main"/>
-    <ROW Directory="Mirroring_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="MIRROR~1|Mirroring"/>
-    <ROW Directory="Mirroring_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="MIRROR~1|Mirroring"/>
-    <ROW Directory="Mirroring_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="MIRROR~1|Mirroring"/>
-    <ROW Directory="Mirroring_Dir" Directory_Parent="contents_Dir" DefaultDir="MIRROR~1|Mirroring"/>
-    <ROW Directory="Mobile_1_Dir" Directory_Parent="Mobile_Dir" DefaultDir="Mobile"/>
-    <ROW Directory="Mobile_Dir" Directory_Parent="image_1_Dir" DefaultDir="Mobile"/>
-    <ROW Directory="Mode_1_Dir" Directory_Parent="Common_1_Dir" DefaultDir="Mode"/>
-    <ROW Directory="Mode_Dir" Directory_Parent="Common_Dir" DefaultDir="Mode"/>
-    <ROW Directory="Mood_Dir" Directory_Parent="Trim_Dir" DefaultDir="Mood"/>
-    <ROW Directory="Music_Dir" Directory_Parent="Apps_Dir" DefaultDir="Music"/>
-    <ROW Directory="NUM_1_Dir" Directory_Parent="Common_1_Dir" DefaultDir="NUM"/>
-    <ROW Directory="NUM_Dir" Directory_Parent="Common_Dir" DefaultDir="NUM"/>
-    <ROW Directory="Navigation_Dir" Directory_Parent="Trim_Dir" DefaultDir="NAVIGA~1|Navigation"/>
-    <ROW Directory="OriSetting_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="ORISET~1|OriSetting"/>
-    <ROW Directory="OriSetting_Dir" Directory_Parent="contents_1_Dir" DefaultDir="ORISET~1|OriSetting"/>
-    <ROW Directory="Orisettings_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="ORISET~1|Orisettings"/>
-    <ROW Directory="Orisettings_Dir" Directory_Parent="contents_Dir" DefaultDir="ORISET~1|Orisettings"/>
-    <ROW Directory="PDF_Dir" Directory_Parent="Apps_Dir" DefaultDir="PDF"/>
-    <ROW Directory="POPUP_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="POPUP"/>
-    <ROW Directory="POPUP_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="POPUP"/>
-    <ROW Directory="POPUP_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="POPUP"/>
-    <ROW Directory="POPUP_Dir" Directory_Parent="contents_Dir" DefaultDir="POPUP"/>
-    <ROW Directory="Passenger_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="PASSEN~1|Passenger"/>
-    <ROW Directory="Passenger_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="PASSEN~1|Passenger"/>
-    <ROW Directory="Passenger_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="PASSEN~1|Passenger"/>
-    <ROW Directory="Passenger_Dir" Directory_Parent="contents_Dir" DefaultDir="PASSEN~1|Passenger"/>
-    <ROW Directory="Player_Dir" Directory_Parent="Music_Dir" DefaultDir="Player"/>
-    <ROW Directory="Playing_Dir" Directory_Parent="Youtube_Dir" DefaultDir="Playing"/>
-    <ROW Directory="Popup_Dir" Directory_Parent="Navigation_Dir" DefaultDir="Popup"/>
     <ROW Directory="ProgramFilesFolder" Directory_Parent="TARGETDIR" DefaultDir="PROGRA~3|ProgramFilesFolder" IsPseudoRoot="1"/>
     <ROW Directory="ProgramMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="PROGRA~1|ProgramMenuFolder" IsPseudoRoot="1"/>
-    <ROW Directory="PullOver1_Dir" Directory_Parent="Trim_Dir" DefaultDir="PULLOV~1|PullOver1"/>
-    <ROW Directory="PullOver2_Dir" Directory_Parent="Trim_Dir" DefaultDir="PULLOV~2|PullOver2"/>
-    <ROW Directory="Relax_Dir" Directory_Parent="depth_2_Dir" DefaultDir="Relax"/>
-    <ROW Directory="Remote_1_Dir" Directory_Parent="Mobile_Dir" DefaultDir="Remote"/>
-    <ROW Directory="Remote_Dir" Directory_Parent="Mobile_1_Dir" DefaultDir="Remote"/>
-    <ROW Directory="ReserveOption_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="RESERV~1|ReserveOption"/>
-    <ROW Directory="ReserveOption_Dir" Directory_Parent="contents_1_Dir" DefaultDir="RESERV~1|ReserveOption"/>
-    <ROW Directory="Reserved_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="Reserved"/>
-    <ROW Directory="Reserved_Dir" Directory_Parent="contents_1_Dir" DefaultDir="Reserved"/>
-    <ROW Directory="RideControl_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="RIDECO~1|RideControl"/>
-    <ROW Directory="RideControl_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="RIDECO~1|RideControl"/>
-    <ROW Directory="RideControl_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="RIDECO~1|RideControl"/>
-    <ROW Directory="RideControl_Dir" Directory_Parent="contents_Dir" DefaultDir="RIDECO~1|RideControl"/>
-    <ROW Directory="RideHome1_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="RIDEHO~1|RideHome1"/>
-    <ROW Directory="RideHome1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="RIDEHO~1|RideHome1"/>
-    <ROW Directory="RideHome2_1_Dir" Directory_Parent="contents_3_Dir" DefaultDir="RIDEHO~2|RideHome2"/>
-    <ROW Directory="RideHome2_Dir" Directory_Parent="contents_1_Dir" DefaultDir="RIDEHO~2|RideHome2"/>
-    <ROW Directory="RideHome_1_Dir" Directory_Parent="contents_2_Dir" DefaultDir="RideHome"/>
-    <ROW Directory="RideHome_Dir" Directory_Parent="contents_Dir" DefaultDir="RideHome"/>
-    <ROW Directory="SOS_Dir" Directory_Parent="Trim_Dir" DefaultDir="SOS"/>
-    <ROW Directory="Scene1_1_Dir" Directory_Parent="Mobile_1_Dir" DefaultDir="Scene1"/>
-    <ROW Directory="Scene1_2_Dir" Directory_Parent="resource_1_Dir" DefaultDir="Scene1"/>
-    <ROW Directory="Scene1_3_Dir" Directory_Parent="Mobile_Dir" DefaultDir="Scene1"/>
-    <ROW Directory="Scene1_Dir" Directory_Parent="resource_Dir" DefaultDir="Scene1"/>
-    <ROW Directory="Scene2_1_Dir" Directory_Parent="Mobile_1_Dir" DefaultDir="Scene2"/>
-    <ROW Directory="Scene2_2_Dir" Directory_Parent="resource_1_Dir" DefaultDir="Scene2"/>
-    <ROW Directory="Scene2_3_Dir" Directory_Parent="Mobile_Dir" DefaultDir="Scene2"/>
-    <ROW Directory="Scene2_Dir" Directory_Parent="resource_Dir" DefaultDir="Scene2"/>
-    <ROW Directory="StartRide_1_Dir" Directory_Parent="contents_1_Dir" DefaultDir="STARTR~1|StartRide"/>
-    <ROW Directory="StartRide_2_Dir" Directory_Parent="contents_2_Dir" DefaultDir="STARTR~1|StartRide"/>
-    <ROW Directory="StartRide_3_Dir" Directory_Parent="contents_3_Dir" DefaultDir="STARTR~1|StartRide"/>
-    <ROW Directory="StartRide_4_Dir" Directory_Parent="Trim_Dir" DefaultDir="STARTR~1|Start Ride"/>
-    <ROW Directory="StartRide_Dir" Directory_Parent="contents_Dir" DefaultDir="STARTR~1|StartRide"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
-    <ROW Directory="Temp_1_Dir" Directory_Parent="Common_1_Dir" DefaultDir="Temp"/>
-    <ROW Directory="Temp_Dir" Directory_Parent="Common_Dir" DefaultDir="Temp"/>
-    <ROW Directory="TrimMirror_turnPOPUP_Dir" Directory_Parent="Trim_Dir" DefaultDir="TRIMMI~1|TrimMirror_turnPOPUP"/>
-    <ROW Directory="Trim_Dir" Directory_Parent="image_1_Dir" DefaultDir="Trim"/>
-    <ROW Directory="Video_Dir" Directory_Parent="depth_2_Dir" DefaultDir="Video"/>
     <ROW Directory="WindowsVolume" Directory_Parent="TARGETDIR" DefaultDir="WINDOW~1|WindowsVolume" IsPseudoRoot="1"/>
-    <ROW Directory="Work_Dir" Directory_Parent="depth_2_Dir" DefaultDir="Work"/>
-    <ROW Directory="Youtube_Dir" Directory_Parent="Apps_Dir" DefaultDir="Youtube"/>
     <ROW Directory="assets_1_Dir" Directory_Parent="helloapps_Dir" DefaultDir="assets"/>
     <ROW Directory="assets_Dir" Directory_Parent="zaypro_Dir" DefaultDir="assets"/>
     <ROW Directory="audio_1_Dir" Directory_Parent="bin_Release64_1_Dir" DefaultDir="audio"/>
@@ -234,14 +60,7 @@
     <ROW Directory="bearer_Dir" Directory_Parent="bin_Release64_Dir" DefaultDir="bearer"/>
     <ROW Directory="bin_Release64_1_Dir" Directory_Parent="helloapps_Dir" DefaultDir="BIN_RE~1|bin_Release64"/>
     <ROW Directory="bin_Release64_Dir" Directory_Parent="zaypro_Dir" DefaultDir="BIN_RE~1|bin_Release64"/>
-    <ROW Directory="contents_1_Dir" Directory_Parent="Scene2_1_Dir" DefaultDir="contents"/>
-    <ROW Directory="contents_2_Dir" Directory_Parent="Scene1_3_Dir" DefaultDir="contents"/>
-    <ROW Directory="contents_3_Dir" Directory_Parent="Scene2_3_Dir" DefaultDir="contents"/>
-    <ROW Directory="contents_Dir" Directory_Parent="Scene1_1_Dir" DefaultDir="contents"/>
-    <ROW Directory="depth_1_Dir" Directory_Parent="Climate_Dir" DefaultDir="2depth"/>
-    <ROW Directory="depth_2_Dir" Directory_Parent="Mood_Dir" DefaultDir="1depth"/>
-    <ROW Directory="depth_3_Dir" Directory_Parent="Mood_Dir" DefaultDir="2depth"/>
-    <ROW Directory="depth_Dir" Directory_Parent="Climate_Dir" DefaultDir="1depth"/>
+    <ROW Directory="etc_Dir" Directory_Parent="helloapps_Dir" DefaultDir="etc"/>
     <ROW Directory="font_1_Dir" Directory_Parent="assets_1_Dir" DefaultDir="font"/>
     <ROW Directory="font_Dir" Directory_Parent="assets_Dir" DefaultDir="font"/>
     <ROW Directory="helloapps_Dir" Directory_Parent="WindowsVolume" DefaultDir="HELLOA~1|helloapps"/>
@@ -265,8 +84,6 @@
     <ROW Directory="printsupport_Dir" Directory_Parent="bin_Release64_Dir" DefaultDir="PRINTS~1|printsupport"/>
     <ROW Directory="qtwebengine_locales_1_Dir" Directory_Parent="translations_1_Dir" DefaultDir="QTWEBE~1|qtwebengine_locales"/>
     <ROW Directory="qtwebengine_locales_Dir" Directory_Parent="translations_Dir" DefaultDir="QTWEBE~1|qtwebengine_locales"/>
-    <ROW Directory="resource_1_Dir" Directory_Parent="Remote_1_Dir" DefaultDir="resource"/>
-    <ROW Directory="resource_Dir" Directory_Parent="Remote_Dir" DefaultDir="resource"/>
     <ROW Directory="resources_1_Dir" Directory_Parent="bin_Release64_1_Dir" DefaultDir="RESOUR~1|resources"/>
     <ROW Directory="resources_Dir" Directory_Parent="bin_Release64_Dir" DefaultDir="RESOUR~1|resources"/>
     <ROW Directory="sound_Dir" Directory_Parent="assets_1_Dir" DefaultDir="sound"/>
@@ -279,183 +96,12 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
     <ROW Component="AETHER" ComponentId="{F4A3A5F4-C3FA-4A91-A35E-260AFF24E5FB}" Directory_="AETHER_Dir" Attributes="0"/>
-    <ROW Component="AI_CustomARPName" ComponentId="{6E15F2D5-4B20-4690-99F2-883660F93E4B}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{08388F4F-C6D6-4A91-9D81-16F45D7C5D3E}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="AI_ExePath" ComponentId="{72D60A55-B413-4EF0-8664-572AE39A7EDE}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
     <ROW Component="APPDIR" ComponentId="{E3763F94-EE93-44E1-B772-A00DE159FBE5}" Directory_="APPDIR" Attributes="0"/>
-    <ROW Component="BG.png" ComponentId="{B8A55475-3536-40EA-BDE0-87BE0F242225}" Directory_="Remote_Dir" Attributes="0" KeyPath="BG.png" Type="0"/>
-    <ROW Component="BG.png_1" ComponentId="{42FA2766-A000-4A1C-B33C-28946DD603A9}" Directory_="Calling1_Dir" Attributes="0" KeyPath="BG.png_1" Type="0"/>
-    <ROW Component="BG.png_10" ComponentId="{D7F76255-13B5-455C-B13F-A0FFF1F47F4A}" Directory_="Desettings_Dir" Attributes="0" KeyPath="BG.png_10" Type="0"/>
-    <ROW Component="BG.png_100" ComponentId="{AA7C29BC-FD2D-4049-9E1A-72619B2D1F8B}" Directory_="Guide1_1_Dir" Attributes="0" KeyPath="BG.png_104" Type="0"/>
-    <ROW Component="BG.png_101" ComponentId="{A8715755-9B72-4F1A-93BF-75214C0D0DDA}" Directory_="Guide2_1_Dir" Attributes="0" KeyPath="BG.png_105" Type="0"/>
-    <ROW Component="BG.png_102" ComponentId="{174B8D28-16FE-4CF7-8C76-65384FE81539}" Directory_="Guide3_1_Dir" Attributes="0" KeyPath="BG.png_106" Type="0"/>
-    <ROW Component="BG.png_103" ComponentId="{38CAEAE4-BF7E-456D-83E5-1FFB38B70BAD}" Directory_="Guide4_1_Dir" Attributes="0" KeyPath="BG.png_107" Type="0"/>
-    <ROW Component="BG.png_104" ComponentId="{8E6B9AF2-AFCF-4D76-BFD9-7C74C981CC33}" Directory_="Mirroring_3_Dir" Attributes="0" KeyPath="BG.png_108" Type="0"/>
-    <ROW Component="BG.png_105" ComponentId="{2B18CCC6-B3FB-46E1-949F-7852F9D7A998}" Directory_="OriSetting_1_Dir" Attributes="0" KeyPath="BG.png_109" Type="0"/>
-    <ROW Component="BG.png_106" ComponentId="{BC9062FE-887A-4D75-9C25-E122BCA75F0B}" Directory_="Passenger_3_Dir" Attributes="0" KeyPath="BG.png_110" Type="0"/>
-    <ROW Component="BG.png_107" ComponentId="{BB9C508A-C88C-4EE9-AAF9-0C36A923E09F}" Directory_="POPUP_3_Dir" Attributes="0" KeyPath="BG.png_111" Type="0"/>
-    <ROW Component="BG.png_108" ComponentId="{337A4243-B820-42C8-BBA9-7731C3061BB2}" Directory_="Reserved_1_Dir" Attributes="0" KeyPath="BG.png_112" Type="0"/>
-    <ROW Component="BG.png_109" ComponentId="{3E1E9D60-7D87-4C58-AA76-B30F70E2721C}" Directory_="ReserveOption_1_Dir" Attributes="0" KeyPath="BG.png_113" Type="0"/>
-    <ROW Component="BG.png_11" ComponentId="{D5F776AA-6137-4888-AE62-3E3ED37208C5}" Directory_="DoorFail_Dir" Attributes="0" KeyPath="BG.png_11" Type="0"/>
-    <ROW Component="BG.png_110" ComponentId="{402C3334-752A-47CC-83A6-C88A314F7A82}" Directory_="RideControl_3_Dir" Attributes="0" KeyPath="BG.png_114" Type="0"/>
-    <ROW Component="BG.png_111" ComponentId="{15185E8E-3179-47F8-8273-C26D7BC3EAF7}" Directory_="RideHome1_1_Dir" Attributes="0" KeyPath="BG.png_115" Type="0"/>
-    <ROW Component="BG.png_112" ComponentId="{11765AE5-AAFF-4D86-9780-457EAFB22734}" Directory_="RideHome2_1_Dir" Attributes="0" KeyPath="BG.png_116" Type="0"/>
-    <ROW Component="BG.png_113" ComponentId="{AE8AA710-B6B1-4028-A95D-149372D98DB8}" Directory_="StartRide_3_Dir" Attributes="0" KeyPath="BG.png_117" Type="0"/>
-    <ROW Component="BG.png_114" ComponentId="{867DBCCD-DE8D-4C59-A914-DA6FFF3B8072}" Directory_="Home_3_Dir" Attributes="0" KeyPath="BG.png_118" Type="0"/>
-    <ROW Component="BG.png_115" ComponentId="{910B490C-4933-4EF2-BB44-A92E931965A6}" Directory_="AAOS_Dir" Attributes="0" KeyPath="BG.png_119" Type="0"/>
-    <ROW Component="BG.png_116" ComponentId="{C737827E-ABB2-469D-92B0-E6E830B9DB7F}" Directory_="Call_Dir" Attributes="0" KeyPath="BG.png_120" Type="0"/>
-    <ROW Component="BG.png_117" ComponentId="{758EF8BC-2952-4484-83C0-9BC5E73A54D2}" Directory_="Care_Dir" Attributes="0" KeyPath="BG.png_121" Type="0"/>
-    <ROW Component="BG.png_118" ComponentId="{8DAB2777-01D2-43D6-8A7F-042EE7DC161E}" Directory_="Kids_Dir" Attributes="0" KeyPath="BG.png_122" Type="0"/>
-    <ROW Component="BG.png_119" ComponentId="{DE350861-ADEB-48C0-A46E-2C0D9EA6EA74}" Directory_="Main_Dir" Attributes="0" KeyPath="BG.png_123" Type="0"/>
-    <ROW Component="BG.png_12" ComponentId="{C8DC96E9-3A21-478D-A133-D7D73932EC5E}" Directory_="EndRide_Dir" Attributes="0" KeyPath="BG.png_12" Type="0"/>
-    <ROW Component="BG.png_120" ComponentId="{DD6BB315-A1EA-45F2-BDBF-B316118F528D}" Directory_="List_Dir" Attributes="0" KeyPath="BG.png_124" Type="0"/>
-    <ROW Component="BG.png_121" ComponentId="{79BE99D9-F86F-487B-92D4-924DD57E8F10}" Directory_="Control_Dir" Attributes="0" KeyPath="BG.png_125" Type="0"/>
-    <ROW Component="BG.png_122" ComponentId="{1F6F9052-8572-4FB0-9C51-36AE520BE64F}" Directory_="List_1_Dir" Attributes="0" KeyPath="BG.png_126" Type="0"/>
-    <ROW Component="BG.png_123" ComponentId="{5A461E43-8789-4625-BC9F-18153F48A23F}" Directory_="Playing_Dir" Attributes="0" KeyPath="BG.png_127" Type="0"/>
-    <ROW Component="BG.png_124" ComponentId="{19EA5BBF-34E5-4857-9FA8-94462D7C6639}" Directory_="AutomationSetting_Dir" Attributes="0" KeyPath="BG.png_128" Type="0"/>
-    <ROW Component="BG.png_125" ComponentId="{D1EA0CB2-3C0C-4BDB-901E-94213C20B947}" Directory_="Trim_Dir" Attributes="0" KeyPath="BG.png_129" Type="0"/>
-    <ROW Component="BG.png_126" ComponentId="{049688EC-D75C-416B-AB8F-A747A75E4F6F}" Directory_="DoorClose_Dir" Attributes="0" KeyPath="BG.png_130" Type="0"/>
-    <ROW Component="BG.png_127" ComponentId="{A2CD3B15-32DA-4F71-888B-35101A1879D7}" Directory_="DoorOpen_Dir" Attributes="0" KeyPath="BG.png_131" Type="0"/>
-    <ROW Component="BG.png_128" ComponentId="{5CBD9AE8-4563-4502-9944-6FDD27B70848}" Directory_="Home_4_Dir" Attributes="0" KeyPath="BG.png_132" Type="0"/>
-    <ROW Component="BG.png_129" ComponentId="{E3FD9F33-A44D-4D29-ACC7-D5E7716D0E05}" Directory_="Link_Dir" Attributes="0" KeyPath="BG.png_133" Type="0"/>
-    <ROW Component="BG.png_13" ComponentId="{B65D53EA-3B5D-4776-8C66-83F37E39FC43}" Directory_="Guide_Dir" Attributes="0" KeyPath="BG.png_13" Type="0"/>
-    <ROW Component="BG.png_130" ComponentId="{76F6017C-CEA5-4F19-9A19-E481CD44990D}" Directory_="LinkCode_Dir" Attributes="0" KeyPath="BG.png_134" Type="0"/>
-    <ROW Component="BG.png_131" ComponentId="{33D6052A-AC2C-4DD9-8046-6C99A606FAAE}" Directory_="Common_6_Dir" Attributes="0" KeyPath="BG.png_135" Type="0"/>
-    <ROW Component="BG.png_132" ComponentId="{7519F5D9-4057-4F4C-A3DD-09773AF89AE9}" Directory_="PullOver1_Dir" Attributes="0" KeyPath="BG.png_136" Type="0"/>
-    <ROW Component="BG.png_133" ComponentId="{051E3D1F-CFE4-47CE-B198-930E7B414925}" Directory_="PullOver2_Dir" Attributes="0" KeyPath="BG.png_137" Type="0"/>
-    <ROW Component="BG.png_134" ComponentId="{F608DBFB-DED0-4486-9470-D051081C7785}" Directory_="SOS_Dir" Attributes="0" KeyPath="BG.png_138" Type="0"/>
-    <ROW Component="BG.png_135" ComponentId="{DF3C796D-5462-4E74-97C2-4F204987A82F}" Directory_="StartRide_4_Dir" Attributes="0" KeyPath="BG.png_139" Type="0"/>
-    <ROW Component="BG.png_14" ComponentId="{3B269B58-D87C-4926-AF90-7192BB01CC7E}" Directory_="Mirroring_Dir" Attributes="0" KeyPath="BG.png_14" Type="0"/>
-    <ROW Component="BG.png_15" ComponentId="{452A9300-D6B9-450C-9090-3A9D7AAA5154}" Directory_="Orisettings_Dir" Attributes="0" KeyPath="BG.png_15" Type="0"/>
-    <ROW Component="BG.png_16" ComponentId="{3049B0D2-7B8A-49E0-8921-944A2EE84320}" Directory_="Passenger_Dir" Attributes="0" KeyPath="BG.png_16" Type="0"/>
-    <ROW Component="BG.png_17" ComponentId="{FC0D4BFF-7462-4898-ADFE-28396912F197}" Directory_="POPUP_Dir" Attributes="0" KeyPath="BG.png_17" Type="0"/>
-    <ROW Component="BG.png_18" ComponentId="{2B329618-F440-4B0F-A793-0A535281C279}" Directory_="RideControl_Dir" Attributes="0" KeyPath="BG.png_18" Type="0"/>
-    <ROW Component="BG.png_19" ComponentId="{9A064E64-97E1-4B24-8B2E-BB48DBD2D5A5}" Directory_="RideHome_Dir" Attributes="0" KeyPath="BG.png_19" Type="0"/>
-    <ROW Component="BG.png_2" ComponentId="{CC673BDF-9EB1-438E-B10B-CDBADED97517}" Directory_="Calling2_Dir" Attributes="0" KeyPath="BG.png_2" Type="0"/>
-    <ROW Component="BG.png_20" ComponentId="{4BC7D105-036A-4651-BD1D-8F772767BAD6}" Directory_="StartRide_Dir" Attributes="0" KeyPath="BG.png_20" Type="0"/>
-    <ROW Component="BG.png_21" ComponentId="{82C6AAD9-21C8-40D2-8587-91EE7DD104EC}" Directory_="Home_Dir" Attributes="0" KeyPath="BG.png_21" Type="0"/>
-    <ROW Component="BG.png_22" ComponentId="{CBCEB17A-CFBC-42E5-ADA5-620CACDB9E46}" Directory_="Calling1_1_Dir" Attributes="0" KeyPath="BG.png_23" Type="0"/>
-    <ROW Component="BG.png_23" ComponentId="{B616EB30-5D7B-4C8D-8B65-C13B2FA15A8F}" Directory_="Calling2_1_Dir" Attributes="0" KeyPath="BG.png_24" Type="0"/>
-    <ROW Component="BG.png_24" ComponentId="{DC803B4D-C8F8-4FF4-844D-91E386D87D77}" Directory_="Calling3_1_Dir" Attributes="0" KeyPath="BG.png_25" Type="0"/>
-    <ROW Component="BG.png_25" ComponentId="{7EDCAC97-FAD2-4275-80B1-3704BCBC6BA9}" Directory_="CarControl_1_Dir" Attributes="0" KeyPath="BG.png_26" Type="0"/>
-    <ROW Component="BG.png_26" ComponentId="{73CA0BF9-1704-41D7-9CC2-70F88EF6B065}" Directory_="CertFail_Dir" Attributes="0" KeyPath="BG.png_27" Type="0"/>
-    <ROW Component="BG.png_27" ComponentId="{6AD8BEC4-4F87-4F87-89DE-56DDFC34BC08}" Directory_="Certifying_1_Dir" Attributes="0" KeyPath="BG.png_28" Type="0"/>
-    <ROW Component="BG.png_28" ComponentId="{7FB8D9F5-AAD7-4AE5-A9E7-72240267A442}" Directory_="CertSuccess_1_Dir" Attributes="0" KeyPath="BG.png_29" Type="0"/>
-    <ROW Component="BG.png_29" ComponentId="{9B6B0C2C-1447-469C-BCD1-1C4DBF2B9A10}" Directory_="Change1_1_Dir" Attributes="0" KeyPath="BG.png_30" Type="0"/>
-    <ROW Component="BG.png_3" ComponentId="{BE4A2FFC-1D95-4F05-B450-751AC7221286}" Directory_="Calling3_Dir" Attributes="0" KeyPath="BG.png_3" Type="0"/>
-    <ROW Component="BG.png_30" ComponentId="{F7314258-9548-459D-A346-73D64AA8A9A8}" Directory_="Change2_1_Dir" Attributes="0" KeyPath="BG.png_31" Type="0"/>
-    <ROW Component="BG.png_31" ComponentId="{D8923D45-9B1A-402A-8CAB-D0B64843A17B}" Directory_="Change3_1_Dir" Attributes="0" KeyPath="BG.png_32" Type="0"/>
-    <ROW Component="BG.png_32" ComponentId="{A074E6FE-4CEE-47BE-971C-296C7DB2D519}" Directory_="Data2_Dir" Attributes="0" KeyPath="BG.png_34" Type="0"/>
-    <ROW Component="BG.png_33" ComponentId="{469ACB63-0E03-46C7-9829-80B47657F01E}" Directory_="Data3_Dir" Attributes="0" KeyPath="BG.png_35" Type="0"/>
-    <ROW Component="BG.png_34" ComponentId="{9198F3E2-C4E1-40BA-B8E7-EDE2E979E216}" Directory_="Data4_Dir" Attributes="0" KeyPath="BG.png_36" Type="0"/>
-    <ROW Component="BG.png_35" ComponentId="{08F43ABB-A9EC-40BD-BEF8-CE1B3F618DC1}" Directory_="Data5_Dir" Attributes="0" KeyPath="BG.png_37" Type="0"/>
-    <ROW Component="BG.png_36" ComponentId="{B1081FD0-FC42-4087-AFB8-8E198ECF5587}" Directory_="Data6_Dir" Attributes="0" KeyPath="BG.png_38" Type="0"/>
-    <ROW Component="BG.png_37" ComponentId="{B836DF70-5690-46A7-BEEF-50F8859D9472}" Directory_="Datalink1_Dir" Attributes="0" KeyPath="BG.png_39" Type="0"/>
-    <ROW Component="BG.png_38" ComponentId="{37A3FD9F-2803-4A9A-887A-972F705F4279}" Directory_="Datalink2_Dir" Attributes="0" KeyPath="BG.png_40" Type="0"/>
-    <ROW Component="BG.png_39" ComponentId="{2486E987-4D28-45AD-9F37-C60CAABB0C0D}" Directory_="Datalink3_Dir" Attributes="0" KeyPath="BG.png_41" Type="0"/>
-    <ROW Component="BG.png_4" ComponentId="{1A6C2CE8-AEDA-4FEA-999C-0AEF056B267B}" Directory_="CarControl_Dir" Attributes="0" KeyPath="BG.png_4" Type="0"/>
-    <ROW Component="BG.png_40" ComponentId="{31354494-8602-4350-B795-583CB64D3D6E}" Directory_="DeSetting_Dir" Attributes="0" KeyPath="BG.png_42" Type="0"/>
-    <ROW Component="BG.png_41" ComponentId="{7EA0CE8F-D87A-46E9-A9DA-DF8406C0B7CC}" Directory_="Guide1_Dir" Attributes="0" KeyPath="BG.png_43" Type="0"/>
-    <ROW Component="BG.png_42" ComponentId="{A0B0FBA3-4257-4C52-B395-364A87B460AB}" Directory_="Guide2_Dir" Attributes="0" KeyPath="BG.png_44" Type="0"/>
-    <ROW Component="BG.png_43" ComponentId="{BA1E2ACB-ADAC-4738-BC5C-CFB40DF1C90F}" Directory_="Guide3_Dir" Attributes="0" KeyPath="BG.png_45" Type="0"/>
-    <ROW Component="BG.png_44" ComponentId="{9EE8677E-A1C2-48AC-B2B5-6F6F13944847}" Directory_="Guide4_Dir" Attributes="0" KeyPath="BG.png_46" Type="0"/>
-    <ROW Component="BG.png_45" ComponentId="{518866EE-50AD-4747-85C3-DF45FCEFA911}" Directory_="Mirroring_1_Dir" Attributes="0" KeyPath="BG.png_47" Type="0"/>
-    <ROW Component="BG.png_46" ComponentId="{8C15BF09-1869-46C5-9E77-533BB46F0A97}" Directory_="OriSetting_Dir" Attributes="0" KeyPath="BG.png_48" Type="0"/>
-    <ROW Component="BG.png_47" ComponentId="{DA3E7C03-D846-4723-8CAA-D6CE642E4F0E}" Directory_="Passenger_1_Dir" Attributes="0" KeyPath="BG.png_49" Type="0"/>
-    <ROW Component="BG.png_48" ComponentId="{39E12BAF-F4FB-4013-B19B-A2A53189F01C}" Directory_="POPUP_1_Dir" Attributes="0" KeyPath="BG.png_50" Type="0"/>
-    <ROW Component="BG.png_49" ComponentId="{AC142317-3FE9-41D8-AE74-AF7B662F54F4}" Directory_="Reserved_Dir" Attributes="0" KeyPath="BG.png_51" Type="0"/>
-    <ROW Component="BG.png_5" ComponentId="{F3618080-188A-41C2-860D-007842AFA404}" Directory_="Certifying_Dir" Attributes="0" KeyPath="BG.png_5" Type="0"/>
-    <ROW Component="BG.png_50" ComponentId="{4C79EAEA-B541-4C3A-BA41-ED9E3E61A3F2}" Directory_="ReserveOption_Dir" Attributes="0" KeyPath="BG.png_52" Type="0"/>
-    <ROW Component="BG.png_51" ComponentId="{B12640D9-B84D-4D6A-86B7-C103E4A11863}" Directory_="RideControl_1_Dir" Attributes="0" KeyPath="BG.png_53" Type="0"/>
-    <ROW Component="BG.png_52" ComponentId="{BF947395-5185-4D9A-BFD6-E502FE6FDCDA}" Directory_="RideHome1_Dir" Attributes="0" KeyPath="BG.png_54" Type="0"/>
-    <ROW Component="BG.png_53" ComponentId="{05CB74B1-B9EF-4D77-BD1A-8D4B02D027B1}" Directory_="RideHome2_Dir" Attributes="0" KeyPath="BG.png_55" Type="0"/>
-    <ROW Component="BG.png_54" ComponentId="{36966412-B660-4768-84E2-8A9C9917B139}" Directory_="StartRide_1_Dir" Attributes="0" KeyPath="BG.png_56" Type="0"/>
-    <ROW Component="BG.png_55" ComponentId="{76BABBD0-DF16-4E29-8455-046F44E18B3A}" Directory_="Home_1_Dir" Attributes="0" KeyPath="BG.png_57" Type="0"/>
-    <ROW Component="BG.png_56" ComponentId="{281D7D92-F16C-4C76-B4DF-B13D88AFB3AF}" Directory_="Remote_1_Dir" Attributes="0" KeyPath="BG.png_58" Type="0"/>
-    <ROW Component="BG.png_57" ComponentId="{CA502A2A-C358-40EB-A55C-6C49F4FC2E73}" Directory_="Arrival_Dir" Attributes="0" KeyPath="BG.png_59" Type="0"/>
-    <ROW Component="BG.png_58" ComponentId="{E6BFFD8F-8BC1-4A63-AAB0-85079524D1E3}" Directory_="Calling1_2_Dir" Attributes="0" KeyPath="BG.png_60" Type="0"/>
-    <ROW Component="BG.png_59" ComponentId="{E405AF0A-0011-49BE-89C1-83D97392E715}" Directory_="Calling2_2_Dir" Attributes="0" KeyPath="BG.png_61" Type="0"/>
-    <ROW Component="BG.png_6" ComponentId="{9D32F99F-5DDF-4CBC-BA7A-903E572E4A88}" Directory_="CertSuccess_Dir" Attributes="0" KeyPath="BG.png_6" Type="0"/>
-    <ROW Component="BG.png_60" ComponentId="{AC8F2152-90EE-4DBA-9FC3-CAF1FE0107DC}" Directory_="Calling3_2_Dir" Attributes="0" KeyPath="BG.png_62" Type="0"/>
-    <ROW Component="BG.png_61" ComponentId="{AE40A0EE-B42B-499B-8430-E3875926BD51}" Directory_="CarControl_2_Dir" Attributes="0" KeyPath="BG.png_63" Type="0"/>
-    <ROW Component="BG.png_62" ComponentId="{9915BDB4-09A0-4121-9EEE-024CD4202BCA}" Directory_="Certifying_2_Dir" Attributes="0" KeyPath="BG.png_64" Type="0"/>
-    <ROW Component="BG.png_63" ComponentId="{3E2DB855-83FA-4BD7-8063-49DE1897741B}" Directory_="CertSuccess_2_Dir" Attributes="0" KeyPath="BG.png_65" Type="0"/>
-    <ROW Component="BG.png_64" ComponentId="{1E41D044-80B3-4ECA-8EDD-406CEB93EA95}" Directory_="Change1_2_Dir" Attributes="0" KeyPath="BG.png_66" Type="0"/>
-    <ROW Component="BG.png_65" ComponentId="{A5775439-A81F-4417-A4F9-503695B11203}" Directory_="Change2_2_Dir" Attributes="0" KeyPath="BG.png_67" Type="0"/>
-    <ROW Component="BG.png_66" ComponentId="{BAF8540D-0E0E-4BCF-AD3C-3016B8DDADCD}" Directory_="Change3_2_Dir" Attributes="0" KeyPath="BG.png_68" Type="0"/>
-    <ROW Component="BG.png_67" ComponentId="{8446D064-C517-4518-8BED-3CB2CD1C5132}" Directory_="Desettings_1_Dir" Attributes="0" KeyPath="BG.png_69" Type="0"/>
-    <ROW Component="BG.png_68" ComponentId="{7327E7ED-151B-485A-B901-BBE9E3C5819F}" Directory_="DoorFail_1_Dir" Attributes="0" KeyPath="BG.png_70" Type="0"/>
-    <ROW Component="BG.png_69" ComponentId="{2C5A8D39-E34B-400E-8022-98893BF89961}" Directory_="EndRide_1_Dir" Attributes="0" KeyPath="BG.png_71" Type="0"/>
-    <ROW Component="BG.png_7" ComponentId="{9485E7CD-1736-4B48-B2AB-F8F895C2345D}" Directory_="Change1_Dir" Attributes="0" KeyPath="BG.png_7" Type="0"/>
-    <ROW Component="BG.png_70" ComponentId="{7823D5A4-BD3B-4B75-9A38-9E143034D0F1}" Directory_="Guide_1_Dir" Attributes="0" KeyPath="BG.png_72" Type="0"/>
-    <ROW Component="BG.png_71" ComponentId="{BF2FC413-EA1E-4BB5-B47E-078672D56453}" Directory_="Mirroring_2_Dir" Attributes="0" KeyPath="BG.png_73" Type="0"/>
-    <ROW Component="BG.png_72" ComponentId="{FF91124C-43C0-46DB-A560-B976ABBEAB12}" Directory_="Orisettings_1_Dir" Attributes="0" KeyPath="BG.png_74" Type="0"/>
-    <ROW Component="BG.png_73" ComponentId="{B11DE789-E446-4895-8312-4C53064BCC1A}" Directory_="Passenger_2_Dir" Attributes="0" KeyPath="BG.png_75" Type="0"/>
-    <ROW Component="BG.png_74" ComponentId="{636081E5-BC2B-4737-9F39-05E5B92AE0A3}" Directory_="POPUP_2_Dir" Attributes="0" KeyPath="BG.png_76" Type="0"/>
-    <ROW Component="BG.png_75" ComponentId="{1E07F8B3-61EF-470E-9A79-387D215985D8}" Directory_="RideControl_2_Dir" Attributes="0" KeyPath="BG.png_77" Type="0"/>
-    <ROW Component="BG.png_76" ComponentId="{5A446500-0BEB-4989-9B7F-57F2AE001B02}" Directory_="RideHome_1_Dir" Attributes="0" KeyPath="BG.png_78" Type="0"/>
-    <ROW Component="BG.png_77" ComponentId="{498CC803-2CC8-4780-99C5-B8883743EDED}" Directory_="StartRide_2_Dir" Attributes="0" KeyPath="BG.png_79" Type="0"/>
-    <ROW Component="BG.png_78" ComponentId="{EAA4889C-73A5-417A-9B4B-948A23A990A8}" Directory_="Home_2_Dir" Attributes="0" KeyPath="BG.png_80" Type="0"/>
-    <ROW Component="BG.png_79" ComponentId="{DDFDBDA8-7085-474D-99A6-3C898A3D14BA}" Directory_="Arrival_1_Dir" Attributes="0" KeyPath="BG.png_81" Type="0"/>
-    <ROW Component="BG.png_8" ComponentId="{CF4929ED-C905-4C2F-B8C2-DAD26CA6800A}" Directory_="Change2_Dir" Attributes="0" KeyPath="BG.png_8" Type="0"/>
-    <ROW Component="BG.png_80" ComponentId="{2547EA8C-5772-4952-BA25-63F07446B707}" Directory_="Calling1_3_Dir" Attributes="0" KeyPath="BG.png_83" Type="0"/>
-    <ROW Component="BG.png_81" ComponentId="{824C5E0D-2104-4811-8F77-E0842D8A9B6F}" Directory_="Calling2_3_Dir" Attributes="0" KeyPath="BG.png_84" Type="0"/>
-    <ROW Component="BG.png_82" ComponentId="{ACBA28BD-2F2D-4195-9045-0127DDDC7FE4}" Directory_="Calling3_3_Dir" Attributes="0" KeyPath="BG.png_85" Type="0"/>
-    <ROW Component="BG.png_83" ComponentId="{2EE98824-AFFB-493B-BF28-302C85FA0E24}" Directory_="CarControl_3_Dir" Attributes="0" KeyPath="BG.png_86" Type="0"/>
-    <ROW Component="BG.png_84" ComponentId="{94EC5655-8132-4033-913C-CCF12428E7A3}" Directory_="CertFail_1_Dir" Attributes="0" KeyPath="BG.png_87" Type="0"/>
-    <ROW Component="BG.png_85" ComponentId="{368805D2-E625-471E-B145-B72507C2BE23}" Directory_="Certifying_3_Dir" Attributes="0" KeyPath="BG.png_88" Type="0"/>
-    <ROW Component="BG.png_86" ComponentId="{153BA0CD-5C65-442C-960B-9A47FB332BBF}" Directory_="CertSuccess_3_Dir" Attributes="0" KeyPath="BG.png_89" Type="0"/>
-    <ROW Component="BG.png_87" ComponentId="{90D6E2FB-EA85-4920-8F28-780A3D2DE7B6}" Directory_="Change1_3_Dir" Attributes="0" KeyPath="BG.png_90" Type="0"/>
-    <ROW Component="BG.png_88" ComponentId="{74FFA9B8-F36B-46C1-B781-E0A4FD5C697E}" Directory_="Change2_3_Dir" Attributes="0" KeyPath="BG.png_91" Type="0"/>
-    <ROW Component="BG.png_89" ComponentId="{1548EAF1-22B4-4920-AAE6-304649E0A99F}" Directory_="Change3_3_Dir" Attributes="0" KeyPath="BG.png_92" Type="0"/>
-    <ROW Component="BG.png_9" ComponentId="{0B0A4EE8-DC3B-4B92-A92D-9AD7894ACD41}" Directory_="Change3_Dir" Attributes="0" KeyPath="BG.png_9" Type="0"/>
-    <ROW Component="BG.png_90" ComponentId="{B5143EFC-46C4-444E-B330-A0DA3E9A1BBA}" Directory_="Data2_1_Dir" Attributes="0" KeyPath="BG.png_94" Type="0"/>
-    <ROW Component="BG.png_91" ComponentId="{25B9C25D-ED83-4781-9DBC-E6A13B5134FC}" Directory_="Data3_1_Dir" Attributes="0" KeyPath="BG.png_95" Type="0"/>
-    <ROW Component="BG.png_92" ComponentId="{DA7345D4-2E19-414A-9C3A-6884FFE96FF9}" Directory_="Data4_1_Dir" Attributes="0" KeyPath="BG.png_96" Type="0"/>
-    <ROW Component="BG.png_93" ComponentId="{69E5E6A2-A0CC-457E-9E47-06A3D2685BE2}" Directory_="Data5_1_Dir" Attributes="0" KeyPath="BG.png_97" Type="0"/>
-    <ROW Component="BG.png_94" ComponentId="{73FF8AE0-4763-4842-8342-BDEB7F65588B}" Directory_="Data6_1_Dir" Attributes="0" KeyPath="BG.png_98" Type="0"/>
-    <ROW Component="BG.png_95" ComponentId="{2A8A9140-3AAB-4763-9114-2D10B2395CBF}" Directory_="Datalink1_1_Dir" Attributes="0" KeyPath="BG.png_99" Type="0"/>
-    <ROW Component="BG.png_96" ComponentId="{14731432-8AFB-44D9-8DF7-B1DBE991292A}" Directory_="Datalink2_1_Dir" Attributes="0" KeyPath="BG.png_100" Type="0"/>
-    <ROW Component="BG.png_97" ComponentId="{D761C241-629E-4ED1-AE76-D86F0475CFD5}" Directory_="Datalink3_1_Dir" Attributes="0" KeyPath="BG.png_101" Type="0"/>
-    <ROW Component="BG.png_98" ComponentId="{C0BB2CB9-5376-4F73-87D7-1D57F4AE4BB4}" Directory_="DeSetting_1_Dir" Attributes="0" KeyPath="BG.png_102" Type="0"/>
-    <ROW Component="BG.png_99" ComponentId="{D3E4BF20-69E1-47F0-8691-22C30E106F64}" Directory_="EndRide_2_Dir" Attributes="0" KeyPath="BG.png_103" Type="0"/>
-    <ROW Component="BG_LH.png" ComponentId="{01FD84CF-BA8C-4524-A3AC-B28F5B16E384}" Directory_="depth_Dir" Attributes="0" KeyPath="BG_LH.png" Type="0"/>
-    <ROW Component="BG_LH.png_1" ComponentId="{40EAB0A2-B278-4236-AA23-802FFE9FE7C8}" Directory_="depth_1_Dir" Attributes="0" KeyPath="BG_LH.png_1" Type="0"/>
-    <ROW Component="BG_LH.png_2" ComponentId="{12C1C1D9-352C-4C42-AB81-17864D6D16E3}" Directory_="IntergratedControl_Dir" Attributes="0" KeyPath="BG_LH.png_2" Type="0"/>
-    <ROW Component="BG_LH.png_3" ComponentId="{94E26C39-85E4-4510-B338-7453ADFA573B}" Directory_="Default_Dir" Attributes="0" KeyPath="BG_LH.png_3" Type="0"/>
-    <ROW Component="BG_LH.png_4" ComponentId="{6CD24A7A-91F0-4BB6-843B-726267FAF15C}" Directory_="Relax_Dir" Attributes="0" KeyPath="BG_LH.png_4" Type="0"/>
-    <ROW Component="BG_LH.png_5" ComponentId="{64D532D1-358C-4373-A9AE-816459693268}" Directory_="Video_Dir" Attributes="0" KeyPath="BG_LH.png_5" Type="0"/>
-    <ROW Component="BG_LH.png_6" ComponentId="{73981AD6-24AE-41A4-A625-26C3CCD07EDF}" Directory_="Work_Dir" Attributes="0" KeyPath="BG_LH.png_6" Type="0"/>
-    <ROW Component="BG_LH.png_7" ComponentId="{402AEEB1-C080-4DAE-B712-AF0E70A8BFF9}" Directory_="depth_3_Dir" Attributes="0" KeyPath="BG_LH.png_7" Type="0"/>
-    <ROW Component="BG_List.png" ComponentId="{C4CC2743-124B-405D-AE5D-21A4E5F98B0B}" Directory_="PDF_Dir" Attributes="0" KeyPath="BG_List.png" Type="0"/>
-    <ROW Component="BG_Song1.png" ComponentId="{B52CBE0E-952C-4EBD-826E-383FD5D1C9D5}" Directory_="Player_Dir" Attributes="0" KeyPath="BG_Song1.png" Type="0"/>
-    <ROW Component="BG_briBAR.png" ComponentId="{CE93AFDE-84DF-4DFD-BDA2-DE9C5A85474E}" Directory_="Common_Dir" Attributes="0" KeyPath="BG_briBAR.png" Type="0"/>
-    <ROW Component="BG_briBAR.png_1" ComponentId="{E5E359A5-3ED3-475E-8844-0288FE22D362}" Directory_="Common_1_Dir" Attributes="0" KeyPath="BG_briBAR.png_1" Type="0"/>
-    <ROW Component="Banner_Call.png" ComponentId="{0E0F3983-836E-4220-8332-2FDB4688E8B0}" Directory_="CallBooked_Dir" Attributes="0" KeyPath="Banner_Call.png" Type="0"/>
-    <ROW Component="Banner_Call.png_1" ComponentId="{B4EA5AAD-B462-40CE-8B51-33A74611A627}" Directory_="CallBooked_1_Dir" Attributes="0" KeyPath="Banner_Call.png_1" Type="0"/>
-    <ROW Component="Banner_bottom.png" ComponentId="{AC5230D3-BE89-422F-BCA1-0B3DE5A9EC13}" Directory_="Data1_Dir" Attributes="0" KeyPath="Banner_bottom.png" Type="0"/>
-    <ROW Component="Banner_bottom.png_1" ComponentId="{4E47F58A-5867-437B-B68D-6EA6A1ACB6D2}" Directory_="Data1_1_Dir" Attributes="0" KeyPath="Banner_bottom.png_1" Type="0"/>
-    <ROW Component="Btn_AiSupport.png" ComponentId="{68978225-AFCF-4143-95A4-DC09D3A33E58}" Directory_="Common_4_Dir" Attributes="0" KeyPath="Btn_AiSupport.png" Type="0"/>
-    <ROW Component="Btn_Before.png" ComponentId="{E5837E1D-6E6A-4F64-9B0D-1DBF3C898B8F}" Directory_="Common_2_Dir" Attributes="0" KeyPath="Btn_Before.png" Type="0"/>
-    <ROW Component="Btn_Climate_Off.png" ComponentId="{6F3E2B53-0BEE-4E54-8771-F1E300C83FEE}" Directory_="Common_5_Dir" Attributes="0" KeyPath="Btn_Climate_Off.png" Type="0"/>
-    <ROW Component="Btn_Cool.png" ComponentId="{02D7B95C-949C-4725-99AB-B5286B3B0E63}" Directory_="Temp_Dir" Attributes="0" KeyPath="Btn_Cool.png" Type="0"/>
-    <ROW Component="Btn_Cool.png_1" ComponentId="{1AFCCADA-9073-42DE-BF54-46225690E6C5}" Directory_="Temp_1_Dir" Attributes="0" KeyPath="Btn_Cool.png_1" Type="0"/>
-    <ROW Component="Btn_Getoff.png" ComponentId="{7E2F5295-F064-496D-BA9A-15C3471D0480}" Directory_="Main_1_Dir" Attributes="0" KeyPath="Btn_Getoff.png" Type="0"/>
-    <ROW Component="Btn_Movie.png" ComponentId="{D4E91EF4-91A7-4724-8522-14FDBE81AE62}" Directory_="Mode_Dir" Attributes="0" KeyPath="Btn_Movie.png" Type="0"/>
-    <ROW Component="Btn_Movie.png_1" ComponentId="{9BC58851-C16F-4E67-89D5-D151073A98E7}" Directory_="Mode_1_Dir" Attributes="0" KeyPath="Btn_Movie.png_1" Type="0"/>
-    <ROW Component="Btn_Remote_BTN1.png" ComponentId="{707EABA1-E4DB-4EDD-9C5E-606E21DD8350}" Directory_="Scene1_Dir" Attributes="0" KeyPath="Btn_Remote_BTN1.png" Type="0"/>
-    <ROW Component="Btn_Remote_BTN1.png_1" ComponentId="{F69510AC-FE36-4497-B2E3-756A33537DFF}" Directory_="resource_1_Dir" Attributes="0" KeyPath="Btn_Remote_BTN1.png_1" Type="0"/>
-    <ROW Component="Btn_Remote_BTN1.png_2" ComponentId="{70A39222-6163-43C9-A7A0-37BF7B0238C5}" Directory_="Scene1_2_Dir" Attributes="0" KeyPath="Btn_Remote_BTN1.png_2" Type="0"/>
-    <ROW Component="Btn_Remote_BTN10.png" ComponentId="{E9AE2760-A7A8-4C96-8453-3A3EC7026C24}" Directory_="Scene2_Dir" Attributes="0" KeyPath="Btn_Remote_BTN10.png" Type="0"/>
-    <ROW Component="Btn_Remote_BTN10.png_1" ComponentId="{C729A34F-8E32-4439-B878-26ACCDDDB4BC}" Directory_="Scene2_2_Dir" Attributes="0" KeyPath="Btn_Remote_BTN10.png_2" Type="0"/>
-    <ROW Component="Btn_Trim_Climate_CoolSeat_Off.png" ComponentId="{2DA14EEE-1ADE-47BC-A16B-926E536687DE}" Directory_="Common_3_Dir" Attributes="0" KeyPath="Btn_Trim_Climate_CoolSeat_Off.png" Type="0"/>
     <ROW Component="D3Dcompiler_47.dll" ComponentId="{53A20B04-639D-4AC5-BE45-37DCCBD3DD8F}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="D3Dcompiler_47.dll"/>
     <ROW Component="D3Dcompiler_47.dll_1" ComponentId="{E43FD8AC-A76A-4388-B739-6AA5BE00FC2E}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="D3Dcompiler_47.dll_1"/>
-    <ROW Component="IMG_NaviPopup.png" ComponentId="{886AA692-4F9F-42D0-8741-30357CC7B346}" Directory_="Popup_Dir" Attributes="0" KeyPath="IMG_NaviPopup.png" Type="0"/>
     <ROW Component="Jalnan.ttf" ComponentId="{648C3EAD-77FD-42D7-AB36-0D9E595E352D}" Directory_="font_Dir" Attributes="0" Type="0"/>
-    <ROW Component="Key_pass0.png" ComponentId="{627EA99A-C7AC-4D82-9213-347CB283C9C1}" Directory_="Key_pass_Dir" Attributes="0" KeyPath="Key_pass0.png" Type="0"/>
-    <ROW Component="Key_pass1.png" ComponentId="{DC4ED288-C966-40D7-9E88-C97E148E49F1}" Directory_="Key_pass_1_Dir" Attributes="0" KeyPath="Key_pass1.png_1" Type="0"/>
-    <ROW Component="NUM1.png" ComponentId="{6936085A-A8E3-4CDE-B981-4101C073E4EE}" Directory_="NUM_Dir" Attributes="0" KeyPath="NUM1.png" Type="0"/>
-    <ROW Component="NUM1.png_1" ComponentId="{C50D070F-9491-4511-92E2-314EE6A78ADB}" Directory_="NUM_1_Dir" Attributes="0" KeyPath="NUM1.png_1" Type="0"/>
     <ROW Component="ProductInformation" ComponentId="{A6F03292-0F5F-41A0-BA00-12018B168B7D}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
     <ROW Component="Qt5Bluetooth.dll" ComponentId="{316E6528-ED84-4C57-8525-DC41A2C9A237}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="Qt5Bluetooth.dll"/>
     <ROW Component="Qt5Bluetooth.dll_1" ComponentId="{20243E4D-E38C-464E-83A9-E1E3B79D91C9}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="Qt5Bluetooth.dll_1"/>
@@ -497,17 +143,16 @@
     <ROW Component="Qt5Widgets.dll_1" ComponentId="{9CFF6A26-8DC2-42D1-9F35-7A483198A0F8}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="Qt5Widgets.dll_1"/>
     <ROW Component="QtWebEngineProcess.exe" ComponentId="{9F21D184-601A-4282-B3C6-37E7A53E2A24}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="QtWebEngineProcess.exe"/>
     <ROW Component="QtWebEngineProcess.exe_1" ComponentId="{9184A1D9-7E68-4819-9E12-5D9202A6F14D}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="QtWebEngineProcess.exe_1"/>
-    <ROW Component="SKYBORI.ttf" ComponentId="{10B9EFF4-93AB-44A6-AE0E-F333C8F22F10}" Directory_="font_1_Dir" Attributes="0" Type="0"/>
-    <ROW Component="Trim_turn_popup.png" ComponentId="{D0595ED8-13DD-42CA-808D-10ABD1AC3039}" Directory_="TrimMirror_turnPOPUP_Dir" Attributes="0" KeyPath="Trim_turn_popup.png" Type="0"/>
-    <ROW Component="a.png" ComponentId="{CCBA450F-3D61-40A2-84EB-4A2B433AA126}" Directory_="image_1_Dir" Attributes="0" KeyPath="a.png" Type="0"/>
+    <ROW Component="SKYBORI.ttf" ComponentId="{EE572E0A-78D3-46FA-9304-7660B38D2CC0}" Directory_="font_1_Dir" Attributes="0" Type="0"/>
+    <ROW Component="UINameTag.exe" ComponentId="{27A24E78-4B70-45B8-BC2E-412066BE1299}" Directory_="etc_Dir" Attributes="256" KeyPath="UINameTag.exe"/>
     <ROW Component="am.pak" ComponentId="{C86D0222-BED3-44B9-8CAE-BAE2A25BC0BB}" Directory_="qtwebengine_locales_Dir" Attributes="0" KeyPath="am.pak" Type="0"/>
     <ROW Component="am.pak_1" ComponentId="{F469C7B4-F6EA-4A20-A80E-FF77E910F7C1}" Directory_="qtwebengine_locales_1_Dir" Attributes="0" KeyPath="am.pak_1" Type="0"/>
-    <ROW Component="animation.json" ComponentId="{0AD3BFEF-FA3F-4E6F-9F4A-BA68A2294E7F}" Directory_="widget_Dir" Attributes="0" KeyPath="animation.json" Type="0"/>
+    <ROW Component="animation.json" ComponentId="{3B50A50D-59DE-4A4B-9748-CEB7EE097A87}" Directory_="widget_Dir" Attributes="0" KeyPath="animation.json" Type="0"/>
     <ROW Component="concrt140.dll" ComponentId="{E80A162F-31CC-4FF2-912A-110C83CDCF4B}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="concrt140.dll"/>
     <ROW Component="concrt140.dll_1" ComponentId="{28B9B64D-8E40-481A-85C7-06241985BC9E}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="concrt140.dll_1"/>
     <ROW Component="dsengine.dll" ComponentId="{0C117B21-AD6E-4193-8565-681F2C571B7F}" Directory_="mediaservice_Dir" Attributes="256" KeyPath="dsengine.dll"/>
     <ROW Component="dsengine.dll_1" ComponentId="{171DCF26-0542-409E-A91A-309BE93EE410}" Directory_="mediaservice_1_Dir" Attributes="256" KeyPath="dsengine.dll_1"/>
-    <ROW Component="firebg.html" ComponentId="{F03C4456-E202-4D6B-9A3F-566469648CAC}" Directory_="html_Dir" Attributes="0" KeyPath="firebg.html" Type="0"/>
+    <ROW Component="firebg.html" ComponentId="{A1B47ABE-6577-4B8E-8E3E-EC77B72D9A5E}" Directory_="html_Dir" Attributes="0" KeyPath="firebg.html" Type="0"/>
     <ROW Component="helloapps.exe" ComponentId="{E9CCED84-F9B0-4AA9-84EE-A20168C2C089}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="helloapps.exe"/>
     <ROW Component="icon512.png" ComponentId="{ACFCB000-A20A-4660-9A79-CEC17865E05E}" Directory_="icon_Dir" Attributes="0" KeyPath="icon512.png" Type="0"/>
     <ROW Component="icudtl.dat" ComponentId="{9D4E9811-2412-486B-99B2-AAE41B4B2E04}" Directory_="resources_Dir" Attributes="0" KeyPath="icudtl.dat" Type="0"/>
@@ -516,7 +161,8 @@
     <ROW Component="libEGL.dll_1" ComponentId="{74674DB3-A7EA-434D-8A5A-55C522039AAC}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="libEGL.dll_1"/>
     <ROW Component="libGLESv2.dll" ComponentId="{22E9E22C-6ED8-4BFA-92A5-B6A19E527FF5}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="libGLESv2.dll"/>
     <ROW Component="libGLESv2.dll_1" ComponentId="{6535D2F6-7F09-42AA-973C-08749225AC9C}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="libGLESv2.dll_1"/>
-    <ROW Component="lovelee.mp3" ComponentId="{FC515F38-80D2-499A-A30A-0214262B9EA9}" Directory_="sound_Dir" Attributes="0" KeyPath="lovelee.mp3" Type="0"/>
+    <ROW Component="lovelee.mp3" ComponentId="{56C116D7-E06B-4B31-BC92-A17C12C16048}" Directory_="sound_Dir" Attributes="0" KeyPath="lovelee.mp3" Type="0"/>
+    <ROW Component="main.png" ComponentId="{BC43D59B-AD6E-4D34-82B3-0A1EA8674E56}" Directory_="image_1_Dir" Attributes="0" KeyPath="main.png" Type="0"/>
     <ROW Component="msvcp140.dll" ComponentId="{CCFD2368-E551-409D-9B03-54B9342F31E3}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="msvcp140.dll"/>
     <ROW Component="msvcp140.dll_1" ComponentId="{0E5EF30F-A5D6-44A6-899E-9F6A3286EF9F}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="msvcp140.dll_1"/>
     <ROW Component="msvcp140_1.dll" ComponentId="{AEE1EF53-041B-4723-BE2A-870CF463D0C6}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="msvcp140_1.dll"/>
@@ -572,6 +218,7 @@
     <ROW Component="qwindows.dll_1" ComponentId="{9AD65B76-5438-4CEF-A427-868B32C7EB29}" Directory_="platforms_1_Dir" Attributes="256" KeyPath="qwindows.dll_1"/>
     <ROW Component="qwindowsvistastyle.dll" ComponentId="{4EC75DCC-0480-49F2-8502-C09498BF32AB}" Directory_="styles_Dir" Attributes="256" KeyPath="qwindowsvistastyle.dll"/>
     <ROW Component="qwindowsvistastyle.dll_1" ComponentId="{D2BBA50B-A79E-49E9-8336-857685817E98}" Directory_="styles_1_Dir" Attributes="256" KeyPath="qwindowsvistastyle.dll_1"/>
+    <ROW Component="ui_atlaskey.png" ComponentId="{5407CAD9-11E8-4238-BB38-478AE16DC459}" Directory_="etc_Dir" Attributes="0" KeyPath="ui_atlaskey.png_2" Type="0"/>
     <ROW Component="vccorlib140.dll" ComponentId="{6C526B8E-ED63-4084-B3A2-5696345295AF}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="vccorlib140.dll"/>
     <ROW Component="vccorlib140.dll_1" ComponentId="{A9D65879-7965-448E-94B9-A6BB10A2FFB2}" Directory_="bin_Release64_1_Dir" Attributes="256" KeyPath="vccorlib140.dll_1"/>
     <ROW Component="vcruntime140.dll" ComponentId="{E0D7BFB4-9FBF-4BD8-A7E6-D350CB9AAA11}" Directory_="bin_Release64_Dir" Attributes="256" KeyPath="vcruntime140.dll"/>
@@ -739,464 +386,6 @@
     <ROW File="vcruntime140_1.dll" Component_="vcruntime140_1.dll" FileName="VCRUNT~2.DLL|vcruntime140_1.dll" Attributes="0" SourcePath="zaypro\bin_Release64\vcruntime140_1.dll" SelfReg="false"/>
     <ROW File="vcruntime140_threads.dll" Component_="vcruntime140_threads.dll" FileName="VCRUNT~3.DLL|vcruntime140_threads.dll" Attributes="0" SourcePath="zaypro\bin_Release64\vcruntime140_threads.dll" SelfReg="false"/>
     <ROW File="zaypro.exe" Component_="zaypro.exe" FileName="zaypro.exe" Attributes="0" SourcePath="zaypro\bin_Release64\zaypro.exe" SelfReg="false" DigSign="true"/>
-    <ROW File="SKYBORI.ttf" Component_="SKYBORI.ttf" FileName="SKYBORI.ttf" Attributes="0" SourcePath="helloapps\assets\font\SKYBORI.ttf" SelfReg="false"/>
-    <ROW File="firebg.html" Component_="firebg.html" FileName="FIREBG~1.HTM|firebg.html" Attributes="0" SourcePath="helloapps\assets\html\firebg.html" SelfReg="false"/>
-    <ROW File="firebg.webm" Component_="firebg.html" FileName="FIREBG~1.WEB|firebg.webm" Attributes="0" SourcePath="helloapps\assets\html\firebg.webm" SelfReg="false"/>
-    <ROW File="a.png" Component_="a.png" FileName="a.png" Attributes="0" SourcePath="helloapps\assets\image\a.png" SelfReg="false"/>
-    <ROW File="a_guide.png" Component_="a.png" FileName="a_guide.png" Attributes="0" SourcePath="helloapps\assets\image\a_guide.png" SelfReg="false"/>
-    <ROW File="b.png" Component_="a.png" FileName="b.png" Attributes="0" SourcePath="helloapps\assets\image\b.png" SelfReg="false"/>
-    <ROW File="B_guide.png" Component_="a.png" FileName="B_guide.png" Attributes="0" SourcePath="helloapps\assets\image\B_guide.png" SelfReg="false"/>
-    <ROW File="lobby.png" Component_="a.png" FileName="lobby.png" Attributes="0" SourcePath="helloapps\assets\image\lobby.png" SelfReg="false"/>
-    <ROW File="BG_briBAR.png" Component_="BG_briBAR.png" FileName="BG_BRI~1.PNG|BG_briBAR.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\BG_briBAR.png" SelfReg="false"/>
-    <ROW File="Btn_back.png" Component_="BG_briBAR.png" FileName="Btn_back.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_back.png" SelfReg="false"/>
-    <ROW File="Btn_briBAR.png" Component_="BG_briBAR.png" FileName="BTN_BR~1.PNG|Btn_briBAR.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_briBAR.png" SelfReg="false"/>
-    <ROW File="Btn_B_sel.png" Component_="BG_briBAR.png" FileName="BTN_B_~1.PNG|Btn_B_sel.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_B_sel.png" SelfReg="false"/>
-    <ROW File="Btn_Call.png" Component_="BG_briBAR.png" FileName="Btn_Call.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Call.png" SelfReg="false"/>
-    <ROW File="Btn_CarControl.png" Component_="BG_briBAR.png" FileName="BTN_CA~1.PNG|Btn_CarControl.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_CarControl.png" SelfReg="false"/>
-    <ROW File="Btn_CarOK.png" Component_="BG_briBAR.png" FileName="BTN_CA~2.PNG|Btn_CarOK.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_CarOK.png" SelfReg="false"/>
-    <ROW File="Btn_Change.png" Component_="BG_briBAR.png" FileName="BTN_CH~1.PNG|Btn_Change.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Change.png" SelfReg="false"/>
-    <ROW File="Btn_ChangeStop.png" Component_="BG_briBAR.png" FileName="BTN_CH~2.PNG|Btn_ChangeStop.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_ChangeStop.png" SelfReg="false"/>
-    <ROW File="Btn_Datalink.png" Component_="BG_briBAR.png" FileName="BTN_DA~1.PNG|Btn_Datalink.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Datalink.png" SelfReg="false"/>
-    <ROW File="Btn_EndMirroring.png" Component_="BG_briBAR.png" FileName="BTN_EN~1.PNG|Btn_EndMirroring.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_EndMirroring.png" SelfReg="false"/>
-    <ROW File="Btn_EndRide.png" Component_="BG_briBAR.png" FileName="BTN_EN~2.PNG|Btn_EndRide.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_EndRide.png" SelfReg="false"/>
-    <ROW File="Btn_Keypad.png" Component_="BG_briBAR.png" FileName="BTN_KE~1.PNG|Btn_Keypad.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Keypad.png" SelfReg="false"/>
-    <ROW File="Btn_minus.png" Component_="BG_briBAR.png" FileName="BTN_MI~1.PNG|Btn_minus.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_minus.png" SelfReg="false"/>
-    <ROW File="Btn_Mirroring.png" Component_="BG_briBAR.png" FileName="BTN_MI~2.PNG|Btn_Mirroring.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Mirroring.png" SelfReg="false"/>
-    <ROW File="Btn_Next.png" Component_="BG_briBAR.png" FileName="Btn_Next.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Next.png" SelfReg="false"/>
-    <ROW File="Btn_OK.png" Component_="BG_briBAR.png" FileName="Btn_OK.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_OK.png" SelfReg="false"/>
-    <ROW File="Btn_OK_mini.png" Component_="BG_briBAR.png" FileName="BTN_OK~1.PNG|Btn_OK_mini.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_OK_mini.png" SelfReg="false"/>
-    <ROW File="Btn_ON.png" Component_="BG_briBAR.png" FileName="Btn_ON.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_ON.png" SelfReg="false"/>
-    <ROW File="Btn_Onboard.png" Component_="BG_briBAR.png" FileName="BTN_ON~1.PNG|Btn_Onboard.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Onboard.png" SelfReg="false"/>
-    <ROW File="Btn_Open.png" Component_="BG_briBAR.png" FileName="Btn_Open.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Open.png" SelfReg="false"/>
-    <ROW File="Btn_Open_iferror.png" Component_="BG_briBAR.png" FileName="BTN_OP~1.PNG|Btn_Open_iferror.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Open_iferror.png" SelfReg="false"/>
-    <ROW File="Btn_plus.png" Component_="BG_briBAR.png" FileName="Btn_plus.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_plus.png" SelfReg="false"/>
-    <ROW File="Btn_Reserve.png" Component_="BG_briBAR.png" FileName="BTN_RE~1.PNG|Btn_Reserve.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Reserve.png" SelfReg="false"/>
-    <ROW File="Btn_Retry.png" Component_="BG_briBAR.png" FileName="BTN_RE~2.PNG|Btn_Retry.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Retry.png" SelfReg="false"/>
-    <ROW File="Btn_RideControl.png" Component_="BG_briBAR.png" FileName="BTN_RI~1.PNG|Btn_RideControl.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_RideControl.png" SelfReg="false"/>
-    <ROW File="Btn_SOS.png" Component_="BG_briBAR.png" FileName="Btn_SOS.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_SOS.png" SelfReg="false"/>
-    <ROW File="Btn_Start.png" Component_="BG_briBAR.png" FileName="BTN_ST~1.PNG|Btn_Start.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Start.png" SelfReg="false"/>
-    <ROW File="Btn_Start_unsel.png" Component_="BG_briBAR.png" FileName="BTN_ST~2.PNG|Btn_Start_unsel.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Btn_Start_unsel.png" SelfReg="false"/>
-    <ROW File="Key_pass0.png" Component_="Key_pass0.png" FileName="KEY_PA~1.PNG|Key_pass0.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Key_pass\Key_pass0.png" SelfReg="false"/>
-    <ROW File="Key_pass1.png" Component_="Key_pass0.png" FileName="KEY_PA~2.PNG|Key_pass1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Key_pass\Key_pass1.png" SelfReg="false"/>
-    <ROW File="Key_pass2.png" Component_="Key_pass0.png" FileName="KEY_PA~3.PNG|Key_pass2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Key_pass\Key_pass2.png" SelfReg="false"/>
-    <ROW File="Key_pass3.png" Component_="Key_pass0.png" FileName="KEY_PA~4.PNG|Key_pass3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Key_pass\Key_pass3.png" SelfReg="false"/>
-    <ROW File="Key_pass4.png" Component_="Key_pass0.png" FileName="KEY_PA~5.PNG|Key_pass4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Key_pass\Key_pass4.png" SelfReg="false"/>
-    <ROW File="Btn_Movie.png" Component_="Btn_Movie.png" FileName="BTN_MO~1.PNG|Btn_Movie.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Mode\Btn_Movie.png" SelfReg="false"/>
-    <ROW File="Btn_Rest.png" Component_="Btn_Movie.png" FileName="Btn_Rest.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Mode\Btn_Rest.png" SelfReg="false"/>
-    <ROW File="Btn_Work.png" Component_="Btn_Movie.png" FileName="Btn_Work.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Mode\Btn_Work.png" SelfReg="false"/>
-    <ROW File="NUM1.png" Component_="NUM1.png" FileName="NUM1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\NUM\NUM1.png" SelfReg="false"/>
-    <ROW File="NUM2.png" Component_="NUM1.png" FileName="NUM2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\NUM\NUM2.png" SelfReg="false"/>
-    <ROW File="NUM3.png" Component_="NUM1.png" FileName="NUM3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\NUM\NUM3.png" SelfReg="false"/>
-    <ROW File="NUM4.png" Component_="NUM1.png" FileName="NUM4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\NUM\NUM4.png" SelfReg="false"/>
-    <ROW File="Btn_Cool.png" Component_="Btn_Cool.png" FileName="Btn_Cool.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Temp\Btn_Cool.png" SelfReg="false"/>
-    <ROW File="Btn_Rec.png" Component_="Btn_Cool.png" FileName="Btn_Rec.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Temp\Btn_Rec.png" SelfReg="false"/>
-    <ROW File="Btn_Warm.png" Component_="Btn_Cool.png" FileName="Btn_Warm.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Common\Temp\Btn_Warm.png" SelfReg="false"/>
-    <ROW File="BG_briBAR.png_1" Component_="BG_briBAR.png_1" FileName="BG_BRI~1.PNG|BG_briBAR.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\BG_briBAR.png" SelfReg="false"/>
-    <ROW File="Btn_back.png_1" Component_="BG_briBAR.png_1" FileName="Btn_back.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_back.png" SelfReg="false"/>
-    <ROW File="Btn_briBAR.png_1" Component_="BG_briBAR.png_1" FileName="BTN_BR~1.PNG|Btn_briBAR.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_briBAR.png" SelfReg="false"/>
-    <ROW File="Btn_B_sel.png_1" Component_="BG_briBAR.png_1" FileName="BTN_B_~1.PNG|Btn_B_sel.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_B_sel.png" SelfReg="false"/>
-    <ROW File="Btn_Call.png_1" Component_="BG_briBAR.png_1" FileName="Btn_Call.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Call.png" SelfReg="false"/>
-    <ROW File="Btn_CarControl.png_1" Component_="BG_briBAR.png_1" FileName="BTN_CA~1.PNG|Btn_CarControl.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_CarControl.png" SelfReg="false"/>
-    <ROW File="Btn_CarOK.png_1" Component_="BG_briBAR.png_1" FileName="BTN_CA~2.PNG|Btn_CarOK.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_CarOK.png" SelfReg="false"/>
-    <ROW File="Btn_Change.png_1" Component_="BG_briBAR.png_1" FileName="BTN_CH~1.PNG|Btn_Change.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Change.png" SelfReg="false"/>
-    <ROW File="Btn_ChangeStop.png_1" Component_="BG_briBAR.png_1" FileName="BTN_CH~2.PNG|Btn_ChangeStop.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_ChangeStop.png" SelfReg="false"/>
-    <ROW File="Btn_Datalink.png_1" Component_="BG_briBAR.png_1" FileName="BTN_DA~1.PNG|Btn_Datalink.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Datalink.png" SelfReg="false"/>
-    <ROW File="Btn_EndMirroring.png_1" Component_="BG_briBAR.png_1" FileName="BTN_EN~1.PNG|Btn_EndMirroring.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_EndMirroring.png" SelfReg="false"/>
-    <ROW File="Btn_EndRide.png_1" Component_="BG_briBAR.png_1" FileName="BTN_EN~2.PNG|Btn_EndRide.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_EndRide.png" SelfReg="false"/>
-    <ROW File="Btn_Keypad.png_1" Component_="BG_briBAR.png_1" FileName="BTN_KE~1.PNG|Btn_Keypad.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Keypad.png" SelfReg="false"/>
-    <ROW File="Btn_minus.png_1" Component_="BG_briBAR.png_1" FileName="BTN_MI~1.PNG|Btn_minus.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_minus.png" SelfReg="false"/>
-    <ROW File="Btn_Mirroring.png_1" Component_="BG_briBAR.png_1" FileName="BTN_MI~2.PNG|Btn_Mirroring.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Mirroring.png" SelfReg="false"/>
-    <ROW File="Btn_Next.png_1" Component_="BG_briBAR.png_1" FileName="Btn_Next.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Next.png" SelfReg="false"/>
-    <ROW File="Btn_OK.png_1" Component_="BG_briBAR.png_1" FileName="Btn_OK.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_OK.png" SelfReg="false"/>
-    <ROW File="Btn_OK_mini.png_1" Component_="BG_briBAR.png_1" FileName="BTN_OK~1.PNG|Btn_OK_mini.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_OK_mini.png" SelfReg="false"/>
-    <ROW File="Btn_ON.png_1" Component_="BG_briBAR.png_1" FileName="Btn_ON.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_ON.png" SelfReg="false"/>
-    <ROW File="Btn_Onboard.png_1" Component_="BG_briBAR.png_1" FileName="BTN_ON~1.PNG|Btn_Onboard.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Onboard.png" SelfReg="false"/>
-    <ROW File="Btn_Open.png_1" Component_="BG_briBAR.png_1" FileName="Btn_Open.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Open.png" SelfReg="false"/>
-    <ROW File="Btn_Open_iferror.png_1" Component_="BG_briBAR.png_1" FileName="BTN_OP~1.PNG|Btn_Open_iferror.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Open_iferror.png" SelfReg="false"/>
-    <ROW File="Btn_plus.png_1" Component_="BG_briBAR.png_1" FileName="Btn_plus.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_plus.png" SelfReg="false"/>
-    <ROW File="Btn_Retry.png_1" Component_="BG_briBAR.png_1" FileName="BTN_RE~1.PNG|Btn_Retry.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Retry.png" SelfReg="false"/>
-    <ROW File="Btn_RideControl.png_1" Component_="BG_briBAR.png_1" FileName="BTN_RI~1.PNG|Btn_RideControl.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_RideControl.png" SelfReg="false"/>
-    <ROW File="Btn_SOS.png_1" Component_="BG_briBAR.png_1" FileName="Btn_SOS.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_SOS.png" SelfReg="false"/>
-    <ROW File="Btn_Start.png_1" Component_="BG_briBAR.png_1" FileName="BTN_ST~1.PNG|Btn_Start.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Btn_Start.png" SelfReg="false"/>
-    <ROW File="Key_pass1.png_1" Component_="Key_pass1.png" FileName="KEY_PA~1.PNG|Key_pass1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Key_pass\Key_pass1.png" SelfReg="false"/>
-    <ROW File="Key_pass2.png_1" Component_="Key_pass1.png" FileName="KEY_PA~2.PNG|Key_pass2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Key_pass\Key_pass2.png" SelfReg="false"/>
-    <ROW File="Key_pass3.png_1" Component_="Key_pass1.png" FileName="KEY_PA~3.PNG|Key_pass3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Key_pass\Key_pass3.png" SelfReg="false"/>
-    <ROW File="Key_pass4.png_1" Component_="Key_pass1.png" FileName="KEY_PA~4.PNG|Key_pass4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Key_pass\Key_pass4.png" SelfReg="false"/>
-    <ROW File="Btn_Movie.png_1" Component_="Btn_Movie.png_1" FileName="BTN_MO~1.PNG|Btn_Movie.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Mode\Btn_Movie.png" SelfReg="false"/>
-    <ROW File="Btn_Rest.png_1" Component_="Btn_Movie.png_1" FileName="Btn_Rest.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Mode\Btn_Rest.png" SelfReg="false"/>
-    <ROW File="Btn_Work.png_1" Component_="Btn_Movie.png_1" FileName="Btn_Work.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Mode\Btn_Work.png" SelfReg="false"/>
-    <ROW File="NUM1.png_1" Component_="NUM1.png_1" FileName="NUM1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\NUM\NUM1.png" SelfReg="false"/>
-    <ROW File="NUM2.png_1" Component_="NUM1.png_1" FileName="NUM2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\NUM\NUM2.png" SelfReg="false"/>
-    <ROW File="NUM3.png_1" Component_="NUM1.png_1" FileName="NUM3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\NUM\NUM3.png" SelfReg="false"/>
-    <ROW File="NUM4.png_1" Component_="NUM1.png_1" FileName="NUM4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\NUM\NUM4.png" SelfReg="false"/>
-    <ROW File="Btn_Cool.png_1" Component_="Btn_Cool.png_1" FileName="Btn_Cool.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Temp\Btn_Cool.png" SelfReg="false"/>
-    <ROW File="Btn_Rec.png_1" Component_="Btn_Cool.png_1" FileName="Btn_Rec.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Temp\Btn_Rec.png" SelfReg="false"/>
-    <ROW File="Btn_Warm.png_1" Component_="Btn_Cool.png_1" FileName="Btn_Warm.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Common\Temp\Btn_Warm.png" SelfReg="false"/>
-    <ROW File="BG.png" Component_="BG.png" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\BG.png" SelfReg="false"/>
-    <ROW File="Indicator.png" Component_="BG.png" FileName="INDICA~1.PNG|Indicator.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\Indicator.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN1.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~1.PNG|Btn_Remote_BTN1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN1.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN2.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~2.PNG|Btn_Remote_BTN2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN2.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN3.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~3.PNG|Btn_Remote_BTN3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN3.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN4.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~4.PNG|Btn_Remote_BTN4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN4.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN5.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~5.PNG|Btn_Remote_BTN5.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN5.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN6.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~6.PNG|Btn_Remote_BTN6.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN6.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN7.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~7.PNG|Btn_Remote_BTN7.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN7.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN8.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~8.PNG|Btn_Remote_BTN8.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN8.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN9.png" Component_="Btn_Remote_BTN1.png" FileName="BTN_RE~9.PNG|Btn_Remote_BTN9.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene1\Btn_Remote_BTN9.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN10.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~1.PNG|Btn_Remote_BTN10.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN10.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN11.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~2.PNG|Btn_Remote_BTN11.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN11.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN12.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~3.PNG|Btn_Remote_BTN12.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN12.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN13.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~4.PNG|Btn_Remote_BTN13.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN13.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN14.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~5.PNG|Btn_Remote_BTN14.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN14.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN15.png" Component_="Btn_Remote_BTN10.png" FileName="BTN_RE~6.PNG|Btn_Remote_BTN15.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Remote\resource\Scene2\Btn_Remote_BTN15.png" SelfReg="false"/>
-    <ROW File="BG.png_1" Component_="BG.png_1" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Calling1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_2" Component_="BG.png_2" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Calling2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_3" Component_="BG.png_3" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Calling3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_4" Component_="BG.png_4" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\CarControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_5" Component_="BG.png_5" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Certifying\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_6" Component_="BG.png_6" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\CertSuccess\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_7" Component_="BG.png_7" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Change1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_8" Component_="BG.png_8" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Change2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_9" Component_="BG.png_9" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Change3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_10" Component_="BG.png_10" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Desettings\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_11" Component_="BG.png_11" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\DoorFail\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_12" Component_="BG.png_12" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\EndRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_13" Component_="BG.png_13" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Guide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_14" Component_="BG.png_14" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Mirroring\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_15" Component_="BG.png_15" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Orisettings\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_16" Component_="BG.png_16" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\Passenger\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_17" Component_="BG.png_17" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\POPUP\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_18" Component_="BG.png_18" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\RideControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_19" Component_="BG.png_19" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\RideHome\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_20" Component_="BG.png_20" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\contents\StartRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_21" Component_="BG.png_21" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\Home\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Search.png" Component_="BG.png_21" FileName="BTN_SE~1.PNG|Btn_Search.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene1\Home\Btn_Search.png" SelfReg="false"/>
-    <ROW File="Banner_Call.png" Component_="Banner_Call.png" FileName="BANNER~1.PNG|Banner_Call.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CallBooked\Banner_Call.png" SelfReg="false"/>
-    <ROW File="BG.png_22" Component_="Banner_Call.png" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CallBooked\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_23" Component_="BG.png_22" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Calling1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_24" Component_="BG.png_23" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Calling2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_25" Component_="BG.png_24" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Calling3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_26" Component_="BG.png_25" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CarControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_27" Component_="BG.png_26" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CertFail\BG.png" SelfReg="false"/>
-    <ROW File="Btn_CertRetry.png" Component_="BG.png_26" FileName="BTN_CE~1.PNG|Btn_CertRetry.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CertFail\Btn_CertRetry.png" SelfReg="false"/>
-    <ROW File="Btn_Help.png" Component_="BG.png_26" FileName="Btn_Help.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CertFail\Btn_Help.png" SelfReg="false"/>
-    <ROW File="BG.png_28" Component_="BG.png_27" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Certifying\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_29" Component_="BG.png_28" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\CertSuccess\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_30" Component_="BG.png_29" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Change1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_31" Component_="BG.png_30" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Change2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_32" Component_="BG.png_31" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Change3\BG.png" SelfReg="false"/>
-    <ROW File="Banner_bottom.png" Component_="Banner_bottom.png" FileName="BANNER~1.PNG|Banner_bottom.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data1\Banner_bottom.png" SelfReg="false"/>
-    <ROW File="Banner_Data.png" Component_="Banner_bottom.png" FileName="BANNER~2.PNG|Banner_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data1\Banner_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_33" Component_="Banner_bottom.png" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data1\BG.png" SelfReg="false"/>
-    <ROW File="Card_Data.png" Component_="Banner_bottom.png" FileName="CARD_D~1.PNG|Card_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data1\Card_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_34" Component_="BG.png_32" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data2\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Data.png" Component_="BG.png_32" FileName="Btn_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data2\Btn_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_35" Component_="BG.png_33" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_36" Component_="BG.png_34" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data4\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_37" Component_="BG.png_35" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data5\BG.png" SelfReg="false"/>
-    <ROW File="Btn_detail.png" Component_="BG.png_35" FileName="BTN_DE~1.PNG|Btn_detail.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data5\Btn_detail.png" SelfReg="false"/>
-    <ROW File="BG.png_38" Component_="BG.png_36" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data6\BG.png" SelfReg="false"/>
-    <ROW File="Btn_BookCall.png" Component_="BG.png_36" FileName="BTN_BO~1.PNG|Btn_BookCall.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Data6\Btn_BookCall.png" SelfReg="false"/>
-    <ROW File="BG.png_39" Component_="BG.png_37" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Datalink1\BG.png" SelfReg="false"/>
-    <ROW File="Btn_DataStart.png" Component_="BG.png_37" FileName="BTN_DA~1.PNG|Btn_DataStart.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Datalink1\Btn_DataStart.png" SelfReg="false"/>
-    <ROW File="BG.png_40" Component_="BG.png_38" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Datalink2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_41" Component_="BG.png_39" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Datalink3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_42" Component_="BG.png_40" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\DeSetting\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_43" Component_="BG.png_41" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Guide1\BG.png" SelfReg="false"/>
-    <ROW File="Btn_StopLift.png" Component_="BG.png_41" FileName="BTN_ST~1.PNG|Btn_StopLift.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Guide1\Btn_StopLift.png" SelfReg="false"/>
-    <ROW File="BG.png_44" Component_="BG.png_42" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Guide2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_45" Component_="BG.png_43" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Guide3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_46" Component_="BG.png_44" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Guide4\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_47" Component_="BG.png_45" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Mirroring\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_48" Component_="BG.png_46" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\OriSetting\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_49" Component_="BG.png_47" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Passenger\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_50" Component_="BG.png_48" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\POPUP\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_51" Component_="BG.png_49" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\Reserved\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_52" Component_="BG.png_50" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\ReserveOption\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_53" Component_="BG.png_51" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\RideControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_54" Component_="BG.png_52" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\RideHome1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_55" Component_="BG.png_53" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\RideHome2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_56" Component_="BG.png_54" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\contents\StartRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_57" Component_="BG.png_55" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Mobile\Scene2\Home\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_58" Component_="BG.png_56" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\BG.png" SelfReg="false"/>
-    <ROW File="Indicator.png_1" Component_="BG.png_56" FileName="INDICA~1.PNG|Indicator.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\Indicator.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN1.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~1.PNG|Btn_Remote_BTN1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN1.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN10.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~2.PNG|Btn_Remote_BTN10.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN10.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN11.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~3.PNG|Btn_Remote_BTN11.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN11.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN12.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~4.PNG|Btn_Remote_BTN12.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN12.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN13.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~5.PNG|Btn_Remote_BTN13.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN13.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN14.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~6.PNG|Btn_Remote_BTN14.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN14.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN15.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~7.PNG|Btn_Remote_BTN15.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN15.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN16.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~8.PNG|Btn_Remote_BTN16.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN16.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN17.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_RE~9.PNG|Btn_Remote_BTN17.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN17.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN18.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~10.PNG|Btn_Remote_BTN18.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN18.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN19.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~11.PNG|Btn_Remote_BTN19.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN19.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN2.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~12.PNG|Btn_Remote_BTN2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN2.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN20.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~13.PNG|Btn_Remote_BTN20.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN20.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN21.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~14.PNG|Btn_Remote_BTN21.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN21.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN22.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~15.PNG|Btn_Remote_BTN22.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN22.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN23.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~16.PNG|Btn_Remote_BTN23.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN23.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN24.png" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~17.PNG|Btn_Remote_BTN24.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN24.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN3.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~18.PNG|Btn_Remote_BTN3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN3.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN4.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~19.PNG|Btn_Remote_BTN4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN4.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN5.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~20.PNG|Btn_Remote_BTN5.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN5.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN6.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~21.PNG|Btn_Remote_BTN6.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN6.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN7.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~22.PNG|Btn_Remote_BTN7.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN7.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN8.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~23.PNG|Btn_Remote_BTN8.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN8.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN9.png_1" Component_="Btn_Remote_BTN1.png_1" FileName="BTN_R~24.PNG|Btn_Remote_BTN9.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Btn_Remote_BTN9.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN1.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~1.PNG|Btn_Remote_BTN1.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN1.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN2.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~2.PNG|Btn_Remote_BTN2.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN2.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN3.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~3.PNG|Btn_Remote_BTN3.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN3.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN4.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~4.PNG|Btn_Remote_BTN4.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN4.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN5.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~5.PNG|Btn_Remote_BTN5.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN5.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN6.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~6.PNG|Btn_Remote_BTN6.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN6.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN7.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~7.PNG|Btn_Remote_BTN7.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN7.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN8.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~8.PNG|Btn_Remote_BTN8.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN8.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN9.png_2" Component_="Btn_Remote_BTN1.png_2" FileName="BTN_RE~9.PNG|Btn_Remote_BTN9.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene1\Btn_Remote_BTN9.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN10.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~1.PNG|Btn_Remote_BTN10.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN10.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN11.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~2.PNG|Btn_Remote_BTN11.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN11.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN12.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~3.PNG|Btn_Remote_BTN12.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN12.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN13.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~4.PNG|Btn_Remote_BTN13.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN13.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN14.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~5.PNG|Btn_Remote_BTN14.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN14.png" SelfReg="false"/>
-    <ROW File="Btn_Remote_BTN15.png_2" Component_="Btn_Remote_BTN10.png_1" FileName="BTN_RE~6.PNG|Btn_Remote_BTN15.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Remote\resource\Scene2\Btn_Remote_BTN15.png" SelfReg="false"/>
-    <ROW File="BG.png_59" Component_="BG.png_57" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Arrival\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_60" Component_="BG.png_58" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Calling1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_61" Component_="BG.png_59" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Calling2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_62" Component_="BG.png_60" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Calling3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_63" Component_="BG.png_61" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\CarControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_64" Component_="BG.png_62" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Certifying\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_65" Component_="BG.png_63" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\CertSuccess\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_66" Component_="BG.png_64" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Change1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_67" Component_="BG.png_65" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Change2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_68" Component_="BG.png_66" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Change3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_69" Component_="BG.png_67" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Desettings\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_70" Component_="BG.png_68" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\DoorFail\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_71" Component_="BG.png_69" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\EndRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_72" Component_="BG.png_70" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Guide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_73" Component_="BG.png_71" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Mirroring\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_74" Component_="BG.png_72" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Orisettings\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_75" Component_="BG.png_73" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\Passenger\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_76" Component_="BG.png_74" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\POPUP\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_77" Component_="BG.png_75" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\RideControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_78" Component_="BG.png_76" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\RideHome\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_79" Component_="BG.png_77" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\contents\StartRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_80" Component_="BG.png_78" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\Home\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Search.png_1" Component_="BG.png_78" FileName="BTN_SE~1.PNG|Btn_Search.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene1\Home\Btn_Search.png" SelfReg="false"/>
-    <ROW File="BG.png_81" Component_="BG.png_79" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Arrival\BG.png" SelfReg="false"/>
-    <ROW File="Banner_Call.png_1" Component_="Banner_Call.png_1" FileName="BANNER~1.PNG|Banner_Call.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CallBooked\Banner_Call.png" SelfReg="false"/>
-    <ROW File="BG.png_82" Component_="Banner_Call.png_1" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CallBooked\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_83" Component_="BG.png_80" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Calling1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_84" Component_="BG.png_81" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Calling2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_85" Component_="BG.png_82" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Calling3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_86" Component_="BG.png_83" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CarControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_87" Component_="BG.png_84" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CertFail\BG.png" SelfReg="false"/>
-    <ROW File="Btn_CertRetry.png_1" Component_="BG.png_84" FileName="BTN_CE~1.PNG|Btn_CertRetry.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CertFail\Btn_CertRetry.png" SelfReg="false"/>
-    <ROW File="Btn_Help.png_1" Component_="BG.png_84" FileName="Btn_Help.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CertFail\Btn_Help.png" SelfReg="false"/>
-    <ROW File="BG.png_88" Component_="BG.png_85" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Certifying\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_89" Component_="BG.png_86" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\CertSuccess\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_90" Component_="BG.png_87" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Change1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_91" Component_="BG.png_88" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Change2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_92" Component_="BG.png_89" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Change3\BG.png" SelfReg="false"/>
-    <ROW File="Banner_bottom.png_1" Component_="Banner_bottom.png_1" FileName="BANNER~1.PNG|Banner_bottom.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data1\Banner_bottom.png" SelfReg="false"/>
-    <ROW File="Banner_Data.png_1" Component_="Banner_bottom.png_1" FileName="BANNER~2.PNG|Banner_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data1\Banner_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_93" Component_="Banner_bottom.png_1" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data1\BG.png" SelfReg="false"/>
-    <ROW File="Card_Data.png_1" Component_="Banner_bottom.png_1" FileName="CARD_D~1.PNG|Card_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data1\Card_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_94" Component_="BG.png_90" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data2\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Data.png_1" Component_="BG.png_90" FileName="Btn_Data.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data2\Btn_Data.png" SelfReg="false"/>
-    <ROW File="BG.png_95" Component_="BG.png_91" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_96" Component_="BG.png_92" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data4\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_97" Component_="BG.png_93" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data5\BG.png" SelfReg="false"/>
-    <ROW File="Btn_detail.png_1" Component_="BG.png_93" FileName="BTN_DE~1.PNG|Btn_detail.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data5\Btn_detail.png" SelfReg="false"/>
-    <ROW File="BG.png_98" Component_="BG.png_94" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data6\BG.png" SelfReg="false"/>
-    <ROW File="Btn_BookCall.png_1" Component_="BG.png_94" FileName="BTN_BO~1.PNG|Btn_BookCall.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Data6\Btn_BookCall.png" SelfReg="false"/>
-    <ROW File="BG.png_99" Component_="BG.png_95" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Datalink1\BG.png" SelfReg="false"/>
-    <ROW File="Btn_DataStart.png_1" Component_="BG.png_95" FileName="BTN_DA~1.PNG|Btn_DataStart.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Datalink1\Btn_DataStart.png" SelfReg="false"/>
-    <ROW File="BG.png_100" Component_="BG.png_96" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Datalink2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_101" Component_="BG.png_97" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Datalink3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_102" Component_="BG.png_98" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\DeSetting\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_103" Component_="BG.png_99" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\EndRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_104" Component_="BG.png_100" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Guide1\BG.png" SelfReg="false"/>
-    <ROW File="Btn_StopLift.png_1" Component_="BG.png_100" FileName="BTN_ST~1.PNG|Btn_StopLift.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Guide1\Btn_StopLift.png" SelfReg="false"/>
-    <ROW File="BG.png_105" Component_="BG.png_101" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Guide2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_106" Component_="BG.png_102" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Guide3\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_107" Component_="BG.png_103" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Guide4\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_108" Component_="BG.png_104" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Mirroring\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_109" Component_="BG.png_105" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\OriSetting\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_110" Component_="BG.png_106" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Passenger\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_111" Component_="BG.png_107" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\POPUP\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_112" Component_="BG.png_108" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\Reserved\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_113" Component_="BG.png_109" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\ReserveOption\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_114" Component_="BG.png_110" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\RideControl\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_115" Component_="BG.png_111" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\RideHome1\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_116" Component_="BG.png_112" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\RideHome2\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_117" Component_="BG.png_113" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\contents\StartRide\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_118" Component_="BG.png_114" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Mobile\Scene2\Home\BG.png" SelfReg="false"/>
-    <ROW File="noimg.png_1" Component_="a.png" FileName="noimg.png" Attributes="0" SourcePath="helloapps\assets\image\noimg.png" SelfReg="false"/>
-    <ROW File="BG.png_119" Component_="BG.png_115" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\AAOS\BG.png" SelfReg="false"/>
-    <ROW File="IMG_AAOS.png" Component_="BG.png_115" FileName="IMG_AAOS.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\AAOS\IMG_AAOS.png" SelfReg="false"/>
-    <ROW File="BG.png_120" Component_="BG.png_116" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Call\BG.png" SelfReg="false"/>
-    <ROW File="Btn_receive.png" Component_="BG.png_116" FileName="BTN_RE~1.PNG|Btn_receive.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Call\Btn_receive.png" SelfReg="false"/>
-    <ROW File="Btn_reject.png" Component_="BG.png_116" FileName="BTN_RE~2.PNG|Btn_reject.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Call\Btn_reject.png" SelfReg="false"/>
-    <ROW File="BG.png_121" Component_="BG.png_117" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Care\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Before.png" Component_="Btn_Before.png" FileName="BTN_BE~1.PNG|Btn_Before.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Common\Btn_Before.png" SelfReg="false"/>
-    <ROW File="Btn_Next.png_2" Component_="Btn_Before.png" FileName="Btn_Next.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Common\Btn_Next.png" SelfReg="false"/>
-    <ROW File="Btn_Pause.png" Component_="Btn_Before.png" FileName="BTN_PA~1.PNG|Btn_Pause.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Common\Btn_Pause.png" SelfReg="false"/>
-    <ROW File="Btn_Play.png" Component_="Btn_Before.png" FileName="Btn_Play.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Common\Btn_Play.png" SelfReg="false"/>
-    <ROW File="BG.png_122" Component_="BG.png_118" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Kids\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_123" Component_="BG.png_119" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Care.png" Component_="BG.png_119" FileName="Btn_Care.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_Care.png" SelfReg="false"/>
-    <ROW File="Btn_Kids_Big.png" Component_="BG.png_119" FileName="BTN_KI~1.PNG|Btn_Kids_Big.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_Kids_Big.png" SelfReg="false"/>
-    <ROW File="Btn_Music.png" Component_="BG.png_119" FileName="BTN_MU~1.PNG|Btn_Music.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_Music.png" SelfReg="false"/>
-    <ROW File="Btn_PDF.png" Component_="BG.png_119" FileName="Btn_PDF.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_PDF.png" SelfReg="false"/>
-    <ROW File="Btn_Youtube_Big.png" Component_="BG.png_119" FileName="BTN_YO~1.PNG|Btn_Youtube_Big.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_Youtube_Big.png" SelfReg="false"/>
-    <ROW File="Btn_Youtube_Small.png" Component_="BG.png_119" FileName="BTN_YO~2.PNG|Btn_Youtube_Small.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Main\Btn_Youtube_Small.png" SelfReg="false"/>
-    <ROW File="BG.png_124" Component_="BG.png_120" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\List\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Song1.png" Component_="BG.png_120" FileName="BTN_SO~1.PNG|Btn_Song1.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\List\Btn_Song1.png" SelfReg="false"/>
-    <ROW File="Btn_Song2.png" Component_="BG.png_120" FileName="BTN_SO~2.PNG|Btn_Song2.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\List\Btn_Song2.png" SelfReg="false"/>
-    <ROW File="Btn_Song3.png" Component_="BG.png_120" FileName="BTN_SO~3.PNG|Btn_Song3.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\List\Btn_Song3.png" SelfReg="false"/>
-    <ROW File="BG_Song1.png" Component_="BG_Song1.png" FileName="BG_Song1.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\Player\BG_Song1.png" SelfReg="false"/>
-    <ROW File="BG_Song2.png" Component_="BG_Song1.png" FileName="BG_Song2.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\Player\BG_Song2.png" SelfReg="false"/>
-    <ROW File="BG_Song3.png" Component_="BG_Song1.png" FileName="BG_Song3.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\Player\BG_Song3.png" SelfReg="false"/>
-    <ROW File="Btn_List.png" Component_="BG_Song1.png" FileName="Btn_List.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\Player\Btn_List.png" SelfReg="false"/>
-    <ROW File="Gauge_TimeBar.png" Component_="BG_Song1.png" FileName="GAUGE_~1.PNG|Gauge_TimeBar.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Music\Player\Gauge_TimeBar.png" SelfReg="false"/>
-    <ROW File="BG_List.png" Component_="BG_List.png" FileName="BG_List.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\PDF\BG_List.png" SelfReg="false"/>
-    <ROW File="BG_Show.png" Component_="BG_List.png" FileName="BG_Show.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\PDF\BG_Show.png" SelfReg="false"/>
-    <ROW File="Btn_Close.png" Component_="BG_List.png" FileName="BTN_CL~1.PNG|Btn_Close.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\PDF\Btn_Close.png" SelfReg="false"/>
-    <ROW File="BG.png_125" Component_="BG.png_121" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Control\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Close.png_1" Component_="BG.png_121" FileName="BTN_CL~1.PNG|Btn_Close.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Control\Btn_Close.png" SelfReg="false"/>
-    <ROW File="Gauge_TimeBar.png_1" Component_="BG.png_121" FileName="GAUGE_~1.PNG|Gauge_TimeBar.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Control\Gauge_TimeBar.png" SelfReg="false"/>
-    <ROW File="BG.png_126" Component_="BG.png_122" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\List\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Video1.png" Component_="BG.png_122" FileName="BTN_VI~1.PNG|Btn_Video1.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\List\Btn_Video1.png" SelfReg="false"/>
-    <ROW File="Btn_Video2.png" Component_="BG.png_122" FileName="BTN_VI~2.PNG|Btn_Video2.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\List\Btn_Video2.png" SelfReg="false"/>
-    <ROW File="Btn_Video3.png" Component_="BG.png_122" FileName="BTN_VI~3.PNG|Btn_Video3.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\List\Btn_Video3.png" SelfReg="false"/>
-    <ROW File="BG.png_127" Component_="BG.png_123" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Playing\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Close.png_2" Component_="BG.png_123" FileName="BTN_CL~1.PNG|Btn_Close.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Playing\Btn_Close.png" SelfReg="false"/>
-    <ROW File="Btn_Pause.png_1" Component_="BG.png_123" FileName="BTN_PA~1.PNG|Btn_Pause.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Playing\Btn_Pause.png" SelfReg="false"/>
-    <ROW File="Btn_Play.png_1" Component_="BG.png_123" FileName="Btn_Play.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Playing\Btn_Play.png" SelfReg="false"/>
-    <ROW File="Btn_Status.png" Component_="BG.png_123" FileName="BTN_ST~1.PNG|Btn_Status.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Apps\Youtube\Playing\Btn_Status.png" SelfReg="false"/>
-    <ROW File="BG.png_128" Component_="BG.png_124" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Automation Setting\BG.png" SelfReg="false"/>
-    <ROW File="BG.png_129" Component_="BG.png_125" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\BG.png" SelfReg="false"/>
-    <ROW File="BG_LH.png" Component_="BG_LH.png" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\1depth\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png" Component_="BG_LH.png" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\1depth\BG_RH.png" SelfReg="false"/>
-    <ROW File="Btn_Detail.png_2" Component_="BG_LH.png" FileName="BTN_DE~1.PNG|Btn_Detail.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\1depth\Btn_Detail.png" SelfReg="false"/>
-    <ROW File="IMG_WindPower_LH.png" Component_="BG_LH.png" FileName="IMG_WI~1.PNG|IMG_WindPower_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\1depth\IMG_WindPower_LH.png" SelfReg="false"/>
-    <ROW File="IMG_WindPower_RH.png" Component_="BG_LH.png" FileName="IMG_WI~2.PNG|IMG_WindPower_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\1depth\IMG_WindPower_RH.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_1" Component_="BG_LH.png_1" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_1" Component_="BG_LH.png_1" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\BG_RH.png" SelfReg="false"/>
-    <ROW File="Btn_1Line.png" Component_="BG_LH.png_1" FileName="BTN_1L~1.PNG|Btn_1Line.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Btn_1Line.png" SelfReg="false"/>
-    <ROW File="Btn_Auto_Off.png" Component_="BG_LH.png_1" FileName="BTN_AU~1.PNG|Btn_Auto_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Btn_Auto_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Auto_On.png" Component_="BG_LH.png_1" FileName="BTN_AU~2.PNG|Btn_Auto_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Btn_Auto_On.png" SelfReg="false"/>
-    <ROW File="Btn_Sync_Off.png" Component_="BG_LH.png_1" FileName="BTN_SY~1.PNG|Btn_Sync_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Btn_Sync_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Sync_On.png" Component_="BG_LH.png_1" FileName="BTN_SY~2.PNG|Btn_Sync_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Btn_Sync_On.png" SelfReg="false"/>
-    <ROW File="IMG_WindPower_LH.png_1" Component_="BG_LH.png_1" FileName="IMG_WI~1.PNG|IMG_WindPower_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\IMG_WindPower_LH.png" SelfReg="false"/>
-    <ROW File="IMG_WindPower_RH.png_1" Component_="BG_LH.png_1" FileName="IMG_WI~2.PNG|IMG_WindPower_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\IMG_WindPower_RH.png" SelfReg="false"/>
-    <ROW File="Toggle_Dir.png" Component_="BG_LH.png_1" FileName="TOGGLE~1.PNG|Toggle_Dir.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Toggle_Dir.png" SelfReg="false"/>
-    <ROW File="Toggle_inDir.png" Component_="BG_LH.png_1" FileName="TOGGLE~2.PNG|Toggle_inDir.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\2depth\Toggle_inDir.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_CoolSeat_Off.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~1.PNG|Btn_Trim_Climate_CoolSeat_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_CoolSeat_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_CoolSeat_On_Lv1.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~2.PNG|Btn_Trim_Climate_CoolSeat_On_Lv1.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_CoolSeat_On_Lv1.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_CoolSeat_On_Lv2.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~3.PNG|Btn_Trim_Climate_CoolSeat_On_Lv2.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_CoolSeat_On_Lv2.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_CoolSeat_On_Lv3.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~4.PNG|Btn_Trim_Climate_CoolSeat_On_Lv3.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_CoolSeat_On_Lv3.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_HeatSeat_Off.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~5.PNG|Btn_Trim_Climate_HeatSeat_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_HeatSeat_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_HeatSeat_On_Lv1.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~6.PNG|Btn_Trim_Climate_HeatSeat_On_Lv1.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_HeatSeat_On_Lv1.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_HeatSeat_On_Lv2.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~7.PNG|Btn_Trim_Climate_HeatSeat_On_Lv2.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_HeatSeat_On_Lv2.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_HeatSeat_On_Lv3.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~8.PNG|Btn_Trim_Climate_HeatSeat_On_Lv3.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_HeatSeat_On_Lv3.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_WindDir_Dir.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_TR~9.PNG|Btn_Trim_Climate_WindDir_Dir.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_WindDir_Dir.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_WindDir_Full.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_T~10.PNG|Btn_Trim_Climate_WindDir_Full.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_WindDir_Full.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_WindDir_inDir.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_T~11.PNG|Btn_Trim_Climate_WindDir_inDir.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_WindDir_inDir.png" SelfReg="false"/>
-    <ROW File="Btn_Trim_Climate_WindDir_Not.png" Component_="Btn_Trim_Climate_CoolSeat_Off.png" FileName="BTN_T~12.PNG|Btn_Trim_Climate_WindDir_Not.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Climate\Common\Btn_Trim_Climate_WindDir_Not.png" SelfReg="false"/>
-    <ROW File="Btn_AiSupport.png" Component_="Btn_AiSupport.png" FileName="BTN_AI~1.PNG|Btn_AiSupport.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_AiSupport.png" SelfReg="false"/>
-    <ROW File="Btn_Back.png_2" Component_="Btn_AiSupport.png" FileName="Btn_Back.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_Back.png" SelfReg="false"/>
-    <ROW File="Btn_BackApps.png" Component_="Btn_AiSupport.png" FileName="BTN_BA~1.PNG|Btn_BackApps.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_BackApps.png" SelfReg="false"/>
-    <ROW File="Btn_Backhome.png" Component_="Btn_AiSupport.png" FileName="BTN_BA~2.PNG|Btn_Backhome.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_Backhome.png" SelfReg="false"/>
-    <ROW File="Btn_Link.png" Component_="Btn_AiSupport.png" FileName="Btn_Link.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_Link.png" SelfReg="false"/>
-    <ROW File="Btn_Sound.png" Component_="Btn_AiSupport.png" FileName="BTN_SO~1.PNG|Btn_Sound.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Btn_Sound.png" SelfReg="false"/>
-    <ROW File="Handle_Glass.png" Component_="Btn_AiSupport.png" FileName="HANDLE~1.PNG|Handle_Glass.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Handle_Glass.png" SelfReg="false"/>
-    <ROW File="Handle_Light.png" Component_="Btn_AiSupport.png" FileName="HANDLE~2.PNG|Handle_Light.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Handle_Light.png" SelfReg="false"/>
-    <ROW File="Handle_Temp.png" Component_="Btn_AiSupport.png" FileName="HANDLE~3.PNG|Handle_Temp.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Handle_Temp.png" SelfReg="false"/>
-    <ROW File="Handle_WindPower.png" Component_="Btn_AiSupport.png" FileName="HANDLE~4.PNG|Handle_WindPower.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Common\Handle_WindPower.png" SelfReg="false"/>
-    <ROW File="BG.png_130" Component_="BG.png_126" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\DoorClose\BG.png" SelfReg="false"/>
-    <ROW File="Btn_DoorClose.png" Component_="BG.png_126" FileName="BTN_DO~1.PNG|Btn_DoorClose.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\DoorClose\Btn_DoorClose.png" SelfReg="false"/>
-    <ROW File="BG.png_131" Component_="BG.png_127" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\DoorOpen\BG.png" SelfReg="false"/>
-    <ROW File="Btn_DoorOpen.png" Component_="BG.png_127" FileName="BTN_DO~1.PNG|Btn_DoorOpen.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\DoorOpen\Btn_DoorOpen.png" SelfReg="false"/>
-    <ROW File="BG.png_132" Component_="BG.png_128" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Home\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Climate.png" Component_="BG.png_128" FileName="BTN_CL~1.PNG|Btn_Climate.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Home\Btn_Climate.png" SelfReg="false"/>
-    <ROW File="Btn_Media.png" Component_="BG.png_128" FileName="BTN_ME~1.PNG|Btn_Media.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Home\Btn_Media.png" SelfReg="false"/>
-    <ROW File="Btn_Mood.png" Component_="BG.png_128" FileName="Btn_Mood.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Home\Btn_Mood.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_2" Component_="BG_LH.png_2" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_2" Component_="BG_LH.png_2" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\BG_RH.png" SelfReg="false"/>
-    <ROW File="Btn_Close.png_3" Component_="BG_LH.png_2" FileName="BTN_CL~1.PNG|Btn_Close.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\Btn_Close.png" SelfReg="false"/>
-    <ROW File="IMG_Climate_Gauge_LH.png" Component_="BG_LH.png_2" FileName="IMG_CL~1.PNG|IMG_Climate_Gauge_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\IMG_Climate_Gauge_LH.png" SelfReg="false"/>
-    <ROW File="IMG_Climate_Gauge_RH.png" Component_="BG_LH.png_2" FileName="IMG_CL~2.PNG|IMG_Climate_Gauge_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\IMG_Climate_Gauge_RH.png" SelfReg="false"/>
-    <ROW File="IMG_Mood_Gauge.png" Component_="BG_LH.png_2" FileName="IMG_MO~1.PNG|IMG_Mood_Gauge.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Intergrated Control\IMG_Mood_Gauge.png" SelfReg="false"/>
-    <ROW File="BG.png_133" Component_="BG.png_129" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Link\BG.png" SelfReg="false"/>
-    <ROW File="Btn_No.png" Component_="BG.png_129" FileName="Btn_No.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Link\Btn_No.png" SelfReg="false"/>
-    <ROW File="Btn_Yes.png" Component_="BG.png_129" FileName="Btn_Yes.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Link\Btn_Yes.png" SelfReg="false"/>
-    <ROW File="BG.png_134" Component_="BG.png_130" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\LinkCode\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Climate_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_CL~1.PNG|Btn_Climate_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Climate_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Climate_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_CL~2.PNG|Btn_Climate_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Climate_On.png" SelfReg="false"/>
-    <ROW File="Btn_Light_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_LI~1.PNG|Btn_Light_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Light_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Light_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_LI~2.PNG|Btn_Light_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Light_On.png" SelfReg="false"/>
-    <ROW File="Btn_Music_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_MU~1.PNG|Btn_Music_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Music_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Music_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_MU~2.PNG|Btn_Music_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Music_On.png" SelfReg="false"/>
-    <ROW File="Btn_PartControl.png" Component_="Btn_Climate_Off.png" FileName="BTN_PA~1.PNG|Btn_PartControl.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_PartControl.png" SelfReg="false"/>
-    <ROW File="Btn_Relax_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_RE~1.PNG|Btn_Relax_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Relax_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Relax_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_RE~2.PNG|Btn_Relax_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Relax_On.png" SelfReg="false"/>
-    <ROW File="Btn_Seat_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_SE~1.PNG|Btn_Seat_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Seat_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Seat_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_SE~2.PNG|Btn_Seat_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Seat_On.png" SelfReg="false"/>
-    <ROW File="Btn_Video_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_VI~1.PNG|Btn_Video_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Video_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Video_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_VI~2.PNG|Btn_Video_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Video_On.png" SelfReg="false"/>
-    <ROW File="Btn_Work_Off.png" Component_="Btn_Climate_Off.png" FileName="BTN_WO~1.PNG|Btn_Work_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Work_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Work_On.png" Component_="Btn_Climate_Off.png" FileName="BTN_WO~2.PNG|Btn_Work_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Common\Btn_Work_On.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_3" Component_="BG_LH.png_3" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Default\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_3" Component_="BG_LH.png_3" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Default\BG_RH.png" SelfReg="false"/>
-    <ROW File="IMG_Gauge.png" Component_="BG_LH.png_3" FileName="IMG_GA~1.PNG|IMG_Gauge.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Default\IMG_Gauge.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_4" Component_="BG_LH.png_4" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Relax\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_4" Component_="BG_LH.png_4" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Relax\BG_RH.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_5" Component_="BG_LH.png_5" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Video\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_5" Component_="BG_LH.png_5" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Video\BG_RH.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_6" Component_="BG_LH.png_6" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Work\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_6" Component_="BG_LH.png_6" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\1depth\Work\BG_RH.png" SelfReg="false"/>
-    <ROW File="BG_LH.png_7" Component_="BG_LH.png_7" FileName="BG_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\BG_LH.png" SelfReg="false"/>
-    <ROW File="BG_RH.png_7" Component_="BG_LH.png_7" FileName="BG_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\BG_RH.png" SelfReg="false"/>
-    <ROW File="Btn_Floor_Off.png" Component_="BG_LH.png_7" FileName="BTN_FL~1.PNG|Btn_Floor_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Floor_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Floor_On.png" Component_="BG_LH.png_7" FileName="BTN_FL~2.PNG|Btn_Floor_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Floor_On.png" SelfReg="false"/>
-    <ROW File="Btn_Roof_Off.png" Component_="BG_LH.png_7" FileName="BTN_RO~1.PNG|Btn_Roof_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Roof_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Roof_On.png" Component_="BG_LH.png_7" FileName="BTN_RO~2.PNG|Btn_Roof_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Roof_On.png" SelfReg="false"/>
-    <ROW File="Btn_Smart_Off.png" Component_="BG_LH.png_7" FileName="BTN_SM~1.PNG|Btn_Smart_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Smart_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Smart_On.png" Component_="BG_LH.png_7" FileName="BTN_SM~2.PNG|Btn_Smart_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Smart_On.png" SelfReg="false"/>
-    <ROW File="Btn_Sun_Off.png" Component_="BG_LH.png_7" FileName="BTN_SU~1.PNG|Btn_Sun_Off.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Sun_Off.png" SelfReg="false"/>
-    <ROW File="Btn_Sun_On.png" Component_="BG_LH.png_7" FileName="BTN_SU~2.PNG|Btn_Sun_On.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\Btn_Sun_On.png" SelfReg="false"/>
-    <ROW File="IMG_Floor_LH.png" Component_="BG_LH.png_7" FileName="IMG_FL~1.PNG|IMG_Floor_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Floor_LH.png" SelfReg="false"/>
-    <ROW File="IMG_Floor_RH.png" Component_="BG_LH.png_7" FileName="IMG_FL~2.PNG|IMG_Floor_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Floor_RH.png" SelfReg="false"/>
-    <ROW File="IMG_Roof.png" Component_="BG_LH.png_7" FileName="IMG_Roof.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Roof.png" SelfReg="false"/>
-    <ROW File="IMG_Smart.png" Component_="BG_LH.png_7" FileName="IMG_SM~1.PNG|IMG_Smart.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Smart.png" SelfReg="false"/>
-    <ROW File="IMG_Sun_LH.png" Component_="BG_LH.png_7" FileName="IMG_SU~1.PNG|IMG_Sun_LH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Sun_LH.png" SelfReg="false"/>
-    <ROW File="IMG_Sun_RH.png" Component_="BG_LH.png_7" FileName="IMG_SU~2.PNG|IMG_Sun_RH.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Mood\2depth\IMG_Sun_RH.png" SelfReg="false"/>
-    <ROW File="BG.png_135" Component_="BG.png_131" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Navigation\Common\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Getoff.png" Component_="Btn_Getoff.png" FileName="BTN_GE~1.PNG|Btn_Getoff.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Navigation\Main\Btn_Getoff.png" SelfReg="false"/>
-    <ROW File="IMG_Navigation.png" Component_="Btn_Getoff.png" FileName="IMG_NA~1.PNG|IMG_Navigation.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Navigation\Main\IMG_Navigation.png" SelfReg="false"/>
-    <ROW File="IMG_NaviPopup.png" Component_="IMG_NaviPopup.png" FileName="IMG_NA~1.PNG|IMG_NaviPopup.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Navigation\Popup\IMG_NaviPopup.png" SelfReg="false"/>
-    <ROW File="BG.png_136" Component_="BG.png_132" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver1\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Cancel.png" Component_="BG.png_132" FileName="BTN_CA~1.PNG|Btn_Cancel.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver1\Btn_Cancel.png" SelfReg="false"/>
-    <ROW File="Btn_OK.png_2" Component_="BG.png_132" FileName="Btn_OK.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver1\Btn_OK.png" SelfReg="false"/>
-    <ROW File="BG.png_137" Component_="BG.png_133" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver2\BG.png" SelfReg="false"/>
-    <ROW File="Btn_End.png" Component_="BG.png_133" FileName="Btn_End.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver2\Btn_End.png" SelfReg="false"/>
-    <ROW File="Btn_Restart.png" Component_="BG.png_133" FileName="BTN_RE~1.PNG|Btn_Restart.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\PullOver2\Btn_Restart.png" SelfReg="false"/>
-    <ROW File="BG.png_138" Component_="BG.png_134" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\SOS\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Cancel.png_1" Component_="BG.png_134" FileName="BTN_CA~1.PNG|Btn_Cancel.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\SOS\Btn_Cancel.png" SelfReg="false"/>
-    <ROW File="Btn_Confirm.png" Component_="BG.png_134" FileName="BTN_CO~1.PNG|Btn_Confirm.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\SOS\Btn_Confirm.png" SelfReg="false"/>
-    <ROW File="BG.png_139" Component_="BG.png_135" FileName="BG.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Start Ride\BG.png" SelfReg="false"/>
-    <ROW File="Btn_Startride.png" Component_="BG.png_135" FileName="BTN_ST~1.PNG|Btn_Startride.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\Start Ride\Btn_Startride.png" SelfReg="false"/>
-    <ROW File="Trim_turn_popup.png" Component_="Trim_turn_popup.png" FileName="TRIM_T~1.PNG|Trim_turn_popup.png" Attributes="0" SourcePath="helloapps\assets\image\Trim\TrimMirror_turnPOPUP\Trim_turn_popup.png" SelfReg="false"/>
-    <ROW File="ui_atlaskey.png_1" Component_="a.png" FileName="UI_ATL~1.PNG|ui_atlaskey.png" Attributes="0" SourcePath="helloapps\assets\image\ui_atlaskey.png" SelfReg="false"/>
-    <ROW File="lovelee.mp3" Component_="lovelee.mp3" FileName="lovelee.mp3" Attributes="0" SourcePath="helloapps\assets\sound\lovelee.mp3" SelfReg="false"/>
-    <ROW File="animation.json" Component_="animation.json" FileName="ANIMAT~1.JSO|animation.json" Attributes="0" SourcePath="helloapps\assets\widget\animation.json" SelfReg="false"/>
-    <ROW File="app1.json" Component_="animation.json" FileName="APP1~1.JSO|app1.json" Attributes="0" SourcePath="helloapps\assets\widget\app1.json" SelfReg="false"/>
-    <ROW File="calculator.json" Component_="animation.json" FileName="CALCUL~1.JSO|calculator.json" Attributes="0" SourcePath="helloapps\assets\widget\calculator.json" SelfReg="false"/>
-    <ROW File="data.json" Component_="animation.json" FileName="DATA~1.JSO|data.json" Attributes="0" SourcePath="helloapps\assets\widget\data.json" SelfReg="false"/>
-    <ROW File="flexible.json" Component_="animation.json" FileName="FLEXIB~1.JSO|flexible.json" Attributes="0" SourcePath="helloapps\assets\widget\flexible.json" SelfReg="false"/>
-    <ROW File="kiosk_desk.json" Component_="animation.json" FileName="KIOSK_~1.JSO|kiosk_desk.json" Attributes="0" SourcePath="helloapps\assets\widget\kiosk_desk.json" SelfReg="false"/>
-    <ROW File="kiosk_table.json" Component_="animation.json" FileName="KIOSK_~2.JSO|kiosk_table.json" Attributes="0" SourcePath="helloapps\assets\widget\kiosk_table.json" SelfReg="false"/>
     <ROW File="qtaudio_wasapi.dll_1" Component_="qtaudio_wasapi.dll_1" FileName="QTAUDI~1.DLL|qtaudio_wasapi.dll" Attributes="0" SourcePath="helloapps\bin_Release64\audio\qtaudio_wasapi.dll" SelfReg="false"/>
     <ROW File="qtaudio_windows.dll_1" Component_="qtaudio_windows.dll_1" FileName="QTAUDI~2.DLL|qtaudio_windows.dll" Attributes="0" SourcePath="helloapps\bin_Release64\audio\qtaudio_windows.dll" SelfReg="false"/>
     <ROW File="qgenericbearer.dll_1" Component_="qgenericbearer.dll_1" FileName="QGENER~1.DLL|qgenericbearer.dll" Attributes="0" SourcePath="helloapps\bin_Release64\bearer\qgenericbearer.dll" SelfReg="false"/>
@@ -1336,6 +525,24 @@
     <ROW File="vcruntime140.dll_1" Component_="vcruntime140.dll_1" FileName="VCRUNT~1.DLL|vcruntime140.dll" Attributes="0" SourcePath="helloapps\bin_Release64\vcruntime140.dll" SelfReg="false"/>
     <ROW File="vcruntime140_1.dll_1" Component_="vcruntime140_1.dll_1" FileName="VCRUNT~2.DLL|vcruntime140_1.dll" Attributes="0" SourcePath="helloapps\bin_Release64\vcruntime140_1.dll" SelfReg="false"/>
     <ROW File="vcruntime140_threads.dll_1" Component_="vcruntime140_threads.dll_1" FileName="VCRUNT~3.DLL|vcruntime140_threads.dll" Attributes="0" SourcePath="helloapps\bin_Release64\vcruntime140_threads.dll" SelfReg="false"/>
+    <ROW File="SKYBORI.ttf" Component_="SKYBORI.ttf" FileName="SKYBORI.ttf" Attributes="0" SourcePath="helloapps\assets\font\SKYBORI.ttf" SelfReg="false"/>
+    <ROW File="firebg.html" Component_="firebg.html" FileName="FIREBG~1.HTM|firebg.html" Attributes="0" SourcePath="helloapps\assets\html\firebg.html" SelfReg="false"/>
+    <ROW File="firebg.webm" Component_="firebg.html" FileName="FIREBG~1.WEB|firebg.webm" Attributes="0" SourcePath="helloapps\assets\html\firebg.webm" SelfReg="false"/>
+    <ROW File="main.png" Component_="main.png" FileName="main.png" Attributes="0" SourcePath="helloapps\assets\image\main.png" SelfReg="false"/>
+    <ROW File="noimg.png_1" Component_="main.png" FileName="noimg.png" Attributes="0" SourcePath="helloapps\assets\image\noimg.png" SelfReg="false"/>
+    <ROW File="ui_atlaskey.png_1" Component_="main.png" FileName="UI_ATL~1.PNG|ui_atlaskey.png" Attributes="0" SourcePath="helloapps\assets\image\ui_atlaskey.png" SelfReg="false"/>
+    <ROW File="ui_atlaskey2.png" Component_="main.png" FileName="UI_ATL~2.PNG|ui_atlaskey2.png" Attributes="0" SourcePath="helloapps\assets\image\ui_atlaskey2.png" SelfReg="false"/>
+    <ROW File="lovelee.mp3" Component_="lovelee.mp3" FileName="lovelee.mp3" Attributes="0" SourcePath="helloapps\assets\sound\lovelee.mp3" SelfReg="false"/>
+    <ROW File="animation.json" Component_="animation.json" FileName="ANIMAT~1.JSO|animation.json" Attributes="0" SourcePath="helloapps\assets\widget\animation.json" SelfReg="false"/>
+    <ROW File="app1.json" Component_="animation.json" FileName="APP1~1.JSO|app1.json" Attributes="0" SourcePath="helloapps\assets\widget\app1.json" SelfReg="false"/>
+    <ROW File="calculator.json" Component_="animation.json" FileName="CALCUL~1.JSO|calculator.json" Attributes="0" SourcePath="helloapps\assets\widget\calculator.json" SelfReg="false"/>
+    <ROW File="data.json" Component_="animation.json" FileName="DATA~1.JSO|data.json" Attributes="0" SourcePath="helloapps\assets\widget\data.json" SelfReg="false"/>
+    <ROW File="flexible.json" Component_="animation.json" FileName="FLEXIB~1.JSO|flexible.json" Attributes="0" SourcePath="helloapps\assets\widget\flexible.json" SelfReg="false"/>
+    <ROW File="kiosk_desk.json" Component_="animation.json" FileName="KIOSK_~1.JSO|kiosk_desk.json" Attributes="0" SourcePath="helloapps\assets\widget\kiosk_desk.json" SelfReg="false"/>
+    <ROW File="kiosk_table.json" Component_="animation.json" FileName="KIOSK_~2.JSO|kiosk_table.json" Attributes="0" SourcePath="helloapps\assets\widget\kiosk_table.json" SelfReg="false"/>
+    <ROW File="UINameTag.exe" Component_="UINameTag.exe" FileName="UINAME~1.EXE|UINameTag.exe" Attributes="0" SourcePath="helloapps\etc\UINameTag.exe" SelfReg="false" DigSign="true"/>
+    <ROW File="ui_atlaskey.png_2" Component_="ui_atlaskey.png" FileName="UI_ATL~1.PNG|ui_atlaskey.png" Attributes="0" SourcePath="helloapps\etc\ui_atlaskey.png" SelfReg="false"/>
+    <ROW File="ui_atlaskey2.png_1" Component_="ui_atlaskey.png" FileName="UI_ATL~2.PNG|ui_atlaskey2.png" Attributes="0" SourcePath="helloapps\etc\ui_atlaskey2.png" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
@@ -1378,8 +585,8 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
     <ROW Name="ExternalUICleaner.dll" SourcePath="&lt;AI_CUSTACTS&gt;ExternalUICleaner.dll"/>
     <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
+    <ROW Name="aether.jpg" SourcePath="etc\aether.jpg"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
-    <ROW Name="logo.jpg" SourcePath="etc\logo.jpg"/>
     <ROW Name="lzmaextractor.dll" SourcePath="&lt;AI_CUSTACTS&gt;lzmaextractor.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
@@ -1566,181 +773,11 @@
     <ROW Feature_="MainFeature" Component_="zaypro.exe"/>
     <ROW Feature_="MainFeature" Component_="SKYBORI.ttf"/>
     <ROW Feature_="MainFeature" Component_="firebg.html"/>
-    <ROW Feature_="MainFeature" Component_="a.png"/>
-    <ROW Feature_="MainFeature" Component_="BG_briBAR.png"/>
-    <ROW Feature_="MainFeature" Component_="Key_pass0.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Movie.png"/>
-    <ROW Feature_="MainFeature" Component_="NUM1.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Cool.png"/>
-    <ROW Feature_="MainFeature" Component_="BG_briBAR.png_1"/>
-    <ROW Feature_="MainFeature" Component_="Key_pass1.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Movie.png_1"/>
-    <ROW Feature_="MainFeature" Component_="NUM1.png_1"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Cool.png_1"/>
-    <ROW Feature_="MainFeature" Component_="BG.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Remote_BTN1.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Remote_BTN10.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_1"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_2"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_3"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_4"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_5"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_6"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_7"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_8"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_9"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_10"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_11"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_12"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_13"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_14"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_15"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_16"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_17"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_18"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_19"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_20"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_21"/>
-    <ROW Feature_="MainFeature" Component_="Banner_Call.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_22"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_23"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_24"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_25"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_26"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_27"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_28"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_29"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_30"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_31"/>
-    <ROW Feature_="MainFeature" Component_="Banner_bottom.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_32"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_33"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_34"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_35"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_36"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_37"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_38"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_39"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_40"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_41"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_42"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_43"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_44"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_45"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_46"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_47"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_48"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_49"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_50"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_51"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_52"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_53"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_54"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_55"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_56"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Remote_BTN1.png_1"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Remote_BTN1.png_2"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Remote_BTN10.png_1"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_57"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_58"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_59"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_60"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_61"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_62"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_63"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_64"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_65"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_66"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_67"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_68"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_69"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_70"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_71"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_72"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_73"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_74"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_75"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_76"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_77"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_78"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_79"/>
-    <ROW Feature_="MainFeature" Component_="Banner_Call.png_1"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_80"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_81"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_82"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_83"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_84"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_85"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_86"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_87"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_88"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_89"/>
-    <ROW Feature_="MainFeature" Component_="Banner_bottom.png_1"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_90"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_91"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_92"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_93"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_94"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_95"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_96"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_97"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_98"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_99"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_100"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_101"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_102"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_103"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_104"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_105"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_106"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_107"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_108"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_109"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_110"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_111"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_112"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_113"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_114"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_115"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_116"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_117"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Before.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_118"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_119"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_120"/>
-    <ROW Feature_="MainFeature" Component_="BG_Song1.png"/>
-    <ROW Feature_="MainFeature" Component_="BG_List.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_121"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_122"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_123"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_124"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_125"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_1"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Trim_Climate_CoolSeat_Off.png"/>
-    <ROW Feature_="MainFeature" Component_="Btn_AiSupport.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_126"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_127"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_128"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_2"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_129"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_130"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Climate_Off.png"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_3"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_4"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_5"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_6"/>
-    <ROW Feature_="MainFeature" Component_="BG_LH.png_7"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_131"/>
-    <ROW Feature_="MainFeature" Component_="Btn_Getoff.png"/>
-    <ROW Feature_="MainFeature" Component_="IMG_NaviPopup.png"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_132"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_133"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_134"/>
-    <ROW Feature_="MainFeature" Component_="BG.png_135"/>
-    <ROW Feature_="MainFeature" Component_="Trim_turn_popup.png"/>
+    <ROW Feature_="MainFeature" Component_="main.png"/>
     <ROW Feature_="MainFeature" Component_="lovelee.mp3"/>
     <ROW Feature_="MainFeature" Component_="animation.json"/>
+    <ROW Feature_="MainFeature" Component_="UINameTag.exe"/>
+    <ROW Feature_="MainFeature" Component_="ui_atlaskey.png"/>
     <ROW Feature_="MainFeature" Component_="qtaudio_wasapi.dll_1"/>
     <ROW Feature_="MainFeature" Component_="qtaudio_windows.dll_1"/>
     <ROW Feature_="MainFeature" Component_="qgenericbearer.dll_1"/>
@@ -1900,8 +937,11 @@
     <ROW Shortcut="zaypro_1" Directory_="DesktopFolder" Name="zaypro" Component_="zaypro.exe" Target="[#zaypro.exe]" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="bin_Release64_Dir"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiTextStyleComponent">
-    <ROW TextStyle="BrandingStyle" FaceName="Segoe UI" Size="8" Color="2171376" MultiBuildColor="DefaultBuild:2565927" StyleBits="0" MsiKey="BrandingStyle"/>
-    <ROW TextStyle="InputCtrlFont" FaceName="Segoe UI" Size="8" Color="16777215" MultiBuildColor="DefaultBuild:14079702" StyleBits="0" MsiKey="InputCtrlFont"/>
+    <ROW TextStyle="DlgFont8" FaceName="Segoe UI" Size="11" Color="14079702" MultiBuildColor="DefaultBuild:16777215" StyleBits="0" MsiKey="DlgFont8"/>
+    <ROW TextStyle="ImageButton" FaceName="Segoe UI" Size="11" Color="14079702" MultiBuildColor="DefaultBuild:16777215" StyleBits="1" MsiKey="ImageButton"/>
+    <ROW TextStyle="MetroLink" FaceName="Segoe UI" Size="11" Color="16176031" MultiBuildColor="DefaultBuild:10188287" StyleBits="0" MsiKey="MetroLink"/>
+    <ROW TextStyle="SubTitle" FaceName="Segoe UI" Size="14" Color="14079702" MultiBuildColor="DefaultBuild:16777215" StyleBits="0" MsiKey="SubTitle"/>
+    <ROW TextStyle="SubnoteFont" FaceName="Segoe UI" Size="8" Color="9671571" MultiBuildColor="DefaultBuild:16777215" StyleBits="0" MsiKey="SubnoteFont"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
     <ATTRIBUTE name="UsedTheme" value="surface"/>

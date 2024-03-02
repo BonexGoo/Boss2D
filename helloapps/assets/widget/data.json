@@ -36,8 +36,7 @@
 			"height" : 800,
 			"scale" : 100,
 			"flexible" : 1,
-			"path" : "widget/kiosk_table.json",
-			"atlas" : ["a.png"]
+			"path" : "widget/kiosk_table.json"
 		},
 		{
 			"name" : "키오스크_데스크",
@@ -45,8 +44,7 @@
 			"height" : 800,
 			"scale" : 100,
 			"flexible" : 1,
-			"path" : "widget/kiosk_desk.json",
-			"atlas" : ["b.png"]
+			"path" : "widget/kiosk_desk.json"
 		},
 		{
 			"name" : "App1",

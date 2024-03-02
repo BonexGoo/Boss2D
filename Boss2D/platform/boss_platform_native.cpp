@@ -522,12 +522,12 @@
 
         void Platform::Popup::WebBrowserDialog(chars url)
         {
-            return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
+            PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
         }
 
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
+            PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
         }
 
         void Platform::Popup::CloseProgramDialog(ublock pid)

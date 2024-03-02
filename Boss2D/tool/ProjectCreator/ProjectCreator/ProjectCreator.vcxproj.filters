@@ -65,6 +65,7 @@
     </None>
     <None Include="res\template_basic.zip" />
     <None Include="res\template_daddy.zip" />
+    <None Include="res\template_hugine.zip" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ProjectCreator.ico">

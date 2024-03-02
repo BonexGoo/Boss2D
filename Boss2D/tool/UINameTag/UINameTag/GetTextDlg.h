@@ -20,9 +20,14 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
+	HICON m_hIcon;
+
+	// 생성된 메시지 맵 함수
+	virtual BOOL OnInitDialog();
 	DECLARE_MESSAGE_MAP()
 public:
-	CEdit Text;
 	HGLOBAL NewGlobalBitmap;
+	CComboBox Version;
+	CEdit Text;
 	afx_msg void OnBnClickedOk();
 };

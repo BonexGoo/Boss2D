@@ -23,6 +23,7 @@ namespace BOSS
         ~AtlasSet() {}
         AtlasSet& operator=(const AtlasSet& rhs)
         {
+            KeyVerCode = rhs.KeyVerCode;
             KeyFileName = rhs.KeyFileName;
             AtlasFileName = rhs.AtlasFileName;
             AtlasFolderName = rhs.AtlasFolderName;
@@ -31,6 +32,7 @@ namespace BOSS
             return *this;
         }
     public:
+        sint32 KeyVerCode;
         String KeyFileName;
         String AtlasFileName;
         String AtlasFolderName;
@@ -117,9 +119,10 @@ namespace BOSS
         }
     }
 
-    void R::AddAtlas(chars key_filename, chars map_filename, const Context& ctx)
+    void R::AddAtlas(chars key_filename, chars map_filename, const Context& ctx, sint32 keyver)
     {
         auto& NewAtlasSet = gAtlasSets.AtAdding();
+        NewAtlasSet.KeyVerCode = keyver;
         NewAtlasSet.KeyFileName = key_filename;
         NewAtlasSet.AtlasFileName = map_filename;
         NewAtlasSet.AtlasFolderName = String(map_filename).Replace('.', '_');
@@ -158,7 +161,7 @@ namespace BOSS
             BoxrBuilder Builder;
             uint64 FileSize = 0, ModifyTime = 0;
             if(Asset::Exist(gAtlasDir + gAtlasSets[i].AtlasFileName, nullptr, &FileSize, nullptr, nullptr, &ModifyTime))
-            if(Builder.LoadAtlas(gAtlasDir + gAtlasSets[i].KeyFileName, gAtlasDir + gAtlasSets[i].AtlasFileName, 0 < i))
+            if(Builder.LoadAtlas(gAtlasDir + gAtlasSets[i].KeyFileName, gAtlasDir + gAtlasSets[i].AtlasFileName, 0 < i, gAtlasSets[i].KeyVerCode))
             {
                 gAtlasSets.At(i).FileSize = (sint32) (FileSize & 0x7FFFFFFF);
                 gAtlasSets.At(i).ModifyTime = (sint32) (ModifyTime & 0x7FFFFFFF);

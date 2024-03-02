@@ -643,7 +643,9 @@ void helloappsData::RenderWindowSystem(ZayPanel& panel)
     ZAY_ZOOM(panel, 0.8)
     {
         const bool Hovered = ((panel.state("ui_win_max") & (PS_Focused | PS_Dropping)) == PS_Focused);
-        panel.icon(R((Hovered)? "btn_downsizing_h" : "btn_downsizing_n"), UIA_CenterMiddle);
+        if(m->IsFullScreen())
+            panel.icon(R((Hovered)? "btn_upsizing_h" : "btn_upsizing_n"), UIA_CenterMiddle);
+        else panel.icon(R((Hovered)? "btn_downsizing_h" : "btn_downsizing_n"), UIA_CenterMiddle);
     }
 
     // 종료버튼

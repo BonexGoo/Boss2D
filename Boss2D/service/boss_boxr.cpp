@@ -14,8 +14,11 @@ namespace BOSS
     {
     }
 
-    bool BoxrBuilder::LoadAtlas(chars key_filename, chars map_filename, bool keep_collection)
+    bool BoxrBuilder::LoadAtlas(chars key_filename, chars map_filename, bool keep_collection, sint32 vercode)
     {
+        if(vercode != 1 && vercode != 2)
+            return false;
+
         // 비트맵열기
         id_bitmap KeyBitmap = MakeBitmap(key_filename);
         id_bitmap MapBitmap = MakeBitmap(map_filename);
@@ -25,15 +28,19 @@ namespace BOSS
             Bmp::Remove(MapBitmap);
             return false;
         }
-        LoadAtlasBitmap(KeyBitmap, MapBitmap, keep_collection);
+        LoadAtlasBitmap(KeyBitmap, MapBitmap, keep_collection, vercode);
+
         // 비트맵정리
         Bmp::Remove(KeyBitmap);
         Bmp::Remove(MapBitmap);
         return true;
     }
 
-    Strings BoxrBuilder::LoadAtlasBitmap(id_bitmap_read key_bitmap, id_bitmap_read map_bitmap, bool keep_collection)
+    Strings BoxrBuilder::LoadAtlasBitmap(id_bitmap_read key_bitmap, id_bitmap_read map_bitmap, bool keep_collection, sint32 vercode)
     {
+        if(vercode != 1 && vercode != 2)
+            return Strings();
+
         // Make key bitmaps
         Array<id_bitmap> Keys;
         const sint32 KeyWidth = Bmp::GetWidth(key_bitmap);
@@ -80,11 +87,20 @@ namespace BOSS
 
         // Find filename by key-head
         Strings FileNames;
-        const char KeyChars[] = {
+        const char KeyChars_Ver1[28] = {
             'a', 'b', 'c', 'd', 'e', 'f', 'g',
             'h', 'i', 'j', 'k', 'l', 'm', 'n',
             'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z', '_', '.'};
+        const char KeyChars_Ver2[37] = {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g',
+            'h', 'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z', '_',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        const sint32 KeyCount = (vercode == 1)? 29 : 38;
+        const chars KeyCodes = (vercode == 1)? KeyChars_Ver1 : KeyChars_Ver2;
+
         const sint32 KeyTailWidth = Bmp::GetWidth(Keys[-1]);
         for(sint32 i = 0; i < KeyHeads.Count(); ++i)
         {
@@ -95,7 +111,7 @@ namespace BOSS
             for(sint32 jx = jxbegin; jx < MapWidth; ++jx)
             {
                 if(KeyTailWidth < jx - jxlast) break;
-                else for(sint32 k = 0, kend = sizeof(KeyChars) / sizeof(KeyChars[0]); k < kend; ++k)
+                else for(sint32 k = 0; k < KeyCount; ++k)
                 {
                     const sint32 kWidth = Bmp::GetWidth(Keys[k + 1]);
                     const sint32 kHeight = Bmp::GetHeight(Keys[k + 1]);
@@ -113,7 +129,7 @@ namespace BOSS
                             }
                         if(IsFinded)
                         {
-                            NewFileName += KeyChars[k];
+                            NewFileName += KeyCodes[k];
                             jxlast = jx + kWidth;
                             jx = jx + kWidth - 1;
                             break;
@@ -194,8 +210,11 @@ namespace BOSS
         return Result;
     }
 
-    id_bitmap BoxrBuilder::MakeTagBitmap(chars key_filename, chars tagname)
+    id_bitmap BoxrBuilder::MakeTagBitmap(chars key_filename, chars tagname, sint32 vercode)
     {
+        if(vercode != 1 && vercode != 2)
+            return nullptr;
+
         id_bitmap KeyBitmap = MakeBitmap(key_filename);
         if(!KeyBitmap)
         {
@@ -223,17 +242,26 @@ namespace BOSS
         Array<sint32> MatchedIndex;
         sint32 DstWidth = 0;
         sint32 DstHeight = 0;
-        const char KeyChars[29] = {
+        const char KeyChars_Ver1[29] = {
             '~', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
             'h', 'i', 'j', 'k', 'l', 'm', 'n',
             'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z', '_', '.'};
+        const char KeyChars_Ver2[38] = {
+            '~', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+            'h', 'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z', '_',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        const sint32 KeyCount = (vercode == 1)? 29 : 38;
+        const chars KeyCodes = (vercode == 1)? KeyChars_Ver1 : KeyChars_Ver2;
+
         char CurTagChar = '~';
         while(CurTagChar != '\0')
         {
-            for(sint32 i = 0, iend = sizeof(KeyChars) / sizeof(char); i < iend; ++i)
+            for(sint32 i = 0; i < KeyCount; ++i)
             {
-                if(CurTagChar == KeyChars[i] && i < Keys.Count())
+                if(CurTagChar == KeyCodes[i] && i < Keys.Count())
                 {
                     MatchedIndex.AtAdding() = i;
                     DstWidth += Bmp::GetWidth(Keys[i]) + 1;

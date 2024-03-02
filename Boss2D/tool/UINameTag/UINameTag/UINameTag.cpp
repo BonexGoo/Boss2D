@@ -49,7 +49,6 @@ CUINameTagApp theApp;
 
 // CUINameTagApp 초기화
 
-CGetTextDlg TextDlg;
 BOOL CUINameTagApp::InitInstance()
 {
 	CWinAppEx::InitInstance();
@@ -70,6 +69,7 @@ BOOL CUINameTagApp::InitInstance()
 	SetRegistryKey(_T("UINameTag"));
 	LoadStdProfileSettings(0);  // MRU를 포함하여 표준 INI 파일 옵션을 로드합니다.
 
+	CGetTextDlg TextDlg;
     m_pMainWnd = &TextDlg;
 	TextDlg.DoModal();
 	return TRUE;
