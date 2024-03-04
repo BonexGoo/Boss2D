@@ -58,6 +58,14 @@ namespace BOSS
             {
                 if(!String::Compare(title, "Cursor"))
                     Platform::BroadcastNotify("SetCursor", sint32o(Parser::GetInt(detail)), NT_ZayWidget);
+                else if(!String::Compare(title, "Atlas"))
+                {
+                    Context Json;
+                    Json.At("type").Set("atlas_updated");
+                    Json.At("atlas").LoadJson(SO_OnlyReference, detail);
+                    if(mPipe) Platform::Pipe::SendJson(mPipe, Json.SaveJson());
+                    else mPipeReservers.AtAdding() = Json.SaveJson();
+                }
             }
             else
             {
@@ -226,6 +234,11 @@ namespace BOSS
     void ZayWidget::JumpCall(chars name, sint32 count)
     {
         mZaySon.JumpCall(name, count);
+    }
+
+    void ZayWidget::UpdateAtlas(chars json)
+    {
+        mZaySon.SendAtlas(json);
     }
 
     void ZayWidget::SendLog(chars text)

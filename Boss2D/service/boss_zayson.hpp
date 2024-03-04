@@ -126,6 +126,7 @@ namespace BOSS
 
     public:
         void SendCursor(CursorRole role) const;
+        void SendAtlas(chars json) const;
         void SendInfoLog(chars title, chars detail) const;
         void SendWarningLog(chars title, chars detail) const;
         void SendErrorLog(chars title, chars detail) const;

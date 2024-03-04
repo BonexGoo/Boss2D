@@ -1773,6 +1773,12 @@ namespace BOSS
             mDebugLogger(LogType::Option, "Cursor", String::FromInteger((sint32) role));
     }
 
+    void ZaySon::SendAtlas(chars json) const
+    {
+        if(mDebugLogger != nullptr)
+            mDebugLogger(LogType::Option, "Atlas", json);
+    }
+
     void ZaySon::SendInfoLog(chars title, chars detail) const
     {
         if(mDebugLogger == nullptr)

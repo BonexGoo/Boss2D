@@ -526,7 +526,7 @@ namespace BOSS
         return true;
     }
 
-    id_bitmap Image::ChangeBitmap(id_bitmap bitmap)
+    id_bitmap Image::ChangeBitmap(id_bitmap bitmap, rect128* validrect)
     {
         // 초기화
         id_bitmap OldBitmap = m_bitmap;
@@ -547,7 +547,9 @@ namespace BOSS
         }
 
         // 데이터화
-        MakeData(0, 0, Width, Height);
+        if(validrect)
+            MakeData(validrect->l, validrect->t, validrect->r, validrect->b);
+        else MakeData(0, 0, Width, Height);
         RecalcData();
         return OldBitmap;
     }
