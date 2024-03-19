@@ -883,7 +883,7 @@ namespace BOSS
                 {
                     SolverVariableCB& OneCB = *((SolverVariableCB*) param);
                     const String Variable(ToReference(path->GetPath()));
-                    OneCB(Variable);
+                    OneCB(Variable, data);
                 }, (payload) &cb);
         }
     }
@@ -922,8 +922,11 @@ namespace BOSS
                 for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)
                 {
                     auto& CurVariable = OnePayload.mMatchedVariables[i];
-                    FindedChain->Remove(CurVariable);
-                    cb(CurVariable);
+                    if(auto CurChainPair = FindedChain->Access(CurVariable))
+                    {
+                        cb(CurVariable, CurChainPair);
+                        FindedChain->Remove(CurVariable);
+                    }
                 }
             }
             else for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)

@@ -68,6 +68,7 @@ namespace BOSS
         static String GetComment(chars variable);
         static void SetComment(chars variable, chars text);
         static void SetJson(const Context& json, const String nameheader = "");
+        static void GetJson(Context& json, const String nameheader = "");
         static void RemoveVariables(chars keyword);
         static void BindPipe(id_pipe pipe);
         static void UnbindPipe(id_pipe pipe);

@@ -13,7 +13,6 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_And, Function_Or, Function_Divide, Function_Find}; // [and], [or], [divide], [find]
-    typedef std::function<void(const String& variable)> SolverVariableCB;
 
     // 업데이트체인
     class SolverChainPair
@@ -41,6 +40,7 @@ namespace BOSS
         private: Map<Pair> mObserverMap;
     };
     typedef Map<SolverChainPair> SolverChain;
+    typedef std::function<void(const String& variable, const SolverChainPair* pair)> SolverVariableCB;
 
     // 연산값
     class SolverValue

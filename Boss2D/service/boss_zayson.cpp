@@ -203,6 +203,23 @@ namespace BOSS
         }
     }
 
+    void ZaySonDocument::GetJson(Context& json, const String nameheader)
+    {
+        Context* Json = &json;
+        Solver::FindVariables(mChain, [Json, nameheader](const String& variable, const SolverChainPair* pair)->void
+        {
+            if(pair)
+            if(!String::Compare(variable, nameheader, nameheader.Length()))
+            {
+                if(auto CurTarget = pair->target())
+                {
+                    const auto& CurValue = CurTarget->result().ToText(false, false);
+                    Json->At(variable.Offset(nameheader.Length())).Set(CurValue);
+                }
+            }
+        });
+    }
+
     void ZaySonDocument::Remove(chars variable)
     {
         Solver::Remove(mChain, variable);

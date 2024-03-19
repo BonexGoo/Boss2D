@@ -1255,6 +1255,12 @@ namespace BOSS
         Self.ConfirmUpdate();
     }
 
+    void ZayWidgetDOM::GetJson(Context& json, const String nameheader)
+    {
+        auto& Self = ST();
+        Self.mDocument->GetJson(json, nameheader);
+    }
+
     void ZayWidgetDOM::RemoveVariables(chars keyword)
     {
         auto& Self = ST();
@@ -1269,7 +1275,7 @@ namespace BOSS
         {
             const Array<id_pipe>* PtrPipes = &Pipes;
             Self.mDocument->RemoveMatchedVariables(keyword,
-                [PtrPipes](const String& variable)->void
+                [PtrPipes](const String& variable, const SolverChainPair* pair)->void
                 {
                     for(sint32 i = 0, iend = PtrPipes->Count(); i < iend; ++i)
                         RemoveToPipe((*PtrPipes)[i], variable);
