@@ -12,6 +12,7 @@ namespace BOSS
         Variabler, Commenter, RangeTarget, RangeTimer, // @, ?, ~, :
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
+        Function_Cos, Function_Sin, Function_Tan, Function_Atan, // [cos], [sin], [tan], [atan]
         Function_And, Function_Or, Function_Divide, Function_Find}; // [and], [or], [divide], [find]
 
     // 업데이트체인
@@ -106,6 +107,10 @@ namespace BOSS
         public: SolverValue Function_Max(const SolverValue& rhs) const;
         public: SolverValue Function_Abs(const SolverValue& rhs) const;
         public: SolverValue Function_Pow(const SolverValue& rhs) const;
+        public: SolverValue Function_Cos(const SolverValue& rhs) const;
+        public: SolverValue Function_Sin(const SolverValue& rhs) const;
+        public: SolverValue Function_Tan(const SolverValue& rhs) const;
+        public: SolverValue Function_Atan(const SolverValue& rhs) const;
         public: SolverValue Function_And(const SolverValue& rhs) const;
         public: SolverValue Function_Or(const SolverValue& rhs) const;
         public: SolverValue Function_Divide(const SolverValue& rhs) const;

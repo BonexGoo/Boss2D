@@ -572,6 +572,25 @@ namespace BOSS
                 return panel._push_pass();
             });
 
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "line",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                if(pay.ParamCount() != 5)
+                    return panel._push_pass();
+                auto X1 = pay.Param(0).ToFloat();
+                auto Y1 = pay.Param(1).ToFloat();
+                auto X2 = pay.Param(2).ToFloat();
+                auto Y2 = pay.Param(3).ToFloat();
+                auto Thick = pay.Param(4).ToFloat();
+                panel.line(Point(X1, Y1), Point(X2, Y2), Thick);
+                return panel._push_pass();
+            },
+            "[X1]"
+            "[Y1]"
+            "[X2]"
+            "[Y2]#"
+            "[Thick:1]");
+
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "icon",
             ZAY_DECLARE_COMPONENT(panel, pay, pcb)
             {

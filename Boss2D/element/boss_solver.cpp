@@ -168,6 +168,10 @@ namespace BOSS
             case SolverOperatorType::Function_Max:    collector += "[max] "; break;
             case SolverOperatorType::Function_Abs:    collector += "[abs] "; break;
             case SolverOperatorType::Function_Pow:    collector += "[pow] "; break;
+            case SolverOperatorType::Function_Cos:    collector += "[cos] "; break;
+            case SolverOperatorType::Function_Sin:    collector += "[sin] "; break;
+            case SolverOperatorType::Function_Tan:    collector += "[tan] "; break;
+            case SolverOperatorType::Function_Atan:   collector += "[atan] "; break;
             case SolverOperatorType::Function_And:    collector += "[and] "; break;
             case SolverOperatorType::Function_Or:     collector += "[or] "; break;
             case SolverOperatorType::Function_Divide: collector += "[divide] "; break;
@@ -220,6 +224,10 @@ namespace BOSS
             case SolverOperatorType::Function_Max:    return mOperandL->result(Zero).Function_Max(mOperandR->result(One));
             case SolverOperatorType::Function_Abs:    return mOperandL->result(Zero).Function_Abs(mOperandR->result(One));
             case SolverOperatorType::Function_Pow:    return mOperandL->result(Zero).Function_Pow(mOperandR->result(One));
+            case SolverOperatorType::Function_Cos:    return mOperandL->result(Zero).Function_Cos(mOperandR->result(One));
+            case SolverOperatorType::Function_Sin:    return mOperandL->result(Zero).Function_Sin(mOperandR->result(One));
+            case SolverOperatorType::Function_Tan:    return mOperandL->result(Zero).Function_Tan(mOperandR->result(One));
+            case SolverOperatorType::Function_Atan:   return mOperandL->result(Zero).Function_Atan(mOperandR->result(One));
             case SolverOperatorType::Function_And:    return mOperandL->result(Zero).Function_And(mOperandR->result(One));
             case SolverOperatorType::Function_Or:     return mOperandL->result(Zero).Function_Or(mOperandR->result(One));
             case SolverOperatorType::Function_Divide: return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
@@ -751,6 +759,50 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::Function_Cos(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Cos(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Cos(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeByText("Cos_Error");
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Sin(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Sin(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Sin(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeByText("Sin_Error");
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Tan(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Tan(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Tan(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeByText("Tan_Error");
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Atan(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(Math::Atan(rhs.ToInteger(), ToInteger()));
+        case SolverValueType::Float: return MakeByFloat(Math::Atan(rhs.ToFloat(), ToFloat()));
+        case SolverValueType::Text: return MakeByText("Atan_Error");
+        }
+        return SolverValue();
+    }
+
     SolverValue SolverValue::Function_And(const SolverValue& rhs) const
     {
         switch(GetMergedType(rhs))
@@ -969,8 +1021,10 @@ namespace BOSS
             case SolverOperatorType::LessOrEqual: case SolverOperatorType::Equal: case SolverOperatorType::Different:
                 NewPriority += PriorityCount - 7;
                 break;
-            case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 6순위> [min], [max], [abs], [pow]
+            case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 6순위> [min], [max], [abs], [pow], [cos], [sin], [tan], [atan]
             case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
+            case SolverOperatorType::Function_Cos: case SolverOperatorType::Function_Sin:
+            case SolverOperatorType::Function_Tan: case SolverOperatorType::Function_Atan:
                 NewPriority += PriorityCount - 6;
                 break;
             case SolverOperatorType::Function_And: case SolverOperatorType::Function_Or: // 8순위> [and], [or]
@@ -1082,6 +1136,26 @@ namespace BOSS
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Pow, deep);
                         formula += 5 - 1;
+                    }
+                    jump(!String::Compare("[cos]", formula, 5))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Cos, deep);
+                        formula += 5 - 1;
+                    }
+                    jump(!String::Compare("[sin]", formula, 5))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Sin, deep);
+                        formula += 5 - 1;
+                    }
+                    jump(!String::Compare("[tan]", formula, 5))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Tan, deep);
+                        formula += 5 - 1;
+                    }
+                    jump(!String::Compare("[atan]", formula, 6))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Atan, deep);
+                        formula += 6 - 1;
                     }
                     jump(!String::Compare("[and]", formula, 5))
                     {
