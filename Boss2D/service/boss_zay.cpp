@@ -927,7 +927,7 @@ namespace BOSS
             const sint32 SumTextHeight = (TextHeight + linegap) * LineTexts.Count() - linegap;
             const sint32 XAlignCode = GetXAlignCode(align);
             const sint32 YAlignCode = GetYAlignCode(align);
-            const UIFontAlign AlignX = ((XAlignCode == 0)? UIFA_LeftTop : ((YAlignCode == 1)? UIFA_CenterTop : UIFA_RightTop));
+            const UIFontAlign AlignX = ((XAlignCode == 0)? UIFA_LeftTop : ((XAlignCode == 1)? UIFA_CenterTop : UIFA_RightTop));
             sint32 AddY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - SumTextHeight) / 2 : LastClip.Height() - SumTextHeight));
             for(sint32 i = 0, iend = LineTexts.Count(); i < iend; ++i)
             {
