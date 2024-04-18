@@ -1066,9 +1066,9 @@
         // UTILITY
         ////////////////////////////////////////////////////////////////////////////////
         static bool g_NeedSetRandom = true;
-        uint32 Platform::Utility::Random()
+        uint32 Platform::Utility::Random(bool forcereset)
         {
-            if(g_NeedSetRandom)
+            if(g_NeedSetRandom || forcereset)
             {
                 g_NeedSetRandom = false;
                 qsrand((uint32) (CurrentTimeMsec() & 0xFFFFFFFF));

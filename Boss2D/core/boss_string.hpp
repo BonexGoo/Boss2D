@@ -231,6 +231,10 @@ namespace BOSS
         /// @return 새로운 객체
         String Upper() const;
 
+        /// @brief 버퍼로 저장
+        /// @return 버퍼
+        buffer ToBuffer() const;
+
         /// @brief 파일로 저장
         /// @param filename : 파일명
         /// @param bom : BOM코드 삽입
@@ -258,6 +262,11 @@ namespace BOSS
         /// @param ... : 가변인자
         /// @return 객체
         static String Format(chars text, ...);
+
+        /// @brief 버퍼로드식 객체생성
+        /// @param data : 버퍼
+        /// @return 객체
+        static String FromBuffer(buffer data);
 
         /// @brief 파일로드식 객체생성
         /// @param filename : 파일명

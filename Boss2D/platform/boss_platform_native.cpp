@@ -621,9 +621,9 @@
         // UTILITY
         ////////////////////////////////////////////////////////////////////////////////
         static bool NeedSetRandom = true;
-        uint32 Platform::Utility::Random()
+        uint32 Platform::Utility::Random(bool forcereset)
         {
-            if(NeedSetRandom)
+            if(NeedSetRandom || forcereset)
             {
                 NeedSetRandom = false;
                 BOSS_ASSERT("Further development is needed.", false);

@@ -436,8 +436,9 @@ public:
     {
     public:
         /// @brief 난수 구하기
+        /// @param forcereset : 무조건 랜덤초기화
         /// @return 난수
-        static uint32 Random();
+        static uint32 Random(bool forcereset = false);
 
         /// @brief 슬립처리
         /// @param ms : 밀리초

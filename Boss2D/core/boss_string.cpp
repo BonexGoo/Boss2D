@@ -386,6 +386,11 @@ namespace BOSS
         return String(NewWords);
     }
 
+    buffer String::ToBuffer() const
+    {
+        return ((Share*)(id_share) m_words)->CopiedBuffer();
+    }
+
     bool String::ToFile(chars filename, bool bom) const
     {
         if(id_file TextAsset = Platform::File::OpenForWrite(filename, true))
@@ -541,6 +546,13 @@ namespace BOSS
             BOSS_ASSERT("vsnprintf에서 text의 길이를 추산하지 못함", false);
             Result = "-format error-";
         }
+        return Result;
+    }
+
+    String String::FromBuffer(buffer data)
+    {
+        String Result;
+        Result.m_words = chararray((id_cloned_share_read) Share::Create(data));
         return Result;
     }
 
