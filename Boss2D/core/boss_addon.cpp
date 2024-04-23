@@ -123,6 +123,7 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Curl, SecureSend, void, return, id_curl, chars, chars, chars, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetRedirectUrl, chars, return "", id_curl, chars, sint32, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, SendStream, void, return, id_curl, chars, AddOn::Curl::CurlReadCB, payload)
+    BOSS_DEFINE_ADDON_FUNCTION(Curl, SendMail, bool, return false, id_curl, chars, AddOn::Curl::CurlReadCB, payload, chars, chars, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, FtpUpload, bool, return false, id_curl, chars, chars, buffer)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, FtpDownload, buffer, return nullptr, id_curl, chars, chars)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, FtpDelete, bool, return false, id_curl, chars, chars)
@@ -153,6 +154,9 @@ namespace BOSS
 
     void AddOn::Curl::SendStream(id_curl curl, chars url, CurlReadCB cb, payload data)
     {Core_AddOn_Curl_SendStream()(curl, url, cb, data);}
+
+    bool AddOn::Curl::SendMail(id_curl curl, chars url, CurlReadCB cb, payload data, chars from, chars to, chars cc)
+    {return Core_AddOn_Curl_SendMail()(curl, url, cb, data, from, to, cc);}
 
     bool AddOn::Curl::FtpUpload(id_curl curl, chars url, chars filename, buffer data)
     {return Core_AddOn_Curl_FtpUpload()(curl, url, filename, data);}

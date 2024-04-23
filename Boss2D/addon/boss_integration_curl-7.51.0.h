@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <boss.h>
 
-#define UNICODE
-#define _UNICODE
+#ifndef UNICODE
+    #define UNICODE
+    #define _UNICODE
+#endif
 #include <addon/boss_fakewin.h>
 #include <addon/boss_integration_openssl-1.1.1a.h>
 #include <addon/boss_integration_rtmpdump-2.4.h>

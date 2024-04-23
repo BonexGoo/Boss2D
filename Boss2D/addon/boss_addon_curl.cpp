@@ -29,6 +29,7 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Curl, GetBytes, bytes, id_curl, chars, sint32*, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DECLARE_ADDON_FUNCTION(Curl, GetRedirectUrl, chars, id_curl, chars, sint32, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DECLARE_ADDON_FUNCTION(Curl, SendStream, void, id_curl, chars, AddOn::Curl::CurlReadCB, payload)
+    BOSS_DECLARE_ADDON_FUNCTION(Curl, SendMail, bool, id_curl, chars, AddOn::Curl::CurlReadCB, payload, chars, chars, chars)
     BOSS_DECLARE_ADDON_FUNCTION(Curl, FtpUpload, bool, id_curl, chars, chars, buffer)
     BOSS_DECLARE_ADDON_FUNCTION(Curl, FtpDownload, buffer, id_curl, chars, chars)
     BOSS_DECLARE_ADDON_FUNCTION(Curl, FtpDelete, bool, id_curl, chars, chars)
@@ -46,6 +47,7 @@ namespace BOSS
         Core_AddOn_Curl_GetBytes() = Customized_AddOn_Curl_GetBytes;
         Core_AddOn_Curl_GetRedirectUrl() = Customized_AddOn_Curl_GetRedirectUrl;
         Core_AddOn_Curl_SendStream() = Customized_AddOn_Curl_SendStream;
+        Core_AddOn_Curl_SendMail() = Customized_AddOn_Curl_SendMail;
         Core_AddOn_Curl_FtpUpload() = Customized_AddOn_Curl_FtpUpload;
         Core_AddOn_Curl_FtpDownload() = Customized_AddOn_Curl_FtpDownload;
         Core_AddOn_Curl_FtpDelete() = Customized_AddOn_Curl_FtpDelete;
@@ -350,6 +352,33 @@ namespace BOSS
         curl_easy_setopt(CurCurl, CURLOPT_WRITEFUNCTION, CurlWriteForAssert);
         curl_easy_setopt(CurCurl, CURLOPT_VERBOSE, 1);
         curl_easy_perform(CurCurl);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    bool Customized_AddOn_Curl_SendMail(id_curl curl, chars url, AddOn::Curl::CurlReadCB cb, payload data, chars from, chars to, chars cc)
+    {
+        if(!curl) return false;
+        CURL* CurCurl = ((CurlStruct*) curl)->mId;
+
+        curl_easy_setopt(CurCurl, CURLOPT_URL, url);
+        curl_easy_setopt(CurCurl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(CurCurl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(CurCurl, CURLOPT_UPLOAD, 1);
+        curl_easy_setopt(CurCurl, CURLOPT_READDATA, data);
+        curl_easy_setopt(CurCurl, CURLOPT_READFUNCTION, cb);
+        curl_easy_setopt(CurCurl, CURLOPT_MAIL_FROM, String::Format("<%s>", from));
+        struct curl_slist* Recipients = nullptr;
+        Recipients = curl_slist_append(Recipients, String::Format("<%s>", to));
+        if(cc) Recipients = curl_slist_append(Recipients, String::Format("<%s>", cc));
+        curl_easy_setopt(CurCurl, CURLOPT_MAIL_RCPT, Recipients);
+        curl_easy_setopt(CurCurl, CURLOPT_VERBOSE, 1);
+        CURLcode res = curl_easy_perform(CurCurl);
+
+        if(res != CURLE_OK)
+            BOSS_TRACE("##### SendMail/ERROR - %s", curl_easy_strerror(res));
+
+        curl_slist_free_all(Recipients);
+        return (res == CURLE_OK);
     }
 
     ////////////////////////////////////////////////////////////////////////////////

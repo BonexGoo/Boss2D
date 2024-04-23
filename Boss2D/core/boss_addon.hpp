@@ -83,6 +83,7 @@ namespace BOSS
             static chars GetRedirectUrl(id_curl curl, chars url, sint32 successcode,
                 chars headerdata = nullptr, SendType sendtype = ST_NoSend, chars senddata = nullptr, sint32 datalen = -1);
             static void SendStream(id_curl curl, chars url, CurlReadCB cb, payload data);
+            static bool SendMail(id_curl curl, chars url, CurlReadCB cb, payload data, chars from, chars to, chars cc);
             static bool FtpUpload(id_curl curl, chars url, chars filename, buffer data);
             static buffer FtpDownload(id_curl curl, chars url, chars filename);
             static bool FtpDelete(id_curl curl, chars url, chars filename);
