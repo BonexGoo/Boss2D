@@ -1625,7 +1625,10 @@ namespace BOSS
                         else v->setCapture(n, Self.OnReleaseCapture, (id_cloned_share) domname);
                         // 가능하다면 DOM업데이트
                         if(chars CurText = (renderer)? renderer->GetText(n) : nullptr)
+                        {
                             ZayWidgetDOM::SetComment(domname, CurText);
+                            ZayWidgetDOM::SetValue(domname + ".text", String::Format("'%s'", CurText));
+                        }
                         // DOM → 에디터
                         const String FieldText = ZayWidgetDOM::GetComment(domname);
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
@@ -1808,7 +1811,9 @@ namespace BOSS
                     const String FieldText = ZayWidgetDOM::GetComment(domname);
                     const String FrontText = FieldText.Left(mCapturedCursorIndex);
                     const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                    ZayWidgetDOM::SetComment(domname, FrontText + PastedText + RearText);
+                    const String MergedText = FrontText + PastedText + RearText;
+                    ZayWidgetDOM::SetComment(domname, MergedText);
+                    ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
                     mCapturedCursorIndex += PastedText.Length();
                 }
             }
@@ -1823,7 +1828,9 @@ namespace BOSS
                 const sint32 LetterSize = String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex);
                 const String FrontText = FieldText.Left(mCapturedCursorIndex - LetterSize);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                ZayWidgetDOM::SetComment(domname, FrontText + RearText);
+                const String MergedText = FrontText + RearText;
+                ZayWidgetDOM::SetComment(domname, MergedText);
+                ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
                 mCapturedCursorIndex -= LetterSize;
             }
         }
@@ -1836,7 +1843,9 @@ namespace BOSS
                 const sint32 LetterSize = String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex);
                 const String FrontText = FieldText.Left(mCapturedCursorIndex);
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex - LetterSize));
-                ZayWidgetDOM::SetComment(domname, FrontText + RearText);
+                const String MergedText = FrontText + RearText;
+                ZayWidgetDOM::SetComment(domname, MergedText);
+                ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
             }
         }
         jump(key == 27) // Esc
@@ -1844,6 +1853,7 @@ namespace BOSS
             if(view) view->clearCapture();
             mCapturedIMEChar = L'\0';
             ZayWidgetDOM::SetComment(domname, mCapturedSavedText);
+            ZayWidgetDOM::SetValue(domname + ".text", "'" + mCapturedSavedText + "'");
             mRenderInfoMap.Remove(uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
@@ -1946,7 +1956,9 @@ namespace BOSS
         const String FieldText = ZayWidgetDOM::GetComment(domname);
         const String FrontText = FieldText.Left(mCapturedCursorIndex);
         const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-        ZayWidgetDOM::SetComment(domname, FrontText + added + RearText);
+        const String MergedText = FrontText + added + RearText;
+        ZayWidgetDOM::SetComment(domname, MergedText);
+        ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
 
         const sint32 AddedLength = added.Length();
         mCapturedCursorIndex += AddedLength;
