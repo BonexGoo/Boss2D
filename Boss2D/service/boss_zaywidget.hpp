@@ -111,7 +111,7 @@ namespace BOSS
 
     public:
         static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname,
-            sint32 border, bool enabled, bool ispassword, const ZayExtend::Renderer* renderer = nullptr);
+            sint32 border, bool enabled, bool password, bool dualsave, const ZayExtend::Renderer* renderer = nullptr);
 
     private:
         class ReleaseCaptureInfo
@@ -123,12 +123,14 @@ namespace BOSS
         const String SecretFilter(bool ispassword, chars text) const;
         sint32 RenderText(ZayPanel& panel, const String& uiname, chars text,
             sint32& cursor, sint32 pos, sint32 height, const ZayExtend::Renderer* renderer);
-        void OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key);
-        static void OnReleaseCapture(payload olddata, payload newdata);
-        static void OnReleaseCaptureByRenderer(payload olddata, payload newdata);
         String AddToIME(char key);
-        void FlushIME(const String& domname, const String added);
-        bool FlushSavedIME(const String& domname);
+        void FlushIME(const String& domname, const String added, bool dualsave);
+        bool FlushSavedIME(const String& domname, bool dualsave);
+        void OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key, bool dualsave);
+        template<bool DUALSAVE>
+        static void OnReleaseCapture(payload olddata, payload newdata);
+        template<bool DUALSAVE>
+        static void OnReleaseCaptureByRenderer(payload olddata, payload newdata);
 
     private:
         class RenderInfo
