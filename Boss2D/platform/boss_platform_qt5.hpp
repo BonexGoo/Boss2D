@@ -4430,14 +4430,14 @@
         {
             Q_OBJECT
         public:
-            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore) {}
+            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) {}
             ~PipeServerClass() {}
         };
         class PipeClientClass : public PipeClass
         {
             Q_OBJECT
         public:
-            PipeClientClass(chars name, SharedMemoryClass* semaphore) {}
+            PipeClientClass(chars name, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) {}
             ~PipeClientClass() {}
         };
     #endif
@@ -6045,8 +6045,10 @@
             QString serialNumber() const {return QString();}
         };
         typedef SerialPortInfoForBlank SerialPortInfoClass;
-        class SerialPortForBlank
+        class SerialPortForBlank : public QObject
         {
+            Q_OBJECT
+
         public:
             enum BaudRate {Baud115200};
             enum DataBits {Data8};
@@ -6055,6 +6057,9 @@
             enum FlowControl {NoFlowControl};
             enum SerialPortError {NoError};
         public:
+            SerialPortForBlank()
+            {
+            }
             SerialPortForBlank(const SerialPortInfoClass& info)
             {
             }
@@ -6068,6 +6073,8 @@
             qint64 write(const char* data, qint64 len) {return 0;}
             bool flush() {return false;}
         public: // setter
+            void setPort(const SerialPortInfoClass &serialPortInfo) {}
+            void setPortName(const QString &name) {}
             void setBaudRate(BaudRate baudrate) {}
             void setDataBits(DataBits databits) {}
             void setParity(Parity parity) {}
@@ -6214,11 +6221,13 @@
                         if(*name == '\0')
                             continue;
                     }
-                    else
-                    {
-                        connect(this, &QSerialPort::errorOccurred, this, &SerialClass::OnErrorOccurred);
-                        connect(this, &QSerialPort::readyRead, this, &SerialClass::OnRead);
-                    }
+                    #if !BOSS_WASM
+                        else
+                        {
+                            connect(this, &QSerialPort::errorOccurred, this, &SerialClass::OnErrorOccurred);
+                            connect(this, &QSerialPort::readyRead, this, &SerialClass::OnRead);
+                        }
+                    #endif
                     break;
                 }
             }
@@ -6229,7 +6238,7 @@
         }
 
     private slots:
-        void OnErrorOccurred(QSerialPort::SerialPortError error)
+        void OnErrorOccurred(SerialPortClass::SerialPortError error)
         {
             Platform::BroadcastNotify("error", nullptr, NT_Serial);
         }
@@ -6247,7 +6256,11 @@
     public:
         bool IsValid()
         {
-            return isOpen();
+            #if !BOSS_WASM
+                return isOpen();
+            #else
+                return false;
+            #endif
         }
 
         bool Connected()

@@ -855,7 +855,7 @@ namespace BOSS
                     }
                     return FALSE;
                 #else
-                    return FALSE;
+                    return false;
                 #endif
             }
 
@@ -893,7 +893,7 @@ namespace BOSS
                     }
                     return FALSE;
                 #else
-                    return FALSE;
+                    return false;
                 #endif
             }
 
