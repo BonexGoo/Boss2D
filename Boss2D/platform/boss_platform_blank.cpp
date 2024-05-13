@@ -670,6 +670,12 @@
             return false;
         }
 
+        bool Platform::Utility::BindExtProgram(chars extname, chars programid, chars exepath)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
         chars Platform::Utility::GetArgumentForUrlSchema(chars schema)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

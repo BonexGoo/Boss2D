@@ -488,6 +488,13 @@ public:
         /// @return 성공여부
         static bool BindUrlSchema(chars schema, chars exepath, bool forcewrite = false);
 
+        /// @brief 프로그램을 OS에 확장자연결로 등록
+        /// @param extname : 확장자(예: .bmp, .doc, .zip)
+        /// @param programid : 프로그램의 ID(예: Paint.Picture)
+        /// @param exepath : 레지스트리에 기록할 실행파일의 경로
+        /// @return 성공여부
+        static bool BindExtProgram(chars extname, chars programid, chars exepath);
+
         /// @brief 프로그램에 해당 URL스키마와 함께 들어온 인수를 확인
         /// @param schema : URL스키마(예: http, https, mailto)
         /// @return 프로그램 URL스키마로 동작된 경우 인수반환(없으면 nullptr)

@@ -735,6 +735,12 @@
             return false;
         }
 
+        bool Platform::Utility::BindExtProgram(chars extname, chars programid, chars exepath)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
         chars Platform::Utility::GetArgumentForUrlSchema(chars schema)
         {
             BOSS_ASSERT("Further development is needed.", false);

@@ -1222,6 +1222,8 @@
                 else if(!String::CompareNoCase(((chars) OldValue) + 1, ExePath, ExePath.Length()))
                     return true;
             }
+
+            // 관리자권한이 없으면 실패
             if(!Settings.isWritable())
                 return false;
 
@@ -1240,6 +1242,33 @@
                         Settings.endGroup();
                     Settings.endGroup();
                 Settings.endGroup();
+            }
+            return true;
+        }
+
+        bool Platform::Utility::BindExtProgram(chars extname, chars programid, chars exepath)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_window && g_argv);
+            QSettings Settings1((chars) String::Format("HKEY_CLASSES_ROOT\\%s", extname), QSettings::NativeFormat);
+            QSettings Settings2((chars) String::Format("HKEY_CLASSES_ROOT\\%s", programid), QSettings::NativeFormat);
+            String ExePath = exepath;
+            ExePath.Replace('/', '\\');
+
+            // 관리자권한이 없으면 실패
+            if(!Settings1.isWritable() || !Settings2.isWritable())
+                return false;
+
+            if(0 < ExePath.Length())
+            {
+                Settings1.setValue("Default", programid);
+                Settings2.setValue("Default", (chars) String::Format("%s(%s)", programid, extname));
+                Settings2.beginGroup("shell");
+                    Settings2.beginGroup("open");
+                        Settings2.beginGroup("command");
+                            Settings2.setValue("Default", (chars) ("\"" + ExePath + "\" \"%1\""));
+                        Settings2.endGroup();
+                    Settings2.endGroup();
+                Settings2.endGroup();
             }
             return true;
         }
