@@ -1727,6 +1727,26 @@ namespace BOSS
         return RepaintOnce;
     }
 
+    void ZayControl::KeyPressing(const String& domname, LanguageMode mode, wchar_t code, bool dualsave)
+    {
+        auto& Self = ST();
+        const String IMEResult = Self.AddCodeToIME(mode, code);
+        if(0 < IMEResult.Length())
+            Self.FlushIME(domname, IMEResult, dualsave);
+    }
+
+    void ZayControl::LangTurn(const String& domname, bool dualsave)
+    {
+        auto& Self = ST();
+        Self.FlushSavedIME(domname, dualsave);
+        Self.mLastLanguage = LanguageMode((Self.mLastLanguage + 1) % LM_Max);
+        switch(Self.mLastLanguage)
+        {
+        case LM_English: Platform::BroadcastNotify("LangPressing", String("English"), NT_ZayWidget); break;
+        case LM_Korean: Platform::BroadcastNotify("LangPressing", String("Korean"), NT_ZayWidget); break;
+        }
+    }
+
     const String ZayControl::SecretFilter(bool ispassword, chars text) const
     {
         if(ispassword)
@@ -1766,7 +1786,40 @@ namespace BOSS
         return pos;
     }
 
-    String ZayControl::AddToIME(char key)
+    String ZayControl::AddCodeToIME(LanguageMode mode, wchar_t code)
+    {
+        String Result;
+        if(mode == LM_Korean)
+        {
+            if(code != L'\0')
+            {
+                if(mCapturedIMEChar != L'\0')
+                {
+                    wchars MergeResult = WString::MergeKorean(mCapturedIMEChar, code);
+                    if(MergeResult[1] != L'\0')
+                    {
+                        mCapturedIMEChar = MergeResult[1];
+                        Result += String::FromWChars(WString(MergeResult[0]));
+                    }
+                    else mCapturedIMEChar = MergeResult[0];
+                }
+                else mCapturedIMEChar = code;
+            }
+            else
+            {
+                if(mCapturedIMEChar != L'\0')
+                {
+                    Result += String::FromWChars(WString(mCapturedIMEChar));
+                    mCapturedIMEChar = L'\0';
+                }
+                Result += String::FromWChars((wchars) &code, 1);
+            }
+        }
+        else Result += String::FromWChars((wchars) &code, 1);
+        return Result;
+    }
+
+    String ZayControl::AddKeyToIME(char key)
     {
         String Result;
         if(mLastLanguage == LM_Korean)
@@ -1789,31 +1842,9 @@ namespace BOSS
             case 'u': Code = L'ㅕ'; break; case 'v': Code = L'ㅍ'; break; case 'w': Code = L'ㅈ'; break; case 'x': Code = L'ㅌ'; break;
             case 'y': Code = L'ㅛ'; break; case 'z': Code = L'ㅋ'; break;
             }
-            if(Code != L'\0')
-            {
-                if(mCapturedIMEChar != L'\0')
-                {
-                    wchars MergeResult = WString::MergeKorean(mCapturedIMEChar, Code);
-                    if(MergeResult[1] != L'\0')
-                    {
-                        mCapturedIMEChar = MergeResult[1];
-                        Result += String::FromWChars(WString(MergeResult[0]));
-                    }
-                    else mCapturedIMEChar = MergeResult[0];
-                }
-                else mCapturedIMEChar = Code;
-            }
-            else
-            {
-                if(mCapturedIMEChar != L'\0')
-                {
-                    Result += String::FromWChars(WString(mCapturedIMEChar));
-                    mCapturedIMEChar = L'\0';
-                }
-                Result += key;
-            }
+            Result += AddCodeToIME(LanguageMode::LM_Korean, Code);
         }
-        else Result += key;
+        else Result += AddCodeToIME(LanguageMode::LM_English, *((wchars) WString::FromChars(&key, 1)));
         return Result;
     }
 
@@ -1825,7 +1856,6 @@ namespace BOSS
         const String MergedText = FrontText + added + RearText;
         ZayWidgetDOM::SetComment(domname, MergedText);
         if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
-
         const sint32 AddedLength = added.Length();
         mCapturedCursorIndex += AddedLength;
     }
@@ -1884,8 +1914,7 @@ namespace BOSS
             }
             jump(code == 21) // 한영키
             {
-                FlushSavedIME(domname, dualsave);
-                mLastLanguage = LanguageMode((mLastLanguage + 1) % LM_Max);
+                LangTurn(domname, dualsave);
             }
             jump(code == 113) // F2
             {
@@ -1952,7 +1981,7 @@ namespace BOSS
         }
         else // 문자
         {
-            const String IMEResult = AddToIME(key);
+            const String IMEResult = AddKeyToIME(key);
             if(0 < IMEResult.Length())
                 FlushIME(domname, IMEResult, dualsave);
         }

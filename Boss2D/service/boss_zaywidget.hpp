@@ -105,6 +105,9 @@ namespace BOSS
     /// @brief 제이컨트롤
     class ZayControl
     {
+    public:
+        enum LanguageMode {LM_English, LM_Korean, LM_Max};
+
     private:
         static ZayControl& ST()
         {return *BOSS_STORAGE(ZayControl);}
@@ -112,6 +115,8 @@ namespace BOSS
     public:
         static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname,
             sint32 border, bool enabled, bool password, bool dualsave, const ZayExtend::Renderer* renderer = nullptr);
+        static void KeyPressing(const String& domname, LanguageMode mode, wchar_t code, bool dualsave);
+        static void LangTurn(const String& domname, bool dualsave);
 
     private:
         class ReleaseCaptureInfo
@@ -123,7 +128,8 @@ namespace BOSS
         const String SecretFilter(bool ispassword, chars text) const;
         sint32 RenderText(ZayPanel& panel, const String& uiname, chars text,
             sint32& cursor, sint32 pos, sint32 height, const ZayExtend::Renderer* renderer);
-        String AddToIME(char key);
+        String AddCodeToIME(LanguageMode mode, wchar_t code);
+        String AddKeyToIME(char key);
         void FlushIME(const String& domname, const String added, bool dualsave);
         bool FlushSavedIME(const String& domname, bool dualsave);
         void OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key, bool dualsave);
@@ -291,7 +297,6 @@ namespace BOSS
         sint32 mLastPressCode {0};
         char mLastPressKey {0};
         sint64 mLastPressMsec {0};
-        enum LanguageMode {LM_English, LM_Korean, LM_Max};
         LanguageMode mLastLanguage {LM_English};
     };
 }
