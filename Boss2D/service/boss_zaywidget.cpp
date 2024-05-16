@@ -1650,6 +1650,7 @@ namespace BOSS
                         Self.mCapturedSavedText = FieldText;
                         Self.mCopyAni = 0; // 복사애니중단
                         Self.mLastPressCode = 0; // 키해제
+                        Platform::BroadcastNotify("CapturePressing", String(domname), NT_ZayWidget);
                     }
                     // 커서포커스
                     else if(t == GT_Moving)
@@ -1727,12 +1728,40 @@ namespace BOSS
         return RepaintOnce;
     }
 
-    void ZayControl::KeyPressing(const String& domname, LanguageMode mode, wchar_t code, bool dualsave)
+    void ZayControl::KeyPressing(const String& domname, wchar_t code, bool dualsave)
     {
         auto& Self = ST();
-        const String IMEResult = Self.AddCodeToIME(mode, code);
+        const String IMEResult = Self.AddCodeToIME(code);
         if(0 < IMEResult.Length())
             Self.FlushIME(domname, IMEResult, dualsave);
+    }
+
+    void ZayControl::KeyPressingBack(const String& domname, bool dualsave)
+    {
+        auto& Self = ST();
+        if(Self.mCapturedIMEChar != L'\0')
+            Self.mCapturedIMEChar = WString::BreakKorean(Self.mCapturedIMEChar);
+        else if(0 < Self.mCapturedCursorIndex)
+        {
+            const String FieldText = ZayWidgetDOM::GetComment(domname);
+            const sint32 LetterSize = String::GetLengthOfLastLetter(FieldText, Self.mCapturedCursorIndex);
+            const String FrontText = FieldText.Left(Self.mCapturedCursorIndex - LetterSize);
+            const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - Self.mCapturedCursorIndex));
+            const String MergedText = FrontText + RearText;
+            ZayWidgetDOM::SetComment(domname, MergedText);
+            if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+            Self.mCapturedCursorIndex -= LetterSize;
+        }
+    }
+
+    void ZayControl::KeyPressingEnter(const String& domname, bool dualsave, ZayObject* view)
+    {
+        auto& Self = ST();
+        Self.FlushSavedIME(domname, dualsave);
+        if(view) view->clearCapture();
+        Self.mCopyAni = 0; // 복사애니중단
+        Self.mLastPressCode = 0; // 키해제
+        Platform::BroadcastNotify("EnterPressing", String(domname), NT_ZayWidget);
     }
 
     void ZayControl::LangTurn(const String& domname, bool dualsave)
@@ -1786,10 +1815,10 @@ namespace BOSS
         return pos;
     }
 
-    String ZayControl::AddCodeToIME(LanguageMode mode, wchar_t code)
+    String ZayControl::AddCodeToIME(wchar_t code)
     {
         String Result;
-        if(mode == LM_Korean)
+        if(mLastLanguage == LM_Korean)
         {
             if(code != L'\0')
             {
@@ -1842,9 +1871,9 @@ namespace BOSS
             case 'u': Code = L'ㅕ'; break; case 'v': Code = L'ㅍ'; break; case 'w': Code = L'ㅈ'; break; case 'x': Code = L'ㅌ'; break;
             case 'y': Code = L'ㅛ'; break; case 'z': Code = L'ㅋ'; break;
             }
-            Result += AddCodeToIME(LanguageMode::LM_Korean, Code);
+            Result += AddCodeToIME(Code);
         }
-        else Result += AddCodeToIME(LanguageMode::LM_English, *((wchars) WString::FromChars(&key, 1)));
+        else Result += AddCodeToIME(*((wchars) WString::FromChars(&key, 1)));
         return Result;
     }
 

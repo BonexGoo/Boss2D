@@ -115,7 +115,9 @@ namespace BOSS
     public:
         static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname,
             sint32 border, bool enabled, bool password, bool dualsave, const ZayExtend::Renderer* renderer = nullptr);
-        static void KeyPressing(const String& domname, LanguageMode mode, wchar_t code, bool dualsave);
+        static void KeyPressing(const String& domname, wchar_t code, bool dualsave);
+        static void KeyPressingBack(const String& domname, bool dualsave);
+        static void KeyPressingEnter(const String& domname, bool dualsave, ZayObject* view);
         static void LangTurn(const String& domname, bool dualsave);
 
     private:
@@ -128,7 +130,7 @@ namespace BOSS
         const String SecretFilter(bool ispassword, chars text) const;
         sint32 RenderText(ZayPanel& panel, const String& uiname, chars text,
             sint32& cursor, sint32 pos, sint32 height, const ZayExtend::Renderer* renderer);
-        String AddCodeToIME(LanguageMode mode, wchar_t code);
+        String AddCodeToIME(wchar_t code);
         String AddKeyToIME(char key);
         void FlushIME(const String& domname, const String added, bool dualsave);
         bool FlushSavedIME(const String& domname, bool dualsave);
