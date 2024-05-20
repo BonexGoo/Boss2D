@@ -213,7 +213,7 @@ namespace BOSS
 
             sint32 Utility_EnumPrograms(Context& programs, bool visible_only)
             {
-                #if BOSS_WINDOWS
+                #if BOSS_WINDOWS & !BOSS_WINDOWS_MINGW
                     struct Payload
                     {
                         Context* mPrograms;
@@ -793,7 +793,7 @@ namespace BOSS
 
             sint64 Popup_FindWindowHandle(chars titlename)
             {
-                #if BOSS_WINDOWS
+                #if BOSS_WINDOWS & !BOSS_WINDOWS_MINGW
                     // 윈도우핸들 찾기
                     struct Payload
                     {
