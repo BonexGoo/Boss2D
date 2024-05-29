@@ -823,14 +823,16 @@ namespace BOSS
                     MergedKssm = 0x8000 | (1 << 10) | (2 << 5) | (1);
 
                 if(MergedKssm)
-                {
-                    if(wchars MergedResult = WCharFromKssmFinder((MergedKssm >> 8) & 0xFF, MergedKssm & 0xFF))
-                        return *MergedResult;
-                    return L'\0';
-                }
+                if(wchars MergedResult = WCharFromKssmFinder((MergedKssm >> 8) & 0xFF, MergedKssm & 0xFF))
+                    return *MergedResult;
             }
         }
-        return code;
+        return L'\0';
+    }
+
+    chars_kssm WString::MatchKssm(wchar_t code)
+    {
+        return KssmFinder(code);
     }
 
     sint32 WString::Compare(wchars text, wchars other, sint32 maxlength)

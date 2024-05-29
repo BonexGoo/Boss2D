@@ -1827,19 +1827,36 @@ namespace BOSS
                     wchars MergeResult = WString::MergeKorean(mCapturedIMEChar, code);
                     if(MergeResult[1] != L'\0')
                     {
-                        mCapturedIMEChar = MergeResult[1];
-                        Result += String::FromWChars(WString(MergeResult[0]));
+                        chars_kssm Kssm =  WString::MatchKssm(MergeResult[1]);
+                        const bool IsExtended = (Kssm && (Kssm[0] & 0x80));
+                        if(IsExtended)
+                        {
+                            mCapturedIMEChar = MergeResult[1];
+                            Result += String::FromWChars(WString(MergeResult[0]));
+                        }
+                        else
+                        {
+                            mCapturedIMEChar = L'\0';
+                            Result += String::FromWChars(MergeResult);
+                        }                        
                     }
                     else mCapturedIMEChar = MergeResult[0];
                 }
-                else mCapturedIMEChar = code;
+                else
+                {
+                    chars_kssm Kssm =  WString::MatchKssm(code);
+                    const bool IsExtended = (Kssm && (Kssm[0] & 0x80));
+                    if(IsExtended)
+                        mCapturedIMEChar = code;
+                    else Result += String::FromWChars(WString(code));
+                }
             }
             else
             {
                 if(mCapturedIMEChar != L'\0')
                 {
-                    Result += String::FromWChars(WString(mCapturedIMEChar));
                     mCapturedIMEChar = L'\0';
+                    Result += String::FromWChars(WString(mCapturedIMEChar));
                 }
                 Result += String::FromWChars((wchars) &code, 1);
             }

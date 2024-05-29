@@ -33,6 +33,10 @@
     extern jobject GetAndroidApplicationActivity();
 #endif
 
+#if BOSS_WASM
+    #include <uuid/uuid.h>
+#endif
+
 namespace BOSS
 {
     namespace PlatformImpl
@@ -312,9 +316,16 @@ namespace BOSS
                             It++;
                         }
                     }
+                #elif BOSS_WASM
+                    OSCode16 &= 0x03;
+                    uuid_t UuidHandle;
+                    uuid_generate(UuidHandle);
+                    char UuidText[36 + 1]; // 3fb17ebc-bc38-4939-bc8b-74f2443281d4
+                    uuid_unparse(UuidHandle, UuidText);
+                    StringCollector("Uuid") = UuidText;
                 #else
                     OSCode16 &= 0x00;
-                    StringCollector.AtAdding() = "null";
+                    StringCollector("Unknown") = "null";
                 #endif
 
                 // 핑거프린트화

@@ -188,6 +188,11 @@ namespace BOSS
         /// @return 제거된 결과
         static wchar_t BreakKorean(wchar_t code);
 
+        /// @brief 대상 코드를 Kssm형 문자로 컨버팅하여 반환
+        /// @param code : 대상 코드
+        /// @return Kssm형 문자(실패시 nullptr)
+        static chars_kssm MatchKssm(wchar_t code);
+
         /// @brief wcscmp식 비교
         /// @param text : 원본 와이드스트링
         /// @param other : 비교할 와이드스트링
