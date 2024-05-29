@@ -635,7 +635,13 @@
                 return;
             }
             if(!event->isAutoRepeat())
-                key(event->nativeVirtualKey(), event->text().toUtf8().constData(), true);
+            {
+                #if BOSS_WASM
+                    key(event->key(), event->text().toUtf8().constData(), true);
+                #else
+                    key(event->nativeVirtualKey(), event->text().toUtf8().constData(), true);
+                #endif
+            }
         }
 
         void keyReleaseEvent(QKeyEvent* event)
@@ -646,7 +652,13 @@
                 return;
             }
             if(!event->isAutoRepeat())
-                key(event->nativeVirtualKey(), event->text().toUtf8().constData(), false);
+            {
+                #if BOSS_WASM
+                    key(event->key(), event->text().toUtf8().constData(), false);
+                #else
+                    key(event->nativeVirtualKey(), event->text().toUtf8().constData(), false);
+                #endif
+            }
         }
 
     private:

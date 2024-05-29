@@ -1920,64 +1920,60 @@ namespace BOSS
     void ZayControl::OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key, bool dualsave)
     {
         branch;
-        jump(key == '\0')
+        jump((code == 37 && key == '\0') || code == 16777234) // Left
         {
-            branch;
-            jump(code == 37) // Left
+            FlushSavedIME(domname, dualsave);
+            if(0 < mCapturedCursorIndex)
             {
-                FlushSavedIME(domname, dualsave);
-                if(0 < mCapturedCursorIndex)
-                {
-                    const String FieldText = ZayWidgetDOM::GetComment(domname);
-                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
-                    mCapturedCursorIndex = Math::Max(0, mCapturedCursorIndex - String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex));
-                }
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
+                mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
+                mCapturedCursorIndex = Math::Max(0, mCapturedCursorIndex - String::GetLengthOfLastLetter(FieldText, mCapturedCursorIndex));
             }
-            jump(code == 39) // Right
+        }
+        jump((code == 39 && key == '\0') || code == 16777236) // Right
+        {
+            if(!FlushSavedIME(domname, dualsave))
             {
-                if(!FlushSavedIME(domname, dualsave))
-                {
-                    const String FieldText = ZayWidgetDOM::GetComment(domname);
-                    const sint32 FieldTextLength = FieldText.Length();
-                    if(mCapturedCursorIndex < FieldTextLength)
-                    {
-                        mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
-                        mCapturedCursorIndex = Math::Min(mCapturedCursorIndex + String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex), FieldTextLength);
-                    }
-                }
-            }
-            jump(code == 36) // Home
-            {
-                FlushSavedIME(domname, dualsave);
-                mCapturedCursorIndex = 0;
-            }
-            jump(code == 35) // End
-            {
-                FlushSavedIME(domname, dualsave);
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const sint32 FieldTextLength = FieldText.Length();
-                mCapturedCursorIndex = FieldTextLength;
-            }
-            jump(code == 21) // 한영키
-            {
-                LangTurn(domname, dualsave);
-            }
-            jump(code == 113) // F2
-            {
-                String PastedText = Platform::Utility::RecvFromTextClipboard();
-                if(0 < PastedText.Length())
+                if(mCapturedCursorIndex < FieldTextLength)
                 {
-                    const String FieldText = ZayWidgetDOM::GetComment(domname);
-                    const String FrontText = FieldText.Left(mCapturedCursorIndex);
-                    const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
-                    const String MergedText = FrontText + PastedText + RearText;
-                    ZayWidgetDOM::SetComment(domname, MergedText);
-                    if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
-                    mCapturedCursorIndex += PastedText.Length();
+                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex, FieldText.Length());
+                    mCapturedCursorIndex = Math::Min(mCapturedCursorIndex + String::GetLengthOfFirstLetter(chars(FieldText) + mCapturedCursorIndex), FieldTextLength);
                 }
             }
         }
-        jump(key == 8) // BackSpace
+        jump((code == 36 && key == '\0') || code == 16777232) // Home
+        {
+            FlushSavedIME(domname, dualsave);
+            mCapturedCursorIndex = 0;
+        }
+        jump((code == 35 && key == '\0') || code == 16777233) // End
+        {
+            FlushSavedIME(domname, dualsave);
+            const String FieldText = ZayWidgetDOM::GetComment(domname);
+            const sint32 FieldTextLength = FieldText.Length();
+            mCapturedCursorIndex = FieldTextLength;
+        }
+        jump((code == 21 && key == '\0') || code == 33554431) // 한영키 or 한자키
+        {
+            LangTurn(domname, dualsave);
+        }
+        jump((code == 113 && key == '\0') || code == 16777265) // F2
+        {
+            String PastedText = Platform::Utility::RecvFromTextClipboard();
+            if(0 < PastedText.Length())
+            {
+                const String FieldText = ZayWidgetDOM::GetComment(domname);
+                const String FrontText = FieldText.Left(mCapturedCursorIndex);
+                const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
+                const String MergedText = FrontText + PastedText + RearText;
+                ZayWidgetDOM::SetComment(domname, MergedText);
+                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+                mCapturedCursorIndex += PastedText.Length();
+            }
+        }
+        jump(key == 8 || code == 16777219) // BackSpace
         {
             if(mCapturedIMEChar != L'\0')
                 mCapturedIMEChar = WString::BreakKorean(mCapturedIMEChar);
@@ -1993,7 +1989,7 @@ namespace BOSS
                 mCapturedCursorIndex -= LetterSize;
             }
         }
-        jump(key == 127) // Delete
+        jump(key == 127 || code == 16777223) // Delete
         {
             const String FieldText = ZayWidgetDOM::GetComment(domname);
             const sint32 FieldTextLength = FieldText.Length();
@@ -2007,7 +2003,7 @@ namespace BOSS
                 if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
             }
         }
-        jump(key == 27) // Esc
+        jump(key == 27 || code == 16777216) // Esc
         {
             if(view) view->clearCapture();
             mCapturedIMEChar = L'\0';
@@ -2017,7 +2013,7 @@ namespace BOSS
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
         }
-        jump(key == 13) // Enter
+        jump(key == 13 || code == 16777220) // Enter
         {
             FlushSavedIME(domname, dualsave);
             if(view) view->clearCapture();
