@@ -34,7 +34,10 @@
 #endif
 
 #if BOSS_WASM
+    #include <stdio.h>
     #include <uuid/uuid.h>
+    extern void WaitForWasmReady();
+    extern void WaitForWasmFlush();
 #endif
 
 namespace BOSS
@@ -318,10 +321,25 @@ namespace BOSS
                     }
                 #elif BOSS_WASM
                     OSCode16 &= 0x03;
-                    uuid_t UuidHandle;
-                    uuid_generate(UuidHandle);
-                    char UuidText[36 + 1]; // 3fb17ebc-bc38-4939-bc8b-74f2443281d4
-                    uuid_unparse(UuidHandle, UuidText);
+                    char UuidText[36 + 1] {0}; // 3fb17ebc-bc38-4939-bc8b-74f2443281d4
+                    WaitForWasmReady();
+                    if(FILE* UuidFile = fopen("/boss2d/uuid.txt", "r+t"))
+                    {
+                        fread(UuidText, 1, 36, UuidFile);
+                        fclose(UuidFile);
+                    }
+                    else
+                    {
+                        uuid_t UuidHandle;
+                        uuid_generate(UuidHandle);
+                        uuid_unparse(UuidHandle, UuidText);
+                        if(FILE* UuidFile = fopen("/boss2d/uuid.txt", "w+t"))
+                        {
+                            fwrite(UuidText, 1, 36, UuidFile);
+                            fclose(UuidFile);
+                            WaitForWasmFlush();
+                        }
+                    }
                     StringCollector("Uuid") = UuidText;
                 #else
                     OSCode16 &= 0x00;

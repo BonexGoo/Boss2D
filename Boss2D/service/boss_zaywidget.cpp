@@ -1781,7 +1781,7 @@ namespace BOSS
         if(ispassword)
         {
             String Collector;
-            while(*(text++)) Collector += "★";
+            while(*(text++)) Collector += "*";
             return Collector;
         }
         return text;

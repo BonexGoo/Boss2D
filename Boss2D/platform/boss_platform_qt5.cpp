@@ -3,6 +3,9 @@
 
 #ifdef BOSS_PLATFORM_QT5
 
+    #if BOSS_WASM
+        #include <emscripten.h>
+    #endif
     #include <format/boss_bmp.hpp>
 
     MainData* g_data = nullptr;
@@ -166,6 +169,38 @@
         {
             return QGuiApplication::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
         }
+    #elif BOSS_WASM
+        // Ready
+        static bool g_WasmReady = false;
+        extern "C" void EMSCRIPTEN_KEEPALIVE OnWasmReady()
+        {
+            g_WasmReady = true;
+        }
+        void WaitForWasmReady()
+        {
+            while(!g_WasmReady)
+                emscripten_sleep(10);
+        }
+        // Flush
+        static bool g_WasmFlush = false;
+        extern "C" void EMSCRIPTEN_KEEPALIVE OnWasmFlush()
+        {
+            g_WasmFlush = true;
+        }
+        void WaitForWasmFlush()
+        {
+            g_WasmFlush = false;
+            EM_ASM
+            (
+                FS.syncfs(false, function(err)
+                    {
+                        if(!err)
+                            Module._OnWasmFlush();
+                    });
+            );
+            while(!g_WasmFlush)
+                emscripten_sleep(10);
+        }
     #endif
 
     #if BOSS_NEED_MAIN
@@ -175,12 +210,29 @@
 
         int main(int argc, char* argv[])
         {
-            int result = 0;
+            //#ifdef __EMSCRIPTEN__
+            //    emscripten_set_main_loop(one_iter, 60, 1);
+            //#endif
+            #if BOSS_WASM
+                EM_ASM
+                (
+                    FS.mkdir('/boss2d');
+                    FS.mount(IDBFS, {}, '/boss2d');
+                    FS.syncfs(true, function(err)
+                        {
+                            if(!err)
+                                Module._OnWasmReady();
+                        });
+                );
+            #endif
+
             #if BOSS_ANDROID
                 g_isPopupAssert = false;
             #else
                 g_isPopupAssert = true;
             #endif
+
+            int result = 0;
             {
                 // 깜빡임 제거
                 QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
