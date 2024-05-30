@@ -882,7 +882,18 @@ namespace BOSS
         if(!m_bitmap || build == Build::Null)
             return nullptr;
         m_builder.ValidBitmap(m_bitmap);
-        return m_builder.GetImage(build, resizing_width, resizing_height, coloring);
+        return m_builder.GetImage(build
+            #if BOSS_NEED_BUILD_RESIZING
+                , resizing_width, resizing_height,
+            #else
+                , -1, -1,
+            #endif
+            #if BOSS_NEED_BUILD_COLORING
+                coloring
+            #else
+                Color::ColoringDefault
+            #endif
+        );
     }
 
     Image::Builder::Builder()

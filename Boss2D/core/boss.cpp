@@ -1476,3 +1476,9 @@ extern "C" void boss_seterrno(int err)
 #if !defined(BOSS_NEED_EMBEDDED_CACHE) || (BOSS_NEED_EMBEDDED_CACHE != 0 && BOSS_NEED_EMBEDDED_CACHE != 1)
     #error BOSS_NEED_EMBEDDED_CACHE macro is invalid use
 #endif
+#if !defined(BOSS_NEED_BUILD_RESIZING) || (BOSS_NEED_BUILD_RESIZING != 0 && BOSS_NEED_BUILD_RESIZING != 1)
+    #error BOSS_NEED_BUILD_RESIZING macro is invalid use
+#endif
+#if !defined(BOSS_NEED_BUILD_COLORING) || (BOSS_NEED_BUILD_COLORING != 0 && BOSS_NEED_BUILD_COLORING != 1)
+    #error BOSS_NEED_BUILD_COLORING macro is invalid use
+#endif
