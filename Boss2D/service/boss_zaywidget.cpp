@@ -1855,8 +1855,8 @@ namespace BOSS
             {
                 if(mCapturedIMEChar != L'\0')
                 {
-                    mCapturedIMEChar = L'\0';
                     Result += String::FromWChars(WString(mCapturedIMEChar));
+                    mCapturedIMEChar = L'\0';
                 }
                 Result += String::FromWChars((wchars) &code, 1);
             }
@@ -1867,31 +1867,27 @@ namespace BOSS
 
     String ZayControl::AddKeyToIME(char key)
     {
-        String Result;
+        const WString KeyW = WString::FromChars(&key, 1);
+        wchar_t Code = ((wchars) KeyW)[0];
         if(mLastLanguage == LM_Korean)
+        switch(key)
         {
-            wchar_t Code = L'\0';
-            switch(key)
-            {
-            case 'A': Code = L'ㅁ'; break; case 'B': Code = L'ㅠ'; break; case 'C': Code = L'ㅊ'; break; case 'D': Code = L'ㅇ'; break;
-            case 'E': Code = L'ㄸ'; break; case 'F': Code = L'ㄹ'; break; case 'G': Code = L'ㅎ'; break; case 'H': Code = L'ㅗ'; break;
-            case 'I': Code = L'ㅑ'; break; case 'J': Code = L'ㅓ'; break; case 'K': Code = L'ㅏ'; break; case 'L': Code = L'ㅣ'; break;
-            case 'M': Code = L'ㅡ'; break; case 'N': Code = L'ㅜ'; break; case 'O': Code = L'ㅒ'; break; case 'P': Code = L'ㅖ'; break;
-            case 'Q': Code = L'ㅃ'; break; case 'R': Code = L'ㄲ'; break; case 'S': Code = L'ㄴ'; break; case 'T': Code = L'ㅆ'; break;
-            case 'U': Code = L'ㅕ'; break; case 'V': Code = L'ㅍ'; break; case 'W': Code = L'ㅉ'; break; case 'X': Code = L'ㅌ'; break;
-            case 'Y': Code = L'ㅛ'; break; case 'Z': Code = L'ㅋ'; break;
-            case 'a': Code = L'ㅁ'; break; case 'b': Code = L'ㅠ'; break; case 'c': Code = L'ㅊ'; break; case 'd': Code = L'ㅇ'; break;
-            case 'e': Code = L'ㄷ'; break; case 'f': Code = L'ㄹ'; break; case 'g': Code = L'ㅎ'; break; case 'h': Code = L'ㅗ'; break;
-            case 'i': Code = L'ㅑ'; break; case 'j': Code = L'ㅓ'; break; case 'k': Code = L'ㅏ'; break; case 'l': Code = L'ㅣ'; break;
-            case 'm': Code = L'ㅡ'; break; case 'n': Code = L'ㅜ'; break; case 'o': Code = L'ㅐ'; break; case 'p': Code = L'ㅔ'; break;
-            case 'q': Code = L'ㅂ'; break; case 'r': Code = L'ㄱ'; break; case 's': Code = L'ㄴ'; break; case 't': Code = L'ㅅ'; break;
-            case 'u': Code = L'ㅕ'; break; case 'v': Code = L'ㅍ'; break; case 'w': Code = L'ㅈ'; break; case 'x': Code = L'ㅌ'; break;
-            case 'y': Code = L'ㅛ'; break; case 'z': Code = L'ㅋ'; break;
-            }
-            Result += AddCodeToIME(Code);
+        case 'A': Code = L'ㅁ'; break; case 'B': Code = L'ㅠ'; break; case 'C': Code = L'ㅊ'; break; case 'D': Code = L'ㅇ'; break;
+        case 'E': Code = L'ㄸ'; break; case 'F': Code = L'ㄹ'; break; case 'G': Code = L'ㅎ'; break; case 'H': Code = L'ㅗ'; break;
+        case 'I': Code = L'ㅑ'; break; case 'J': Code = L'ㅓ'; break; case 'K': Code = L'ㅏ'; break; case 'L': Code = L'ㅣ'; break;
+        case 'M': Code = L'ㅡ'; break; case 'N': Code = L'ㅜ'; break; case 'O': Code = L'ㅒ'; break; case 'P': Code = L'ㅖ'; break;
+        case 'Q': Code = L'ㅃ'; break; case 'R': Code = L'ㄲ'; break; case 'S': Code = L'ㄴ'; break; case 'T': Code = L'ㅆ'; break;
+        case 'U': Code = L'ㅕ'; break; case 'V': Code = L'ㅍ'; break; case 'W': Code = L'ㅉ'; break; case 'X': Code = L'ㅌ'; break;
+        case 'Y': Code = L'ㅛ'; break; case 'Z': Code = L'ㅋ'; break;
+        case 'a': Code = L'ㅁ'; break; case 'b': Code = L'ㅠ'; break; case 'c': Code = L'ㅊ'; break; case 'd': Code = L'ㅇ'; break;
+        case 'e': Code = L'ㄷ'; break; case 'f': Code = L'ㄹ'; break; case 'g': Code = L'ㅎ'; break; case 'h': Code = L'ㅗ'; break;
+        case 'i': Code = L'ㅑ'; break; case 'j': Code = L'ㅓ'; break; case 'k': Code = L'ㅏ'; break; case 'l': Code = L'ㅣ'; break;
+        case 'm': Code = L'ㅡ'; break; case 'n': Code = L'ㅜ'; break; case 'o': Code = L'ㅐ'; break; case 'p': Code = L'ㅔ'; break;
+        case 'q': Code = L'ㅂ'; break; case 'r': Code = L'ㄱ'; break; case 's': Code = L'ㄴ'; break; case 't': Code = L'ㅅ'; break;
+        case 'u': Code = L'ㅕ'; break; case 'v': Code = L'ㅍ'; break; case 'w': Code = L'ㅈ'; break; case 'x': Code = L'ㅌ'; break;
+        case 'y': Code = L'ㅛ'; break; case 'z': Code = L'ㅋ'; break;
         }
-        else Result += AddCodeToIME(*((wchars) WString::FromChars(&key, 1)));
-        return Result;
+        return AddCodeToIME(Code);
     }
 
     void ZayControl::FlushIME(const String& domname, const String added, bool dualsave)
@@ -1919,6 +1915,8 @@ namespace BOSS
 
     void ZayControl::OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key, bool dualsave)
     {
+        BOSS_TRACE("OnKeyPressed(code=%d, key=%d)", code, key);
+
         branch;
         jump((code == 37 && key == '\0') || code == 16777234) // Left
         {
@@ -1955,7 +1953,7 @@ namespace BOSS
             const sint32 FieldTextLength = FieldText.Length();
             mCapturedCursorIndex = FieldTextLength;
         }
-        jump((code == 21 && key == '\0') || code == 33554431) // 한영키 or 한자키
+        jump((code == 21 && key == '\0') || code == 16777301) // 한영키 or 메뉴키
         {
             LangTurn(domname, dualsave);
         }
@@ -1972,6 +1970,10 @@ namespace BOSS
                 if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
                 mCapturedCursorIndex += PastedText.Length();
             }
+        }
+        jump((code == 16 && key == '\0') || code == 16777248) // Shift
+        {
+            // 처리없음
         }
         jump(key == 8 || code == 16777219) // BackSpace
         {
