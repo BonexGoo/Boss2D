@@ -3307,7 +3307,7 @@
         class SoundClass
         {
         public:
-            SoundClass(chars filename, bool loop)
+            SoundClass(chars path, bool loop, bool url_or_file)
             {
                 m_volume_pos = 0;
                 m_volume_target = 0;
@@ -3322,11 +3322,11 @@
                 if(loop)
                 {
                     m_playlist = new QMediaPlaylist();
-                    m_playlist->addMedia(QUrl::fromLocalFile(filename));
+                    m_playlist->addMedia((url_or_file)? QUrl(path) : QUrl::fromLocalFile(path));
                     m_playlist->setPlaybackMode(QMediaPlaylist::Loop);
                     m_player->setPlaylist(m_playlist);
                 }
-                else m_player->setMedia(QUrl::fromLocalFile(filename));
+                else m_player->setMedia((url_or_file)? QUrl(path) : QUrl::fromLocalFile(path));
                 m_player->setVolume(100);
             }
             SoundClass(sint32 channel, sint32 sample_rate, sint32 sample_size)

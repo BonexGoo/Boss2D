@@ -1834,6 +1834,12 @@
             return nullptr;
         }
 
+        id_sound Platform::Sound::OpenForUrl(chars url, bool loop)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
         id_sound Platform::Sound::OpenForStream(sint32 channel, sint32 sample_rate, sint32 sample_size)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

@@ -1497,6 +1497,13 @@ public:
         /// @see Close
         static id_sound OpenForFile(chars filename, bool loop = false);
 
+        /// @brief Url방식 사운드열기
+        /// @param url : Url명
+        /// @param loop : 루프방식여부
+        /// @return 사운드ID
+        /// @see Close
+        static id_sound OpenForUrl(chars url, bool loop = false);
+
         /// @brief 스트림방식 사운드열기
         /// @param channel : 채널수(1, 2)
         /// @param sample_rate : 초당 샘플링양(8000, 44100)

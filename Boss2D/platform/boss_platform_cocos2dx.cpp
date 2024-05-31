@@ -2081,6 +2081,12 @@
             return nullptr;
         }
 
+        id_sound Platform::Sound::OpenForUrl(chars url, bool loop)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
         id_sound Platform::Sound::OpenForStream(sint32 channel, sint32 sample_rate, sint32 sample_size)
         {
             BOSS_ASSERT("Further development is needed.", false);

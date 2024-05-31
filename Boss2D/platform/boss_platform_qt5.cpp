@@ -3920,7 +3920,17 @@
         {
             #ifdef QT_HAVE_MULTIMEDIA
                 BOSS_ASSERT("해당 사운드파일이 존재하지 않습니다", Platform::File::Exist(filename));
-                SoundClass* NewSound = new SoundClass(filename, loop);
+                SoundClass* NewSound = new SoundClass(filename, loop, false);
+                return (id_sound) NewSound;
+            #else
+                return nullptr;
+            #endif
+        }
+
+        id_sound Platform::Sound::OpenForUrl(chars url, bool loop)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* NewSound = new SoundClass(url, loop, true);
                 return (id_sound) NewSound;
             #else
                 return nullptr;
