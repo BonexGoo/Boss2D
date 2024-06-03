@@ -1767,15 +1767,15 @@
         ////////////////////////////////////////////////////////////////////////////////
         // GRAPHICS
         ////////////////////////////////////////////////////////////////////////////////
-        void Platform::Graphics::SetScissor(float x, float y, float w, float h)
+        void Platform::Graphics::SetScissor(double x, double y, double w, double h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
-            const float LastZoom = CanvasClass::get()->zoom();
+            const double LastZoom = CanvasClass::get()->zoom();
             CanvasClass::get()->SetScissor(
-                Math::Floor(x * LastZoom) / LastZoom,
-                Math::Floor(y * LastZoom) / LastZoom,
-                Math::Ceil((x + w) * LastZoom) / LastZoom,
-                Math::Ceil((y + h) * LastZoom) / LastZoom);
+                sint32(x * LastZoom) / LastZoom,
+                sint32(y * LastZoom) / LastZoom,
+                sint32((x + w) * LastZoom + 0.5) / LastZoom,
+                sint32((y + h) * LastZoom + 0.5) / LastZoom);
         }
 
         void Platform::Graphics::SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
@@ -1839,7 +1839,7 @@
             CanvasClass::get()->SetFontFT(nickname, height);
         }
 
-        void Platform::Graphics::SetZoom(float zoom, OrientationRole orientation)
+        void Platform::Graphics::SetZoom(double zoom, OrientationRole orientation)
         {
             const sint32 Width = CanvasClass::get()->painter_width();
             const sint32 Height = CanvasClass::get()->painter_height();
@@ -2827,7 +2827,7 @@
 
             if(CanvasClass::get()->is_font_ft())
             {
-                const float Zoom = CanvasClass::get()->zoom();
+                const double Zoom = CanvasClass::get()->zoom();
                 FreeFont CurFreeFont(CanvasClass::get()->font_ft_nickname(), CanvasClass::get()->font_ft_height() * Zoom);
                 x *= Zoom;
                 y *= Zoom;

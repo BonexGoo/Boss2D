@@ -459,8 +459,8 @@ namespace BOSS
         void _add_ui(chars uiname, SubGestureCB cb, point64 scrollsense, bool hoverpass);
 
     private:
-        bool _push_scissor_intersect(float l, float t, float r, float b);
-        bool _push_scissor_copy(float l, float t, float r, float b);
+        bool _push_scissor_intersect(double l, double t, double r, double b);
+        bool _push_scissor_copy(double l, double t, double r, double b);
         void _pop_scissor();
 
     public:

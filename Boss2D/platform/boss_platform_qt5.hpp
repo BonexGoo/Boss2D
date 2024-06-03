@@ -191,7 +191,7 @@
         inline bool is_font_ft() const {return mUseFontFT;}
         inline chars font_ft_nickname() const {return mFontFT.mNickName;}
         inline sint32 font_ft_height() const {return mFontFT.mHeight;}
-        inline float zoom() const {return mPainter.transform().m11();}
+        inline double zoom() const {return mPainter.transform().m11();}
         inline const QRect& scissor() const {return mScissor;}
         inline const QColor& color() const {return mColor;}
         inline const ShaderRole& shader() const {return mShader;}
@@ -2351,7 +2351,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom();
+            const double Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,
@@ -2434,7 +2434,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom();
+            const double Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,
@@ -2533,7 +2533,7 @@
             f->glEnable(GL_BLEND); TestGL(BOSS_DBG 0);
             f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); TestGL(BOSS_DBG 0);
             f->glEnable(GL_SCISSOR_TEST); TestGL(BOSS_DBG 0);
-            const float Zoom = CanvasClass::get()->zoom();
+            const double Zoom = CanvasClass::get()->zoom();
             const QRect& CurScissor = CanvasClass::get()->scissor();
             const int ScreenHeight = CanvasClass::get()->painter().window().height() / Zoom;
             f->glScissor(CurScissor.x() * Zoom,

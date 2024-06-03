@@ -37,7 +37,7 @@ enum OrientationRole {OR_Normal, OR_CW90, OR_CW180, OR_CW270, OR_Max};
 class ZoomState
 {
 public:
-    float scale;
+    double scale;
     OrientationRole orientation;
 };
 typedef Array<ZoomState, datatype_pod_canmemcpy> ZoomStates;
@@ -773,7 +773,7 @@ public:
         /// @param y : 상단위치(px)
         /// @param w : 가로길이(px)
         /// @param h : 세로길이(px)
-        static void SetScissor(float x, float y, float w, float h);
+        static void SetScissor(double x, double y, double w, double h);
 
         /// @brief 컬러지정
         /// @param r : 적색값
@@ -804,7 +804,7 @@ public:
         /// @brief 줌지정
         /// @param scale : 크기값
         /// @param orientation : 출력방향
-        static void SetZoom(float scale, OrientationRole orientation = OR_Normal);
+        static void SetZoom(double scale, OrientationRole orientation = OR_Normal);
 
         /// @brief 사각영역 지우기
         /// @param x : 좌측위치(px)
