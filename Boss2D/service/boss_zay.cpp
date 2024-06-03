@@ -562,17 +562,25 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
+            const auto& LastZoom = m_stack_zoom[-1];
+            const sint32 ScaledWidth = image.GetImageWidth() * LastZoom.scale;
+            const sint32 ScaledHeight = image.GetImageHeight() * LastZoom.scale;
             if(degree != 0 && Platform::Graphics::BeginGL())
             {
-                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(LastColor),
+                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor),
                     image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
                     LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
                 Platform::Graphics::EndGL();
             }
-            else Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
-                0, 0, image.GetImageWidth(), image.GetImageHeight(),
-                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
-                image.GetImageWidth(), image.GetImageHeight());
+            else
+            {
+                auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
+                auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
+                auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
+                Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
+                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                    image.GetImageWidth(), image.GetImageHeight());
+            }
         }
 
         if(image.HasChild())
@@ -601,17 +609,25 @@ namespace BOSS
         if(visible)
         {
             const Color& LastColor = m_stack_color[-1];
+            const auto& LastZoom = m_stack_zoom[-1];
+            const sint32 ScaledWidth = image.GetImageWidth() * LastZoom.scale;
+            const sint32 ScaledHeight = image.GetImageHeight() * LastZoom.scale;
             if(degree != 0 && Platform::Graphics::BeginGL())
             {
-                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(LastColor),
+                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor),
                     image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
                     LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
                 Platform::Graphics::EndGL();
             }
-            else Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
-                0, 0, image.GetImageWidth(), image.GetImageHeight(),
-                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
-                image.GetImageWidth(), image.GetImageHeight());
+            else
+            {
+                auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
+                auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
+                auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
+                Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
+                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                    image.GetImageWidth(), image.GetImageHeight());
+            }
         }
 
         if(image.HasChild())
@@ -716,11 +732,14 @@ namespace BOSS
             if(build != Image::Build::Null)
             {
                 const Color& LastColor = m_stack_color[-1];
-                if(auto RebuildImage = image.GetBuildImage(DstWidth, DstHeight, LastColor, build))
+                const auto& LastZoom = m_stack_zoom[-1];
+                const sint32 ScaledWidth = DstWidth * LastZoom.scale;
+                const sint32 ScaledHeight = DstHeight * LastZoom.scale;
+                if(auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor, build))
                 {
-                    auto RebuildWidth = Platform::Graphics::GetImageWidth(RebuildImage);
-                    auto RebuildHeight = Platform::Graphics::GetImageHeight(RebuildImage);
-                    Platform::Graphics::DrawImage(RebuildImage, 0, 0, RebuildWidth, RebuildHeight,
+                    auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
+                    auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
+                    Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
                         LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
                 }
                 if(m_updater && !image.IsBuildFinished())
