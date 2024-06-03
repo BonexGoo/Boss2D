@@ -361,15 +361,15 @@ namespace BOSS
         CURL* CurCurl = ((CurlStruct*) curl)->mId;
 
         curl_easy_setopt(CurCurl, CURLOPT_URL, url);
+        curl_easy_setopt(CurCurl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(CurCurl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(CurCurl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(CurCurl, CURLOPT_UPLOAD, 1);
         curl_easy_setopt(CurCurl, CURLOPT_READDATA, data);
         curl_easy_setopt(CurCurl, CURLOPT_READFUNCTION, cb);
-        curl_easy_setopt(CurCurl, CURLOPT_MAIL_FROM, String::Format("<%s>", from));
+        curl_easy_setopt(CurCurl, CURLOPT_MAIL_FROM, from);
         struct curl_slist* Recipients = nullptr;
-        Recipients = curl_slist_append(Recipients, String::Format("<%s>", to));
-        if(cc) Recipients = curl_slist_append(Recipients, String::Format("<%s>", cc));
+        Recipients = curl_slist_append(Recipients, to);
+        if(cc) Recipients = curl_slist_append(Recipients, cc);
         curl_easy_setopt(CurCurl, CURLOPT_MAIL_RCPT, Recipients);
         curl_easy_setopt(CurCurl, CURLOPT_VERBOSE, 1);
         CURLcode res = curl_easy_perform(CurCurl);
