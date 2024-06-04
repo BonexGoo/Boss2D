@@ -1772,10 +1772,10 @@
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             const double LastZoom = CanvasClass::get()->zoom();
             CanvasClass::get()->SetScissor(
-                sint32(x * LastZoom) / LastZoom,
-                sint32(y * LastZoom) / LastZoom,
-                sint32((x + w) * LastZoom + 0.5) / LastZoom,
-                sint32((y + h) * LastZoom + 0.5) / LastZoom);
+                Math::Floor(x * LastZoom) / LastZoom,
+                Math::Floor(y * LastZoom) / LastZoom,
+                Math::Ceil((x + w) * LastZoom) / LastZoom,
+                Math::Ceil((y + h) * LastZoom) / LastZoom);
         }
 
         void Platform::Graphics::SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
