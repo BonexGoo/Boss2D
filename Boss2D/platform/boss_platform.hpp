@@ -712,7 +712,9 @@ public:
         /// @param day : 1개월미만의 일수(1 ~ 31)
         /// @param month : 1년미만의 개월수(1 ~ 12)
         /// @param year : 연도(2014, 2015, 2016, ...)
-        static void GetDetail(id_clock clock, sint64* nsec, sint32* sec = nullptr, sint32* min = nullptr, sint32* hour = nullptr, sint32* day = nullptr, sint32* month = nullptr, sint32* year = nullptr);
+        /// @param weekday : 요일정보(1 ~ 7, 월요일 ~ 일요일)
+        static void GetDetail(id_clock clock, sint64* nsec, sint32* sec = nullptr, sint32* min = nullptr, sint32* hour = nullptr,
+            sint32* day = nullptr, sint32* month = nullptr, sint32* year = nullptr, sint32* weekday = nullptr);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

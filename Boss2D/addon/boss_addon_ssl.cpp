@@ -18,6 +18,7 @@ extern "C"
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/evp.h>
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/err.h>
     #include <addon/openssl-1.1.1a_for_boss/include/openssl/ssl.h>
+    #include <addon/openssl-1.1.1a_for_boss/include/openssl/rand.h>
 }
 
 #include <boss.hpp>
@@ -34,6 +35,7 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, ToBASE64, chars, bytes, sint32)
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, FromBASE64, buffer, chars)
     BOSS_DECLARE_ADDON_FUNCTION(Ssl, ToAES128, chars, bytes, sint32, bool, chars, chars)
+    BOSS_DECLARE_ADDON_FUNCTION(Ssl, GenUUID, chars, void)
 
     static autorun Bind_AddOn_Ssl()
     {
@@ -45,6 +47,7 @@ namespace BOSS
         Core_AddOn_Ssl_ToBASE64() = Customized_AddOn_Ssl_ToBASE64;
         Core_AddOn_Ssl_FromBASE64() = Customized_AddOn_Ssl_FromBASE64;
         Core_AddOn_Ssl_ToAES128() = Customized_AddOn_Ssl_ToAES128;
+        Core_AddOn_Ssl_GenUUID() = Customized_AddOn_Ssl_GenUUID;
         return true;
     }
     static autorun _ = Bind_AddOn_Ssl();
@@ -210,6 +213,39 @@ namespace BOSS
             Result += OneHex;
         }
         delete[] Cipher;
+        return Result;
+    }
+
+    chars Customized_AddOn_Ssl_GenUUID(void)
+    {
+        static String Result;
+        union
+        {
+            struct
+            {
+                uint32_t mTimeLow;
+                uint16_t mTimeMid;
+                uint16_t mTimeHighAndVersion;
+                uint8_t mClkSeqHighRes;
+                uint8_t mClkSeqLow;
+                uint8_t mNode[6];
+            };
+            uint8_t mRnd[16];
+        } NewUuid;
+
+        if(RAND_bytes(NewUuid.mRnd, sizeof(NewUuid)) != 0)
+        {
+            // Refer Section 4.2 of RFC-4122
+            // https://tools.ietf.org/html/rfc4122#section-4.2
+            NewUuid.mClkSeqHighRes = (uint8_t) ((NewUuid.mClkSeqHighRes & 0x3F) | 0x80);
+            NewUuid.mTimeHighAndVersion = (uint16_t) ((NewUuid.mTimeHighAndVersion & 0x0FFF) | 0x4000);
+            Result = String::Format("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                NewUuid.mTimeLow, NewUuid.mTimeMid, NewUuid.mTimeHighAndVersion,
+                NewUuid.mClkSeqHighRes, NewUuid.mClkSeqLow,
+                NewUuid.mNode[0], NewUuid.mNode[1], NewUuid.mNode[2],
+                NewUuid.mNode[3], NewUuid.mNode[4], NewUuid.mNode[5]);
+        }
+        else Result.Empty();
         return Result;
     }
 }

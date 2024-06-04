@@ -211,6 +211,7 @@ namespace BOSS
             static chars ToBASE64(bytes binary, sint32 length);
             static buffer FromBASE64(chars base64);
             static chars ToAES128(bytes binary, sint32 length, bool base64, chars key, chars iv);
+            static chars GenUUID();
         };
 
         /// @brief TESSERACT연동

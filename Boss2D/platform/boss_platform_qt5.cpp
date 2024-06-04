@@ -1701,7 +1701,7 @@
         }
 
         void Platform::Clock::GetDetail(id_clock clock, sint64* nsec,
-            sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year)
+            sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year, sint32* weekday)
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", clock);
             const sint64 CurTotalSec = ((const ClockClass*) clock)->GetTotalSec();
@@ -1714,6 +1714,7 @@
             if(day) *day = CurDate.day();
             if(month) *month = CurDate.month();
             if(year) *year = CurDate.year();
+            if(weekday) *weekday = CurDate.dayOfWeek();
         }
 
         ////////////////////////////////////////////////////////////////////////////////
