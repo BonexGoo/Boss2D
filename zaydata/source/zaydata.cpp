@@ -89,7 +89,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     panel.fill();
                 ZAY_RGB(panel, 0, 0, 128)
                 ZAY_FONT(panel, 2.0)
-                if(ZayControl::RenderEditBox(panel, "ui_port", "port", 10, true, false))
+                if(ZayControl::RenderEditBox(panel, "ui_port", "port", 10, true, false, false))
                     m->invalidate(2);
             }
 
@@ -316,32 +316,35 @@ void zaydataData::OnRecv_Login(sint32 peerid, const Context& json)
 {
     const String ProgramID = PACKET_TEXT("programid");
     const String DeviceID = PACKET_TEXT("deviceid");
-    if(auto CurAuthor = mPrograms(ProgramID).mFastLogin.Access(DeviceID))
-    {
-        // 새 토큰을 생성
-        const String TokenCode = ZDProgram::CreateTokenCode(DeviceID);
-        auto& NewToken = mTokens(TokenCode);
-        NewToken.mProgramID = ProgramID;
-        NewToken.mAuthor = *CurAuthor;
-        NewToken.mDeviceID = DeviceID;
-        // 피어에 토큰등록 및 유효기간갱신
-        ValidToken(peerid, TokenCode);
 
-        // 응답처리1
-        Context Json;
-        Json.At("type").Set("Logined");
-        Json.At("author").Set(*CurAuthor);
-        Json.At("token").Set(TokenCode);
-        SendPacket(peerid, Json);
-        // 응답처리2
-        if(auto CurProfile = mPrograms(ProgramID).GetProfile(ProgramID, *CurAuthor, true))
-        {
-            CurProfile->SendPacket(mServer, peerid);
-            // 혹시 입장상태가 아니었다면 포커싱된 피어들에게 알림
-            CurProfile->ValidStatus(mServer, true);
-        }
+    String Author = "-";
+    if(auto CurAuthor = mPrograms(ProgramID).mFastLogin.Access(DeviceID))
+        Author = *CurAuthor;
+
+    // 새 토큰을 생성
+    const String TokenCode = ZDProgram::CreateTokenCode(DeviceID);
+    auto& NewToken = mTokens(TokenCode);
+    NewToken.mProgramID = ProgramID;
+    NewToken.mAuthor = Author;
+    NewToken.mDeviceID = DeviceID;
+    // 피어에 토큰등록 및 유효기간갱신
+    ValidToken(peerid, TokenCode);
+
+    // 응답처리1
+    Context Json;
+    Json.At("type").Set("Logined");
+    Json.At("author").Set(Author);
+    Json.At("token").Set(TokenCode);
+    SendPacket(peerid, Json);
+
+    // 응답처리2
+    if(!!Author.Compare("-"))
+    if(auto CurProfile = mPrograms(ProgramID).GetProfile(ProgramID, Author, true))
+    {
+        CurProfile->SendPacket(mServer, peerid);
+        // 혹시 입장상태가 아니었다면 포커싱된 피어들에게 알림
+        CurProfile->ValidStatus(mServer, true);
     }
-    else SendError(peerid, json, "Unregistered device");
 }
 
 void zaydataData::OnRecv_LoginUpdate(sint32 peerid, const Context& json)
@@ -415,6 +418,11 @@ void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
         }
         mPeerTokens[peerid].Empty();
         mTokens.Remove(Token);
+
+        // 응답처리
+        Context Json;
+        Json.At("type").Set("Logouted");
+        SendPacket(peerid, Json);
     }
     else SendError(peerid, json, "Expired token");
 }

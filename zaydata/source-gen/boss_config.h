@@ -42,5 +42,7 @@
 #define BOSS_NEED_NATIVE_OPENGL    0
 #define BOSS_NEED_EMBEDDED_ASSET   (BOSS_NDEBUG & 0)
 #define BOSS_NEED_EMBEDDED_CACHE   (BOSS_WASM & 0)
+#define BOSS_NEED_BUILD_RESIZING   0
+#define BOSS_NEED_BUILD_COLORING   0
 #define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5"}
 #define BOSS_SUMMIT_DOMAIN         "summit.hucloud.kr:8109"
