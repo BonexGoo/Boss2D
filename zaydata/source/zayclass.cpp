@@ -419,3 +419,25 @@ bool ZDToken::HasExpiry(uint64 now)
 {
     return (mExpiryMsec < now);
 }
+
+void ZDToken::UploadOnce(chars path, sint32 total, sint32 offset, sint32 size, bytes data)
+{
+    auto& CurFile = mUploadFiles(path);
+    auto FileData = CurFile.AtDumping(0, total);
+    Memory::Copy(FileData + offset, data, size);
+}
+
+bool ZDToken::UploadFlush(chars path)
+{
+    const auto& CurFile = mUploadFiles(path);
+    const String FilePath = ZDFocusable::MakeAssetDir(mProgramID, path).SubTail(1);
+    if(auto NewFile = Platform::File::OpenForWrite(FilePath, true))
+    {
+        Platform::File::Write(NewFile, &CurFile[0], CurFile.Count());
+        Platform::File::Close(NewFile);
+        mUploadFiles.Remove(path);
+        return true;
+    }
+    mUploadFiles.Remove(path);
+    return false;
+}

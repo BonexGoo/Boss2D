@@ -153,6 +153,8 @@ class ZDToken
 public:
     void UpdateExpiry();
     bool HasExpiry(uint64 now);
+    void UploadOnce(chars path, sint32 total, sint32 offset, sint32 size, bytes data);
+    bool UploadFlush(chars path);
 
 public:
     String mProgramID; // ZayPro
@@ -162,5 +164,6 @@ public:
 
 private:
     uint64 mExpiryMsec {0}; // 만료시각
+    Map<uint08s> mUploadFiles; // [path:board/post/33/python/a.py] → FileData
 };
 typedef Map<ZDToken> ZDTokens;

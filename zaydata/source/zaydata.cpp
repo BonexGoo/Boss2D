@@ -302,6 +302,8 @@ bool zaydataData::OnPacketOnce()
                     jump(!Type.Compare("UnfocusAsset")) OnRecv_UnfocusAsset(CurPeerID, RecvJson);
                     jump(!Type.Compare("FocusRange")) OnRecv_FocusRange(CurPeerID, RecvJson);
                     jump(!Type.Compare("UnfocusRange")) OnRecv_UnfocusRange(CurPeerID, RecvJson);
+                    jump(!Type.Compare("FileUploading")) OnRecv_FileUploading(CurPeerID, RecvJson);
+                    jump(!Type.Compare("FileUploaded")) OnRecv_FileUploaded(CurPeerID, RecvJson);
                 }
                 break;
             }
@@ -614,6 +616,46 @@ void zaydataData::OnRecv_UnfocusRange(sint32 peerid, const Context& json)
         }
     }
     else SendError(peerid, json, "Expired token");
+}
+
+void zaydataData::OnRecv_FileUploading(sint32 peerid, const Context& json, ZDToken** token)
+{
+    const String Token = PACKET_TEXT("token");
+    const String LockID = PACKET_TEXT("lockid");
+    const String Path = PACKET_TEXT("path");
+    const sint64 Total = PACKET_INT("total");
+    const sint64 Offset = PACKET_INT("offset");
+    const sint64 Size = PACKET_INT("size");
+    if(Total <= 1024 * 1024 * 500) // 파일용량은 500MB까지만 허용
+    {
+        if(auto CurToken = ValidToken(peerid, Token))
+        {
+            if(auto CurRoute = CurToken->mLockedRoutes.Access(LockID))
+            {
+                if(!String::Compare(Path, CurRoute->mPath, CurRoute->mPath.Length()))
+                {
+                    CurToken->UploadOnce(Path, Total, Offset, Size, nullptr);
+                    if(token) *token = CurToken;
+                }
+                else SendError(peerid, json, "This upload is outside of lockID permission");
+            }
+            else SendError(peerid, json, "Expired lockID");
+        }
+        else SendError(peerid, json, "Expired token");
+    }
+    else SendError(peerid, json, "The maximum upload file size is 500MB");
+}
+
+void zaydataData::OnRecv_FileUploaded(sint32 peerid, const Context& json)
+{
+    ZDToken* GetToken = nullptr;
+    OnRecv_FileUploading(peerid, json, &GetToken);
+    if(GetToken)
+    {
+        const String Path = PACKET_TEXT("path");
+        if(!GetToken->UploadFlush(Path))
+            SendError(peerid, json, "The upload was completed, but writing the file failed");
+    }
 }
 
 void zaydataData::SendPacket(sint32 peerid, const Context& json)
