@@ -43,10 +43,22 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         {
             chararray GetTokenCode;
             if(auto CurToken = m->mTokens.AccessByOrder(iToken, &GetTokenCode))
-            if(CurToken->HasExpiry(CurMsec))
             {
-                m->mTokens.Remove(&GetTokenCode[0]);
-                m->invalidate();
+                if(CurToken->HasExpiry(CurMsec))
+                {
+                    m->mTokens.Remove(&GetTokenCode[0]);
+                    m->invalidate();
+                }
+                else
+                {
+                    sint32 PeerID = -1;
+                    Context Json;
+                    if(CurToken->TryDownloadOnce(PeerID, Json))
+                    {
+                        m->SendPacket(PeerID, Json);
+                        CurToken->UpdateExpiry();
+                    }
+                }
             }
             // 최대 2ms동안 실시
             if(CurMsec + 2 < Platform::Utility::CurrentTimeMsec())
@@ -304,6 +316,7 @@ bool zaydataData::OnPacketOnce()
                     jump(!Type.Compare("UnfocusRange")) OnRecv_UnfocusRange(CurPeerID, RecvJson);
                     jump(!Type.Compare("FileUploading")) OnRecv_FileUploading(CurPeerID, RecvJson);
                     jump(!Type.Compare("FileUploaded")) OnRecv_FileUploaded(CurPeerID, RecvJson);
+                    jump(!Type.Compare("DownloadFile")) OnRecv_DownloadFile(CurPeerID, RecvJson);
                 }
                 break;
             }
@@ -625,7 +638,7 @@ void zaydataData::OnRecv_FileUploading(sint32 peerid, const Context& json, ZDTok
     const String Path = PACKET_TEXT("path");
     const sint64 Total = PACKET_INT("total");
     const sint64 Offset = PACKET_INT("offset");
-    const sint64 Size = PACKET_INT("size");
+    const String Base64 = PACKET_TEXT("base64");
     if(Total <= 1024 * 1024 * 500) // 파일용량은 500MB까지만 허용
     {
         if(auto CurToken = ValidToken(peerid, Token))
@@ -634,8 +647,13 @@ void zaydataData::OnRecv_FileUploading(sint32 peerid, const Context& json, ZDTok
             {
                 if(!String::Compare(Path, CurRoute->mPath, CurRoute->mPath.Length()))
                 {
-                    CurToken->UploadOnce(Path, Total, Offset, Size, nullptr);
-                    if(token) *token = CurToken;
+                    if(buffer NewData = AddOn::Ssl::FromBASE64(Base64))
+                    {
+                        CurToken->UploadOnce(Path, Total, Offset, Buffer::CountOf(NewData), (bytes) NewData);
+                        Buffer::Free(NewData);
+                        if(token) *token = CurToken;
+                    }
+                    else SendError(peerid, json, "Base64 decoding of the uploaded file failed");
                 }
                 else SendError(peerid, json, "This upload is outside of lockID permission");
             }
@@ -643,7 +661,8 @@ void zaydataData::OnRecv_FileUploading(sint32 peerid, const Context& json, ZDTok
         }
         else SendError(peerid, json, "Expired token");
     }
-    else SendError(peerid, json, "The maximum upload file size is 500MB");
+    else SendError(peerid, json, String::Format("The maximum upload file size is 500MB(%s, %.2fMB)",
+        (chars) Path, Total / float(1024 * 1024)));
 }
 
 void zaydataData::OnRecv_FileUploaded(sint32 peerid, const Context& json)
@@ -654,8 +673,24 @@ void zaydataData::OnRecv_FileUploaded(sint32 peerid, const Context& json)
     {
         const String Path = PACKET_TEXT("path");
         if(!GetToken->UploadFlush(Path))
-            SendError(peerid, json, "The upload was completed, but writing the file failed");
+            SendError(peerid, json, String::Format("The upload was completed, but writing the file failed(%s)",
+                (chars) Path));
     }
+}
+
+void zaydataData::OnRecv_DownloadFile(sint32 peerid, const Context& json)
+{
+    const String Token = PACKET_TEXT("token");
+    const String Path = PACKET_TEXT("path");
+    const sint64 Offset = PACKET_INT("offset");
+    const sint64 Size = PACKET_INT("size");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        if(!CurToken->DownloadReady(peerid, Path, Offset, Size))
+            SendError(peerid, json, String::Format("The file cannot be prepared for download(%s)",
+                (chars) Path));
+    }
+    else SendError(peerid, json, "Expired token");
 }
 
 void zaydataData::SendPacket(sint32 peerid, const Context& json)

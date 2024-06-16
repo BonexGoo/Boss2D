@@ -422,22 +422,88 @@ bool ZDToken::HasExpiry(uint64 now)
 
 void ZDToken::UploadOnce(chars path, sint32 total, sint32 offset, sint32 size, bytes data)
 {
-    auto& CurFile = mUploadFiles(path);
-    auto FileData = CurFile.AtDumping(0, total);
+    auto& CurJob = mUploadFiles(path);
+    auto FileData = CurJob.AtDumping(0, total);
     Memory::Copy(FileData + offset, data, size);
 }
 
 bool ZDToken::UploadFlush(chars path)
 {
-    const auto& CurFile = mUploadFiles(path);
     const String FilePath = ZDFocusable::MakeAssetDir(mProgramID, path).SubTail(1);
     if(auto NewFile = Platform::File::OpenForWrite(FilePath, true))
     {
-        Platform::File::Write(NewFile, &CurFile[0], CurFile.Count());
+        const auto& CurJob = mUploadFiles(path);
+        Platform::File::Write(NewFile, &CurJob[0], CurJob.Count());
         Platform::File::Close(NewFile);
         mUploadFiles.Remove(path);
         return true;
     }
     mUploadFiles.Remove(path);
+    return false;
+}
+
+bool ZDToken::DownloadReady(sint32 peerid, chars path, sint32 offset, sint32 size)
+{
+    bool Result = false;
+    const String FilePath = ZDFocusable::MakeAssetDir(mProgramID, path).SubTail(1);
+    if(auto OldFile = Platform::File::OpenForRead(FilePath))
+    {
+        const sint32 FileSize = Platform::File::Size(OldFile);
+        auto& NewJob = mDownloadFiles(path);
+        NewJob.mPeerID = peerid;
+        NewJob.mTotal = FileSize;
+        NewJob.mOffset = offset;
+        if(size <= FileSize - offset)
+        {
+            Result = true;
+            Platform::File::Seek(OldFile, offset);
+            const sint32 BlockSize = 4096;
+            uint08 BlockTemp[BlockSize];
+            while(0 < size)
+            {
+                const sint32 ReadSize = Platform::File::Read(OldFile, BlockTemp, BlockSize);
+                if(ReadSize <= 0)
+                {
+                    Result = false;
+                    break;
+                }
+                uint08s NewBinary;
+                Memory::Copy(NewBinary.AtDumpingAdded(ReadSize), BlockTemp, ReadSize);
+                NewJob.mBinaries.Enqueue(NewBinary);
+                size -= ReadSize;
+            }
+        }
+        Platform::File::Close(OldFile);
+        if(!Result)
+            mDownloadFiles.Remove(path);
+    }
+    return Result;
+}
+
+bool ZDToken::TryDownloadOnce(sint32& peerid, Context& json)
+{
+    const sint32 JobCount = mDownloadFiles.Count();
+    if(0 < JobCount)
+    {
+        const sint32 JobOrder = Platform::Utility::Random() % JobCount;
+        chararray GetPath;
+        if(auto CurJob = mDownloadFiles.AccessByOrder(JobOrder, &GetPath))
+        {
+            const sint32 BinaryCount = CurJob->mBinaries.Count();
+            if(0 < BinaryCount)
+            {
+                const uint08s CurBinary = CurJob->mBinaries.Dequeue();
+                peerid = CurJob->mPeerID;
+                json.At("type").Set((BinaryCount == 1)? "FileDownloaded" : "FileDownloading");
+                json.At("path").Set(&GetPath[0]);
+                json.At("total").Set(String::FromInteger(CurJob->mTotal));
+                json.At("offset").Set(String::FromInteger(CurJob->mOffset));
+                json.At("base64").Set(AddOn::Ssl::ToBASE64((bytes) &CurBinary[0], CurBinary.Count()));
+                if(BinaryCount == 1)
+                    mDownloadFiles.Remove(&GetPath[0]);
+                return true;
+            }
+        }
+    }
     return false;
 }
