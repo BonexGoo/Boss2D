@@ -442,7 +442,7 @@ bool ZDToken::UploadFlush(chars path)
     return false;
 }
 
-bool ZDToken::DownloadReady(sint32 peerid, chars path, sint32 offset, sint32 size)
+bool ZDToken::DownloadReady(sint32 peerid, chars memo, chars path, sint32 offset, sint32 size)
 {
     bool Result = false;
     const String FilePath = ZDFocusable::MakeAssetDir(mProgramID, path).SubTail(1);
@@ -451,17 +451,22 @@ bool ZDToken::DownloadReady(sint32 peerid, chars path, sint32 offset, sint32 siz
         const sint32 FileSize = Platform::File::Size(OldFile);
         auto& NewJob = mDownloadFiles(path);
         NewJob.mPeerID = peerid;
+        NewJob.mMemo = memo;
         NewJob.mTotal = FileSize;
         NewJob.mOffset = offset;
-        if(size <= FileSize - offset)
+        Platform::File::Seek(OldFile, offset);
+
+        sint32 NeedSize = FileSize - offset;
+        if(0 < NeedSize && size <= NeedSize)
         {
             Result = true;
-            Platform::File::Seek(OldFile, offset);
+            if(size != -1)
+                NeedSize = size;
             const sint32 BlockSize = 4096;
-            uint08 BlockTemp[BlockSize];
-            while(0 < size)
+            uint08 BlockTemp[BlockSize];            
+            while(0 < NeedSize)
             {
-                const sint32 ReadSize = Platform::File::Read(OldFile, BlockTemp, BlockSize);
+                const sint32 ReadSize = Platform::File::Read(OldFile, BlockTemp, Math::Min(BlockSize, NeedSize));
                 if(ReadSize <= 0)
                 {
                     Result = false;
@@ -470,7 +475,7 @@ bool ZDToken::DownloadReady(sint32 peerid, chars path, sint32 offset, sint32 siz
                 uint08s NewBinary;
                 Memory::Copy(NewBinary.AtDumpingAdded(ReadSize), BlockTemp, ReadSize);
                 NewJob.mBinaries.Enqueue(NewBinary);
-                size -= ReadSize;
+                NeedSize -= ReadSize;
             }
         }
         Platform::File::Close(OldFile);
@@ -496,11 +501,13 @@ bool ZDToken::TryDownloadOnce(sint32& peerid, Context& json)
                 peerid = CurJob->mPeerID;
                 json.At("type").Set((BinaryCount == 1)? "FileDownloaded" : "FileDownloading");
                 json.At("path").Set(&GetPath[0]);
+                json.At("memo").Set(CurJob->mMemo);
                 json.At("total").Set(String::FromInteger(CurJob->mTotal));
                 json.At("offset").Set(String::FromInteger(CurJob->mOffset));
                 json.At("base64").Set(AddOn::Ssl::ToBASE64((bytes) &CurBinary[0], CurBinary.Count()));
                 if(BinaryCount == 1)
                     mDownloadFiles.Remove(&GetPath[0]);
+                else CurJob->mOffset += CurBinary.Count();
                 return true;
             }
         }

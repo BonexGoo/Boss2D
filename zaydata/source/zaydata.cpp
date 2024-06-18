@@ -681,12 +681,13 @@ void zaydataData::OnRecv_FileUploaded(sint32 peerid, const Context& json)
 void zaydataData::OnRecv_DownloadFile(sint32 peerid, const Context& json)
 {
     const String Token = PACKET_TEXT("token");
+    const String Memo = PACKET_TEXT("memo");
     const String Path = PACKET_TEXT("path");
     const sint64 Offset = PACKET_INT("offset");
     const sint64 Size = PACKET_INT("size");
     if(auto CurToken = ValidToken(peerid, Token))
     {
-        if(!CurToken->DownloadReady(peerid, Path, Offset, Size))
+        if(!CurToken->DownloadReady(peerid, Memo, Path, Offset, Size))
             SendError(peerid, json, String::Format("The file cannot be prepared for download(%s)",
                 (chars) Path));
     }

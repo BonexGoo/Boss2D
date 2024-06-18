@@ -155,7 +155,7 @@ public:
     bool HasExpiry(uint64 now);
     void UploadOnce(chars path, sint32 total, sint32 offset, sint32 size, bytes data);
     bool UploadFlush(chars path);
-    bool DownloadReady(sint32 peerid, chars path, sint32 offset, sint32 size);
+    bool DownloadReady(sint32 peerid, chars memo, chars path, sint32 offset, sint32 size);
     bool TryDownloadOnce(sint32& peerid, Context& json);
 
 public:
@@ -171,6 +171,7 @@ private:
     {
     public:
         sint32 mPeerID {-1};
+        String mMemo;
         sint32 mTotal {0};
         sint32 mOffset {0};
         Queue<uint08s> mBinaries;
