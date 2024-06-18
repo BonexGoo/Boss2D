@@ -21,7 +21,7 @@ namespace BOSS
         typedef const Image* (*ResourceCB)(chars name);
         ZaySon& Init(chars viewname, chars assetname = nullptr, ResourceCB cb = nullptr);
         void Reload(chars assetname = nullptr);
-        void Render(ZayPanel& panel);
+        bool Render(ZayPanel& panel);
         bool TickOnce();
         bool GlueCall(chars name, const Strings params);
         void JumpCall(chars name, sint32 count = 1);

@@ -64,6 +64,7 @@ namespace BOSS
         enum class RequestType {Unknown, Function, Variable};
 
     public:
+        virtual void SetViewName(chars viewname) = 0;
         virtual const String& ViewName() const = 0;
         virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars paramcomments = nullptr, chars insidenames = nullptr) = 0;
@@ -101,6 +102,7 @@ namespace BOSS
         void Load(chars viewname, const Context& context);
         void Reload(const Context& context);
         void SetLogger(LoggerCB cb);
+        void SetViewName(chars viewname) override;
         const String& ViewName() const override;
         ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
@@ -114,7 +116,7 @@ namespace BOSS
         const Strings AllComponentNames() const;
         const Strings AllGlueNames() const;
         const Strings AllGateNames() const;
-        void Render(ZayPanel& panel);
+        bool Render(ZayPanel& panel);
 
     private:
         void SetGlobalSolvers(Solvers& solvers) const;

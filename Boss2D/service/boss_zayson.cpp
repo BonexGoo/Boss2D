@@ -1532,7 +1532,7 @@ namespace BOSS
 
     void ZaySon::Load(chars viewname, const Context& context)
     {
-        mViewName = viewname;
+        SetViewName(viewname);
         Reload(context);
     }
 
@@ -1561,6 +1561,11 @@ namespace BOSS
     void ZaySon::SetLogger(LoggerCB cb)
     {
         mDebugLogger = cb;
+    }
+
+    void ZaySon::SetViewName(chars viewname)
+    {
+        mViewName = viewname;
     }
 
     const String& ZaySon::ViewName() const
@@ -1677,9 +1682,9 @@ namespace BOSS
         return Collector;
     }
 
-    void ZaySon::Render(ZayPanel& panel)
+    bool ZaySon::Render(ZayPanel& panel)
     {
-        if(!mUIElement) return;
+        if(!mUIElement) return false;
         Solvers GlobalSolvers;
         SetGlobalSolvers(GlobalSolvers);
         ZayUIElement::DebugLogs LogCollector;
@@ -1773,6 +1778,7 @@ namespace BOSS
                 }
             }
         }
+        return true;
     }
 
     void ZaySon::SetGlobalSolvers(Solvers& solvers) const

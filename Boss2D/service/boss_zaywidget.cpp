@@ -137,59 +137,60 @@ namespace BOSS
         {
             Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName, gAssetPath));
             mZaySon.Load(mZaySonViewName, Json);
-
-            Platform::SubProcedure(mProcedureID);
-            mProcedureID = Platform::AddProcedure(PE_1SEC,
-                [](payload data)->void
-                {
-                    auto Self = (ZayWidget*) data;
-                    // Json체크
-                    uint64 FileSize = 0, ModifyTime = 0;
-                    if(Asset::Exist(Self->mZaySonAssetName, gAssetPath, &FileSize, nullptr, nullptr, &ModifyTime))
-                    if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
-                    {
-                        Self->mZaySonFileSize = FileSize;
-                        Self->mZaySonModifyTime = ModifyTime;
-                        Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName, gAssetPath));
-                        Self->mZaySon.Reload(Json);
-                        Platform::UpdateAllViews();
-                    }
-
-                    // Pipe체크
-                    if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", gAssetPath, nullptr, nullptr, nullptr, &ModifyTime))
-                    {
-                        if(Self->mPipeModifyTime != 0)
-                        {
-                            ZayWidgetDOM::UnbindPipe(Self->mPipe);
-                            Platform::Pipe::Close(Self->mPipe);
-                            Self->mPipe = nullptr;
-                            Self->mPipeModifyTime = 0;
-                        }
-                    }
-                    else
-                    {
-                        if(Self->mPipeModifyTime != ModifyTime)
-                        {
-                            Self->mPipeModifyTime = ModifyTime;
-                            Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe", gAssetPath));
-                            const String PipeName = Json("pipe").GetText();
-                            ZayWidgetDOM::UnbindPipe(Self->mPipe);
-                            Platform::Pipe::Close(Self->mPipe);
-                            Self->mPipe = Platform::Pipe::Open(PipeName);
-                            ZayWidgetDOM::BindPipe(Self->mPipe);
-                            // 그동안 쌓인 송신내용
-                            for(sint32 i = 0, iend = Self->mPipeReservers.Count(); i < iend; ++i)
-                                Platform::Pipe::SendJson(Self->mPipe, Self->mPipeReservers[i]);
-                            Self->mPipeReservers.Clear();
-                        }
-                    }
-                }, this);
         }
+        else mZaySon.SetViewName(mZaySonViewName);
+
+        Platform::SubProcedure(mProcedureID);
+        mProcedureID = Platform::AddProcedure(PE_1SEC,
+            [](payload data)->void
+            {
+                auto Self = (ZayWidget*) data;
+                // Json체크
+                uint64 FileSize = 0, ModifyTime = 0;
+                if(Asset::Exist(Self->mZaySonAssetName, gAssetPath, &FileSize, nullptr, nullptr, &ModifyTime))
+                if(Self->mZaySonFileSize != FileSize || Self->mZaySonModifyTime != ModifyTime)
+                {
+                    Self->mZaySonFileSize = FileSize;
+                    Self->mZaySonModifyTime = ModifyTime;
+                    Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName, gAssetPath));
+                    Self->mZaySon.Reload(Json);
+                    Platform::UpdateAllViews();
+                }
+
+                // Pipe체크
+                if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", gAssetPath, nullptr, nullptr, nullptr, &ModifyTime))
+                {
+                    if(Self->mPipeModifyTime != 0)
+                    {
+                        ZayWidgetDOM::UnbindPipe(Self->mPipe);
+                        Platform::Pipe::Close(Self->mPipe);
+                        Self->mPipe = nullptr;
+                        Self->mPipeModifyTime = 0;
+                    }
+                }
+                else
+                {
+                    if(Self->mPipeModifyTime != ModifyTime)
+                    {
+                        Self->mPipeModifyTime = ModifyTime;
+                        Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe", gAssetPath));
+                        const String PipeName = Json("pipe").GetText();
+                        ZayWidgetDOM::UnbindPipe(Self->mPipe);
+                        Platform::Pipe::Close(Self->mPipe);
+                        Self->mPipe = Platform::Pipe::Open(PipeName);
+                        ZayWidgetDOM::BindPipe(Self->mPipe);
+                        // 그동안 쌓인 송신내용
+                        for(sint32 i = 0, iend = Self->mPipeReservers.Count(); i < iend; ++i)
+                            Platform::Pipe::SendJson(Self->mPipe, Self->mPipeReservers[i]);
+                        Self->mPipeReservers.Clear();
+                    }
+                }
+            }, this);
     }
 
-    void ZayWidget::Render(ZayPanel& panel)
+    bool ZayWidget::Render(ZayPanel& panel)
     {
-        mZaySon.Render(panel);
+        return mZaySon.Render(panel);
     }
 
     bool ZayWidget::TickOnce()
