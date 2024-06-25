@@ -514,3 +514,11 @@ bool ZDToken::TryDownloadOnce(sint32& peerid, Context& json)
     }
     return false;
 }
+
+void ZDToken::Destroy()
+{
+    for(sint32 i = 0, iend = mExecutedProcessIDs.Count(); i < iend; ++i)
+        if(auto CurProcessID = mExecutedProcessIDs.AccessByOrder(i))
+            Platform::Popup::CloseProgramDialog(*CurProcessID);
+    mExecutedProcessIDs.Reset();
+}

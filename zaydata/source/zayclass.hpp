@@ -157,12 +157,14 @@ public:
     bool UploadFlush(chars path);
     bool DownloadReady(sint32 peerid, chars memo, chars path, sint32 offset, sint32 size);
     bool TryDownloadOnce(sint32& peerid, Context& json);
+    void Destroy();
 
 public:
     String mProgramID; // ZayPro
     String mAuthor; // BonexGoo
     String mDeviceID; // ClInavrmjQ
     ZDRoutes mLockedRoutes; // [lockid:123456] → route
+    Map<ublock> mExecutedProcessIDs; // [runid] → ProcessID
 
 private:
     uint64 mExpiryMsec {0}; // 만료시각

@@ -46,6 +46,7 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             {
                 if(CurToken->HasExpiry(CurMsec))
                 {
+                    CurToken->Destroy();
                     m->mTokens.Remove(&GetTokenCode[0]);
                     m->invalidate();
                 }
@@ -231,7 +232,10 @@ ZDToken* zaydataData::ValidToken(sint32 peerid, chars token)
     {
         // 이전 토큰이 있을 경우 제거
         if(0 < mPeerTokens[peerid].Length())
+        {
+            mTokens(mPeerTokens[peerid]).Destroy();
             mTokens.Remove(mPeerTokens[peerid]);
+        }
         mPeerTokens[peerid] = token;
     }
     // 유효기간갱신
@@ -317,6 +321,8 @@ bool zaydataData::OnPacketOnce()
                     jump(!Type.Compare("FileUploading")) OnRecv_FileUploading(CurPeerID, RecvJson);
                     jump(!Type.Compare("FileUploaded")) OnRecv_FileUploaded(CurPeerID, RecvJson);
                     jump(!Type.Compare("DownloadFile")) OnRecv_DownloadFile(CurPeerID, RecvJson);
+                    jump(!Type.Compare("PythonExecute")) OnRecv_PythonExecute(CurPeerID, RecvJson);
+                    jump(!Type.Compare("PythonDestroy")) OnRecv_PythonDestroy(CurPeerID, RecvJson);
                 }
                 break;
             }
@@ -431,6 +437,7 @@ void zaydataData::OnRecv_Logout(sint32 peerid, const Context& json)
             // ValidStatus처리
             fish.mProfiles(CurToken->mAuthor).ValidStatus(mServer, false);
         }
+        CurToken->Destroy();
         mPeerTokens[peerid].Empty();
         mTokens.Remove(Token);
 
@@ -690,6 +697,66 @@ void zaydataData::OnRecv_DownloadFile(sint32 peerid, const Context& json)
         if(!CurToken->DownloadReady(peerid, Memo, Path, Offset, Size))
             SendError(peerid, json, String::Format("The file cannot be prepared for download(%s)",
                 (chars) Path));
+    }
+    else SendError(peerid, json, "Expired token");
+}
+
+void zaydataData::OnRecv_PythonExecute(sint32 peerid, const Context& json)
+{
+    const String Token = PACKET_TEXT("token");
+    const String RunID = PACKET_TEXT("runid");
+    const String Path = PACKET_TEXT("path");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        const String FilePath = ZDFocusable::MakeAssetDir(CurToken->mProgramID, Path).SubTail(1);
+        if(Platform::File::Exist(FilePath))
+        for(sint32 i = FilePath.Length() - 1; 0 <= i; --i)
+            if(FilePath[i] == '/' || FilePath[i] == '\\')
+            {
+                static sint32 GlobalPort = 9000 - 1; // 9000 ~ 9999
+                if(9999 < ++GlobalPort) GlobalPort = 9000;
+
+                ublock ProcessID = 0;
+                Platform::Popup::OpenProgramDialog("python.exe",
+                    String::Format("\"%s\" %d", (chars) FilePath, GlobalPort),
+                    false, false, FilePath.Left(i), &ProcessID);
+                if(ProcessID != 0)
+                {
+                    if(auto OldProcessID = CurToken->mExecutedProcessIDs.Access(RunID))
+                        Platform::Popup::CloseProgramDialog(*OldProcessID);
+                    CurToken->mExecutedProcessIDs(RunID) = ProcessID;
+                    // 응답처리
+                    Context Json;
+                    Json.At("type").Set("ExecutedPython");
+                    Json.At("runid").Set(RunID);
+                    Json.At("port").Set(String::FromInteger(GlobalPort));
+                    SendPacket(peerid, Json);
+                }
+                else SendError(peerid, json, "This file is not executable");
+                return;
+            }
+        SendError(peerid, json, "There is no file corresponding to path");
+    }
+    else SendError(peerid, json, "Expired token");
+}
+
+void zaydataData::OnRecv_PythonDestroy(sint32 peerid, const Context& json)
+{
+    const String Token = PACKET_TEXT("token");
+    const String RunID = PACKET_TEXT("runid");
+    if(auto CurToken = ValidToken(peerid, Token))
+    {
+        if(auto CurProcessID = CurToken->mExecutedProcessIDs.Access(RunID))
+        {
+            Platform::Popup::CloseProgramDialog(*CurProcessID);
+            CurToken->mExecutedProcessIDs.Remove(RunID);
+            // 응답처리
+            Context Json;
+            Json.At("type").Set("DestroyedPython");
+            Json.At("runid").Set(RunID);
+            SendPacket(peerid, Json);
+        }
+        else SendError(peerid, json, "There is no such process running");
     }
     else SendError(peerid, json, "Expired token");
 }

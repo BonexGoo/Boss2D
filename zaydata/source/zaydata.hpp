@@ -29,6 +29,8 @@ public:
     void OnRecv_FileUploading(sint32 peerid, const Context& json, ZDToken** token = nullptr);
     void OnRecv_FileUploaded(sint32 peerid, const Context& json);
     void OnRecv_DownloadFile(sint32 peerid, const Context& json);
+    void OnRecv_PythonExecute(sint32 peerid, const Context& json);
+    void OnRecv_PythonDestroy(sint32 peerid, const Context& json);
     void SendPacket(sint32 peerid, const Context& json);
     void SendError(sint32 peerid, const Context& json, chars text);
 
