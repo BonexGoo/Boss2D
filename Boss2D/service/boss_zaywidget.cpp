@@ -103,8 +103,9 @@ namespace BOSS
 
     ZayWidget& ZayWidget::operator=(ZayWidget&& rhs)
     {
+        mViewName = ToReference(rhs.mViewName);
+        mDomHeader = ToReference(rhs.mDomHeader);
         mZaySon = ToReference(rhs.mZaySon);
-        mZaySonViewName = ToReference(rhs.mZaySonViewName);
         mZaySonAssetName = ToReference(rhs.mZaySonAssetName);
         mZaySonFileSize = ToReference(rhs.mZaySonFileSize);
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
@@ -117,11 +118,12 @@ namespace BOSS
         return *this;
     }
 
-    ZaySon& ZayWidget::Init(chars viewname, chars assetname, ResourceCB cb)
+    ZaySon& ZayWidget::Init(chars viewname, chars assetname, ResourceCB cb, chars domheader)
     {
+        mViewName = viewname;
+        mDomHeader = (domheader)? domheader : "";
         BuildComponents(viewname, mZaySon, cb);
         BuildGlues(viewname, mZaySon, cb);
-        mZaySonViewName = viewname;
         if(assetname)
             Reload(assetname);
         return mZaySon;
@@ -129,16 +131,16 @@ namespace BOSS
 
     void ZayWidget::Reload(chars assetname)
     {
-        BOSS_ASSERT("Reload는 Init후 호출가능합니다", 0 < mZaySonViewName.Length());
+        BOSS_ASSERT("Reload는 Init후 호출가능합니다", 0 < mViewName.Length());
         if(assetname != nullptr) mZaySonAssetName = assetname;
         BOSS_ASSERT("assetname이 존재해야 합니다", 0 < mZaySonAssetName.Length());
 
         if(Asset::Exist(mZaySonAssetName, gAssetPath, &mZaySonFileSize, nullptr, nullptr, &mZaySonModifyTime))
         {
             Context Json(ST_Json, SO_NeedCopy, String::FromAsset(mZaySonAssetName, gAssetPath));
-            mZaySon.Load(mZaySonViewName, Json);
+            mZaySon.Load(mViewName, mDomHeader, Json);
         }
-        else mZaySon.SetViewName(mZaySonViewName);
+        else mZaySon.SetViewAndDom(mViewName, mDomHeader);
 
         Platform::SubProcedure(mProcedureID);
         mProcedureID = Platform::AddProcedure(PE_1SEC,

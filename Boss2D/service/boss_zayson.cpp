@@ -1530,9 +1530,9 @@ namespace BOSS
         return *this;
     }
 
-    void ZaySon::Load(chars viewname, const Context& context)
+    void ZaySon::Load(chars viewname, chars domheader, const Context& context)
     {
-        SetViewName(viewname);
+        SetViewAndDom(viewname, domheader);
         Reload(context);
     }
 
@@ -1563,14 +1563,20 @@ namespace BOSS
         mDebugLogger = cb;
     }
 
-    void ZaySon::SetViewName(chars viewname)
+    void ZaySon::SetViewAndDom(chars viewname, chars domheader)
     {
         mViewName = viewname;
+        mDomHeader = domheader;
     }
 
     const String& ZaySon::ViewName() const
     {
         return mViewName;
+    }
+
+    const String& ZaySon::DomHeader() const
+    {
+        return mDomHeader;
     }
 
     ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name,
@@ -1685,10 +1691,14 @@ namespace BOSS
     bool ZaySon::Render(ZayPanel& panel)
     {
         if(!mUIElement) return false;
+        if(0 < mDomHeader.Length())
+            Solver::SetReplacer("d.", mDomHeader + '.');
+
         Solvers GlobalSolvers;
         SetGlobalSolvers(GlobalSolvers);
         ZayUIElement::DebugLogs LogCollector;
         ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
+        Solver::ClearReplacer();
 
         // 수집된 점프콜 처리
         bool HasJumpCall = false;

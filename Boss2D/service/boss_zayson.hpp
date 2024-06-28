@@ -64,8 +64,9 @@ namespace BOSS
         enum class RequestType {Unknown, Function, Variable};
 
     public:
-        virtual void SetViewName(chars viewname) = 0;
+        virtual void SetViewAndDom(chars viewname, chars domheader) = 0;
         virtual const String& ViewName() const = 0;
+        virtual const String& DomHeader() const = 0;
         virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars paramcomments = nullptr, chars insidenames = nullptr) = 0;
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) = 0;
@@ -99,11 +100,12 @@ namespace BOSS
         typedef std::function<void(LogType type, chars title, chars detail)> LoggerCB;
 
     public:
-        void Load(chars viewname, const Context& context);
+        void Load(chars viewname, chars domheader, const Context& context);
         void Reload(const Context& context);
         void SetLogger(LoggerCB cb);
-        void SetViewName(chars viewname) override;
+        void SetViewAndDom(chars viewname, chars domheader) override;
         const String& ViewName() const override;
+        const String& DomHeader() const override;
         ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
             ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
@@ -123,6 +125,7 @@ namespace BOSS
 
     private:
         String mViewName;
+        String mDomHeader;
         void* mUIElement;
         Map<ZayExtend> mExtendMap;
         Strings mJumpCalls;

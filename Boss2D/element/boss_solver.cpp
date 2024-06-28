@@ -6,6 +6,8 @@
 namespace BOSS
 {
     static Map<SolverChain> gSolverChains;
+    static String gReplacerBefore;
+    static String gReplacerAfter;
 
     // 상수항
     class SolverLiteral : public SolverOperand
@@ -50,8 +52,15 @@ namespace BOSS
                 if(name[i] == '.')
                 {
                     if(auto CurChain = gSolverChains.Access(name, i))
-                    if(auto CurChainPair = CurChain->Access(&name[i + 1]))
-                        return CurChainPair->target();
+                    {
+                        if(0 < gReplacerBefore.Length() && !String::Compare(name, gReplacerBefore, gReplacerBefore.Length()))
+                        {
+                            if(auto CurChainPair = CurChain->Access(gReplacerAfter + &name[i + 1]))
+                                return CurChainPair->target();
+                        }
+                        else if(auto CurChainPair = CurChain->Access(&name[i + 1]))
+                            return CurChainPair->target();
+                    }
                     return nullptr;
                 }
             }
@@ -987,6 +996,18 @@ namespace BOSS
                 FindedChain->Remove(CurVariable);
             }
         }
+    }
+
+    void Solver::SetReplacer(chars before, chars after)
+    {
+        gReplacerBefore = before;
+        gReplacerAfter = after;
+    }
+
+    void Solver::ClearReplacer()
+    {
+        gReplacerBefore.Empty();
+        gReplacerAfter.Empty();
     }
 
     Solver& Solver::Parse(chars formula)

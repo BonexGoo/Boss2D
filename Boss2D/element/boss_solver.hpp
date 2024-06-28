@@ -175,6 +175,8 @@ namespace BOSS
         public: static void FindVariables(chars chain, SolverVariableCB cb);
         public: static void Remove(chars chain, chars variable);
         public: static void RemoveMatchedVariables(chars chain, chars keyword, SolverVariableCB cb = nullptr);
+        public: static void SetReplacer(chars before, chars after);
+        public: static void ClearReplacer();
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;

@@ -19,7 +19,7 @@ namespace BOSS
 
     public:
         typedef const Image* (*ResourceCB)(chars name);
-        ZaySon& Init(chars viewname, chars assetname = nullptr, ResourceCB cb = nullptr);
+        ZaySon& Init(chars viewname, chars assetname = nullptr, ResourceCB cb = nullptr, chars domheader = nullptr);
         void Reload(chars assetname = nullptr);
         bool Render(ZayPanel& panel);
         bool TickOnce();
@@ -29,7 +29,8 @@ namespace BOSS
         void SendLog(chars text);
 
     public:
-        inline const String& viewname() const {return mZaySonViewName;}
+        inline const String& viewname() const {return mViewName;}
+        inline const String& domheader() const {return mDomHeader;}
 
     public:
         static void SetAssetPath(id_assetpath assetpath);
@@ -37,8 +38,9 @@ namespace BOSS
         static void BuildGlues(chars viewname, ZaySonInterface& interface, ResourceCB pcb);
 
     private:
+        String mViewName;
+        String mDomHeader;
         ZaySon mZaySon;
-        String mZaySonViewName;
         String mZaySonAssetName;
         uint64 mZaySonFileSize;
         uint64 mZaySonModifyTime;
