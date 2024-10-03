@@ -9,6 +9,8 @@ bool __LINK_ADDON_ZIPA__() {return true;} // 링크옵션 /OPT:NOREF가 안되�
 
 #include "boss_addon_zipa.hpp"
 
+#include <addon/ziparchive-4.6.7_for_boss/ZipArchive/zlib/zlib.h>
+
 #include <boss.hpp>
 
 // 등록과정
@@ -20,6 +22,8 @@ namespace BOSS
     BOSS_DECLARE_ADDON_FUNCTION(Zipa, ToBuffer, buffer, id_zipa, sint32)
     BOSS_DECLARE_ADDON_FUNCTION(Zipa, GetFileInfo, chars, id_zipa, sint32, uint64*,
         bool*, uint64*, uint64*, uint64*, bool*, bool*, bool*, bool*)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Deflate, buffer, bytes, sint32)
+    BOSS_DECLARE_ADDON_FUNCTION(Zipa, Inflate, buffer, bytes, sint32, sint32)
 
     static autorun Bind_AddOn_Zipa()
     {
@@ -28,6 +32,8 @@ namespace BOSS
         Core_AddOn_Zipa_ExtractFile() = Customized_AddOn_Zipa_ExtractFile;
         Core_AddOn_Zipa_ToBuffer() = Customized_AddOn_Zipa_ToBuffer;
         Core_AddOn_Zipa_GetFileInfo() = Customized_AddOn_Zipa_GetFileInfo;
+        Core_AddOn_Zipa_Deflate() = Customized_AddOn_Zipa_Deflate;
+        Core_AddOn_Zipa_Inflate() = Customized_AddOn_Zipa_Inflate;
         return true;
     }
     static autorun _ = Bind_AddOn_Zipa();
@@ -220,6 +226,61 @@ namespace BOSS
             return CurZipa->GetFileInfo(fileindex, filesize,
                 isdir, ctime, mtime, atime, archive, hidden, readonly, system);
         return nullptr;
+    }
+
+    buffer Customized_AddOn_Zipa_Deflate(bytes binary, sint32 length)
+    {
+        uLong CompressedSize = compressBound(length);
+        buffer Result = Buffer::Alloc(BOSS_DBG CompressedSize);
+
+        z_stream DefStream;
+        DefStream.zalloc = Z_NULL;
+        DefStream.zfree = Z_NULL;
+        DefStream.opaque = Z_NULL;
+        DefStream.next_in = (Bytef*) binary;
+        DefStream.avail_in = (uInt) length;
+        DefStream.next_out = (Bytef*) Result;
+        DefStream.avail_out = (uInt) CompressedSize;
+
+        deflateInit(&DefStream, Z_DEFAULT_COMPRESSION);
+        deflate(&DefStream, Z_FINISH);
+        deflateEnd(&DefStream);
+        return Buffer::Realloc(BOSS_DBG Result, (sint32) DefStream.total_out);
+    }
+
+    buffer Customized_AddOn_Zipa_Inflate(bytes binary, sint32 length, sint32 hint)
+    {
+        uLong UncompressedSize = (0 < hint)? Math::Max(length, hint) : length * 2;
+        buffer Result = Buffer::Alloc(BOSS_DBG UncompressedSize);
+
+        z_stream InfStream;
+        InfStream.zalloc = Z_NULL;
+        InfStream.zfree = Z_NULL;
+        InfStream.opaque = Z_NULL;
+        InfStream.next_in = (Bytef*) binary;
+        InfStream.avail_in = (uInt) length;
+        InfStream.next_out = (Bytef*) Result;
+        InfStream.avail_out = (uInt) UncompressedSize;
+
+        if(inflateInit(&InfStream) != Z_OK)
+            return nullptr;
+
+        while(true)
+        {
+            int Code = inflate(&InfStream, Z_NO_FLUSH);
+            if(Code == Z_STREAM_END) break;
+            if(Code == Z_DATA_ERROR || Code == Z_MEM_ERROR)
+            {
+                inflateEnd(&InfStream);
+                return nullptr;
+            }
+            UncompressedSize *= 2;
+            Result = Buffer::Realloc(BOSS_DBG Result, UncompressedSize);
+            InfStream.next_out = ((Bytef*) Result) + InfStream.total_out;
+            InfStream.avail_out = ((uInt) UncompressedSize) - InfStream.total_out;
+        }
+        inflateEnd(&InfStream);
+        return Buffer::Realloc(BOSS_DBG Result, (sint32) InfStream.total_out);
     }
 }
 

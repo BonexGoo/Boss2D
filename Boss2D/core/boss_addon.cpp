@@ -514,6 +514,8 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Zipa, ToBuffer, buffer, return nullptr, id_zipa, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Zipa, GetFileInfo, chars, return "", id_zipa, sint32, uint64*,
         bool*, uint64*, uint64*, uint64*, bool*, bool*, bool*, bool*)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Deflate, buffer, return nullptr, bytes, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Zipa, Inflate, buffer, return nullptr, bytes, sint32, sint32)
 
     id_zipa AddOn::Zipa::Open(wchars zippath, sint32* filecount, chars extension)
     {return Core_AddOn_Zipa_Open()(zippath, filecount, extension);}
@@ -532,4 +534,10 @@ namespace BOSS
         bool* archive, bool* hidden, bool* readonly, bool* system)
     {return Core_AddOn_Zipa_GetFileInfo()(zipa, fileindex, filesize,
         isdir, ctime, mtime, atime, archive, hidden, readonly, system);}
+
+    buffer AddOn::Zipa::Deflate(bytes binary, sint32 length)
+    {return Core_AddOn_Zipa_Deflate()(binary, length);}
+
+    buffer AddOn::Zipa::Inflate(bytes binary, sint32 length, sint32 hint)
+    {return Core_AddOn_Zipa_Inflate()(binary, length, hint);}
 }

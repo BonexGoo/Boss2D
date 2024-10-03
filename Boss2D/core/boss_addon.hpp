@@ -283,6 +283,8 @@ namespace BOSS
             static chars GetFileInfo(id_zipa zipa, sint32 fileindex, uint64* filesize = nullptr,
                 bool* isdir = nullptr, uint64* ctime = nullptr, uint64* mtime = nullptr, uint64* atime = nullptr,
                 bool* archive = nullptr, bool* hidden = nullptr, bool* readonly = nullptr, bool* system = nullptr);
+            static buffer Deflate(bytes binary, sint32 length);
+            static buffer Inflate(bytes binary, sint32 length, sint32 hint = 0);
         };
     };
 }
