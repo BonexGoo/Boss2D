@@ -1,7 +1,7 @@
 ﻿#include <boss.hpp>
 #include "boss_platform_blank.hpp"
 
-#if !defined(BOSS_PLATFORM_QT5) && !defined(BOSS_PLATFORM_COCOS2DX) && !defined(BOSS_PLATFORM_NATIVE)
+#if !defined(BOSS_PLATFORM_QT5) && !defined(BOSS_PLATFORM_QT6) && !defined(BOSS_PLATFORM_COCOS2DX) && !defined(BOSS_PLATFORM_NATIVE)
 
     #if BOSS_WINDOWS
         #include <windows.h>
@@ -206,6 +206,13 @@
         }
 
         void Platform::SetWindowSize(sint32 width, sint32 height)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::SetWindowRect(sint32 x, sint32 y, sint32 width, sint32 height)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
@@ -501,7 +508,7 @@
 
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
+            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
         }
 
         void Platform::Popup::CloseProgramDialog(ublock pid)
@@ -691,7 +698,7 @@
         sint32 Platform::Utility::GetScreenCount()
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return 0
+            return 0;
         }
 
         void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
@@ -2347,7 +2354,7 @@
             return -1;
         }
 
-        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size, chars uuid_for_ble)
+        bool Platform::Bluetooth::Write(id_bluetooth bluetooth, bytes data, const sint32 size)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return false;

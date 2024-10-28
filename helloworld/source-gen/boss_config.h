@@ -5,7 +5,7 @@
 ////////////////////////////////////////
 //#define BOSS_PLATFORM_COCOS2DX
 //#define BOSS_PLATFORM_NATIVE
-#define BOSS_PLATFORM_QT5
+#define BOSS_PLATFORM_QT6
 
 ////////////////////////////////////////
 // AddOn
@@ -26,6 +26,7 @@
 #define BOSS_NEED_ADDON_TENSORFLOW 0
 #define BOSS_NEED_ADDON_TESSERACT  0
 #define BOSS_NEED_ADDON_TIF        0
+#define BOSS_NEED_ADDON_WEBP       0
 #define BOSS_NEED_ADDON_WEBRTC     0
 #define BOSS_NEED_ADDON_WEBSOCKET  0
 #define BOSS_NEED_ADDON_ZIP        0
@@ -40,7 +41,9 @@
 #define BOSS_NEED_PROFILE          0
 #define BOSS_NEED_RELEASE_TRACE    1
 #define BOSS_NEED_NATIVE_OPENGL    0
-#define BOSS_NEED_EMBEDDED_ASSET   (BOSS_NDEBUG | BOSS_WASM)
+#define BOSS_NEED_EMBEDDED_ASSET   (BOSS_WASM)
 #define BOSS_NEED_EMBEDDED_CACHE   (BOSS_WASM)
-#define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5"}
-#define BOSS_SUMMIT_DOMAIN         "summit.hucloud.kr:8109"
+#define BOSS_NEED_BUILD_RESIZING   0
+#define BOSS_NEED_BUILD_COLORING   0
+#define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5", "etc"}
+#define BOSS_SUMMIT_DOMAIN         "summit.zaylab.com:8109"

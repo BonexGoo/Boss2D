@@ -9,14 +9,13 @@ bool PlatformInit()
     #if BOSS_WASM
         Platform::InitForMDI(true);
     #else
-        Platform::InitForGL();
+        Platform::InitForMDI(); // MDI가 GL보다 더 빠름
         if(Asset::RebuildForEmbedded())
             return false;
     #endif
 
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Hello World");
-    Platform::SetWindowView("helloworldView"); // 또는 "helloworldWidget"
 
     // 윈도우 위치설정
     String WindowInfoString = String::FromAsset("windowinfo.json");
@@ -33,13 +32,11 @@ bool PlatformInit()
     Platform::SetWindowRect(ScreenRect.l + WindowX, ScreenRect.t + WindowY, WindowWidth, WindowHeight);
 
     // 아틀라스 동적로딩
-    String AtlasInfoString = String::FromAsset("atlasinfo.json");
+    const String AtlasInfoString = String::FromAsset("atlasinfo.json");
     Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
     R::AddAtlas("ui_atlaskey.png", "atlas.png", AtlasInfo);
-    if(R::IsAtlasUpdated())
-        R::RebuildAll();
-
+    if(R::IsAtlasUpdated()) R::RebuildAll();
     Platform::AddProcedure(PE_100MSEC,
         [](payload data)->void
         {
@@ -49,6 +46,8 @@ bool PlatformInit()
                 Platform::UpdateAllViews();
             }
         });
+
+    Platform::SetWindowView("helloworldWidget"); // 또는 "helloworldView"
     return true;
 }
 
@@ -56,7 +55,8 @@ void PlatformQuit()
 {
     // 윈도우
     const rect128 WindowRect = Platform::GetWindowRect(true);
-    const sint32 ScreenID = Platform::Utility::GetScreenID({(WindowRect.l + WindowRect.r) / 2, (WindowRect.t + WindowRect.b) / 2});
+    const sint32 ScreenID = Platform::Utility::GetScreenID(
+        {(WindowRect.l + WindowRect.r) / 2, (WindowRect.t + WindowRect.b) / 2});
     rect128 ScreenRect = {};
     Platform::Utility::GetScreenRect(ScreenRect, ScreenID);
     Context WindowInfo;
@@ -65,12 +65,12 @@ void PlatformQuit()
     WindowInfo.At("y").Set(String::FromInteger(WindowRect.t - ScreenRect.t));
     WindowInfo.At("w").Set(String::FromInteger(WindowRect.r - WindowRect.l));
     WindowInfo.At("h").Set(String::FromInteger(WindowRect.b - WindowRect.t));
-    WindowInfo.SaveJson().ToAsset("windowinfo.json");
+    WindowInfo.SaveJson().ToAsset("windowinfo.json", true);
 
     // 아틀라스
     Context AtlasInfo;
     R::SaveAtlas(AtlasInfo);
-    AtlasInfo.SaveJson().ToAsset("atlasinfo.json");
+    AtlasInfo.SaveJson().ToAsset("atlasinfo.json", true);
 }
 
 void PlatformFree()

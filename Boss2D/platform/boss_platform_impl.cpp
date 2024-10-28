@@ -520,7 +520,7 @@ namespace BOSS
                 g_OptionTextMutex.Lock();
                 String* Result = g_OptionTextMap.Access(name);
                 g_OptionTextMutex.Unlock();
-                return (Result)? *Result : "";
+                return (Result)? (chars) *Result : "";
             }
 
             Strings Option_GetOptionTextNames()
