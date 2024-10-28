@@ -7,7 +7,7 @@
 namespace BOSS
 {
 
-enum ProcedureEvent {PE_1SEC, PE_100MSEC, PE_FRAME, PE_1MSEC, PE_Max};
+enum ProcedureEvent {PE_1SEC, PE_100MSEC, PE_FRAME, PE_Max};
 enum UIRole {UIR_Menu = 0x1, UIR_Tool = 0x2, UIR_Both = 0x3};
 static UIRole operator|(UIRole a, UIRole b) {return (UIRole) (int(a) | int(b));}
 enum UIDirection {UID_Left = 0x1, UID_Top = 0x2, UID_Right = 0x4, UID_Bottom = 0x8, UID_Wherever = 0xF};

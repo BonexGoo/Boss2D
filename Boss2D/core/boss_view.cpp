@@ -37,7 +37,7 @@ namespace BOSS
 
     View::View()
     {
-        mNotifyProcedure = Platform::AddProcedure(PE_1MSEC,
+        mNotifyProcedure = Platform::AddProcedure(PE_FRAME,
             [](payload data)->void
             {
                 auto Self = (View*) data;

@@ -111,7 +111,7 @@
 
         void Platform::InitForMDI(bool frameless, bool topmost)
         {
-            g_window->initForWidget(frameless, topmost);
+            g_window->InitForWidget(frameless, topmost);
         }
 
         void Platform::SetViewCreator(View::CreatorCB creator)
@@ -126,8 +126,8 @@
 
         h_view Platform::SetWindowView(chars viewclass)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return h_view::null();
+            auto NewViewManager = PlatformImpl::Core::g_Creator(viewclass);
+            return g_window->View()->ChangeViewManager(NewViewManager);
         }
 
         void Platform::SetWindowPos(sint32 x, sint32 y)
@@ -644,20 +644,17 @@
 
         sint32 Platform::Utility::GetLogicalDpi()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 96;
+            return (g_window)? g_window->logicalDpiX() : 96;
         }
 
         sint32 Platform::Utility::GetPhysicalDpi()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 92;
+            return (g_window)? g_window->physicalDpiX() : 92;
         }
 
         float Platform::Utility::GetReversedGuiRatio()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 1;
+            return (g_window)? (96.0 / g_window->logicalDpiX()) * (g_window->physicalDpiX() / 92.0) : 1;
         }
 
         chars Platform::Utility::GetOSName()

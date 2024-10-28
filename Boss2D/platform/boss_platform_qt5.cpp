@@ -571,7 +571,6 @@
             case PE_1SEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000);
             case PE_100MSEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 100);
             case PE_FRAME: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000 / USER_FRAMECOUNT);
-            case PE_1MSEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 1);
             }
             BOSS_ASSERT("알 수 없는 ProcedureEvent입니다", false);
             return -1;
