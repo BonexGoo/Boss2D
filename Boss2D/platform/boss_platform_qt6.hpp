@@ -21,6 +21,7 @@
     #ifdef QT_HAVE_GRAPHICS
         #include <QMainWindow>
         #include <QWindow>
+        #include <QPainter>
         #include <QCloseEvent>
         #include <QResizeEvent>
         #include <QPaintEvent>
@@ -29,7 +30,107 @@
         #include <QKeyEvent>
     #endif
 
+    #include <QLocalSocket>
+    #include <QLocalServer>
+    #include <QSharedMemory>
+
     #define USER_FRAMECOUNT (60)
+
+    class FTFontClass
+    {
+    public:
+        FTFontClass()
+        {
+            mHeight = 0;
+        }
+        ~FTFontClass()
+        {
+        }
+        FTFontClass(const FTFontClass& rhs)
+        {
+            operator=(rhs);
+        }
+        FTFontClass& operator=(const FTFontClass& rhs)
+        {
+            mNickName = ToReference(rhs.mNickName);
+            mHeight = ToReference(rhs.mHeight);
+            return *this;
+        }
+
+    public:
+        String mNickName;
+        sint32 mHeight;
+    };
+
+    class CanvasClass
+    {
+    public:
+        CanvasClass();
+        CanvasClass(QPaintDevice* device);
+        ~CanvasClass();
+
+    public:
+        void Bind(QPaintDevice* device);
+        void Unbind();
+
+    private:
+        void BindCore(QPaintDevice* device);
+        void UnbindCore();
+
+    public:
+        // Getter
+        static inline bool enabled() {return (ST() != ST_FIRST());}
+        static inline CanvasClass* get() {return ST();}
+        inline QPainter& painter() {return mPainter;}
+        inline sint32 painter_width() const {return mPainterWidth;}
+        inline sint32 painter_height() const {return mPainterHeight;}
+        inline bool is_font_ft() const {return mUseFontFT;}
+        inline chars font_ft_nickname() const {return mFontFT.mNickName;}
+        inline sint32 font_ft_height() const {return mFontFT.mHeight;}
+        inline double zoom() const {return mPainter.transform().m11();}
+        inline const QRect& scissor() const {return mScissor;}
+        inline const QColor& color() const {return mColor;}
+        inline const ShaderRole& shader() const {return mShader;}
+        // Setter
+        inline void SetFont(chars name, sint32 size)
+        {mUseFontFT = false; mPainter.setFont(QFont(name, size));}
+        inline void SetFontFT(chars nickname, sint32 height)
+        {mUseFontFT = true; mFontFT.mNickName = nickname; mFontFT.mHeight = height;}
+        inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
+        {
+            mScissor = QRect(l, t, r - l, b - t);
+            mPainter.setClipRect(mScissor);
+        }
+        inline void SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
+        {mColor.setRgb(r, g, b, a);}
+        inline void SetMask(QPainter::CompositionMode mask)
+        {mPainter.setCompositionMode(mask);}
+        inline void SetShader(ShaderRole role)
+        {mShader = role;}
+
+    private:
+        static inline CanvasClass* ST_FIRST() {static CanvasClass _; return &_;}
+        static inline CanvasClass*& ST() {static CanvasClass* _ = ST_FIRST(); return _;}
+
+    private: // 서피스관련
+        const bool mIsTypeSurface;
+        bool mIsSurfaceBinded;
+
+    private: // 페인터관련
+        CanvasClass* mSavedCanvas;
+        ZoomState mSavedZoom;
+        QFont mSavedFont;
+        QPainter::CompositionMode mSavedMask;
+        QPainter mPainter;
+        sint32 mPainterWidth;
+        sint32 mPainterHeight;
+    private: // 오리지널옵션
+        bool mUseFontFT;
+        FTFontClass mFontFT;
+        QRect mScissor;
+        QColor mColor;
+        ShaderRole mShader;
+    };
 
     class MainView : public QWidget
     {
@@ -166,8 +267,8 @@
         void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
             // for assert dialog's recursive call
-            //if(CanvasClass::enabled()) return;
-            //CanvasClass Canvas(getWidgetForPaint());
+            if(CanvasClass::enabled()) return;
+            CanvasClass Canvas(this);
             mViewManager->OnRender(mWidth, mHeight, 0, 0, mWidth, mHeight);
 
             /*if(m_next_manager)
@@ -405,5 +506,262 @@
     private:
         MainView* mView {nullptr};
     };
+
+    #if !BOSS_WASM
+        typedef QSharedMemory SharedMemoryClass;
+        class PipeClass : public QObject
+        {
+            Q_OBJECT
+
+        public:
+            PipeClass(SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data)
+            {
+                mStatus = CS_Connecting;
+                mTempContext = nullptr;
+                mSemaphore = semaphore;
+                mEventCB = cb;
+                mCBData = data;
+            }
+            virtual ~PipeClass()
+            {
+                delete mTempContext;
+                delete mSemaphore;
+            }
+
+        public:
+            inline ConnectStatus Status() const {return mStatus;}
+            inline sint32 RecvAvailable() const {return mData.Count();}
+            sint32 Recv(uint08* data, sint32 size)
+            {
+                const sint32 MinSize = Math::Min(size, mData.Count());
+                Memory::Copy(data, &mData[0], MinSize);
+                if(MinSize == mData.Count()) mData.SubtractionAll();
+                else mData.SubtractionSection(0, MinSize);
+                return MinSize;
+            }
+            bool Send(bytes data, sint32 size)
+            {
+                bool Result = SendCore(data, size);
+                FlushCore();
+                return Result;
+            }
+
+        public:
+            virtual bool IsServer() const = 0;
+            virtual bool SendCore(bytes data, sint32 size) = 0;
+            virtual void FlushCore() = 0;
+
+        public:
+            const Context* RecvJson()
+            {
+                static const String JsonBegin("#json begin");
+                static const String JsonEnd("#json end");
+                delete mTempContext;
+                mTempContext = nullptr;
+
+                if(JsonEnd.Length() < mData.Count())
+                {
+                    String Message(mData);
+                    sint32 BeginPos = 0, EndPos = 0;
+                    if((EndPos = Message.Find(0, JsonEnd)) != -1)
+                    {
+                        if((BeginPos = Message.Find(0, JsonBegin)) != -1)
+                        {
+                            const sint32 JsonPos = BeginPos + JsonBegin.Length();
+                            const sint32 JsonSize = EndPos - JsonPos;
+                            mTempContext = new Context(ST_Json, SO_NeedCopy, &mData[JsonPos], JsonSize);
+                        }
+                        mData.SubtractionSection(0, EndPos + JsonEnd.Length());
+                    }
+                }
+                return mTempContext;
+            }
+            bool SendJson(const String& json)
+            {
+                bool Result = true;
+                Result &= SendCore((bytes) "#json begin", 11);
+                Result &= SendCore((bytes) (chars) json, json.Length());
+                Result &= SendCore((bytes) "#json end", 9);
+                FlushCore();
+                return Result;
+            }
+
+        protected:
+            ConnectStatus mStatus;
+            chararray mData;
+            Context* mTempContext;
+            SharedMemoryClass* mSemaphore;
+            Platform::Pipe::EventCB mEventCB;
+            payload mCBData;
+        };
+
+        class PipeServerClass : public PipeClass
+        {
+            Q_OBJECT
+
+        public:
+            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) : PipeClass(semaphore, cb, data)
+            {
+                mServer = server;
+                mLastClient = nullptr;
+                connect(server, &QLocalServer::newConnection, this, &PipeServerClass::OnNewConnection);
+            }
+            ~PipeServerClass() override
+            {
+                delete mServer;
+            }
+
+        private:
+            bool IsServer() const override
+            {
+                return true;
+            }
+            bool SendCore(bytes data, sint32 size) override
+            {
+                if(mLastClient)
+                    return (mLastClient->write((chars) data, size) == size);
+                return false;
+            }
+            void FlushCore() override
+            {
+                if(mLastClient)
+                    mLastClient->flush();
+            }
+
+        private slots:
+            void OnNewConnection()
+            {
+                QLocalSocket* NewClient = mServer->nextPendingConnection();
+                if(mStatus == CS_Connecting)
+                {
+                    mStatus = CS_Connected;
+                    mLastClient = NewClient;
+                    if(mEventCB)
+                        mEventCB(Platform::Pipe::Connected, mCBData);
+                    connect(mLastClient, &QLocalSocket::readyRead, this, &PipeServerClass::OnReadyRead);
+                    connect(mLastClient, &QLocalSocket::disconnected, this, &PipeServerClass::OnDisconnected);
+                }
+                else NewClient->disconnectFromServer();
+            }
+            void OnReadyRead()
+            {
+                mLastClient = (QLocalSocket*) sender();
+                if(sint64 PacketSize = mLastClient->bytesAvailable())
+                    mLastClient->read((char*) mData.AtDumpingAdded(PacketSize), PacketSize);
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Received, mCBData);
+            }
+            void OnDisconnected()
+            {
+                mStatus = CS_Connecting;
+                mLastClient = nullptr;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Disconnected, mCBData);
+            }
+
+        private:
+            QLocalServer* mServer;
+            QLocalSocket* mLastClient;
+        };
+
+        class PipeClientClass : public PipeClass
+        {
+            Q_OBJECT
+
+        public:
+            PipeClientClass(chars name, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) : PipeClass(semaphore, cb, data)
+            {
+                mClient = new QLocalSocket();
+                connect(mClient, &QLocalSocket::readyRead, this, &PipeClientClass::OnReadyRead);
+                connect(mClient, &QLocalSocket::connected, this, &PipeClientClass::OnConnected);
+                connect(mClient, &QLocalSocket::disconnected, this, &PipeClientClass::OnDisconnected);
+
+                mClient->abort();
+                mClient->connectToServer(name);
+            }
+            ~PipeClientClass() override
+            {
+                delete mClient;
+            }
+
+        private:
+            bool IsServer() const override
+            {
+                return false;
+            }
+            bool SendCore(bytes data, sint32 size) override
+            {
+                return (mClient->write((chars) data, size) == size);
+            }
+            void FlushCore() override
+            {
+                mClient->flush();
+            }
+
+        private slots:
+            void OnReadyRead()
+            {
+                if(sint64 PacketSize = mClient->bytesAvailable())
+                    mClient->read((char*) mData.AtDumpingAdded(PacketSize), PacketSize);
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Received, mCBData);
+            }
+            void OnConnected()
+            {
+                mStatus = CS_Connected;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Connected, mCBData);
+            }
+            void OnDisconnected()
+            {
+                mStatus = CS_Disconnected;
+                if(mEventCB)
+                    mEventCB(Platform::Pipe::Disconnected, mCBData);
+            }
+
+        private:
+            QLocalSocket* mClient;
+        };
+    #else
+        class SharedMemoryClass
+        {
+        public:
+            SharedMemoryClass(chars name) {}
+            ~SharedMemoryClass() {}
+        public:
+            bool attach() {return true;}
+            bool create(sint32 size) {return false;}
+        };
+        class PipeClass : public QObject
+        {
+            Q_OBJECT
+        public:
+            inline ConnectStatus Status() const {return CS_Disconnected;}
+            inline sint32 RecvAvailable() const {return 0;}
+            sint32 Recv(uint08* data, sint32 size) {return 0;}
+            bool Send(bytes data, sint32 size) {return false;}
+        public:
+            virtual bool IsServer() const {return false;}
+            virtual bool SendCore(bytes data, sint32 size) {return false;}
+            virtual void FlushCore() {}
+        public:
+            const Context* RecvJson() {return nullptr;}
+            bool SendJson(const String& json) {return false;}
+        };
+        class PipeServerClass : public PipeClass
+        {
+            Q_OBJECT
+        public:
+            PipeServerClass(QLocalServer* server, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) {}
+            ~PipeServerClass() {}
+        };
+        class PipeClientClass : public PipeClass
+        {
+            Q_OBJECT
+        public:
+            PipeClientClass(chars name, SharedMemoryClass* semaphore, Platform::Pipe::EventCB cb, payload data) {}
+            ~PipeClientClass() {}
+        };
+    #endif
 
 #endif

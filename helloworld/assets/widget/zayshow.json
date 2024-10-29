@@ -1,0 +1,8 @@
+﻿{
+	"atlas":["image/atlas.png"],
+	"flexible":1,
+	"scale":100,
+	"sizex":800,
+	"sizey":600,
+	"title":"HelloWorld"
+}

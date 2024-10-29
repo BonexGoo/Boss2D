@@ -99,6 +99,98 @@
         #endif
     }
 
+    CanvasClass::CanvasClass() : mIsTypeSurface(true)
+    {
+        mIsSurfaceBinded = false;
+        mSavedCanvas = nullptr;
+        mSavedZoom.scale = 1;
+        mSavedZoom.orientation = OR_Normal;
+        mSavedMask = QPainter::CompositionMode_SourceOver;
+        mPainterWidth = 0;
+        mPainterHeight = 0;
+        mUseFontFT = false;
+        mShader = SR_Normal;
+    }
+    CanvasClass::CanvasClass(QPaintDevice* device) : mIsTypeSurface(false)
+    {
+        mIsSurfaceBinded = false;
+        mSavedCanvas = nullptr;
+        mSavedZoom.scale = 1;
+        mSavedZoom.orientation = OR_Normal;
+        mSavedMask = QPainter::CompositionMode_SourceOver;
+        mPainterWidth = 0;
+        mPainterHeight = 0;
+        mUseFontFT = false;
+        mShader = SR_Normal;
+        BindCore(device);
+    }
+    CanvasClass::~CanvasClass()
+    {
+        if(!mIsTypeSurface)
+            UnbindCore();
+    }
+    void CanvasClass::Bind(QPaintDevice* device)
+    {
+        BOSS_ASSERT("본 함수의 사용은 Surface타입에서만 허용합니다", mIsTypeSurface);
+        if(!mIsSurfaceBinded)
+        {
+            mIsSurfaceBinded = true;
+            BindCore(device);
+        }
+    }
+    void CanvasClass::Unbind()
+    {
+        BOSS_ASSERT("본 함수의 사용은 Surface타입에서만 허용합니다", mIsTypeSurface);
+        if(mIsSurfaceBinded)
+        {
+            mIsSurfaceBinded = false;
+            UnbindCore();
+        }
+    }
+    void CanvasClass::BindCore(QPaintDevice* device)
+    {
+        BOSS_ASSERT("mSavedCanvas는 nullptr이어야 합니다", !mSavedCanvas);
+        if((mSavedCanvas = ST()) != ST_FIRST())
+        {
+            const bool M11Flag = (mSavedCanvas->mPainter.transform().m11() < 0);
+            const bool M12Flag = (mSavedCanvas->mPainter.transform().m12() < 0);
+            const bool M21Flag = (mSavedCanvas->mPainter.transform().m21() < 0);
+            mSavedCanvas->mSavedZoom.scale = mSavedCanvas->mPainter.transform().m11() * ((M11Flag)? -1 : 1);
+            if(M12Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW270;
+            else if(M11Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW180;
+            else if(M21Flag) mSavedCanvas->mSavedZoom.orientation = OR_CW90;
+            else mSavedCanvas->mSavedZoom.orientation = OR_Normal;
+
+            mSavedCanvas->mSavedFont = mSavedCanvas->mPainter.font();
+            mSavedCanvas->mSavedMask = mSavedCanvas->mPainter.compositionMode();
+            mSavedCanvas->mPainter.end();
+            mSavedCanvas->mPainterWidth = mPainterWidth;
+            mSavedCanvas->mPainterHeight = mPainterHeight;
+        }
+        mPainter.begin(device);
+        mPainter.setRenderHints(QPainter::Antialiasing);
+        mPainterWidth = device->width();
+        mPainterHeight = device->height();
+        ST() = this;
+    }
+    void CanvasClass::UnbindCore()
+    {
+        BOSS_ASSERT("CanvasClass는 스택식으로 해제해야 합니다", ST() == this);
+        mPainter.end();
+        if((ST() = mSavedCanvas) != ST_FIRST())
+        {
+            mPainterWidth = mSavedCanvas->mPainterWidth;
+            mPainterHeight = mSavedCanvas->mPainterHeight;
+            mSavedCanvas->mPainter.begin(mSavedCanvas->mPainter.device());
+            mSavedCanvas->mPainter.setRenderHints(QPainter::Antialiasing);
+            Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom.scale, mSavedCanvas->mSavedZoom.orientation);
+            mSavedCanvas->mPainter.setFont(mSavedCanvas->mSavedFont);
+            mSavedCanvas->mPainter.setClipRect(mSavedCanvas->mScissor);
+            mSavedCanvas->mPainter.setCompositionMode(mSavedCanvas->mSavedMask);
+            mSavedCanvas = nullptr;
+        }
+    }
+
     namespace BOSS
     {
         ////////////////////////////////////////////////////////////////////////////////
@@ -638,8 +730,12 @@
 
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            const QPoint CursorPos = QCursor::pos();
+            const QRect ClientRect = g_window->geometry();
+            pos.x = CursorPos.x() - ClientRect.left();
+            pos.y = CursorPos.y() - ClientRect.top();
+            return !(CursorPos.x() < ClientRect.left() || CursorPos.y() < ClientRect.top()
+                || ClientRect.right() <= CursorPos.x() || ClientRect.bottom() <= CursorPos.y());
         }
 
         sint32 Platform::Utility::GetLogicalDpi()
@@ -2229,55 +2325,78 @@
         ////////////////////////////////////////////////////////////////////////////////
         id_pipe Platform::Pipe::Open(chars name, EventCB cb, payload data)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            // 서버
+            SharedMemoryClass* Semaphore = new SharedMemoryClass(name);
+            if(!Semaphore->attach() && Semaphore->create(1))
+            {
+                QLocalServer* NewServer = new QLocalServer();
+                if(NewServer->listen(name))
+                    return (id_pipe)(PipeClass*) new PipeServerClass(NewServer, Semaphore, cb, data);
+                delete NewServer;
+            }
+            delete Semaphore;
+
+            // 클라이언트
+            Semaphore = new SharedMemoryClass((chars) (String(name) + ".client"));
+            if(!Semaphore->attach() && Semaphore->create(1))
+                return (id_pipe)(PipeClass*) new PipeClientClass(name, Semaphore, cb, data);
+            delete Semaphore;
             return nullptr;
         }
 
         void Platform::Pipe::Close(id_pipe pipe)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            auto OldPipe = (PipeClass*) pipe;
+            delete OldPipe;
         }
 
         bool Platform::Pipe::IsServer(id_pipe pipe)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return false;
+            return CurPipe->IsServer();
         }
 
         ConnectStatus Platform::Pipe::Status(id_pipe pipe)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return CS_Disconnected;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return CS_Disconnected;
+            return CurPipe->Status();
         }
 
         sint32 Platform::Pipe::RecvAvailable(id_pipe pipe)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return 0;
+            return CurPipe->RecvAvailable();
         }
 
         sint32 Platform::Pipe::Recv(id_pipe pipe, uint08* data, sint32 size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return 0;
+            return CurPipe->Recv(data, size);
         }
 
         const Context* Platform::Pipe::RecvJson(id_pipe pipe)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return nullptr;
+            return CurPipe->RecvJson();
         }
 
         bool Platform::Pipe::Send(id_pipe pipe, bytes data, sint32 size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return false;
+            return CurPipe->Send(data, size);
         }
 
         bool Platform::Pipe::SendJson(id_pipe pipe, const String& json)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            auto CurPipe = (PipeClass*) pipe;
+            if(!CurPipe) return false;
+            return CurPipe->SendJson(json);
         }
 
         ////////////////////////////////////////////////////////////////////////////////
