@@ -5,6 +5,8 @@
 
     #if BOSS_WINDOWS
         #include <windows.h>
+    #elif BOSS_WASM
+        #include <emscripten.h>
     #elif _POSIX_C_SOURCE >= 199309L
         #include <time.h>
     #else
@@ -12,10 +14,81 @@
     #endif
     #include <stdio.h>
     #include <stdarg.h>
+    #include <format/boss_bmp.hpp>
+
+    #if BOSS_ANDROID
+        static JavaVM* g_jvm = nullptr;
+        jint JNI_OnLoad(JavaVM* vm, void*)
+        {
+            g_jvm = vm;
+            BOSS_TRACE("g_jvm=0x%08X", g_jvm);
+            return JNI_VERSION_1_6;
+        }
+
+        JNIEnv* GetAndroidJNIEnv()
+        {
+            static QAndroidJniEnvironment g_environment;
+            return g_environment;
+        }
+        jobject GetAndroidApplicationActivity()
+        {
+            QAndroidJniObject Activity = QtAndroid::androidActivity();
+            return GetAndroidJNIEnv()->NewGlobalRef(Activity.object());
+        }
+        void SetAndroidApplicationActivity(jobject activity)
+        {
+        }
+        jobject GetAndroidApplicationContext()
+        {
+            QAndroidJniObject Context = QtAndroid::androidContext();
+            return GetAndroidJNIEnv()->NewGlobalRef(Context.object());
+        }
+        void SetAndroidApplicationContext(jobject context)
+        {
+        }
+    #elif BOSS_IPHONE
+        void* GetIOSApplicationUIView()
+        {
+            return QGuiApplication::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
+        }
+    #elif BOSS_WASM
+        // Ready
+        static bool g_WasmReady = false;
+        extern "C" void EMSCRIPTEN_KEEPALIVE OnWasmReady()
+        {
+            g_WasmReady = true;
+        }
+        void WaitForWasmReady()
+        {
+            while(!g_WasmReady)
+                emscripten_sleep(10);
+        }
+        // Flush
+        static bool g_WasmFlush = false;
+        extern "C" void EMSCRIPTEN_KEEPALIVE OnWasmFlush()
+        {
+            g_WasmFlush = true;
+        }
+        void WaitForWasmFlush()
+        {
+            g_WasmFlush = false;
+            EM_ASM
+            (
+                FS.syncfs(false, function(err)
+                    {
+                        if(!err)
+                            Module._OnWasmFlush();
+                    });
+            );
+            while(!g_WasmFlush)
+                emscripten_sleep(10);
+        }
+    #endif
 
     MainWindow* g_window = nullptr;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
+    static bool g_canPopupAssert = false;
 
 	#if BOSS_NEED_MAIN
         extern bool PlatformInit();
@@ -24,6 +97,7 @@
 
         int main(int argc, char* argv[])
         {
+            g_canPopupAssert = true;
             int result = 0;
             {
                 QApplication app(argc, argv);
@@ -35,12 +109,22 @@
 
                 if(PlatformInit())
                 {
+                    mainWindow.SetInitedPlatform();
+                    if(mainWindow.FirstVisible())
+                    {
+                        #if BOSS_NEED_FULLSCREEN
+                            mainWindow.showFullScreen();
+                        #else
+                            mainWindow.show();
+                        #endif
+                    }
                     result = app.exec();
                     PlatformQuit();
                 }
                 g_window = nullptr;
                 Platform::Popup::HideSplash();
             }
+            g_canPopupAssert = false;
 
             PlatformFree();
             // 스토리지(TLS) 영구제거
@@ -56,7 +140,16 @@
             String::Format("[METHOD] %s()", BOSS_DBG_FUNC),
             String::Format("[FILE/LINE] %s(%dLn)", BOSS_DBG_FILE, BOSS_DBG_LINE),
             String::Format("[THREAD_ID] -unknown-")};
-        #if BOSS_WINDOWS
+        #if BOSS_ANDROID
+            __android_log_print(7, "*******", "************************************************************");
+            __android_log_print(7, "*******", name);
+            __android_log_print(7, "*******", "------------------------------------------------------------");
+            __android_log_print(7, "*******", (chars) AssertInfo[0]);
+            __android_log_print(7, "*******", (chars) AssertInfo[1]);
+            __android_log_print(7, "*******", (chars) AssertInfo[2]);
+            __android_log_print(7, "*******", (chars) AssertInfo[3]);
+            __android_log_print(7, "*******", "************************************************************");
+        #elif BOSS_WINDOWS
             OutputDebugStringW(L"************************************************************\n");
             OutputDebugStringW((wchars) WString::FromChars(name));
             OutputDebugStringW(L"\n------------------------------------------------------------\n");
@@ -67,21 +160,41 @@
             OutputDebugStringW(L"************************************************************\n");
         #endif
 
-        #if BOSS_WINDOWS
-            WString AssertMessage = WString::Format(
-                L"%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
-                L"(YES is Break, NO is Ignore)\t\t",
-                (wchars) WString::FromChars(name),
-                (wchars) WString::FromChars(AssertInfo[0]),
-                (wchars) WString::FromChars(AssertInfo[1]),
-                (wchars) WString::FromChars(AssertInfo[2]),
-                (wchars) WString::FromChars(AssertInfo[3]));
-            switch(MessageBoxW(NULL, AssertMessage, L"ASSERT BREAK", MB_ICONWARNING | MB_ABORTRETRYIGNORE))
-            {
-            case IDABORT: return 0;
-            case IDIGNORE: return 1;
-            }
-        #endif
+        static bool IsRunning = false;
+        if(!IsRunning && g_canPopupAssert)
+        {
+            IsRunning = true;
+            #if BOSS_WINDOWS
+                WString AssertMessage = WString::Format(
+                    L"%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
+                    L"(YES is Break, NO is Ignore)\t\t",
+                    (wchars) WString::FromChars(name),
+                    (wchars) WString::FromChars(AssertInfo[0]),
+                    (wchars) WString::FromChars(AssertInfo[1]),
+                    (wchars) WString::FromChars(AssertInfo[2]),
+                    (wchars) WString::FromChars(AssertInfo[3]));
+                switch(MessageBoxW(NULL, AssertMessage, L"ASSERT BREAK", MB_ICONWARNING | MB_ABORTRETRYIGNORE))
+                {
+                case IDABORT: return 0;
+                case IDIGNORE: return 1;
+                }
+            #elif BOSS_LINUX
+                String AssertMessage = String::Format(
+                    "%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
+                    "(Ok: Break, Cancel: Ignore, ⓧ: Ignore all)\t\t", name,
+                    (chars) AssertInfo[0],
+                    (chars) AssertInfo[1],
+                    (chars) AssertInfo[2],
+                    (chars) AssertInfo[3]);
+                switch(Platform::Popup::MessageDialog("ASSERT BREAK", AssertMessage, DBT_OK_CANCEL_IGNORE))
+                {
+                case 0: return 0; // DBT_OK
+                case 1: return 2; // DBT_CANCEL
+                case 2: return 1; // DBT_IGNORE
+                }
+            #endif
+            IsRunning = false;
+        }
         return 2;
     }
 
@@ -93,7 +206,9 @@
         boss_vsnprintf(TraceMessage, 10240, text, Args);
         va_end(Args);
 
-        #if BOSS_WINDOWS
+        #if BOSS_ANDROID
+            __android_log_print(7, "#######", TraceMessage);
+        #elif BOSS_WINDOWS
             OutputDebugStringW((wchars) WString::FromChars(TraceMessage));
             OutputDebugStringW(L"\n");
         #endif
@@ -108,7 +223,6 @@
         mSavedMask = QPainter::CompositionMode_SourceOver;
         mPainterWidth = 0;
         mPainterHeight = 0;
-        mUseFontFT = false;
         mShader = SR_Normal;
     }
     CanvasClass::CanvasClass(QPaintDevice* device) : mIsTypeSurface(false)
@@ -120,7 +234,6 @@
         mSavedMask = QPainter::CompositionMode_SourceOver;
         mPainterWidth = 0;
         mPainterHeight = 0;
-        mUseFontFT = false;
         mShader = SR_Normal;
         BindCore(device);
     }
@@ -239,8 +352,10 @@
 
         rect128 Platform::GetWindowRect(bool normally)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return {0, 0, 0, 0};
+            const QRect LastGeometry = g_window->geometry();
+            return {LastGeometry.x(), LastGeometry.y(),
+                (LastGeometry.x() + LastGeometry.width()),
+                (LastGeometry.y() + LastGeometry.height())};
         }
 
         void Platform::SetWindowVisible(bool visible)
@@ -403,7 +518,23 @@
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto Views = View::SearchBegin(viewclass))
+            {
+                struct Payload
+                {
+                    chars topic;
+                    id_share in;
+                    NotifyType type;
+                    bool directly;
+                } Param = {topic, in, type, directly};
+
+                Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
+                {
+                    const Payload* Param = (const Payload*) param;
+                    g_window->View()->SendNotify(Param->type, Param->topic, Param->in, nullptr, Param->directly);
+                }, &Param);
+                View::SearchEnd();
+            }
         }
 
         void Platform::SendKeyEvent(h_view view, sint32 code, chars text, bool pressed)
@@ -486,56 +617,83 @@
             return PlatformImpl::Wrap::Popup_MoveWindowGroupCaptured(windowparams, release);
         }
 
+        static QString g_tracker_fontfamily;
+        static sint32 g_tracker_fontsize = 0;
         void Platform::Popup::SetTrackerFont(chars family, sint32 pointsize)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_tracker_fontfamily = QString::fromUtf8(family);
+            g_tracker_fontsize = (sint32) Math::Round(pointsize * Platform::Utility::GetReversedGuiRatio());
         }
 
         bool Platform::Popup::OpenEditTracker(String& text, UIEditType type, sint32 l, sint32 t, sint32 r, sint32 b, bool* enter)
         {
             if(r <= l || b <= t) return false;
 
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            EditTracker* NewTracker = new EditTracker(type, QString::fromUtf8(text, -1), g_window->View());
+            if(0 < g_tracker_fontsize)
+                NewTracker->setFont(QFont(g_tracker_fontfamily, g_tracker_fontsize));
+            switch(NewTracker->Popup(l, t, r - l, b - t))
+            {
+            case EditTracker::TCT_Enter:
+                if(enter) *enter = true;
+                break;
+            case EditTracker::TCT_Escape:
+            case EditTracker::TCT_ForcedExit:
+                delete NewTracker;
+                return false;
+            case EditTracker::TCT_FocusOut:
+                break;
+            }
+
+            text = NewTracker->text().toUtf8().constData();
+            delete NewTracker;
+            return true;
         }
 
         sint32 Platform::Popup::OpenListTracker(Strings textes, sint32 l, sint32 t, sint32 r, sint32 b)
         {
             if(r <= l || b <= t) return -1;
 
-            BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            ListTracker* NewTracker = new ListTracker(textes, g_window->View());
+            if(0 < g_tracker_fontsize)
+                NewTracker->setFont(QFont(g_tracker_fontfamily, g_tracker_fontsize));
+            const sint32 Result = NewTracker->Popup(l, t, r - l, b - t);
+            delete NewTracker;
+            return Result;
         }
 
         void Platform::Popup::CloseAllTracker()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            Tracker::CloseAll(g_window->View());
         }
 
         bool Platform::Popup::HasOpenedTracker()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            return Tracker::HasAnyone(g_window->View());
         }
 
         void Platform::Popup::ShowToolTip(String text)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QToolTip::showText(QCursor::pos(), QString::fromUtf8(text, -1));
         }
 
         void Platform::Popup::HideToolTip()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QToolTip::hideText();
         }
 
+        static QSplashScreen* g_splash = nullptr;
         void Platform::Popup::ShowSplash(chars filepath)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            HideSplash();
+            g_splash = new QSplashScreen(QPixmap(filepath));
+            g_splash->show();
         }
 
         void Platform::Popup::HideSplash()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            delete g_splash;
+            g_splash = nullptr;
         }
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -582,7 +740,7 @@
 
         void Platform::Utility::ExitProgram()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QApplication::quit();
         }
 
         String Platform::Utility::GetProgramPath(bool dironly)
@@ -730,6 +888,7 @@
 
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
+            if(!g_window) return false;
             const QPoint CursorPos = QCursor::pos();
             const QRect ClientRect = g_window->geometry();
             pos.x = CursorPos.x() - ClientRect.left();
@@ -964,27 +1123,63 @@
         ////////////////////////////////////////////////////////////////////////////////
         void Platform::Graphics::SetScissor(double x, double y, double w, double h)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const double LastZoom = CanvasClass::get()->zoom();
+            CanvasClass::get()->SetScissor(
+                Math::Floor(x * LastZoom) / LastZoom,
+                Math::Floor(y * LastZoom) / LastZoom,
+                Math::Ceil((x + w) * LastZoom) / LastZoom,
+                Math::Ceil((y + h) * LastZoom) / LastZoom);
         }
 
         void Platform::Graphics::SetColor(uint08 r, uint08 g, uint08 b, uint08 a)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->SetColor(r, g, b, a);
         }
 
         void Platform::Graphics::SetMask(MaskRole role)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            switch(role)
+            {
+            case MR_SrcOver: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceOver); break;
+            case MR_DstOver: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationOver); break;
+            case MR_Clear: CanvasClass::get()->SetMask(QPainter::CompositionMode_Clear); break;
+            case MR_Src: CanvasClass::get()->SetMask(QPainter::CompositionMode_Source); break;
+            case MR_Dst: CanvasClass::get()->SetMask(QPainter::CompositionMode_Destination); break;
+            case MR_SrcIn: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceIn); break;
+            case MR_DstIn: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationIn); break;
+            case MR_SrcOut: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceOut); break;
+            case MR_DstOut: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationOut); break;
+            case MR_SrcAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_SourceAtop); break;
+            case MR_DstAtop: CanvasClass::get()->SetMask(QPainter::CompositionMode_DestinationAtop); break;
+            case MR_Xor: CanvasClass::get()->SetMask(QPainter::CompositionMode_Xor); break;
+            case MR_Plus: CanvasClass::get()->SetMask(QPainter::CompositionMode_Plus); break;
+            case MR_Multiply: CanvasClass::get()->SetMask(QPainter::CompositionMode_Multiply); break;
+            case MR_Screen: CanvasClass::get()->SetMask(QPainter::CompositionMode_Screen); break;
+            case MR_Overlay: CanvasClass::get()->SetMask(QPainter::CompositionMode_Overlay); break;
+            case MR_Darken: CanvasClass::get()->SetMask(QPainter::CompositionMode_Darken); break;
+            case MR_Lighten: CanvasClass::get()->SetMask(QPainter::CompositionMode_Lighten); break;
+            case MR_ColorDodge: CanvasClass::get()->SetMask(QPainter::CompositionMode_ColorDodge); break;
+            case MR_ColorBurn: CanvasClass::get()->SetMask(QPainter::CompositionMode_ColorBurn); break;
+            case MR_HardLight: CanvasClass::get()->SetMask(QPainter::CompositionMode_HardLight); break;
+            case MR_SoftLight: CanvasClass::get()->SetMask(QPainter::CompositionMode_SoftLight); break;
+            case MR_Difference: CanvasClass::get()->SetMask(QPainter::CompositionMode_Difference); break;
+            case MR_Exclusion: CanvasClass::get()->SetMask(QPainter::CompositionMode_Exclusion); break;
+            }
         }
 
         void Platform::Graphics::SetShader(ShaderRole role)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->SetShader(role);
         }
 
         void Platform::Graphics::SetFont(chars name, float size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #if BOSS_MAC_OSX
+                const float DeviceRatio = 1.25 * Platform::Utility::GetReversedGuiRatio();
+            #else
+                const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
+            #endif
+            CanvasClass::get()->SetFont(name, (sint32) (size * DeviceRatio));
         }
 
         void Platform::Graphics::SetFontForFreeType(chars nickname, sint32 height)
@@ -994,17 +1189,49 @@
 
         void Platform::Graphics::SetZoom(double zoom, OrientationRole orientation)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const sint32 Width = CanvasClass::get()->painter_width();
+            const sint32 Height = CanvasClass::get()->painter_height();
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            QTransform NewTransform(zoom, 0, 0, zoom, 0, 0);
+            switch(orientation)
+            {
+            case OR_CW90:
+                NewTransform.translate(Width / zoom, 0);
+                NewTransform.rotate(89.999999); // QT버그대응
+                break;
+            case OR_CW180:
+                NewTransform.translate(Width / zoom, Height / zoom);
+                NewTransform.rotate(180);
+                break;
+            case OR_CW270:
+                NewTransform.translate(0, Height / zoom);
+                NewTransform.rotate(-89.999999); // QT버그대응
+                break;
+            }
+            hook(CanvasClass::get()->painter())
+            {
+                fish.setTransform(NewTransform);
+                if(zoom < 1)
+                {
+                    if(!fish.testRenderHint(QPainter::SmoothPixmapTransform))
+                        fish.setRenderHint(QPainter::SmoothPixmapTransform, true);
+                }
+                else if(fish.testRenderHint(QPainter::SmoothPixmapTransform))
+                    fish.setRenderHint(QPainter::SmoothPixmapTransform, false);
+            }
         }
 
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
+            CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
+            CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
 
         void Platform::Graphics::FillRect(float x, float y, float w, float h)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
         }
 
         void Platform::Graphics::FillRectToFBO(float x, float y, float w, float h, Color color, uint32 fbo)
@@ -1014,32 +1241,63 @@
 
         void Platform::Graphics::FillCircle(float x, float y, float w, float h)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->painter().setPen(Qt::NoPen);
+            CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
         void Platform::Graphics::FillPolygon(float x, float y, Points p)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const sint32 Count = p.Count();
+            if(Count < 3) return;
+
+            QPointF* NewPoint = new QPointF[Count];
+            for(sint32 i = 0; i < Count; ++i)
+            {
+                NewPoint[i].setX(x + p[i].x);
+                NewPoint[i].setY(y + p[i].y);
+            }
+
+            CanvasClass::get()->painter().setPen(Qt::NoPen);
+            CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().drawPolygon(NewPoint, Count);
+            delete[] NewPoint;
         }
 
         void Platform::Graphics::DrawRect(float x, float y, float w, float h, float thick)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QPen NewPen(QBrush(CanvasClass::get()->color()), thick);
+            NewPen.setCapStyle(Qt::FlatCap);
+            NewPen.setJoinStyle(Qt::MiterJoin);
+            CanvasClass::get()->painter().setPen(NewPen);
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
         void Platform::Graphics::DrawLine(const Point& begin, const Point& end, float thick)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawLine(QPointF(begin.x, begin.y), QPointF(end.x, end.y));
         }
 
         void Platform::Graphics::DrawCircle(float x, float y, float w, float h, float thick)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
         void Platform::Graphics::DrawBezier(const Vector& begin, const Vector& end, float thick)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QPainterPath NewPath;
+            NewPath.moveTo(begin.x, begin.y);
+            NewPath.cubicTo(begin.x + begin.vx, begin.y + begin.vy,
+                end.x + end.vx, end.y + end.vy, end.x, end.y);
+
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawPolyLine(float x, float y, Points p, float thick, bool ring)
@@ -1047,7 +1305,18 @@
             const sint32 Count = p.Count();
             if(Count < 2) return;
 
-            BOSS_ASSERT("Further development is needed.", false);
+            const sint32 RealCount = (ring)? Count + 1 : Count;
+            QPointF* NewPoint = new QPointF[RealCount];
+            for(sint32 i = 0; i < RealCount; ++i)
+            {
+                NewPoint[i].setX(x + p[i % Count].x);
+                NewPoint[i].setY(y + p[i % Count].y);
+            }
+
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
+            delete[] NewPoint;
         }
 
         void Platform::Graphics::DrawPolyBezier(float x, float y, Points p, float thick, bool showfirst, bool showlast)
@@ -1055,7 +1324,30 @@
             const sint32 Count = p.Count();
             if(Count < 4) return;
 
-            BOSS_ASSERT("Further development is needed.", false);
+            QPainterPath NewPath;
+            if(showfirst)
+            {
+                NewPath.moveTo(x + p[0].x, y + p[0].y);
+                NewPath.lineTo(x + p[1].x, y + p[1].y);
+            }
+            else NewPath.moveTo(x + p[1].x, y + p[1].y);
+
+            for(sint32 i = 2; i < Count - 1; ++i)
+            {
+                const sint32 A = i - 2, B = i - 1, C = i, D = i + 1;
+                const float Ctrl1X = x + p[B].x + ((A == 0)? (p[B].x - p[A].x) * 6 : (p[C].x - p[A].x) / 6);
+                const float Ctrl1Y = y + p[B].y + ((A == 0)? (p[B].y - p[A].y) * 6 : (p[C].y - p[A].y) / 6);
+                const float Ctrl2X = x + p[C].x + ((D == Count - 1)? (p[C].x - p[D].x) * 6 : (p[B].x - p[D].x) / 6);
+                const float Ctrl2Y = y + p[C].y + ((D == Count - 1)? (p[C].y - p[D].y) * 6 : (p[B].y - p[D].y) / 6);
+                NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
+            }
+
+            if(showlast)
+                NewPath.lineTo(x + p[-1].x, y + p[-1].y);
+
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawRingBezier(float x, float y, Points p, float thick, float curve)
@@ -1063,7 +1355,21 @@
             const sint32 Count = p.Count();
             if(Count < 3) return;
 
-            BOSS_ASSERT("Further development is needed.", false);
+            QPainterPath NewPath;
+            NewPath.moveTo(x + p[0].x, y + p[0].y);
+            for(sint32 i = 0; i < Count; ++i)
+            {
+                const sint32 A = (i + Count - 1) % Count, B = i, C = (i + 1) % Count, D = (i + 2) % Count;
+                const float Ctrl1X = x + p[B].x + (p[C].x - p[A].x) * curve;
+                const float Ctrl1Y = y + p[B].y + (p[C].y - p[A].y) * curve;
+                const float Ctrl2X = x + p[C].x + (p[B].x - p[D].x) * curve;
+                const float Ctrl2Y = y + p[C].y + (p[B].y - p[D].y) * curve;
+                NewPath.cubicTo(Ctrl1X, Ctrl1Y, Ctrl2X, Ctrl2Y, x + p[C].x, y + p[C].y);
+            }
+
+            CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().drawPath(NewPath);
         }
 
         void Platform::Graphics::DrawTextureToFBO(id_texture_read texture, float tx, float ty, float tw, float th,
@@ -1074,52 +1380,173 @@
 
         id_image Platform::Graphics::CreateImage(id_bitmap_read bitmap, bool mirrored)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            const sint32 SrcWidth = Bmp::GetWidth(bitmap);
+            const sint32 SrcHeight = Bmp::GetHeight(bitmap);
+            QImage NewImage(SrcWidth, SrcHeight, QImage::Format_ARGB32);
+
+            Bmp::bitmappixel* DstBits = (Bmp::bitmappixel*) NewImage.bits();
+            const Bmp::bitmappixel* SrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
+            if(mirrored)
+                Memory::Copy(DstBits, SrcBits, sizeof(Bmp::bitmappixel) * SrcWidth * SrcHeight);
+            else for(sint32 y = 0; y < SrcHeight; ++y)
+                Memory::Copy(&DstBits[y * SrcWidth], &SrcBits[(SrcHeight - 1 - y) * SrcWidth], sizeof(Bmp::bitmappixel) * SrcWidth);
+
+            buffer NewPixmap = Buffer::Alloc<QPixmap>(BOSS_DBG 1);
+            ((QPixmap*) NewPixmap)->convertFromImage(NewImage);
+            return (id_image) NewPixmap;
         }
 
         sint32 Platform::Graphics::GetImageWidth(id_image_read image)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(const QPixmap* CurPixmap = (const QPixmap*) image)
+                return CurPixmap->width();
             return 0;
         }
 
         sint32 Platform::Graphics::GetImageHeight(id_image_read image)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(const QPixmap* CurPixmap = (const QPixmap*) image)
+                return CurPixmap->height();
             return 0;
         }
 
         void Platform::Graphics::RemoveImage(id_image image)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            Buffer::Free((buffer) image);
         }
+
+        static uint08 g_alphaTable[256 * 256];
+        static uint08 g_colorTable[256 * 256];
+        class ImageRoutine
+        {
+        public:
+            ImageRoutine() {}
+            ~ImageRoutine() {delete mPlatformPixmap;}
+
+        public:
+            void Build(id_bitmap_read bitmap, const Color coloring)
+            {
+                const sint32 Width = Bmp::GetWidth(bitmap);
+                const sint32 Height = Bmp::GetHeight(bitmap);
+                QImage NewImage(Width, Height, QImage::Format_ARGB32);
+                Bmp::bitmappixel* DstBits = (Bmp::bitmappixel*) NewImage.bits();
+                const Bmp::bitmappixel* SrcBits = (const Bmp::bitmappixel*) Bmp::GetBits(bitmap);
+                if(coloring.argb == Color::ColoringDefault)
+                {
+                    for(sint32 dy = 0; dy < Height; ++dy)
+                    {
+                        Bmp::bitmappixel* CurDstBits = &DstBits[dy * Width];
+                        const Bmp::bitmappixel* CurSrcBits = &SrcBits[(Height - 1 - dy) * Width];
+                        Memory::Copy(CurDstBits, CurSrcBits, Width * sizeof(Bmp::bitmappixel));
+                    }
+                }
+                else
+                {
+                    ValidColorTabling();
+                    const uint08* CurTableA = &g_alphaTable[coloring.a * 256];
+                    const uint08* CurTableR = &g_colorTable[coloring.r * 256];
+                    const uint08* CurTableG = &g_colorTable[coloring.g * 256];
+                    const uint08* CurTableB = &g_colorTable[coloring.b * 256];
+                    for(sint32 dy = 0; dy < Height; ++dy)
+                    {
+                        Bmp::bitmappixel* CurDstBits = &DstBits[dy * Width];
+                        const Bmp::bitmappixel* CurSrcBits = &SrcBits[(Height - 1 - dy) * Width];
+                        for(sint32 x = 0; x < Width; ++x)
+                        {
+                            CurDstBits->a = CurTableA[CurSrcBits->a];
+                            CurDstBits->r = CurTableR[CurSrcBits->r];
+                            CurDstBits->g = CurTableG[CurSrcBits->g];
+                            CurDstBits->b = CurTableB[CurSrcBits->b];
+                            CurDstBits++;
+                            CurSrcBits++;
+                        }
+                    }
+                }
+                delete mPlatformPixmap;
+                mPlatformPixmap = new QPixmap();
+                *mPlatformPixmap = QPixmap::fromImage(ToReference(NewImage));
+            }
+
+        public:
+            QPixmap* mPlatformPixmap {nullptr};
+
+        private:
+            void ValidColorTabling()
+            {
+                static bool NeedTabling = true;
+                if(NeedTabling)
+                {
+                    NeedTabling = false;
+                    for(sint32 src = 0; src < 256; ++src)
+                    for(sint32 key = 0; key < 256; ++key)
+                    {
+                        const sint32 i = key * 256 + src;
+                        if(src < 0x80)
+                        {
+                            if(key < 0x80)
+                            {
+                                const sint32 key2 = 0x80 - key;
+                                g_alphaTable[i] = (uint08) (src * key / 0x80);
+                                g_colorTable[i] = (uint08) (src - key2 + key2 * (0x80 - src) / 0x80);
+                            }
+                            else
+                            {
+                                const sint32 src2 = src * 2;
+                                g_alphaTable[i] = (uint08) (src2 - (src2 - src) * (0xFF - key) / 0x7F);
+                                g_colorTable[i] = (uint08) (0xFF - (0xFF - src) * (0xFF - key) / 0x7F);
+                            }
+                        }
+                        else
+                        {
+                            if(key < 0x80)
+                            {
+                                const uint08 value = (uint08) (src * key / 0x80);
+                                g_alphaTable[i] = value;
+                                g_colorTable[i] = value;
+                            }
+                            else
+                            {
+                                const sint32 key2 = key - 0x80;
+                                const uint08 value = (uint08) (src + key2 - key2 * (src - 0x80) / 0x7F);
+                                g_alphaTable[i] = value;
+                                g_colorTable[i] = value;
+                            }
+                        }
+                    }
+                }
+            }
+        };
 
         id_image_routine Platform::Graphics::CreateImageRoutine(id_bitmap_read bitmap, sint32 resizing_width, sint32 resizing_height, const Color coloring)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            auto NewImageRoutine = new ImageRoutine();
+            NewImageRoutine->Build(bitmap, coloring);
+            return (id_image_routine) NewImageRoutine;
         }
 
         void Platform::Graphics::UpdateImageRoutineTimeout(uint64 msec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
         }
 
         id_image_read Platform::Graphics::BuildImageRoutineOnce(id_image_routine routine, bool use_timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            auto CurImageRoutine = (ImageRoutine*) routine;
+            return (id_image_read) CurImageRoutine->mPlatformPixmap;
         }
 
         void Platform::Graphics::RemoveImageRoutine(id_image_routine routine)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            delete (ImageRoutine*) routine;
         }
 
         void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            BOSS_ASSERT("image파라미터가 nullptr입니다", image);
+            if(image == nullptr) return;
+
+            if(w == iw && h == ih)
+                CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)
@@ -1132,40 +1559,150 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        static Qt::Alignment _ExchangeAlignment(UIFontAlign align)
+        {
+            Qt::Alignment Result = Qt::AlignCenter;
+            switch(align)
+            {
+            case UIFA_LeftTop: Result = (Qt::Alignment) (Qt::AlignLeft | Qt::AlignTop); break;
+            case UIFA_CenterTop: Result = (Qt::Alignment) (Qt::AlignHCenter | Qt::AlignTop); break;
+            case UIFA_RightTop: Result = (Qt::Alignment) (Qt::AlignRight | Qt::AlignTop); break;
+            case UIFA_JustifyTop: Result = (Qt::Alignment) (Qt::AlignJustify | Qt::AlignTop); break;
+            case UIFA_LeftMiddle: Result = (Qt::Alignment) (Qt::AlignLeft | Qt::AlignVCenter); break;
+            case UIFA_CenterMiddle: Result = (Qt::Alignment) (Qt::AlignHCenter | Qt::AlignVCenter); break;
+            case UIFA_RightMiddle: Result = (Qt::Alignment) (Qt::AlignRight | Qt::AlignVCenter); break;
+            case UIFA_JustifyMiddle: Result = (Qt::Alignment) (Qt::AlignJustify | Qt::AlignVCenter); break;
+            case UIFA_LeftAscent: Result = (Qt::Alignment) (Qt::AlignLeft | Qt::AlignBaseline); break;
+            case UIFA_CenterAscent: Result = (Qt::Alignment) (Qt::AlignHCenter | Qt::AlignBaseline); break;
+            case UIFA_RightAscent: Result = (Qt::Alignment) (Qt::AlignRight | Qt::AlignBaseline); break;
+            case UIFA_JustifyAscent: Result = (Qt::Alignment) (Qt::AlignJustify | Qt::AlignBaseline); break;
+            case UIFA_LeftBottom: Result = (Qt::Alignment) (Qt::AlignLeft | Qt::AlignBottom); break;
+            case UIFA_CenterBottom: Result = (Qt::Alignment) (Qt::AlignHCenter | Qt::AlignBottom); break;
+            case UIFA_RightBottom: Result = (Qt::Alignment) (Qt::AlignRight | Qt::AlignBottom); break;
+            case UIFA_JustifyBottom: Result = (Qt::Alignment) (Qt::AlignJustify | Qt::AlignBottom); break;
+            }
+            return Result;
+        }
+
+        static Qt::TextElideMode _ExchangeTextElideMode(UIFontElide elide)
+        {
+            Qt::TextElideMode Result = Qt::ElideNone;
+            switch(elide)
+            {
+            case UIFE_None: Result = Qt::ElideNone; break;
+            case UIFE_Left: Result = Qt::ElideLeft; break;
+            case UIFE_Center: Result = Qt::ElideMiddle; break;
+            case UIFE_Right: Result = Qt::ElideRight; break;
+            }
+            return Result;
+        }
+
+        static inline sint32 _GetXFontAlignCode(UIFontAlign align)
+        {
+            sint32 Code = 0;
+            switch(align)
+            {
+            case UIFA_LeftTop:    Code = 0; break; case UIFA_CenterTop:    Code = 1; break; case UIFA_RightTop:    Code = 2; break; case UIFA_JustifyTop:    Code = 3; break;
+            case UIFA_LeftMiddle: Code = 0; break; case UIFA_CenterMiddle: Code = 1; break; case UIFA_RightMiddle: Code = 2; break; case UIFA_JustifyMiddle: Code = 3; break;
+            case UIFA_LeftAscent: Code = 0; break; case UIFA_CenterAscent: Code = 1; break; case UIFA_RightAscent: Code = 2; break; case UIFA_JustifyAscent: Code = 3; break;
+            case UIFA_LeftBottom: Code = 0; break; case UIFA_CenterBottom: Code = 1; break; case UIFA_RightBottom: Code = 2; break; case UIFA_JustifyBottom: Code = 3; break;
+            }
+            return Code;
+        }
+
+        static inline sint32 _GetYFontAlignCode(UIFontAlign align)
+        {
+            sint32 Code = 0;
+            switch(align)
+            {
+            case UIFA_LeftTop:    Code = 0; break; case UIFA_CenterTop:    Code = 0; break; case UIFA_RightTop:    Code = 0; break; case UIFA_JustifyTop:    Code = 0; break;
+            case UIFA_LeftMiddle: Code = 1; break; case UIFA_CenterMiddle: Code = 1; break; case UIFA_RightMiddle: Code = 1; break; case UIFA_JustifyMiddle: Code = 1; break;
+            case UIFA_LeftAscent: Code = 2; break; case UIFA_CenterAscent: Code = 2; break; case UIFA_RightAscent: Code = 2; break; case UIFA_JustifyAscent: Code = 2; break;
+            case UIFA_LeftBottom: Code = 3; break; case UIFA_CenterBottom: Code = 3; break; case UIFA_RightBottom: Code = 3; break; case UIFA_JustifyBottom: Code = 3; break;
+            }
+            return Code;
+        }
+
+        template<typename TYPE>
+        static bool _DrawString(float x, float y, float w, float h, const TYPE* string, sint32 count, UIFontAlign align, UIFontElide elide)
+        {
+            CanvasClass::get()->painter().setPen(CanvasClass::get()->color());
+            CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+
+            const QString Text = (sizeof(TYPE) == 1)?
+                QString::fromUtf8((chars) string, count) : QString::fromWCharArray((wchars) string, count);
+            if(elide != UIFE_None)
+            {
+                const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
+                if(ElidedText != Text)
+                {
+                    CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
+                    return true;
+                }
+            }
+            CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
+            return false;
+        }
+
         bool Platform::Graphics::DrawString(float x, float y, float w, float h, chars string, sint32 count, UIFontAlign align, UIFontElide elide)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            return _DrawString(x, y, w, h, string, count, align, elide);
         }
 
         bool Platform::Graphics::DrawStringW(float x, float y, float w, float h, wchars string, sint32 count, UIFontAlign align, UIFontElide elide)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            return _DrawString(x, y, w, h, string, count, align, elide);
+        }
+
+        template<typename TYPE>
+        static sint32 _GetLengthOfString(bool byword, sint32 clipping_width, const TYPE* string, sint32 count)
+        {
+            const TYPE* StringFocus = string;
+            if(count != -1)
+            {
+                const TYPE* StringFocusEnd = string + count;
+                while(StringFocus < StringFocusEnd)
+                {
+                    const sint32 CurLetterLength = (sizeof(TYPE) == 1)?
+                        String::GetLengthOfFirstLetter((chars) StringFocus) : WString::GetLengthOfFirstLetter((wchars) StringFocus);
+                    const QString CurLetter = (sizeof(TYPE) == 1)?
+                        QString::fromUtf8((chars) StringFocus, CurLetterLength) : QString::fromWCharArray((wchars) StringFocus, CurLetterLength);
+                    clipping_width -= CanvasClass::get()->painter().fontMetrics().horizontalAdvance(CurLetter);
+                    if(clipping_width < 0) break;
+                    StringFocus += CurLetterLength;
+                }
+            }
+            else while(*StringFocus)
+            {
+                const sint32 CurLetterLength = (sizeof(TYPE) == 1)?
+                    String::GetLengthOfFirstLetter((chars) StringFocus) : WString::GetLengthOfFirstLetter((wchars) StringFocus);
+                const QString CurLetter = (sizeof(TYPE) == 1)?
+                    QString::fromUtf8((chars) StringFocus, CurLetterLength) : QString::fromWCharArray((wchars) StringFocus, CurLetterLength);
+                clipping_width -= CanvasClass::get()->painter().fontMetrics().horizontalAdvance(CurLetter);
+                if(clipping_width < 0) break;
+                StringFocus += CurLetterLength;
+            }
+            return StringFocus - string;
         }
 
         sint32 Platform::Graphics::GetLengthOfString(bool byword, sint32 clipping_width, chars string, sint32 count)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return _GetLengthOfString(byword, clipping_width, string, count);
         }
 
         sint32 Platform::Graphics::GetLengthOfStringW(bool byword, sint32 clipping_width, wchars string, sint32 count)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return _GetLengthOfString(byword, clipping_width, string, count);
         }
 
         sint32 Platform::Graphics::GetStringWidth(chars string, sint32 count)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return CanvasClass::get()->painter().fontMetrics().horizontalAdvance(QString::fromUtf8(string, count));
         }
 
         sint32 Platform::Graphics::GetStringWidthW(wchars string, sint32 count)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return CanvasClass::get()->painter().fontMetrics().horizontalAdvance(QString::fromWCharArray(string, count));
         }
 
         sint32 Platform::Graphics::GetFreeTypeStringWidth(chars nickname, sint32 height, chars string, sint32 count)
@@ -1176,14 +1713,12 @@
 
         sint32 Platform::Graphics::GetStringHeight()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return CanvasClass::get()->painter().fontMetrics().height();
         }
 
         sint32 Platform::Graphics::GetStringAscent()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return CanvasClass::get()->painter().fontMetrics().ascent();
         }
 
         bool Platform::Graphics::BeginGL()
@@ -1949,7 +2484,7 @@
             #elif BOSS_MAC_OSX
                 String NewPath = String::Format("Q:%s/../../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
             #else
-                String NewPath = String::Format("Q:%s", QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toUtf8().constData());
+                String NewPath = String::Format("Q:%s", QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).value(0).toUtf8().constData());
             #endif
             NewPath += "/assets-rem/";
 

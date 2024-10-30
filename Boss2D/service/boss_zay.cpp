@@ -411,7 +411,8 @@ namespace BOSS
 
     ZayPanel::~ZayPanel()
     {
-        Platform::Graphics::UnbindSurface(m_ref_surface);
+        if(m_ref_surface)
+            Platform::Graphics::UnbindSurface(m_ref_surface);
     }
 
     void ZayPanel::erase() const

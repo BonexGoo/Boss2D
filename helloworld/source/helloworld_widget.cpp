@@ -78,7 +78,7 @@ helloworldWidgetData::helloworldWidgetData()
                 mUpdateMsec = Platform::Utility::CurrentTimeMsec() + Msec;
             }
         });
-    mWidget.Reload("widget/helloworld.json");
+    mWidget.Reload("widget/helloworld.zay");
 
     // 제이위젯에 문서를 전달
     // 제이에디터에서도 표현됩니다

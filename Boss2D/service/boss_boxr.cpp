@@ -98,7 +98,7 @@ namespace BOSS
             'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z', '_',
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        const sint32 KeyCount = (vercode == 1)? 29 : 38;
+        const sint32 KeyCount = (vercode == 1)? 28 : 37;
         const chars KeyCodes = (vercode == 1)? KeyChars_Ver1 : KeyChars_Ver2;
 
         const sint32 KeyTailWidth = Bmp::GetWidth(Keys[-1]);

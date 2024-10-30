@@ -311,11 +311,13 @@ HEADERS += $$TOPPATH/platform/boss_platform_cocos2dx.hpp
 HEADERS += $$TOPPATH/platform/boss_platform_impl.hpp
 HEADERS += $$TOPPATH/platform/boss_platform_native.hpp
 HEADERS += $$TOPPATH/platform/boss_platform_qt5.hpp
+HEADERS += $$TOPPATH/platform/boss_platform_qt6.hpp
 SOURCES += $$TOPPATH/platform/boss_platform_blank.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_cocos2dx.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_impl.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_native.cpp
 SOURCES += $$TOPPATH/platform/boss_platform_qt5.cpp
+SOURCES += $$TOPPATH/platform/boss_platform_qt6.cpp
 win32-msvc*{
     HEADERS += $$TOPPATH/platform/win32/glew-2.2.0/include/GL/glew.h
 }

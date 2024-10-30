@@ -22,12 +22,17 @@
         #include <QMainWindow>
         #include <QWindow>
         #include <QPainter>
+        #include <QPainterPath>
         #include <QCloseEvent>
         #include <QResizeEvent>
         #include <QPaintEvent>
         #include <QMouseEvent>
         #include <QWheelEvent>
         #include <QKeyEvent>
+        #include <QLineEdit>
+        #include <QListWidget>
+        #include <QToolTip>
+        #include <QSplashScreen>
     #endif
 
     #include <QLocalSocket>
@@ -84,18 +89,15 @@
         inline QPainter& painter() {return mPainter;}
         inline sint32 painter_width() const {return mPainterWidth;}
         inline sint32 painter_height() const {return mPainterHeight;}
-        inline bool is_font_ft() const {return mUseFontFT;}
-        inline chars font_ft_nickname() const {return mFontFT.mNickName;}
-        inline sint32 font_ft_height() const {return mFontFT.mHeight;}
         inline double zoom() const {return mPainter.transform().m11();}
         inline const QRect& scissor() const {return mScissor;}
         inline const QColor& color() const {return mColor;}
         inline const ShaderRole& shader() const {return mShader;}
         // Setter
         inline void SetFont(chars name, sint32 size)
-        {mUseFontFT = false; mPainter.setFont(QFont(name, size));}
-        inline void SetFontFT(chars nickname, sint32 height)
-        {mUseFontFT = true; mFontFT.mNickName = nickname; mFontFT.mHeight = height;}
+        {
+            mPainter.setFont(QFont(name, size));
+        }
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
         {
             mScissor = QRect(l, t, r - l, b - t);
@@ -125,8 +127,6 @@
         sint32 mPainterWidth;
         sint32 mPainterHeight;
     private: // 오리지널옵션
-        bool mUseFontFT;
-        FTFontClass mFontFT;
         QRect mScissor;
         QColor mColor;
         ShaderRole mShader;
@@ -176,6 +176,10 @@
             SendCreate();
             SendSizeWhenValid();
             return NewViewHandle;
+        }
+        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool direct)
+        {
+            mViewManager->SendNotify(type, topic, in, out, direct);
         }
 
     private:
@@ -253,7 +257,7 @@
                 event->accept();
                 CloseAllWindows();
             }
-            event->ignore();
+            else event->ignore();
         }
 
     protected:
@@ -452,10 +456,17 @@
     public:
         MainWindow()
         {
+            setUnifiedTitleAndToolBarOnMac(true);
         }
         ~MainWindow()
         {
         }
+
+    public:
+        void SetInitedPlatform() {mInited = true;}
+        bool InitedPlatform() const {return mInited;}
+        void SetFirstVisible(bool visible) {mNeedVisible = visible;}
+        bool FirstVisible() const {return mNeedVisible;}
 
     public:
         void InitForWidget(bool frameless, bool topmost)
@@ -505,6 +516,8 @@
 
     private:
         MainView* mView {nullptr};
+        bool mInited {false};
+        bool mNeedVisible {true};
     };
 
     #if !BOSS_WASM
@@ -763,5 +776,257 @@
             ~PipeClientClass() {}
         };
     #endif
+
+    class Tracker
+    {
+        typedef void (*ExitCB)(void*);
+
+    public:
+        Tracker(QWidget* parent, ExitCB exit, void* data)
+        {
+            m_parent = parent;
+            m_exit = exit;
+            m_data = data;
+            m_next = nullptr;
+            if(m_parent)
+                Top().Insert(this);
+        }
+        ~Tracker()
+        {
+            if(m_parent)
+                Top().Remove(this);
+        }
+
+    public:
+        void Lock()
+        {
+            m_loop.exec();
+        }
+        void Unlock()
+        {
+            m_loop.quit();
+        }
+        static void CloseAll(QWidget* parent)
+        {
+            Tracker* CurNode = Top().m_next;
+            while(CurNode)
+            {
+                Tracker* NextNode = CurNode->m_next;
+                if(CurNode->m_parent == parent)
+                {
+                    Top().Remove(CurNode);
+                    CurNode->m_exit(CurNode->m_data);
+                }
+                CurNode = NextNode;
+            }
+        }
+        static bool HasAnyone(QWidget* parent)
+        {
+            Tracker* CurNode = Top().m_next;
+            while(CurNode)
+            {
+                Tracker* NextNode = CurNode->m_next;
+                if(CurNode->m_parent == parent)
+                    return true;
+                CurNode = NextNode;
+            }
+            return false;
+        }
+
+    private:
+        void Insert(Tracker* rhs)
+        {
+            rhs->m_next = m_next;
+            m_next = rhs;
+        }
+        void Remove(Tracker* rhs)
+        {
+            Tracker* CurNode = this;
+            while(CurNode)
+            {
+                if(CurNode->m_next == rhs)
+                {
+                    CurNode->m_next = CurNode->m_next->m_next;
+                    break;
+                }
+                CurNode = CurNode->m_next;
+            }
+        }
+        static Tracker& Top()
+        {static Tracker _(nullptr, nullptr, nullptr); return _;}
+
+    private:
+        QWidget* m_parent;
+        QEventLoop m_loop;
+        ExitCB m_exit;
+        void* m_data;
+        Tracker* m_next;
+    };
+
+    class EditTracker : public QLineEdit
+    {
+        Q_OBJECT
+
+    public:
+        enum TrackerClosingType {TCT_Null, TCT_Enter, TCT_Escape, TCT_FocusOut, TCT_ForcedExit};
+
+    public:
+        EditTracker(UIEditType type, const QString& contents, QWidget* parent)
+            : QLineEdit(contents, nullptr), m_tracker(parent, OnExit, this)
+        {
+            if(parent)
+                m_parentpos = parent->mapToGlobal(QPoint(0, 0));
+            else m_parentpos = QPoint(0, 0);
+
+            m_closing = TCT_Null;
+            #if BOSS_WINDOWS
+                setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
+            #else
+                setWindowFlags(Qt::FramelessWindowHint);
+            #endif
+            setFrame(false);
+            selectAll();
+
+            switch(type)
+            {
+            case UIET_Int: setValidator(new QIntValidator(this)); break;
+            case UIET_Float: setValidator(new QDoubleValidator(this)); break;
+            default: break;
+            }
+
+            QPalette Palette = palette();
+            Palette.setColor(QPalette::Base, QColor(255, 255, 255));
+            Palette.setColor(QPalette::Text, QColor(0, 0, 0));
+            setPalette(Palette);
+        }
+        ~EditTracker() override
+        {
+        }
+        TrackerClosingType Popup(sint32 x, sint32 y, sint32 w, sint32 h)
+        {
+            move(m_parentpos.x() + x, m_parentpos.y() + y);
+            resize(w, h);
+            show();
+            activateWindow();
+            setFocus();
+            m_tracker.Lock();
+            return m_closing;
+        }
+
+    protected:
+        static void OnExit(void* data)
+        {
+            EditTracker* This = (EditTracker*) data;
+            if(This->m_closing == TCT_Null)
+                This->m_closing = TCT_ForcedExit;
+            This->close();
+            This->m_tracker.Unlock();
+        }
+
+    private:
+        void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE
+        {
+            if(m_closing == TCT_Null)
+                m_closing = TCT_FocusOut;
+            close();
+            m_tracker.Unlock();
+        }
+
+        void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE
+        {
+            if(event->nativeVirtualKey() == 13) // Enter
+            {
+                if(m_closing == TCT_Null)
+                    m_closing = TCT_Enter;
+                close();
+                m_tracker.Unlock();
+            }
+            else if(event->nativeVirtualKey() == 27) // Esc
+            {
+                if(m_closing == TCT_Null)
+                    m_closing = TCT_Escape;
+                close();
+                m_tracker.Unlock();
+            }
+            else QLineEdit::keyPressEvent(event);
+        }
+
+    private:
+        Tracker m_tracker;
+        TrackerClosingType m_closing;
+        QPoint m_parentpos;
+    };
+
+    class ListTracker : public QListWidget
+    {
+        Q_OBJECT
+
+    public:
+        ListTracker(const Strings& strings, QWidget* parent)
+            : QListWidget(nullptr), m_tracker(parent, OnExit, this)
+        {
+            for(sint32 i = 0, iend = strings.Count(); i < iend; ++i)
+            {
+                QListWidgetItem* NewItem = new QListWidgetItem(QString::fromUtf8(strings[i], -1), this);
+                NewItem->setTextAlignment(Qt::AlignCenter);
+                addItem(NewItem);
+            }
+
+            if(parent)
+                m_parentpos = parent->mapToGlobal(QPoint(0, 0));
+            else m_parentpos = QPoint(0, 0);
+
+            m_select = -1;
+            #if BOSS_WINDOWS
+                setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
+            #else
+                setWindowFlags(Qt::FramelessWindowHint);
+            #endif
+
+            connect(this, SIGNAL(itemPressed(QListWidgetItem*)), SLOT(onItemPressed(QListWidgetItem*)));
+        }
+        ~ListTracker()
+        {
+        }
+        sint32 Popup(sint32 x, sint32 y, sint32 w, sint32 h)
+        {
+            move(m_parentpos.x() + x, m_parentpos.y() + y);
+            resize(w, h);
+            show();
+            activateWindow();
+            setFocus();
+            m_tracker.Lock();
+            return m_select;
+        }
+
+    protected:
+        static void OnExit(void* data)
+        {
+            ListTracker* This = (ListTracker*) data;
+            This->m_select = -1;
+            This->close();
+            This->m_tracker.Unlock();
+        }
+
+    private:
+        void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE
+        {
+            close();
+            m_tracker.Unlock();
+        }
+
+    private slots:
+        void onItemPressed(QListWidgetItem* item)
+        {
+            m_select = row(item);
+            close();
+            m_tracker.Unlock();
+        }
+
+    private:
+        Tracker m_tracker;
+        sint32 m_select;
+        QPoint m_parentpos;
+    };
 
 #endif
