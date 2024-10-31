@@ -16,7 +16,11 @@
     #include <QFile>
     #include <QFileInfo>
     #include <QDir>
+    #include <QThread>
     #include <QStandardPaths>
+    #include <QRandomGenerator>
+    #include <QClipboard>
+    #include <QFontDatabase>
 
     #ifdef QT_HAVE_GRAPHICS
         #include <QMainWindow>
@@ -38,6 +42,15 @@
     #include <QLocalSocket>
     #include <QLocalServer>
     #include <QSharedMemory>
+    #include <QHostInfo>
+    #include <QTcpSocket>
+    #include <QUdpSocket>
+    #include <QWebSocket>
+    #include <QNetworkInterface>
+    #include <QtNetwork/QSslCertificate>
+    #include <QtNetwork/QSslKey>
+    #include <QTcpServer>
+    #include <QWebSocketServer>
 
     #define USER_FRAMECOUNT (60)
 
@@ -1027,6 +1040,687 @@
         Tracker m_tracker;
         sint32 m_select;
         QPoint m_parentpos;
+    };
+
+    class PeerPacket
+    {
+    public:
+        const packettype Type;
+        const sint32 PeerID;
+        buffer Buffer;
+
+    public:
+        PeerPacket(packettype type, sint32 peerid, sint32 buffersize)
+            : Type(type), PeerID(peerid) {Buffer = Buffer::Alloc(BOSS_DBG buffersize);}
+        ~PeerPacket() {Buffer::Free(Buffer);}
+
+    public:
+        void DestroyMe() {delete this;}
+        static sint32 MakeID() {static sint32 _ = -1; return ++_;}
+    };
+
+    class ServerClass : public QObject
+    {
+        Q_OBJECT
+
+    protected:
+        Queue<PeerPacket*> mPacketQueue;
+        PeerPacket* mFocusedPacket;
+
+    public:
+        ServerClass()
+        {
+            mFocusedPacket = new PeerPacket(packettype_null, -1, 0);
+        }
+        virtual ~ServerClass()
+        {
+            for(PeerPacket* UnusedPacket = nullptr; UnusedPacket = mPacketQueue.Dequeue();)
+                UnusedPacket->DestroyMe();
+            delete mFocusedPacket;
+        }
+
+    public:
+        bool TryPacket()
+        {
+            PeerPacket* PopPacket = mPacketQueue.Dequeue();
+            if(!PopPacket) return false;
+            delete mFocusedPacket;
+            mFocusedPacket = PopPacket;
+            return true;
+        }
+
+        PeerPacket* GetFocusedPacket()
+        {
+            return mFocusedPacket;
+        }
+
+    public:
+        virtual bool Listen(uint16 port) = 0;
+        virtual bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) = 0;
+        virtual bool KickPeer(int peerid) = 0;
+        virtual bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) = 0;
+    };
+
+    class TCPServerClass : public ServerClass
+    {
+        Q_OBJECT
+
+    private:
+        QTcpServer* mServer;
+        bool mUsingSizeField;
+        Map<QTcpSocket*> mPeers;
+
+    public:
+        TCPServerClass(bool sizefield = false)
+        {
+            mServer = new QTcpServer(this);
+            mUsingSizeField = sizefield;
+            connect(mServer, SIGNAL(newConnection()), this, SLOT(acceptPeer()));
+        }
+
+        ~TCPServerClass() override
+        {
+            mServer->close();
+        }
+
+        TCPServerClass& operator=(const TCPServerClass&)
+        {
+            BOSS_ASSERT("호출불가", false);
+            return *this;
+        }
+
+    private slots:
+        void acceptPeer()
+        {
+            QTcpSocket* Peer = mServer->nextPendingConnection();
+            const sint32 NewPeerID = PeerPacket::MakeID();
+            Peer->setProperty("id", NewPeerID);
+            Peer->setProperty("needs", 0);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewPeerID, 0));
+
+            if(!mUsingSizeField) connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
+            else connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeerWithSizeField()));
+            connect(Peer, SIGNAL(disconnected()), this, SLOT(disconnected()));
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+        void readyPeer()
+        {
+            QTcpSocket* Peer = (QTcpSocket*) sender();
+            const sint32 PeerID = Peer->property("id").toInt();
+            const sint64 PacketSize = Peer->bytesAvailable();
+
+            if(0 < PacketSize)
+            {
+                PeerPacket* NewPacket = new PeerPacket(packettype_message, PeerID, PacketSize);
+                Peer->read((char*) NewPacket->Buffer, PacketSize);
+                mPacketQueue.Enqueue(NewPacket);
+            }
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+        void readyPeerWithSizeField()
+        {
+            QTcpSocket* Peer = (QTcpSocket*) sender();
+            const sint32 PeerID = Peer->property("id").toInt();
+            sint32 PeerNeeds = Peer->property("needs").toInt();
+            sint64 PacketSize = Peer->bytesAvailable();
+
+            while(0 < PacketSize)
+            {
+                if(PeerNeeds == 0)
+                {
+                    if(4 <= PacketSize)
+                    {
+                        PacketSize -= 4;
+                        int GetPacketSize = 0;
+                        Peer->read((char*) &GetPacketSize, 4);
+                        PeerNeeds = GetPacketSize;
+                    }
+                    else break;
+                }
+                if(0 < PeerNeeds)
+                {
+                    if(PeerNeeds <= PacketSize)
+                    {
+                        PacketSize -= PeerNeeds;
+                        PeerPacket* NewPacket = new PeerPacket(packettype_message, PeerID, PeerNeeds);
+                        Peer->read((char*) NewPacket->Buffer, PeerNeeds);
+                        mPacketQueue.Enqueue(NewPacket);
+                        PeerNeeds = 0;
+                    }
+                    else break;
+                }
+            }
+            Peer->setProperty("needs", PeerNeeds);
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+        void disconnected()
+        {
+            QTcpSocket* Peer = (QTcpSocket*) sender();
+            const sint32 PeerID = Peer->property("id").toInt();
+
+            mPeers.Remove(PeerID);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
+            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+        }
+
+    private:
+        bool Listen(uint16 port) override
+        {
+            if(mServer->isListening()) return true;
+            return mServer->listen(QHostAddress::Any, port);
+        }
+
+        bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) override
+        {
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
+            {
+                if((*Peer)->write((chars) buffer, buffersize) == buffersize)
+                    return true;
+
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, peerid, 0));
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            }
+            return false;
+        }
+
+        bool KickPeer(int peerid) override
+        {
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
+            {
+                (*Peer)->disconnectFromHost();
+                (*Peer)->deleteLater();
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
+                return true;
+            }
+            return false;
+        }
+
+        bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) override
+        {
+            if(QTcpSocket** Peer = mPeers.Access(peerid))
+            {
+                if(ip4)
+                {
+                    auto IPv4Address = (*Peer)->peerAddress().toIPv4Address();
+                    ip4->ip[0] = (IPv4Address >> 24) & 0xFF;
+                    ip4->ip[1] = (IPv4Address >> 16) & 0xFF;
+                    ip4->ip[2] = (IPv4Address >>  8) & 0xFF;
+                    ip4->ip[3] = (IPv4Address >>  0) & 0xFF;
+                }
+                if(ip6)
+                {
+                    auto IPv6Address = (*Peer)->peerAddress().toIPv6Address();
+                    *ip6 = *((ip6address*) &IPv6Address);
+                }
+                if(port) *port = (*Peer)->peerPort();
+                return true;
+            }
+            return false;
+        }
+    };
+
+    class WSServerClass : public ServerClass
+    {
+        Q_OBJECT
+
+    private:
+        QWebSocketServer* mServer;
+        Map<QWebSocket*> mPeers;
+
+    public:
+        WSServerClass(chars name = "noname", bool use_wss = false)
+        {
+            #if !BOSS_WASM
+                mServer = new QWebSocketServer(name, (use_wss)? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode, this);
+            #else
+                mServer = new QWebSocketServer(name, QWebSocketServer::NonSecureMode, this);
+            #endif
+            connect(mServer, &QWebSocketServer::newConnection, this, &WSServerClass::acceptPeer);
+
+            #if !BOSS_WASM
+                if(use_wss)
+                {
+                    connect(mServer, &QWebSocketServer::sslErrors, this, &WSServerClass::sslErrors);
+                    if(QSslSocket::supportsSsl())
+                    {
+                        const QByteArray CertText = QByteArray::fromStdString(
+                            "-----BEGIN CERTIFICATE-----\r\n"
+                            "MIIEBzCCAr+gAwIBAgIQLqRnqmW9PgQ0XO4HOU1bGTANBgkqhkiG9w0BAQUFADA8\r\n"
+                            "MQswCQYDVQQGEwJHQjEZMBcGA1UEChMQV2VzdHBvaW50IENBIEtleTESMBAGA1UE\r\n"
+                            "ChMJV2VzdHBvaW50MB4XDTEyMTIxOTE3MjIwNVoXDTEyMTIxOTE3MjIwNVowOzEL\r\n"
+                            "MAkGA1UEBhMCR0IxEjAQBgNVBAoTCVdlc3Rwb2ludDEYMBYGA1UEAxMPd3d3LmV4\r\n"
+                            "YW1wbGUuY29tMIIBUjANBgkqhkiG9w0BAQEFAAOCAT8AMIIBOgKCATEAuxSykwJE\r\n"
+                            "8S0sNP07NAEvD9zvLqZ4OIXCTnEEe3zrvQjZP9HRygE1Lp8uFmRu1U0vJi4VlQko\r\n"
+                            "ebcbk0ts2oPZxCQw1VRmVi5V83fDzd0qHpo5MF8YUWt/nl+DB99vMv9mddyESU3Q\r\n"
+                            "z0Boj77NvIcDIq9GQU4ds1leHO6LTRfKXC5aeBzZpoTc6NMFHFEy36PKG1Tjh2HK\r\n"
+                            "P/voiP3D1fZ12m0kj8JM0MZXqxYdcA0/Dyl24CLUpnGKfK1tABwEjtN/Ck4neFqv\r\n"
+                            "m8kJLE2dbrMhOlclnqWPeIl0o11E3BiBD3fxxbG4hSXWPZC6hvZCDWd/zD91N8CW\r\n"
+                            "ocfP9Qdfj22O0/P8uauGNV5CHXWTxLd6ab/KGxVyA7tfRiWAb9bMvIIV9PfRLcF6\r\n"
+                            "D5/Hbz6zQY8wdwIDAQABo4GlMIGiMCwGA1UdEQQlMCOCD3d3dy5leGFtcGxlLmNv\r\n"
+                            "bYEQdGVzdEBleGFtcGxlLmNvbTAMBgNVHRMBAf8EAjAAMBMGA1UdJQQMMAoGCCsG\r\n"
+                            "AQUFBwMBMA8GA1UdDwEB/wQFAwMHKAAwHQYDVR0OBBYEFBJA2exOAIVq7qe+UC7Q\r\n"
+                            "aiiWhOOAMB8GA1UdIwQYMBaAFJiD+YDrKjcu2I6T2dWGIwNbjjPzMA0GCSqGSIb3\r\n"
+                            "DQEBBQUAA4IBMQCYRGhuU6tuH3X4NtWBfI3cPlqo/O0KzTgHzy9tUD015NOWunb9\r\n"
+                            "r5wum3V36JUDS2BcRHWI0mz9LZZlvx7a+xhlmcD3yXIawjrjNbbKTHmgWvKFsIau\r\n"
+                            "XwnxIbMcN+s5MMvcIw0U3QczxmpuqVQKrlBcPdzwSQYlQ5S08QOFcXKbsNOifxJW\r\n"
+                            "7FNOmQYZVuYZ+MWmes/Ppk8SF+wE3bFgWrTc6o5e0RprhUHKLsPRKLbMQmIFdGI4\r\n"
+                            "TCgC5+VxZb/Qaf+/J/KNABwHXPqpQxJkXfYQCjeuOFEEnA8sAEeuQFXZTjtC0gnH\r\n"
+                            "6z2+erl20gitjt/AEDvW65cblahpIWS2F/OCSEzrVS/YY0AjYZUHJCUDLjv306qv\r\n"
+                            "NeiqhoJa7CNjb+4/gVolKRoFmCjMzR4kXML3\r\n"
+                            "-----END CERTIFICATE-----");
+                        const QByteArray KeyText = QByteArray::fromStdString(
+                            "-----BEGIN RSA PRIVATE KEY-----\r\n"
+                            "MIIFfAIBAAKCATEAuxSykwJE8S0sNP07NAEvD9zvLqZ4OIXCTnEEe3zrvQjZP9HR\r\n"
+                            "ygE1Lp8uFmRu1U0vJi4VlQkoebcbk0ts2oPZxCQw1VRmVi5V83fDzd0qHpo5MF8Y\r\n"
+                            "UWt/nl+DB99vMv9mddyESU3Qz0Boj77NvIcDIq9GQU4ds1leHO6LTRfKXC5aeBzZ\r\n"
+                            "poTc6NMFHFEy36PKG1Tjh2HKP/voiP3D1fZ12m0kj8JM0MZXqxYdcA0/Dyl24CLU\r\n"
+                            "pnGKfK1tABwEjtN/Ck4neFqvm8kJLE2dbrMhOlclnqWPeIl0o11E3BiBD3fxxbG4\r\n"
+                            "hSXWPZC6hvZCDWd/zD91N8CWocfP9Qdfj22O0/P8uauGNV5CHXWTxLd6ab/KGxVy\r\n"
+                            "A7tfRiWAb9bMvIIV9PfRLcF6D5/Hbz6zQY8wdwIDAQABAoIBMQCp4FN/NlJQBcrc\r\n"
+                            "mw3FXUXUy7PM0pDcEmmsPOfrEjYlwwEy+F3dZldabGS3JJ+XxKyJqNMkL9q3G1RI\r\n"
+                            "3faMPanid1J4hFkg7JZTrG76Yle6ziQcDl3QoSKTNvuOjI826b+qSoE85xIy/7Ny\r\n"
+                            "w7mh9Z8dQbcz2bESiJXzA5EugenY5qZz5w6kLIVETUmYuwrNFLeTNfQdnOjAS3qB\r\n"
+                            "azGIZp+kqm0p9zay+OUyvoQGxpr+vYV8JaHU4eBpxslr97GclJ88sk8CpsYy7mRd\r\n"
+                            "81ONGE8nwFHRm4uZDL2o5NzjawHQo3adNpRum/1PCmqJAK2xjPBswwOuYHbS7utc\r\n"
+                            "mfuvRuXaY9FQDPmp7B7nZ5iQD2ned5vAR86gg/f6d09EaFw3i2ARSf4QdbZWY9Nn\r\n"
+                            "qPXTDejhAoGZAOdDwcsNhfJYqU3+fUfyENBfw2sQ5PnH/WPhIn5yO672gzU2Iuno\r\n"
+                            "9tAP32FwloKbOpq5TiczIZgW0LblJk9E07F/dTbSiLxUQMxctY+U5XYMZ0uJyKZm\r\n"
+                            "1pWLBJQXAsXFxnV19WwMYys4aTWEHnIw02zLvKrvYrOIWX4BICTsNqw8FQv0wG+r\r\n"
+                            "VcrwLc5WkleUxdHhFF1X/leZAoGZAM8XJWaGCUmdyV75zTpxmZvtXUjTajxBctRG\r\n"
+                            "/cx75ZSUj+p3Fv6q9oVZL6IN+G4s+WT1PY5fYJSFZK61uQtoY2w8pe20LhHAkeif\r\n"
+                            "bpkOMK7ie6+NiF1GCiPMBFtEZOawdq3x2EwbNbqpbgJOz1yNAT/nEenx1cDxyqyr\r\n"
+                            "K+4ZIh4Dufs9eoYftMyjO5BrXWSOGNFliaGZH5KPAoGZAKdAvJYCiL31WzR5+dcf\r\n"
+                            "fQOGTolPJZp0BZDHkK/MI9fsloXUSjnK7z0YTaBl0aRRaXfezmPROdmJnpa3cRZh\r\n"
+                            "G4zCNl5YsuUpNdfWsMRPlgfi/o2F72RQ+Z4bdUs4vRuVZmsqzTzAVLQ8TvKSQ4ao\r\n"
+                            "Qy/qxN8G0+YtlTNo0vuBDiVQKpSEBOx+CEUFoMsalynaAZtBYf4EFoD5AoGYVfl+\r\n"
+                            "BXpQEMf4+f0rPsA6zYlV2Q4sZKenTInMhEBLp8ulk+mtGj1P6zyDkfvKz7LMNyW5\r\n"
+                            "UIo4RnC6w+2dzSahYCYtnOnY1nXkHXdTKyfA/ln4j4Fqw454VzQz+tACM+O+4agt\r\n"
+                            "7Cq/u6brjPm7DOldQ3Ji9YT5AQlg4x6NNmQozd0uMSfs3hH7tZlu+R4Zv81ecFB/\r\n"
+                            "Ox+fA/ECgZhPv9P/wK1ZrgOcpfvbLOYOfxo2WET/oxuqh2SDgW6Ar0bURJDJQIUX\r\n"
+                            "7LaK4cNFHjmLYN0N/5hdcuSFTw5ZPtXWdcJFJ9I3cYNZ/tMCxqL1lgu7Oj4tO6Rr\r\n"
+                            "9H2YCWY3G2D4VKR9rJNqMm/ZWpJbuV0DbbC7OpHcU5HcMMk39ojuAEWpqd7e6xpY\r\n"
+                            "JyITLVhZp3B9M8WfKXFylw==\r\n"
+                            "-----END RSA PRIVATE KEY-----");
+
+                        const QSslCertificate Certificate(CertText, QSsl::Pem);
+                        const QSslKey SslKey(KeyText, QSsl::Rsa, QSsl::Pem);
+                        QSslConfiguration SslConfiguration = QSslConfiguration::defaultConfiguration();
+                        SslConfiguration.setLocalCertificate(Certificate);
+                        SslConfiguration.setPrivateKey(SslKey);
+                        SslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
+                        SslConfiguration.setProtocol(QSsl::SecureProtocols);
+                        mServer->setSslConfiguration(SslConfiguration);
+                    }
+                }
+            #endif
+        }
+
+        ~WSServerClass() override
+        {
+            mServer->close();
+        }
+
+        WSServerClass& operator=(const WSServerClass&)
+        {
+            BOSS_ASSERT("호출불가", false);
+            return *this;
+        }
+
+    private slots:
+        void acceptPeer()
+        {
+            QWebSocket* Peer = mServer->nextPendingConnection();
+            const sint32 NewPeerID = PeerPacket::MakeID();
+            Peer->setProperty("id", NewPeerID);
+            Peer->setProperty("needs", 0);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewPeerID, 0));
+
+            connect(Peer, &QWebSocket::textFrameReceived, this, &WSServerClass::textReceived);
+            connect(Peer, &QWebSocket::binaryFrameReceived, this, &WSServerClass::binaryReceived);
+            connect(Peer, &QWebSocket::disconnected, this, &WSServerClass::disconnected);
+            Platform::BroadcastNotify("entrance", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+        void textReceived(const QString& frame, bool isLastFrame)
+        {
+            binaryReceived(frame.toUtf8(), isLastFrame);
+        }
+
+        void binaryReceived(const QByteArray& frame, bool isLastFrame)
+        {
+            QWebSocket* Peer = (QWebSocket*) sender();
+            const sint32 PeerID = Peer->property("id").toInt();
+            const sint64 PacketSize = frame.size();
+
+            if(0 < PacketSize)
+            {
+                PeerPacket* NewPacket = new PeerPacket(packettype_message, PeerID, PacketSize);
+                Memory::Copy((void*) NewPacket->Buffer, frame.constData(), PacketSize);
+                mPacketQueue.Enqueue(NewPacket);
+            }
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+        void disconnected()
+        {
+            QWebSocket* Peer = (QWebSocket*) sender();
+            const sint32 PeerID = Peer->property("id").toInt();
+
+            mPeers.Remove(PeerID);
+            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
+            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+        }
+
+        #if !BOSS_WASM
+            void sslErrors(const QList<QSslError>& errors)
+            {
+                foreach(const auto& CurError, errors)
+                {
+                    String ErrorText = CurError.errorString().toUtf8().constData();
+                    Platform::BroadcastNotify("error", ErrorText, NT_SocketReceive);
+                }
+            }
+        #endif
+
+    private:
+        bool Listen(uint16 port) override
+        {
+            if(mServer->isListening()) return true;
+            return mServer->listen(QHostAddress::Any, port);
+        }
+
+        bool SendPacket(int peerid, const void* buffer, sint32 buffersize, bool utf8) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
+            {
+                if(utf8)
+                {
+                    if((*Peer)->sendTextMessage(QString::fromUtf8((chars) buffer, buffersize)) == buffersize)
+                        return true;
+                }
+                else if((*Peer)->sendBinaryMessage(QByteArray((chars) buffer, buffersize)) == buffersize)
+                    return true;
+
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, peerid, 0));
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            }
+            return false;
+        }
+
+        bool KickPeer(int peerid) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
+            {
+                (*Peer)->disconnect();
+                (*Peer)->deleteLater();
+                mPeers.Remove(peerid);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
+                Platform::BroadcastNotify("kicked", nullptr, NT_SocketReceive);
+                return true;
+            }
+            return false;
+        }
+
+        bool GetPeerAddress(int peerid, ip4address* ip4, ip6address* ip6, uint16* port) override
+        {
+            if(QWebSocket** Peer = mPeers.Access(peerid))
+            {
+                if(ip4)
+                {
+                    auto IPv4Address = (*Peer)->peerAddress().toIPv4Address();
+                    ip4->ip[0] = (IPv4Address >> 24) & 0xFF;
+                    ip4->ip[1] = (IPv4Address >> 16) & 0xFF;
+                    ip4->ip[2] = (IPv4Address >>  8) & 0xFF;
+                    ip4->ip[3] = (IPv4Address >>  0) & 0xFF;
+                }
+                if(ip6)
+                {
+                    auto IPv6Address = (*Peer)->peerAddress().toIPv6Address();
+                    *ip6 = *((ip6address*) &IPv6Address);
+                }
+                if(port) *port = (*Peer)->peerPort();
+                return true;
+            }
+            return false;
+        }
+    };
+
+    class SocketBox : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        SocketBox()
+        {
+            m_type = Type::NIL;
+            m_socket = nullptr;
+            m_wsocket = nullptr;
+            m_udpip.clear();
+            m_udpport = 0;
+        }
+        virtual ~SocketBox()
+        {
+            delete m_socket;
+            delete m_wsocket;
+        }
+
+    public:
+        void Init(chars type)
+        {
+            if(!String::Compare(type, "TCP"))
+            {
+                m_type = Type::TCP;
+                m_socket = (QAbstractSocket*) new QTcpSocket();
+            }
+            else if(!String::Compare(type, "UDP"))
+            {
+                m_type = Type::UDP;
+                m_socket = (QAbstractSocket*) new QUdpSocket();
+            }
+            else if(!String::Compare(type, "WS"))
+            {
+                m_type = Type::WS;
+                m_wsocket = new QWebSocket();
+            }
+            else if(!String::Compare(type, "WSS"))
+            {
+                m_type = Type::WSS;
+                m_wsocket = new QWebSocket();
+            }
+
+            if(m_socket)
+            {
+                connect(m_socket, &QAbstractSocket::connected, this, &SocketBox::OnConnected);
+                connect(m_socket, &QAbstractSocket::disconnected, this, &SocketBox::OnDisconnected);
+                connect(m_socket, &QAbstractSocket::readyRead, this, &SocketBox::OnReadyRead);
+            }
+            else if(m_wsocket)
+            {
+                connect(m_wsocket, &QWebSocket::connected, this, &SocketBox::OnWebConnected);
+                connect(m_wsocket, &QWebSocket::disconnected, this, &SocketBox::OnWebDisconnected);
+                connect(m_wsocket, &QWebSocket::textMessageReceived, this, &SocketBox::OnWebTextMessageReceived);
+                connect(m_wsocket, &QWebSocket::binaryMessageReceived, this, &SocketBox::OnWebBinaryMessageReceived);
+            }
+        }
+        bool CheckState(chars name)
+        {
+            switch(m_type)
+            {
+            case Type::TCP:
+                if(!m_socket->isValid())
+                    return false;
+                if(m_socket->state() == QAbstractSocket::UnconnectedState)
+                    return false;
+                return true;
+            case Type::UDP:
+                return true;
+            case Type::WS:
+            case Type::WSS:
+                if(!m_wsocket->isValid())
+                    return false;
+                if(m_wsocket->state() == QAbstractSocket::UnconnectedState)
+                    return false;
+                return true;
+            }
+            return false;
+        }
+
+    private slots:
+        void OnConnected()
+        {
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive, nullptr, true);
+        }
+        void OnDisconnected()
+        {
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, true);
+        }
+        void OnReadyRead()
+        {
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
+        }
+        void OnWebConnected()
+        {
+            Platform::BroadcastNotify("connected", nullptr, NT_SocketReceive, nullptr, true);
+        }
+        void OnWebDisconnected()
+        {
+            Platform::BroadcastNotify("disconnected", nullptr, NT_SocketReceive, nullptr, true);
+        }
+        void OnWebTextMessageReceived(const QString& message)
+        {
+            OnWebBinaryMessageReceived(message.toUtf8());
+        }
+        void OnWebBinaryMessageReceived(const QByteArray& message)
+        {
+            m_wbytes += message;
+            Platform::BroadcastNotify("message", nullptr, NT_SocketReceive, nullptr, true);
+        }
+
+    public:
+        enum class Type {NIL, TCP, UDP, WS, WSS} m_type;
+        QAbstractSocket* m_socket;
+        QWebSocket* m_wsocket;
+        QByteArray m_wbytes;
+        QHostAddress m_udpip;
+        quint16 m_udpport;
+
+    private:
+        class STClass
+        {
+        public:
+            STClass()
+            {
+                static uint64 LastThreadID = 0;
+                m_lastId = (++LastThreadID) << 20;
+            }
+            ~STClass() {}
+        public:
+            Map<SocketBox> m_map;
+            ublock m_lastId;
+        };
+        static inline STClass& ST() {return *BOSS_STORAGE_SYS(STClass);}
+
+    public:
+        static void Create(id_socket& result, chars type)
+        {
+            STClass& CurClass = ST();
+            CurClass.m_map[++CurClass.m_lastId].Init(type);
+            result = (id_socket) AnyTypeToPtr(CurClass.m_lastId);
+        }
+        static SocketBox* Access(id_socket id)
+        {
+            if(id == nullptr) return nullptr;
+            BOSS_ASSERT("타 스레드에서 생성된 소켓입니다", (ST().m_lastId >> 20) == (((ublock) id) >> 20));
+            return ST().m_map.Access(PtrToUint64(id));
+        }
+        static void Remove(id_socket id)
+        {
+            ST().m_map.Remove(PtrToUint64(id));
+        }
+    };
+
+    class Hostent
+    {
+    public:
+        Hostent() :
+            h_addrtype(2), // AF_INET
+            h_length(4) // IPv4
+        {
+            h_name = nullptr;
+            h_aliases = nullptr;
+            h_addr_list = nullptr;
+        }
+        ~Hostent()
+        {
+            Clear();
+        }
+
+    public:
+        void Clear()
+        {
+            delete[] h_name;
+            if(h_aliases)
+            for(chars* ptr_aliases = h_aliases; *ptr_aliases; ++ptr_aliases)
+                delete[] *ptr_aliases;
+            delete[] h_aliases;
+            if(h_addr_list)
+            for(bytes* ptr_addr_list = h_addr_list; *ptr_addr_list; ++ptr_addr_list)
+                delete[] *ptr_addr_list;
+            delete[] h_addr_list;
+            h_name = nullptr;
+            h_aliases = nullptr;
+            h_addr_list = nullptr;
+        }
+
+    public:
+        chars h_name;
+        chars* h_aliases;
+        const sint16 h_addrtype;
+        const sint16 h_length;
+        bytes* h_addr_list;
+    };
+
+    class Servent
+    {
+    public:
+        Servent()
+        {
+            s_name = nullptr;
+            s_aliases = nullptr;
+            s_port = 0;
+            s_proto = nullptr;
+        }
+        ~Servent()
+        {
+            Clear();
+        }
+
+    public:
+        void Clear()
+        {
+            delete[] s_name;
+            for(chars* ptr_aliases = s_aliases; ptr_aliases; ++ptr_aliases)
+                delete[] *ptr_aliases;
+            delete[] s_aliases;
+            delete[] s_proto;
+            s_name = nullptr;
+            s_aliases = nullptr;
+            s_port = 0;
+            s_proto = nullptr;
+        }
+
+    public:
+        chars s_name;
+        chars* s_aliases;
+        sint16 s_port;
+        chars s_proto;
     };
 
 #endif

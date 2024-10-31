@@ -17,7 +17,7 @@ bool PlatformInit()
     #if BOSS_WASM
         Platform::InitForMDI(true);
     #else
-        Platform::InitForGL();
+        Platform::InitForMDI();
         if(Asset::RebuildForEmbedded())
             return false;
 

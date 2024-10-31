@@ -12,8 +12,6 @@
     #else
         #include <unistd.h>
     #endif
-    #include <stdio.h>
-    #include <stdarg.h>
     #include <format/boss_bmp.hpp>
 
     #if BOSS_ANDROID
@@ -530,8 +528,11 @@
 
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
-                    const Payload* Param = (const Payload*) param;
-                    g_window->View()->SendNotify(Param->type, Param->topic, Param->in, nullptr, Param->directly);
+                    if(g_window)
+                    {
+                        const Payload* Param = (const Payload*) param;
+                        g_window->View()->SendNotify(Param->type, Param->topic, Param->in, nullptr, Param->directly);
+                    }
                 }, &Param);
                 View::SearchEnd();
             }
@@ -699,22 +700,20 @@
         ////////////////////////////////////////////////////////////////////////////////
         // UTILITY
         ////////////////////////////////////////////////////////////////////////////////
-        static bool NeedSetRandom = true;
+        static QRandomGenerator* g_RandomGenerator = nullptr;
         uint32 Platform::Utility::Random(bool forcereset)
         {
-            if(NeedSetRandom || forcereset)
+            if(!g_RandomGenerator || forcereset)
             {
-                NeedSetRandom = false;
-                BOSS_ASSERT("Further development is needed.", false);
+                delete g_RandomGenerator;
+                g_RandomGenerator = new QRandomGenerator((uint32) (CurrentTimeMsec() & 0xFFFFFFFF));
             }
-
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return g_RandomGenerator->generate();
         }
 
         void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket, bool block_event)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QThread::msleep(ms);
         }
 
         void Platform::Utility::SetMinimize()
@@ -751,8 +750,10 @@
 
         chars Platform::Utility::GetArgument(sint32 i, sint32* getcount)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            if(getcount) *getcount = g_argc;
+            if(i < g_argc)
+                return g_argv[i];
+            return "";
         }
 
         bool Platform::Utility::TestUrlSchema(chars schema, chars comparepath)
@@ -856,34 +857,59 @@
 
         void Platform::Utility::SendToTextClipboard(chars text)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QClipboard* Clipboard = QApplication::clipboard();
+            Clipboard->setText(text, QClipboard::Clipboard);
+            if(Clipboard->supportsSelection())
+                Clipboard->setText(text, QClipboard::Selection);
         }
 
         String Platform::Utility::RecvFromTextClipboard()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return String();
+            QClipboard* Clipboard = QApplication::clipboard();
+            return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
         String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return String();
+            const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));
+            const QString FontFamilyName = QFontDatabase::applicationFontFamilies(NewFontID).at(0);
+            return String(FontFamilyName.toUtf8().constData());
         }
 
         void Platform::Utility::SetCursor(CursorRole role)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            switch(role)
+            {
+            case CR_Arrow: g_window->setCursor(Qt::ArrowCursor); break;
+            case CR_UpArrow: g_window->setCursor(Qt::UpArrowCursor); break;
+            case CR_Cross: g_window->setCursor(Qt::CrossCursor); break;
+            case CR_Wait: g_window->setCursor(Qt::WaitCursor); break;
+            case CR_IBeam: g_window->setCursor(Qt::IBeamCursor); break;
+            case CR_Blank: g_window->setCursor(Qt::BlankCursor); break;
+            case CR_SizeVer: g_window->setCursor(Qt::SizeVerCursor); break;
+            case CR_SizeHor: g_window->setCursor(Qt::SizeHorCursor); break;
+            case CR_SizeBDiag: g_window->setCursor(Qt::SizeBDiagCursor); break;
+            case CR_SizeFDiag: g_window->setCursor(Qt::SizeFDiagCursor); break;
+            case CR_SizeAll: g_window->setCursor(Qt::SizeAllCursor); break;
+            case CR_PointingHand: g_window->setCursor(Qt::PointingHandCursor); break;
+            case CR_OpenHand: g_window->setCursor(Qt::OpenHandCursor); break;
+            case CR_ClosedHand: g_window->setCursor(Qt::ClosedHandCursor); break;
+            case CR_Forbidden: g_window->setCursor(Qt::ForbiddenCursor); break;
+            case CR_Busy: g_window->setCursor(Qt::BusyCursor); break;
+            case CR_WhatsThis: g_window->setCursor(Qt::WhatsThisCursor); break;
+            }
         }
 
         void Platform::Utility::GetCursorPos(point64& pos)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const QPoint CursorPos = QCursor::pos();
+            pos.x = CursorPos.x();
+            pos.y = CursorPos.y();
         }
 
         void Platform::Utility::SetCursorPos(point64 pos)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QCursor::setPos(pos.x, pos.y);
         }
 
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
@@ -2631,160 +2657,460 @@
         ////////////////////////////////////////////////////////////////////////////////
         id_socket Platform::Socket::OpenForTCP()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            id_socket Result = nullptr;
+            SocketBox::Create(Result, "TCP");
+            return Result;
         }
 
         id_socket Platform::Socket::OpenForUDP()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            id_socket Result = nullptr;
+            SocketBox::Create(Result, "UDP");
+            return Result;
         }
 
         id_socket Platform::Socket::OpenForWS(bool use_wss)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            id_socket Result = nullptr;
+            SocketBox::Create(Result, (use_wss)? "WSS" : "WS");
+            return Result;
         }
 
         bool Platform::Socket::Close(id_socket socket, sint32 timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox) return false;
+
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+            case SocketBox::Type::UDP:
+                {
+                    bool Result = (CurSocketBox->m_socket->error() == QAbstractSocket::UnknownSocketError);
+                    if(CurSocketBox->m_socket->state() == QAbstractSocket::ConnectedState)
+                    {
+                        CurSocketBox->m_socket->disconnectFromHost();
+                        Result &= (CurSocketBox->m_socket->state() == QAbstractSocket::UnconnectedState ||
+                            CurSocketBox->m_socket->waitForDisconnected(timeout));
+                    }
+                    SocketBox::Remove(socket);
+                    return Result;
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    bool Result = (CurSocketBox->m_wsocket->error() == QAbstractSocket::UnknownSocketError);
+                    if(CurSocketBox->m_wsocket->state() == QAbstractSocket::ConnectedState)
+                        CurSocketBox->m_wsocket->disconnect();
+                    SocketBox::Remove(socket);
+                    return Result;
+                }
+                break;
+            }
             return false;
         }
 
         bool Platform::Socket::Connect(id_socket socket, chars domain, uint16 port, sint32 timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox) return false;
+
+            ConnectAsync(socket, domain, port);
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    bool Result = CurSocketBox->m_socket->waitForConnected(timeout);
+                    BOSS_TRACE("Connect-TCP(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
+                    return Result;
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    BOSS_TRACE("Connect-UDP(%s:%d)", domain, (sint32) port);
+                    return true;
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    bool Result = true;
+                    const uint64 WaitForMsec = Platform::Utility::CurrentTimeMsec() + timeout;
+                    while(CurSocketBox->m_wsocket->state() != QAbstractSocket::ConnectedState)
+                    {
+                        Platform::Utility::Sleep(1, false, true, false);
+                        if(WaitForMsec < Platform::Utility::CurrentTimeMsec())
+                        {
+                            Result = false;
+                            break;
+                        }
+                    }
+                    BOSS_TRACE("Connect-WS(%s:%d)%s", domain, (sint32) port, Result? "" : " - Failed");
+                    return Result;
+                }
+                break;
+            }
             return false;
         }
 
         void Platform::Socket::ConnectAsync(id_socket socket, chars domain, uint16 port)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(CurSocketBox)
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    CurSocketBox->m_socket->connectToHost(QString::fromUtf8(domain, -1), port);
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    // GetHostByName를 사용하지 않고 빠르게 IP구하기
+                    sint32 FastIP[4] = {0, 0, 0, 0};
+                    sint32 FastIPFocus = 0;
+                    for(chars DomainFocus = domain; *DomainFocus != '\0'; ++DomainFocus)
+                    {
+                        if('0' <= *DomainFocus && *DomainFocus <= '9')
+                        {
+                            FastIP[FastIPFocus] = FastIP[FastIPFocus] * 10;
+                            FastIP[FastIPFocus] += *DomainFocus - '0';
+                            if(FastIP[FastIPFocus] <= 255)
+                                continue;
+                        }
+                        else if(*DomainFocus == '.' && ++FastIPFocus < 4)
+                            continue;
+                        FastIPFocus = -1;
+                        break;
+                    }
+
+                    if(FastIPFocus == 3)
+                    {
+                        quint32 ip4Address =
+                            ((FastIP[0] & 0xFF) << 24) |
+                            ((FastIP[1] & 0xFF) << 16) |
+                            ((FastIP[2] & 0xFF) <<  8) |
+                            ((FastIP[3] & 0xFF) <<  0);
+                        CurSocketBox->m_udpip.setAddress(ip4Address);
+                    }
+                    else
+                    {
+                        Hostent* CurHostent = (Hostent*) GetHostByName(domain);
+                        quint32 ip4Address = *((quint32*) CurHostent->h_addr_list[0]);
+                        CurSocketBox->m_udpip.setAddress(ip4Address);
+                    }
+                    CurSocketBox->m_udpport = port;
+                }
+                break;
+            case SocketBox::Type::WS:
+                {
+                    const String UrlText = String::Format("ws://%s:%d", domain, (sint32) port);
+                    CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
+                }
+                break;
+            case SocketBox::Type::WSS:
+                {
+                    const String UrlText = String::Format("wss://%s:%d", domain, (sint32) port);
+                    CurSocketBox->m_wsocket->open(QUrl((chars) UrlText));
+                    #ifndef QT_NO_SSL
+                        CurSocketBox->m_wsocket->ignoreSslErrors();
+                    #endif
+                }
+                break;
+            }
         }
 
         bool Platform::Socket::IsConnected(id_socket socket)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(CurSocketBox)
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                return (CurSocketBox->m_socket->state() == QAbstractSocket::ConnectedState);
+            case SocketBox::Type::UDP:
+                return true;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                return (CurSocketBox->m_wsocket->state() == QAbstractSocket::ConnectedState);
+            }
             return false;
         }
 
         bool Platform::Socket::Disconnect(id_socket socket, sint32 timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox) return false;
+
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    CurSocketBox->m_socket->abort();
+                    bool Result = (CurSocketBox->m_socket->state() == QAbstractSocket::UnconnectedState ||
+                        CurSocketBox->m_socket->waitForDisconnected(timeout));
+                    BOSS_TRACE("Disconnect-TCP()%s", Result? "" : " - Failed");
+                    return Result;
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    CurSocketBox->m_udpip.clear();
+                    CurSocketBox->m_udpport = 0;
+                    BOSS_TRACE("Disconnect-UDP()");
+                    return true;
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    CurSocketBox->m_wsocket->abort();
+                    BOSS_TRACE("Disconnect-WS()");
+                    return true;
+                }
+                break;
+            }
             return false;
         }
 
         bool Platform::Socket::BindForUdp(id_socket socket, uint16 port, sint32 timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox) return false;
+
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::UDP:
+                {
+                    auto UdpSocket = (QUdpSocket*) CurSocketBox->m_socket;
+                    bool Result = UdpSocket->bind(port);
+                    BOSS_TRACE("BindForUdp-UDP()%s", Result? "" : " - Failed");
+                    return Result;
+                }
+                break;
+            }
             return false;
         }
 
         sint32 Platform::Socket::RecvAvailable(id_socket socket)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox || !CurSocketBox->CheckState("RecvAvailable"))
+                return -1;
+
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    return CurSocketBox->m_socket->bytesAvailable();
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    auto UdpSocket = (QUdpSocket*) CurSocketBox->m_socket;
+                    return (UdpSocket->hasPendingDatagrams())? UdpSocket->pendingDatagramSize() : 0;
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    return CurSocketBox->m_wbytes.count();
+                }
+                break;
+            }
             return -1;
         }
 
         sint32 Platform::Socket::Recv(id_socket socket, uint08* data, sint32 size, sint32 timeout, ip4address* ip_udp, uint16* port_udp)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox || !CurSocketBox->CheckState("Recv"))
+                return -1;
+
+            sint32 Result = -1;
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    if(CurSocketBox->m_socket->bytesAvailable() == 0 &&
+                        !CurSocketBox->m_socket->waitForReadyRead(timeout))
+                    {
+                        BOSS_TRACE("Recv-TCP(-10035) - WSAEWOULDBLOCK");
+                        return -10035; // WSAEWOULDBLOCK
+                    }
+                    Result = CurSocketBox->m_socket->read((char*) data, size);
+                    BOSS_TRACE("Recv-TCP(%d)%s", Result, (0 <= Result)? "" : " - Failed");
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    auto UdpSocket = (QUdpSocket*) CurSocketBox->m_socket;
+                    if(ip_udp || port_udp)
+                    {
+                        QHostAddress GetIP;
+                        quint16 GetPort = 0;
+                        Result = UdpSocket->readDatagram((char*) data, size, &GetIP, &GetPort);
+                        if(ip_udp)
+                        {
+                            auto IPv4Address = GetIP.toIPv4Address();
+                            ip_udp->ip[0] = (IPv4Address >> 24) & 0xFF;
+                            ip_udp->ip[1] = (IPv4Address >> 16) & 0xFF;
+                            ip_udp->ip[2] = (IPv4Address >>  8) & 0xFF;
+                            ip_udp->ip[3] = (IPv4Address >>  0) & 0xFF;
+                        }
+                        if(port_udp) *port_udp = GetPort;
+                    }
+                    else Result = UdpSocket->readDatagram((char*) data, size);
+                    BOSS_TRACE("Recv-UDP(%d)%s", Result, (0 <= Result)? "" : " - Failed");
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    Result = Math::Min(size, CurSocketBox->m_wbytes.size());
+                    Memory::Copy(data, CurSocketBox->m_wbytes.constData(), Result);
+                    CurSocketBox->m_wbytes.remove(0, Result);
+                }
+                break;
+            }
+            return Result;
         }
 
         sint32 Platform::Socket::Send(id_socket socket, bytes data, sint32 size, sint32 timeout, bool utf8)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            SocketBox* CurSocketBox = SocketBox::Access(socket);
+            if(!CurSocketBox || !CurSocketBox->CheckState("Send"))
+                return -1;
+
+            switch(CurSocketBox->m_type)
+            {
+            case SocketBox::Type::TCP:
+                {
+                    if(CurSocketBox->m_socket->write((chars) data, size) < size ||
+                        !CurSocketBox->m_socket->waitForBytesWritten(timeout))
+                    {
+                        BOSS_TRACE("Send-TCP(-1) - Failed");
+                        return -1;
+                    }
+                    BOSS_TRACE("Send-TCP(%d)", size);
+                }
+                break;
+            case SocketBox::Type::UDP:
+                {
+                    auto UdpSocket = (QUdpSocket*) CurSocketBox->m_socket;
+                    if(UdpSocket->writeDatagram((chars) data, size, CurSocketBox->m_udpip, CurSocketBox->m_udpport) < size)
+                    {
+                        BOSS_TRACE("Send-UDP(-1) - Failed");
+                        return -1;
+                    }
+                    BOSS_TRACE("Send-UDP(%d)", size);
+                }
+                break;
+            case SocketBox::Type::WS:
+            case SocketBox::Type::WSS:
+                {
+                    if(utf8)
+                    {
+                        if(CurSocketBox->m_wsocket->sendTextMessage(QString::fromUtf8((chars) data, size)) != size)
+                        {
+                            BOSS_TRACE("Send-WS-Text(-1) - Failed");
+                            return -1;
+                        }
+                        BOSS_TRACE("Send-WS-Text(%d)", size);
+                    }
+                    else
+                    {
+                        if(CurSocketBox->m_wsocket->sendBinaryMessage(QByteArray((chars) data, size)) != size)
+                        {
+                            BOSS_TRACE("Send-WS-Binary(-1) - Failed");
+                            return -1;
+                        }
+                        BOSS_TRACE("Send-WS-Binary(%d)", size);
+                    }
+                }
+                break;
+            }
+            return size;
         }
-
-        class Hostent
-        {
-        public:
-            Hostent() :
-                h_addrtype(2), // AF_INET
-                h_length(4) // IPv4
-            {
-                h_name = nullptr;
-                h_aliases = nullptr;
-                h_addr_list = nullptr;
-            }
-
-            ~Hostent()
-            {
-                delete[] h_name;
-                if(h_aliases)
-                for(chars* ptr_aliases = h_aliases; *ptr_aliases; ++ptr_aliases)
-                    delete[] *ptr_aliases;
-                delete[] h_aliases;
-                if(h_addr_list)
-                for(bytes* ptr_addr_list = h_addr_list; *ptr_addr_list; ++ptr_addr_list)
-                    delete[] *ptr_addr_list;
-                delete[] h_addr_list;
-            }
-
-        public:
-            chars h_name;
-            chars* h_aliases;
-            const sint16 h_addrtype;
-            const sint16 h_length;
-            bytes* h_addr_list;
-        };
 
         void* Platform::Socket::GetHostByName(chars name)
         {
-            static Map<Hostent> HostentMap;
-            if(HostentMap.Access(name))
-                HostentMap.Remove(name);
+            const QHostInfo& HostInfo = QHostInfo::fromName(name);
+            const sint32 HostAddressCount = HostInfo.addresses().size();
+            if(HostAddressCount == 0) return nullptr;
 
-            Hostent& CurHostent = HostentMap(name);
+            Hostent& LastHostent = *BOSS_STORAGE_SYS(Hostent);
+            LastHostent.Clear();
 
-            BOSS_ASSERT("Further development is needed.", false);
-            return &CurHostent;
+            // h_name
+            String HostName = HostInfo.hostName().toUtf8().constData();
+            char* NewName = new char[HostName.Length() + 1];
+            Memory::Copy(NewName, (chars) HostName, HostName.Length() + 1);
+            LastHostent.h_name = NewName;
+
+            // h_addr_list
+            LastHostent.h_addr_list = new bytes[HostAddressCount + 1];
+            LastHostent.h_addr_list[HostAddressCount] = nullptr;
+            for(sint32 i = 0; i < HostAddressCount; ++i)
+            {
+                const QHostAddress& CurAddress = HostInfo.addresses().at(i);
+                const uint32 IPv4 = CurAddress.toIPv4Address();
+                uint08* NewIPv4 = new uint08[4];
+                Memory::Copy(NewIPv4, &IPv4, 4);
+                LastHostent.h_addr_list[i] = NewIPv4;
+            }
+            return &LastHostent;
         }
-
-        class Servent
-        {
-        public:
-            Servent()
-            {
-                s_name = nullptr;
-                s_aliases = nullptr;
-                s_port = 0;
-                s_proto = nullptr;
-            }
-
-            ~Servent()
-            {
-                delete[] s_name;
-                for(chars* ptr_aliases = s_aliases; ptr_aliases; ++ptr_aliases)
-                    delete[] *ptr_aliases;
-                delete[] s_aliases;
-                delete[] s_proto;
-            }
-
-        public:
-            chars s_name;
-            chars* s_aliases;
-            sint16 s_port;
-            chars s_proto;
-        };
 
         void* Platform::Socket::GetServByName(chars name, chars proto)
         {
-            static Map<Servent> ServentMap;
-            Servent& CurServent = ServentMap(name);
+            Servent& LastServent = *BOSS_STORAGE_SYS(Servent);
+            LastServent.Clear();
 
-            BOSS_ASSERT("Further development is needed.", false);
-            return &CurServent;
+            if(!LastServent.s_name)
+            {
+                // s_name
+                String ServName = name;
+                char* NewName = new char[ServName.Length() + 1];
+                Memory::Copy(NewName, (chars) ServName, ServName.Length() + 1);
+                LastServent.s_name = NewName;
+
+                // s_port
+                LastServent.s_port = (sint16) Parser(ServName).ReadInt();
+            }
+            return &LastServent;
         }
 
         ip4address Platform::Socket::GetLocalAddress(ip6address* ip6)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return {};
+            ip4address Result;
+            Result.ip[0] = 127;
+            Result.ip[1] = 0;
+            Result.ip[2] = 0;
+            Result.ip[3] = 1;
+            #if !BOSS_WASM
+                for(const QHostAddress& CurAddress : QNetworkInterface::allAddresses())
+                {
+                    if(CurAddress != QHostAddress(QHostAddress::LocalHost))
+                    {
+                        if(CurAddress.protocol() == QAbstractSocket::IPv4Protocol)
+                        {
+                            auto IPv4Address = CurAddress.toIPv4Address();
+                            Result.ip[0] = (IPv4Address >> 24) & 0xFF;
+                            Result.ip[1] = (IPv4Address >> 16) & 0xFF;
+                            Result.ip[2] = (IPv4Address >>  8) & 0xFF;
+                            Result.ip[3] = (IPv4Address >>  0) & 0xFF;
+                        }
+                        else if(ip6 && CurAddress.protocol() == QAbstractSocket::IPv6Protocol)
+                        {
+                            auto IPv6Address = CurAddress.toIPv6Address();
+                            *ip6 = *((ip6address*) &IPv6Address);
+                        }
+                    }
+                }
+            #endif
+            return Result;
         }
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -2792,66 +3118,86 @@
         ////////////////////////////////////////////////////////////////////////////////
         id_server Platform::Server::CreateTCP(bool sizefield)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            auto NewServer = (TCPServerClass*) Buffer::AllocNoConstructorOnce<TCPServerClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewServer, 0, TCPServerClass, sizefield);
+            return (id_server)(ServerClass*) NewServer;
         }
 
         id_server Platform::Server::CreateWS(chars name, bool use_wss)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            auto NewServer = (WSServerClass*) Buffer::AllocNoConstructorOnce<WSServerClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewServer, 0, WSServerClass, name, use_wss);
+            return (id_server)(ServerClass*) NewServer;
         }
 
         void Platform::Server::Release(id_server server)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            Buffer::Free((buffer) server);
         }
 
         bool Platform::Server::Listen(id_server server, uint16 port)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->Listen(port);
             return false;
         }
 
         bool Platform::Server::TryNextPacket(id_server server)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->TryPacket();
             return false;
         }
 
         packettype Platform::Server::GetPacketType(id_server server)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+            {
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
+                return FocusedPacket->Type;
+            }
             return packettype_null;
         }
 
         sint32 Platform::Server::GetPacketPeerID(id_server server)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+            {
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
+                return FocusedPacket->PeerID;
+            }
             return -1;
         }
 
         bytes Platform::Server::GetPacketBuffer(id_server server, sint32* getsize)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+            {
+                auto FocusedPacket = CurAgent->GetFocusedPacket();
+                if(getsize) *getsize = Buffer::CountOf(FocusedPacket->Buffer);
+                return (bytes) FocusedPacket->Buffer;
+            }
             return nullptr;
         }
 
         bool Platform::Server::SendToPeer(id_server server, sint32 peerid, const void* buffer, sint32 buffersize, bool utf8)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->SendPacket(peerid, buffer, buffersize, utf8);
             return false;
         }
 
         bool Platform::Server::KickPeer(id_server server, sint32 peerid)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->KickPeer(peerid);
             return false;
         }
 
         bool Platform::Server::GetPeerInfo(id_server server, sint32 peerid, ip4address* ip4, ip6address* ip6, uint16* port)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAgent = (ServerClass*) server)
+                return CurAgent->GetPeerAddress(peerid, ip4, ip6, port);
             return false;
         }
 

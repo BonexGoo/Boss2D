@@ -7,7 +7,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6WebEngineCored.lib;Qt6WebEngineWidgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6WebEngineCored.lib;Qt6WebEngineWidgetsd.lib;Qt6WebSocketsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;..\..\Boss2D\core;..\..\Boss2D;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtPurchasing;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWebEngine;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtBluetooth;$(QTDIR)\include\QtCore\6.8.0;$(QTDIR)\include\QtCore\6.8.0\QtCore;$(QTDIR)\include\QtGui\6.8.0;$(QTDIR)\include\QtGui\6.8.0\QtGui;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -17,7 +17,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6WebEngineCored.lib;Qt6WebEngineWidgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6WebEngineCored.lib;Qt6WebEngineWidgetsd.lib;Qt6WebSocketsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;..\..\Boss2D\core;..\..\Boss2D;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtPurchasing;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWebEngine;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtBluetooth;$(QTDIR)\include\QtCore\6.8.0;$(QTDIR)\include\QtCore\6.8.0\QtCore;$(QTDIR)\include\QtGui\6.8.0;$(QTDIR)\include\QtGui\6.8.0\QtGui;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -27,7 +27,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6WebEngineCore.lib;Qt6WebEngineWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6WebEngineCore.lib;Qt6WebEngineWidgets.lib;Qt6WebSockets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;..\..\Boss2D\core;..\..\Boss2D;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtPurchasing;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWebEngine;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtBluetooth;$(QTDIR)\include\QtCore\6.8.0;$(QTDIR)\include\QtCore\6.8.0\QtCore;$(QTDIR)\include\QtGui\6.8.0;$(QTDIR)\include\QtGui\6.8.0\QtGui;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -37,7 +37,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6WebEngineCore.lib;Qt6WebEngineWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6WebEngineCore.lib;Qt6WebEngineWidgets.lib;Qt6WebSockets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;..\..\Boss2D\core;..\..\Boss2D;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtPurchasing;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWebEngine;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtBluetooth;$(QTDIR)\include\QtCore\6.8.0;$(QTDIR)\include\QtCore\6.8.0\QtCore;$(QTDIR)\include\QtGui\6.8.0;$(QTDIR)\include\QtGui\6.8.0\QtGui;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
