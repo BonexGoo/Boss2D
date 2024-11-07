@@ -21,6 +21,8 @@
     #include <QRandomGenerator>
     #include <QClipboard>
     #include <QFontDatabase>
+    #include <QMessageBox>
+    #include <QSettings>
 
     #ifdef QT_HAVE_GRAPHICS
         #include <QMainWindow>
@@ -181,14 +183,18 @@
                 delete mViewManager;
             }
             mViewManager = manager;
-            h_view NewViewHandle = h_view::create_by_ptr(BOSS_DBG manager);
-            mViewManager->SetView(NewViewHandle);
-            mViewManager->SetCallback(
-                [](payload data, sint32 count, chars arg)->void
-                {((MainView*) data)->Update(count, arg);}, (payload) this);
-            SendCreate();
-            SendSizeWhenValid();
-            return NewViewHandle;
+            if(mViewManager)
+            {
+                h_view NewViewHandle = h_view::create_by_ptr(BOSS_DBG manager);
+                mViewManager->SetView(NewViewHandle);
+                mViewManager->SetCallback(
+                    [](payload data, sint32 count, chars arg)->void
+                    {((MainView*) data)->Update(count, arg);}, (payload) this);
+                SendCreate();
+                SendSizeWhenValid();
+                return NewViewHandle;
+            }
+            return h_view::null();
         }
         void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool direct)
         {
@@ -198,25 +204,30 @@
     private:
         void SendCreate()
         {
-            mViewManager->OnCreate();
+            if(mViewManager)
+                mViewManager->OnCreate();
             mTickTimer.start(1000 / USER_FRAMECOUNT);
         }
         bool CanQuit()
         {
-            return mViewManager->OnCanQuit();
+            if(mViewManager)
+                return mViewManager->OnCanQuit();
+            return true;
         }
         void SendDestroy()
         {
             mTickTimer.stop();
-            mViewManager->OnDestroy();
+            if(mViewManager)
+                mViewManager->OnDestroy();
         }
         void SendActivate(bool actived)
         {
-            mViewManager->OnActivate(actived);
+            if(mViewManager)
+                mViewManager->OnActivate(actived);
         }
         void SendSizeWhenValid()
         {
-            if(0 < mWidth && 0 < mHeight)
+            if(mViewManager && 0 < mWidth && 0 < mHeight)
                 mViewManager->OnSize(mWidth, mHeight);
         }
         void Update(sint32 count, chars arg)
@@ -265,7 +276,7 @@
         void OnCloseEvent(QCloseEvent* event)
         {
             Platform::Popup::CloseAllTracker();
-            if(mViewManager->OnCanQuit())
+            if(!mViewManager || mViewManager->OnCanQuit())
             {
                 event->accept();
                 CloseAllWindows();
@@ -286,7 +297,8 @@
             // for assert dialog's recursive call
             if(CanvasClass::enabled()) return;
             CanvasClass Canvas(this);
-            mViewManager->OnRender(mWidth, mHeight, 0, 0, mWidth, mHeight);
+            if(mViewManager)
+                mViewManager->OnRender(mWidth, mHeight, 0, 0, mWidth, mHeight);
 
             /*if(m_next_manager)
             {
@@ -299,15 +311,16 @@
         }
         void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
-            if(mViewManager->OnCanQuit())
+            if(!mViewManager || mViewManager->OnCanQuit())
             {
                 event->accept();
                 setAttribute(Qt::WA_DeleteOnClose);
             }
-            event->ignore();
+            else event->ignore();
         }
         void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
             {
                 mViewManager->OnTouch(TT_Press, 0, event->x(), event->y());
@@ -327,6 +340,7 @@
         }
         void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            if(!mViewManager) return;
             if(event->buttons() == Qt::NoButton)
             {
                 mViewManager->OnTouch(TT_Moving, 0, event->x(), event->y());
@@ -347,6 +361,7 @@
         }
         void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
                 mViewManager->OnTouch(TT_Release, 0, event->x(), event->y());
             else if(event->button() == Qt::RightButton)
@@ -357,6 +372,7 @@
         }
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE
         {
+            if(!mViewManager) return;
             float WheelValue = event->angleDelta().y() / 120.0f;
             while (0 < WheelValue)
             {
@@ -371,7 +387,7 @@
         }
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE
         {
-            if(!event->isAutoRepeat())
+            if(mViewManager && !event->isAutoRepeat())
             {
                 #if BOSS_WASM
                     mViewManager->OnKey(event->key(), event->text().toUtf8().constData(), true);
@@ -382,7 +398,7 @@
         }
         void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE
         {
-            if(!event->isAutoRepeat())
+            if(mViewManager && !event->isAutoRepeat())
             {
                 #if BOSS_WASM
                     mViewManager->OnKey(event->key(), event->text().toUtf8().constData(), false);

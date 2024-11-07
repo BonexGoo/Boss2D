@@ -67,7 +67,7 @@ namespace BOSS
         const void* ViewPtr = view.get();
         const uint64 CurKey = PtrToUint64(ViewPtr);
         BOSS_ASSERT("사용할 수 없는 Key입니다", CurKey);
-        chars ViewName = (viewclass && *viewclass)? viewclass : "_defaultview_";
+        chars ViewName = (viewclass && *viewclass)? viewclass : "_default_view_";
 
         ViewMutex::Lock();
         {
@@ -83,7 +83,7 @@ namespace BOSS
         const void* ViewPtr = view.get();
         const uint64 CurKey = PtrToUint64(ViewPtr);
         BOSS_ASSERT("사용할 수 없는 Key입니다", CurKey);
-        chars ViewName = (viewclass && *viewclass)? viewclass : "_defaultview_";
+        chars ViewName = (viewclass && *viewclass)? viewclass : "_default_view_";
 
         ViewMutex::Lock();
         {

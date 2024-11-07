@@ -827,6 +827,9 @@ namespace BOSS
             ~Function();
 
         public:
+            static Function* GetForced(chars viewclass);
+
+        public:
             bool m_isnative;
             String m_viewclass;
             ZayObject::CommandCB m_command;
@@ -883,7 +886,7 @@ namespace BOSS
         static void _compfocusing();
 
     private:
-        const Function* m_ref_func;
+        const Function& m_viewfunc;
         const String m_viewclass;
         ZayObject* m_data;
         buffer m_touch;

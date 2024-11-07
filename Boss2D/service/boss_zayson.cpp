@@ -1,6 +1,16 @@
 ﻿#include <boss.hpp>
 #include "boss_zayson.hpp"
 
+ZAY_DECLARE_VIEW("_unmatched_view_")
+ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
+ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*) {}
+ZAY_VIEW_API OnGesture(GestureType, sint32, sint32) {}
+ZAY_VIEW_API OnRender(ZayPanel& panel)
+{
+    ZAY_RGB(panel, 0xFF, 0x90, 0x80) panel.fill();
+    ZAY_RGB(panel, 0x00, 0x00, 0x00) panel.text("<UNMATCHED VIEW>");
+}
+
 namespace BOSS
 {
     ////////////////////////////////////////////////////////////////////////////////

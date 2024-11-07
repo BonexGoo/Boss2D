@@ -95,6 +95,22 @@
 
         int main(int argc, char* argv[])
         {
+            //#ifdef __EMSCRIPTEN__
+            //    emscripten_set_main_loop(em_callback_func func, int fps, int simulate_infinite_loop);
+            //#endif
+            #if BOSS_WASM
+                EM_ASM
+                (
+                    FS.mkdir('/boss2d');
+                    FS.mount(IDBFS, {}, '/boss2d');
+                    FS.syncfs(true, function(err)
+                        {
+                            if(!err)
+                                Module._OnWasmReady();
+                        });
+                );
+            #endif
+
             g_canPopupAssert = true;
             int result = 0;
             {
@@ -131,31 +147,34 @@
         }
     #endif
 
+    #if BOSS_ANDROID
+        extern "C" int __android_log_print(int prio, const char *tag,  const char *fmt, ...);
+    #endif
+
     extern "C" int boss_platform_assert(BOSS_DBG_PRM const char* name, const char* query)
     {
-        String AssertInfo[4] = {
-            String::Format("[QUERY] %s", query),
-            String::Format("[METHOD] %s()", BOSS_DBG_FUNC),
-            String::Format("[FILE/LINE] %s(%dLn)", BOSS_DBG_FILE, BOSS_DBG_LINE),
-            String::Format("[THREAD_ID] -unknown-")};
+        char AssertInfo[4][1024];
+        boss_snprintf(AssertInfo[0], 1024, "[QUERY] %s", query);
+        boss_snprintf(AssertInfo[1], 1024, "[METHOD] %s()", BOSS_DBG_FUNC);
+        boss_snprintf(AssertInfo[2], 1024, "[FILE/LINE] %s(%dLn)", BOSS_DBG_FILE, BOSS_DBG_LINE);
         #if BOSS_ANDROID
             __android_log_print(7, "*******", "************************************************************");
             __android_log_print(7, "*******", name);
             __android_log_print(7, "*******", "------------------------------------------------------------");
-            __android_log_print(7, "*******", (chars) AssertInfo[0]);
-            __android_log_print(7, "*******", (chars) AssertInfo[1]);
-            __android_log_print(7, "*******", (chars) AssertInfo[2]);
-            __android_log_print(7, "*******", (chars) AssertInfo[3]);
+            __android_log_print(7, "*******", AssertInfo[0]);
+            __android_log_print(7, "*******", AssertInfo[1]);
+            __android_log_print(7, "*******", AssertInfo[2]);
+            __android_log_print(7, "*******", AssertInfo[3]);
             __android_log_print(7, "*******", "************************************************************");
-        #elif BOSS_WINDOWS
-            OutputDebugStringW(L"************************************************************\n");
-            OutputDebugStringW((wchars) WString::FromChars(name));
-            OutputDebugStringW(L"\n------------------------------------------------------------\n");
-            OutputDebugStringW((wchars) WString::FromChars(AssertInfo[0])); OutputDebugStringW(L"\n");
-            OutputDebugStringW((wchars) WString::FromChars(AssertInfo[1])); OutputDebugStringW(L"\n");
-            OutputDebugStringW((wchars) WString::FromChars(AssertInfo[2])); OutputDebugStringW(L"\n");
-            OutputDebugStringW((wchars) WString::FromChars(AssertInfo[3])); OutputDebugStringW(L"\n");
-            OutputDebugStringW(L"************************************************************\n");
+        #else
+            qDebug().noquote() << "************************************************************";
+            qDebug().noquote() << name;
+            qDebug().noquote() << "------------------------------------------------------------";
+            qDebug().noquote() << AssertInfo[0];
+            qDebug().noquote() << AssertInfo[1];
+            qDebug().noquote() << AssertInfo[2];
+            qDebug().noquote() << AssertInfo[3];
+            qDebug().noquote() << "************************************************************";
         #endif
 
         static bool IsRunning = false;
@@ -164,7 +183,7 @@
             IsRunning = true;
             #if BOSS_WINDOWS
                 WString AssertMessage = WString::Format(
-                    L"%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
+                    L"%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n"
                     L"(YES is Break, NO is Ignore)\t\t",
                     (wchars) WString::FromChars(name),
                     (wchars) WString::FromChars(AssertInfo[0]),
@@ -178,7 +197,7 @@
                 }
             #elif BOSS_LINUX
                 String AssertMessage = String::Format(
-                    "%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n\n"
+                    "%s\n\n%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n"
                     "(Ok: Break, Cancel: Ignore, ⓧ: Ignore all)\t\t", name,
                     (chars) AssertInfo[0],
                     (chars) AssertInfo[1],
@@ -189,6 +208,23 @@
                 case 0: return 0; // DBT_OK
                 case 1: return 2; // DBT_CANCEL
                 case 2: return 1; // DBT_IGNORE
+                }
+            #else
+                char AssertMessage[4096];
+                boss_snprintf(AssertMessage, 4096,
+                    "%s\t\t\n%s\t\t\n%s\t\t\n%s\t\t\n"
+                    "(YES is Break, NO is Ignore)\t\t",
+                    AssertInfo[0], AssertInfo[1],
+                    AssertInfo[2], AssertInfo[3]);
+                QMessageBox AssertBox(QMessageBox::Warning, "ASSERT BREAK", QString::fromUtf8(name),
+                                      QMessageBox::Yes | QMessageBox::No | QMessageBox::NoToAll);
+                AssertBox.setInformativeText(AssertMessage);
+                AssertBox.setDefaultButton(QMessageBox::Yes);
+                const int Result = AssertBox.exec();
+                switch(Result)
+                {
+                case QMessageBox::Yes: return 0;
+                case QMessageBox::NoToAll: return 1;
                 }
             #endif
             IsRunning = false;
@@ -209,6 +245,8 @@
         #elif BOSS_WINDOWS
             OutputDebugStringW((wchars) WString::FromChars(TraceMessage));
             OutputDebugStringW(L"\n");
+        #else
+            qDebug().noquote() << TraceMessage;
         #endif
     }
 
@@ -335,12 +373,14 @@
 
         void Platform::SetWindowPos(sint32 x, sint32 y)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const QRect LastGeometry = g_window->geometry();
+            g_window->setGeometry(x, y, LastGeometry.width(), LastGeometry.height());
         }
 
         void Platform::SetWindowSize(sint32 width, sint32 height)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            const QRect LastGeometry = g_window->geometry();
+            g_window->setGeometry(LastGeometry.x(), LastGeometry.y(), width, height);
         }
 
         void Platform::SetWindowRect(sint32 x, sint32 y, sint32 width, sint32 height)
@@ -358,18 +398,22 @@
 
         void Platform::SetWindowVisible(bool visible)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(!g_window->InitedPlatform())
+                g_window->SetFirstVisible(visible);
+            else if(visible)
+                g_window->show();
+            else g_window->hide();
         }
 
         void Platform::SetWindowTopMost(bool enable)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->setWindowFlag(Qt::WindowStaysOnTopHint, enable);
+            g_window->show();
         }
 
         sint64 Platform::GetWindowHandle()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            return (sint64) g_window->winId();
         }
 
         void Platform::SetWindowWebUrl(chars url)
@@ -394,18 +438,33 @@
 
         void Platform::SetWindowFlash()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #if BOSS_WINDOWS
+                FLASHWINFO FlashInfo;
+                FlashInfo.cbSize = sizeof(FlashInfo);
+                FlashInfo.hwnd = (HWND) g_window->winId();
+                FlashInfo.dwFlags = FLASHW_TRAY | FLASHW_TIMERNOFG;
+                FlashInfo.uCount = 20;
+                FlashInfo.dwTimeout = 400;
+                FlashWindowEx(&FlashInfo);
+            #endif
         }
 
         bool Platform::SetWindowMask(id_image_read image)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            bool IsFramelessStyle = !!(g_window->windowFlags() & Qt::FramelessWindowHint);
+            BOSS_ASSERT("SetWindowMask는 Frameless스타일에서만 동작합니다", IsFramelessStyle);
+            if(IsFramelessStyle)
+            {
+                if(image) // 윈도우가 보여지기 전에 setMask를 호출하면 그 이후에 계속 프레임이
+                    g_window->setMask(((QPixmap*) image)->mask()); // 현저히 떨어지는(33f/s → 10f/s) 이유를 알아낼 것
+                else g_window->clearMask();
+            }
+            return IsFramelessStyle;
         }
 
         void Platform::SetWindowOpacity(float value)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->setWindowOpacity(value);
         }
 
         sint32 Platform::AddProcedure(ProcedureEvent event, ProcedureCB cb, payload data)
@@ -718,23 +777,22 @@
 
         void Platform::Utility::SetMinimize()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->showMinimized();
         }
 
         void Platform::Utility::SetFullScreen(bool available_only, sint32 addheight)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->showFullScreen();
         }
 
         bool Platform::Utility::IsFullScreen()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            return ((g_window->windowState() & Qt::WindowFullScreen) != 0);
         }
 
         void Platform::Utility::SetNormalWindow()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->showNormal();
         }
 
         void Platform::Utility::ExitProgram()
@@ -744,8 +802,34 @@
 
         String Platform::Utility::GetProgramPath(bool dironly)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return String();
+            String& FilePath = *BOSS_STORAGE_SYS(String);
+            String& DirPath = *BOSS_STORAGE_SYS(String);
+            if(dironly)
+            {
+                if(0 < DirPath.Length())
+                    return DirPath;
+            }
+            else if(0 < FilePath.Length())
+                return FilePath;
+
+            FilePath = QCoreApplication::applicationFilePath().toUtf8().constData();
+            FilePath = boss_normalpath(FilePath, nullptr);
+            #if !BOSS_WINDOWS
+                FilePath = "Q:/" + FilePath;
+            #endif
+
+            for(sint32 i = FilePath.Length() - 1; 0 <= i; --i)
+            {
+                if(FilePath[i] == '/')
+                {
+                    DirPath = FilePath.Left(i + 1); // '/'기호 포함
+                    break;
+                }
+            }
+
+            if(dironly)
+                return DirPath;
+            return FilePath;
         }
 
         chars Platform::Utility::GetArgument(sint32 i, sint32* getcount)
@@ -758,26 +842,86 @@
 
         bool Platform::Utility::TestUrlSchema(chars schema, chars comparepath)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            QSettings Settings((chars) String::Format("HKEY_CLASSES_ROOT\\%s", schema), QSettings::NativeFormat);
+            String ComparePath = comparepath;
+            ComparePath.Replace('/', '\\');
+
+            String OldValue = Settings.value("shell/open/command/Default").toString().toUtf8().constData();
+            if(!String::CompareNoCase(((chars) OldValue) + 1, ComparePath, ComparePath.Length()))
+                return true;
             return false;
         }
 
         bool Platform::Utility::BindUrlSchema(chars schema, chars exepath, bool forcewrite)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            QSettings Settings((chars) String::Format("HKEY_CLASSES_ROOT\\%s", schema), QSettings::NativeFormat);
+            String ExePath = exepath;
+            ExePath.Replace('/', '\\');
+
+            if(!forcewrite)
+            {
+                String OldValue = Settings.value("shell/open/command/Default").toString().toUtf8().constData();
+                if(ExePath.Length() == 0)
+                    return (0 < OldValue.Length());
+                else if(!String::CompareNoCase(((chars) OldValue) + 1, ExePath, ExePath.Length()))
+                    return true;
+            }
+
+            // 관리자권한이 없으면 실패
+            if(!Settings.isWritable())
+                return false;
+
+            if(0 < ExePath.Length())
+            {
+                Settings.setValue("Default", (chars) String::Format("URL:%s", schema));
+                Settings.setValue("URL Protocol", "");
+                Settings.beginGroup("DefaultIcon");
+                    Settings.setValue("Default", (chars) ("\"" + ExePath + ",1\""));
+                Settings.endGroup();
+                Settings.beginGroup("shell");
+                    Settings.setValue("Default", "open");
+                    Settings.beginGroup("open");
+                        Settings.beginGroup("command");
+                            Settings.setValue("Default", (chars) ("\"" + ExePath + "\" {urlschema:" + schema + "} \"%1\""));
+                        Settings.endGroup();
+                    Settings.endGroup();
+                Settings.endGroup();
+            }
+            return true;
         }
 
         bool Platform::Utility::BindExtProgram(chars extname, chars programid, chars exepath)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            QSettings Settings1((chars) String::Format("HKEY_CLASSES_ROOT\\%s", extname), QSettings::NativeFormat);
+            QSettings Settings2((chars) String::Format("HKEY_CLASSES_ROOT\\%s", programid), QSettings::NativeFormat);
+            String ExePath = exepath;
+            ExePath.Replace('/', '\\');
+
+            // 관리자권한이 없으면 실패
+            if(!Settings1.isWritable() || !Settings2.isWritable())
+                return false;
+
+            if(0 < ExePath.Length())
+            {
+                Settings1.setValue("Default", programid);
+                Settings2.setValue("Default", (chars) String::Format("%s(%s)", programid, extname));
+                Settings2.beginGroup("shell");
+                    Settings2.beginGroup("open");
+                        Settings2.beginGroup("command");
+                            Settings2.setValue("Default", (chars) ("\"" + ExePath + "\" \"%1\""));
+                        Settings2.endGroup();
+                    Settings2.endGroup();
+                Settings2.endGroup();
+            }
+            return true;
         }
 
         chars Platform::Utility::GetArgumentForUrlSchema(chars schema)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            const String SchemaToken = String::Format("{urlschema:%s}", schema);
+            if(g_argc == 3 && !String::Compare(g_argv[1], SchemaToken))
+                return g_argv[2] + boss_strlen(schema) + 3; // schema + "://"
+            return "";
         }
 
         sint32 Platform::Utility::GetScreenID(const point64& pos)

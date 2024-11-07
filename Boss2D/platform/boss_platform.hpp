@@ -82,7 +82,7 @@ public:
     static void SetWindowName(chars name);
 
     /// @brief 윈도우뷰 설정
-    /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _defaultview_)
+    /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _default_view_)
     /// @return 뷰핸들
     static h_view SetWindowView(chars viewclass = nullptr);
 
@@ -195,14 +195,14 @@ public:
     /// @param width : 가로길이(px)
     /// @param height : 세로길이(px)
     /// @param policy : 사이즈정책핸들
-    /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _defaultview_)
+    /// @param viewclass : 로드할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _default_view_)
     /// @param gl : GL모드
     /// @return 뷰핸들
     static h_view CreateView(chars name, sint32 width, sint32 height, h_policy policy, chars viewclass = nullptr, bool gl = false);
 
     /// @brief 해당 뷰에 변경할 뷰클래스를 지정
     /// @param view : 뷰핸들
-    /// @param viewclass : 변경할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _defaultview_)
+    /// @param viewclass : 변경할 뷰클래스(BOSS_DECLARE_VIEW로 선언, nullptr일 경우 _default_view_)
     /// @return 뷰클래스객체
     static void* SetNextViewClass(h_view view, chars viewclass = nullptr);
 
