@@ -110,9 +110,7 @@
         inline const ShaderRole& shader() const {return mShader;}
         // Setter
         inline void SetFont(chars name, sint32 size)
-        {
-            mPainter.setFont(QFont(name, size));
-        }
+        {mPainter.setFont(QFontDatabase::font(name, "", size));}
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
         {
             mScissor = QRect(l, t, r - l, b - t);

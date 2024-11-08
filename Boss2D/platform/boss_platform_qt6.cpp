@@ -564,13 +564,14 @@
 
         id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            id_cloned_share Result = nullptr;
+            g_window->View()->SendNotify(NT_Normal, topic, in, (needout)? &Result : nullptr, false);
+            return Result;
         }
 
         void Platform::SendDirectNotify(h_view view, chars topic, id_share in)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->View()->SendNotify(NT_Normal, topic, in, nullptr, true);
         }
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
