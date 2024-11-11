@@ -1,0 +1,99 @@
+apngasm (3.1.10) impish; urgency=low
+
+  * Switch to std fs.
+  * Fix assembly bug where alpha was "stacking".
+  * Update dependencies.
+  * Other small fixes and improvements.
+
+ -- 影月 零 (Rei Kagetsuki) <zero@phantom.industries>  Thu, 11 Nov 2021 11:11:11 +0900
+
+apngasm (3.1.9) hirsute; urgency=low
+
+  * various updates
+
+ -- 影月 零 (Rei Kagetsuki) <zero@phantom.industries>  Wed, 11 Aug 2021 14:03:57 +0900
+
+apngasm (3.1.8) disco; urgency=low
+
+  * compatibility update
+
+ -- 影月 零 (Rei Kagetsuki) <zero@phantom.industries>  Wed, 26 Jun 2018 13:42:57 +0900
+
+apngasm (3.1.7) xenial; urgency=low
+
+  * fixes for package builds and adjustments for ports
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Fri, 19 May 2017 11:48:57 +0900
+
+apngasm (3.1.6) trusty; urgency=low
+
+  * fix for boost 1.59(+)
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Fri, 21 Aug 2015 14:16:52 +0900
+
+apngasm (3.1.5) trusty; urgency=low
+
+  * fixed skip_first bug
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Thu, 13 Nov 2014 16:28:20 +0900
+
+apngasm (3.1.4) trusty; urgency=low
+
+  * fixed memory leaks
+  * added more robust handling of PNG sources
+  * added improvements for duplicate frames
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Tue, 21 Oct 2014 14:48:40 +0900
+
+apngasm (3.1-3ppa0) trusty; urgency=low
+
+  * fixed skip-frame issues
+  * properly implemented disassemble with skipped frame
+  * fixed JSON/XML issues
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Mon, 02 Jun 2014 16:39:55 +0900
+
+apngasm (3.1-2ppa0) trusty; urgency=low
+
+  * fixed hooks and listener for loops and frame skip
+  * fixed JSON and XML parser for loops and frame skip
+  * fixed loop and frame skip functionality from CLI
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Thu, 22 May 2014 10:45:16 +0900
+
+apngasm (3.1-1ppa1) trusty; urgency=low
+
+  * re-adjusted debian/rules for compatibility
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Thu, 15 May 2014 10:33:03 +0900
+
+apngasm (3.1-1ppa0) trusty; urgency=low
+
+  * add RGB/ARGB frame addtion in APNGAsm class
+  * adjust dependencies for debian
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Wed, 14 May 2014 22:03:13 +0900
+
+apngasm (3.1-0ppa2) trusty; urgency=low
+
+  * adjust dependencies
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Tue, 13 May 2014 00:58:10 +0900
+
+apngasm (3.1-0ppa1) trusty; urgency=low
+
+  * debuild adjustment, PPA rebuild
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Mon, 12 May 2014 20:29:00 +0900
+
+apngasm (3.1-0ppa0) trusty; urgency=low
+
+  * Update to 3.1
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Tue, 06 May 2014 23:24:57 +0900
+
+apngasm (3.0-0ppa0) saucy; urgency=low
+
+  * Version 3.0.0 "stable" release.
+
+ -- 影月 零 (Rei Kagetsuki) <zero@genshin.org>  Tue, 07 Jan 2014 01:03:26 +0900

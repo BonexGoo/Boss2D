@@ -1,0 +1,9 @@
+Assemble APNG animations from PNG image sequences.
+This is the command line tool to create APNG files from
+individual PNG files.
+
+The Animated Portable Network Graphics (APNG) file format is an
+extension to the Portable Network Graphics (PNG) specification. It
+allows for animated PNG files that work similarly to animated GIF
+files, while retaining backward compatibility with non-animated PNG
+files and adding support for 8-bit transparency and 24-bit images.

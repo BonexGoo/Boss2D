@@ -9,7 +9,7 @@ bool PlatformInit()
     #if BOSS_WASM
         Platform::InitForMDI(true);
     #else
-        Platform::InitForMDI(); // MDI가 GL보다 더 빠름
+        Platform::InitForMDI();
         if(Asset::RebuildForEmbedded())
             return false;
     #endif
@@ -35,7 +35,7 @@ bool PlatformInit()
     const String AtlasInfoString = String::FromAsset("atlasinfo.json");
     Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
-    R::AddAtlas("ui_atlaskey.png", "atlas.png", AtlasInfo);
+    R::AddAtlas("ui_atlaskey2.png", "atlas.png", AtlasInfo, 2);
     if(R::IsAtlasUpdated()) R::RebuildAll();
     Platform::AddProcedure(PE_100MSEC,
         [](payload data)->void
