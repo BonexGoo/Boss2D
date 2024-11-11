@@ -23,6 +23,7 @@
     #include <QFontDatabase>
     #include <QMessageBox>
     #include <QSettings>
+    #include <QException>
 
     #ifdef QT_HAVE_GRAPHICS
         #include <QMainWindow>

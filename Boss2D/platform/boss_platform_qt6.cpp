@@ -132,7 +132,10 @@
                             mainWindow.show();
                         #endif
                     }
-                    result = app.exec();
+
+                    try {result = app.exec();}
+                    catch(QException& e)
+                    {BOSS_ASSERT(String::Format("QException: %s", e.what()), false);}
                     PlatformQuit();
                 }
                 g_window = nullptr;
@@ -773,7 +776,17 @@
 
         void Platform::Utility::Sleep(sint32 ms, bool process_input, bool process_socket, bool block_event)
         {
-            QThread::msleep(ms);
+            QTime StartTime = QTime::currentTime();
+            if(process_input || process_socket)
+            {
+                QEventLoop EventLoop(QThread::currentThread());
+                sint32 Flag = QEventLoop::AllEvents;
+                if(!process_input) Flag |= QEventLoop::ExcludeUserInputEvents;
+                if(!process_socket) Flag |= QEventLoop::ExcludeSocketNotifiers;
+                EventLoop.processEvents((QEventLoop::ProcessEventsFlag) Flag, ms);
+            }
+            sint32 SleepTime = ms - StartTime.msecsTo(QTime::currentTime());
+            if(0 < SleepTime) QThread::msleep(SleepTime);
         }
 
         void Platform::Utility::SetMinimize()
