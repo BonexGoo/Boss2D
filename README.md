@@ -63,11 +63,11 @@ helloworldData::~helloworldData()
 
 ## How to run
 
-- Install QT 5.15.2 : https://www.qt.io/download-qt-installer-oss
+- Install QT 6.8.0 : https://www.qt.io/download-qt-installer-oss
 - DoubleClick : helloworld/project/helloworld.pro
 
 ### Features
 
-- helloworld : basic project
-- zaycode : code review software
-- zaypro : ui editor software
+- helloworld : basic project (example)
+- zaycode : code review software (example)
+- zaydata : server software (example)
