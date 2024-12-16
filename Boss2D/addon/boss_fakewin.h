@@ -29,8 +29,12 @@
 #define BOSS_FAKEWIN_STDCALL            //__stdcall
 
 #if BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE | BOSS_WINDOWS_MINGW
-    #define alloca(N) __builtin_alloca(N)
-    #define _alloca(N) __builtin_alloca(N)
+    #ifndef alloca
+        #define alloca(N) __builtin_alloca(N)
+    #endif
+    #ifndef _alloca
+        #define _alloca(N) __builtin_alloca(N)
+    #endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

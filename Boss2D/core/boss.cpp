@@ -75,13 +75,13 @@ extern "C"
 
     #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_WASM
         extern int vasprintf(char**, const char*, va_list);
-    #else
+    #elif !BOSS_WINDOWS_MINGW
         extern int vsnprintf(char*, size_t, const char*, va_list);
     #endif
 
     #if BOSS_MAC_OSX || BOSS_IPHONE || BOSS_ANDROID || BOSS_WASM
         extern int vswprintf(wchar_t*, size_t, const wchar_t*, va_list);
-    #else
+    #elif !BOSS_WINDOWS_MINGW
         extern int _vsnwprintf(wchar_t*, size_t, const wchar_t*, va_list);
     #endif
 
@@ -143,7 +143,7 @@ extern "C"
         extern int BOSS_WINAPI sendto(SOCKET s, const char* buf, int len, int flags, const struct sockaddr* to, int tolen);
         extern int BOSS_WINAPI ioctlsocket(SOCKET s, long cmd, unsigned long* argp);
         #if BOSS_WINDOWS_MINGW
-            extern int BOSS_WINAPI select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const PTIMEVAL timeout);
+            extern int BOSS_WINAPI select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const TIMEVAL* timeout);
         #else
             extern int BOSS_WINAPI select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, const struct timeval* timeout);
         #endif

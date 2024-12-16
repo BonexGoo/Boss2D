@@ -284,7 +284,7 @@ namespace BOSS
                     if(GetUserNameW(UserName, &UserNameLen))
                         StringCollector("UserName") = String::FromWChars(UserName);
                     DWORD VolSerial = 0;
-                    if(GetVolumeInformationA("C:/", NULL, NULL, &VolSerial, NULL, NULL, NULL, NULL))
+                    if(GetVolumeInformationA("C:/", NULL, 0, &VolSerial, NULL, NULL, NULL, 0))
                         StringCollector("VolSerial") = String::Format("%X", VolSerial);
                 #elif BOSS_LINUX
                     OSCode16 &= 0x02;

@@ -23,7 +23,9 @@
     #include <QFontDatabase>
     #include <QMessageBox>
     #include <QSettings>
-    #include <QException>
+    #if !BOSS_WASM
+        #include <QException>
+    #endif
 
     #ifdef QT_HAVE_GRAPHICS
         #include <QMainWindow>

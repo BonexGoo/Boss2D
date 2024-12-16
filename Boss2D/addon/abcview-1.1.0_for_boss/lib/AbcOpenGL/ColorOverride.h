@@ -1,4 +1,4 @@
-//-*****************************************************************************
+ï»¿//-*****************************************************************************
 //
 // Copyright (c) 2009-2016,
 //  Sony Pictures Imageworks, Inc. and
@@ -56,8 +56,8 @@ public:
     virtual void pushColorOverride(std::string const override_string, C3f const color_override);
     virtual void pushHiddenOverride(std::string const override_string, bool hidden); //added by BOSS
     virtual void pushMatrixOverride(std::string const override_string, const double* m16); //added by BOSS
-    virtual void popOverride(std::string const override_string); //modified by BOSS: popColorOverride ¡æ popOverride
-    virtual void clearOverride(); //modified by BOSS: clearColorOverride ¡æ clearOverride
+    virtual void popOverride(std::string const override_string); //modified by BOSS: popColorOverride â†’ popOverride
+    virtual void clearOverride(); //modified by BOSS: clearColorOverride â†’ clearOverride
     //removed by BOSS: const std::map<std::string, C3f> &overrides() const {return m_color_overrides;}
     C3f color_override(const std::string &comparison_string, const C3f &no_match_color, bool *hidden) const; //added by BOSS: bool *hidden
     M44d matrix_override(const std::string &comparison_string) const; //added by BOSS

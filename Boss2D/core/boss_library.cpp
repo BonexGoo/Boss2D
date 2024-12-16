@@ -11,11 +11,6 @@
     #include <jni.h>
 #endif
 
-extern "C"
-{
-    extern int printf(const char*, ...);
-}
-
 namespace BOSS
 {
     class ApiFunctions

@@ -25,7 +25,6 @@ ios: QT += gui-private
 android: QT += androidextras
 equals(QT_ENABLE_GRAPHICS, "ok"){
     qtHaveModule(webenginewidgets){
-        QT += webengine
         QT += webenginewidgets
         DEFINES += QT_HAVE_WEBENGINEWIDGETS
     }

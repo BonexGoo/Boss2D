@@ -38,6 +38,13 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
+// About register keyword
+#if true
+    #define BOSS_REGISTER
+#else
+    #define BOSS_REGISTER register
+#endif
+
 // About literal incoding
 #pragma execution_character_set("utf-8")
 

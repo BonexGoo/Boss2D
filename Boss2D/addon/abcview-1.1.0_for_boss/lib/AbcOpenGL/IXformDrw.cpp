@@ -1,4 +1,4 @@
-//-*****************************************************************************
+Ôªø//-*****************************************************************************
 //
 // Copyright (c) 2009-2013,
 //  Sony Pictures Imageworks, Inc. and
@@ -174,15 +174,15 @@ void IXformDrw::draw( const DrawContext & iCtx )
     // deep deep hierarchy that exhausts the max stack depth quickly.
     glMatrixMode( GL_MODELVIEW );
 
-    const M44d ZayMatrix = iCtx.getColorOverrides().matrix_override(m_fullName); //added by BOSS: ZayMatrix∞™¿∏∑Œ
-    const M44d LocalToParent = m_localToParent * ZayMatrix; //added by BOSS: «‡∑ƒ∞ˆ ∆ƒ¿Ã«¡∂Û¿Œ √ﬂ∞°
+    const M44d ZayMatrix = iCtx.getColorOverrides().matrix_override(m_fullName); //added by BOSS: ZayMatrixÍ∞íÏúºÎ°ú
+    const M44d LocalToParent = m_localToParent * ZayMatrix; //added by BOSS: ÌñâÎ†¨Í≥± ÌååÏù¥ÌîÑÎùºÏù∏ Ï∂îÍ∞Ä
     if ( m_inherits )
     {
-        glMultMatrixd( ( const GLdouble * )&LocalToParent[0][0] ); //modified by BOSS: m_localToParent °Ê LocalToParent
+        glMultMatrixd( ( const GLdouble * )&LocalToParent[0][0] ); //modified by BOSS: m_localToParent ‚Üí LocalToParent
     }
     else
     {
-        M44d cameraLocal = iCtx.getWorldToCamera() * LocalToParent; //modified by BOSS: m_localToParent °Ê LocalToParent
+        M44d cameraLocal = iCtx.getWorldToCamera() * LocalToParent; //modified by BOSS: m_localToParent ‚Üí LocalToParent
         glLoadMatrixd( ( const GLdouble * )&cameraLocal[0][0] );
     }
     //Note all children will get same colour

@@ -2526,11 +2526,11 @@ Matrix44<T>::multiply (const Matrix44<T> &a,
                        const Matrix44<T> &b,
                        Matrix44<T> &c)
 {
-    register const T * IMATH_RESTRICT ap = &a.x[0][0];
-    register const T * IMATH_RESTRICT bp = &b.x[0][0];
-    register       T * IMATH_RESTRICT cp = &c.x[0][0];
+    BOSS_REGISTER const T * IMATH_RESTRICT ap = &a.x[0][0];
+    BOSS_REGISTER const T * IMATH_RESTRICT bp = &b.x[0][0];
+    BOSS_REGISTER       T * IMATH_RESTRICT cp = &c.x[0][0];
 
-    register T a0, a1, a2, a3;
+    BOSS_REGISTER T a0, a1, a2, a3;
 
     a0 = ap[0];
     a1 = ap[1];

@@ -133,9 +133,13 @@
                         #endif
                     }
 
-                    try {result = app.exec();}
-                    catch(QException& e)
-                    {BOSS_ASSERT(String::Format("QException: %s", e.what()), false);}
+                    #if BOSS_WASM
+                        result = app.exec();
+                    #else
+                        try {result = app.exec();}
+                        catch(QException& e)
+                        {BOSS_ASSERT(String::Format("QException: %s", e.what()), false);}
+                    #endif
                     PlatformQuit();
                 }
                 g_window = nullptr;
@@ -1113,8 +1117,7 @@
 
         sint64 Platform::Utility::GetProcessID()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return QCoreApplication::applicationPid();
         }
 
         chars Platform::Utility::GetLocaleBCP47()

@@ -1,4 +1,4 @@
-//-*****************************************************************************
+ï»¿//-*****************************************************************************
 //
 // Copyright (c) 2009-2013,
 //  Sony Pictures Imageworks, Inc. and
@@ -67,7 +67,7 @@ void ColorOverride::pushMatrixOverride(std::string const override_string, const 
 
 //! Remove from map
 //! ...
-void ColorOverride::popOverride(std::string const override_string){ //modified by BOSS: popColorOverride ¡æ popOverride
+void ColorOverride::popOverride(std::string const override_string){ //modified by BOSS: popColorOverride â†’ popOverride
     m_color_overrides.erase(override_string);
     m_hidden_overrides.erase(override_string);
     m_matrix_overrides.erase(override_string);
@@ -75,7 +75,7 @@ void ColorOverride::popOverride(std::string const override_string){ //modified b
 
 //! Clear map
 //! ...
-void ColorOverride::clearOverride(){ //modified by BOSS: clearColorOverride ¡æ clearOverride
+void ColorOverride::clearOverride(){ //modified by BOSS: clearColorOverride â†’ clearOverride
     m_color_overrides.clear();
     m_hidden_overrides.clear();
     m_matrix_overrides.clear();
@@ -84,7 +84,7 @@ void ColorOverride::clearOverride(){ //modified by BOSS: clearColorOverride ¡æ c
 C3f ColorOverride::color_override(const std::string &comparison_string, const C3f &no_match_color, bool *hidden) const
 {
     C3f result_color=no_match_color;
-    std::map<std::string, C3f>::const_iterator it; //modified by BOSS: iterator ¡æ const_iterator
+    std::map<std::string, C3f>::const_iterator it; //modified by BOSS: iterator â†’ const_iterator
     it = m_color_overrides.find(comparison_string);
     if(it != m_color_overrides.end())
     {

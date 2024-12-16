@@ -5248,21 +5248,4 @@
         }
     }
 
-    // QTCREATOR가 아닌 경우 MOC코드 포함
-    #if !defined(BOSS_QTCREATOR) || BOSS_QTCREATOR != 1
-        #if BOSS_NDEBUG
-            #if BOSS_X64
-                #include "../project/GeneratedFiles/Release64/moc_boss_platform_qt5.cpp"
-            #else
-                #include "../project/GeneratedFiles/Release32/moc_boss_platform_qt5.cpp"
-            #endif
-        #else
-            #if BOSS_X64
-                #include "../project/GeneratedFiles/Debug64/moc_boss_platform_qt5.cpp"
-            #else
-                #include "../project/GeneratedFiles/Debug32/moc_boss_platform_qt5.cpp"
-            #endif
-        #endif
-    #endif
-
 #endif
