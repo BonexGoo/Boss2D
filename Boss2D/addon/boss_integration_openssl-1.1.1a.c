@@ -22,6 +22,13 @@
     #define struct_stat_BOSS struct stat
 #endif
 
+#if BOSS_WINDOWS_MINGW
+    static int strerror_r(int errcode, char* buffer, size_t length)
+    {
+        return strerror_s(buffer, length, errcode);
+    }
+#endif
+
 NON_EMPTY_TRANSLATION_UNIT
 
 //#include <addon/openssl-1.1.1a_for_boss/crypto/armcap.c>

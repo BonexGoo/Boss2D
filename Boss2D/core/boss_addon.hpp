@@ -78,7 +78,7 @@ namespace BOSS
             static void Release(id_curl curl);
             static chars GetString(id_curl curl, chars url,
                 chars headerdata = nullptr, SendType sendtype = ST_NoSend, chars senddata = nullptr, sint32 datalen = -1);
-            static bytes GetBytes(id_curl curl, chars url, sint32* getsize,
+            static bytes GetBytes(id_curl curl, chars url, sint32* getsize, Strings* getresponse = nullptr,
                 chars headerdata = nullptr, SendType sendtype = ST_NoSend, chars senddata = nullptr, sint32 datalen = -1);
             static chars GetRedirectUrl(id_curl curl, chars url, sint32 successcode,
                 chars headerdata = nullptr, SendType sendtype = ST_NoSend, chars senddata = nullptr, sint32 datalen = -1);

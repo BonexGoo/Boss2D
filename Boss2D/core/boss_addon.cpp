@@ -119,7 +119,7 @@ namespace BOSS
     BOSS_DEFINE_ADDON_FUNCTION(Curl, Clone, id_curl, return nullptr, id_curl)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, Release, void, return, id_curl)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetString, chars, return "", id_curl, chars, chars, AddOn::Curl::SendType, chars, sint32)
-    BOSS_DEFINE_ADDON_FUNCTION(Curl, GetBytes, bytes, return nullptr, id_curl, chars, sint32*, chars, AddOn::Curl::SendType, chars, sint32)
+    BOSS_DEFINE_ADDON_FUNCTION(Curl, GetBytes, bytes, return nullptr, id_curl, chars, sint32*, Strings*, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, SecureSend, void, return, id_curl, chars, chars, chars, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, GetRedirectUrl, chars, return "", id_curl, chars, sint32, chars, AddOn::Curl::SendType, chars, sint32)
     BOSS_DEFINE_ADDON_FUNCTION(Curl, SendStream, void, return, id_curl, chars, AddOn::Curl::CurlReadCB, payload)
@@ -146,8 +146,8 @@ namespace BOSS
     chars AddOn::Curl::GetString(id_curl curl, chars url, chars headerdata, SendType sendtype, chars senddata, sint32 datalen)
     {return Core_AddOn_Curl_GetString()(curl, url, headerdata, sendtype, senddata, datalen);}
 
-    bytes AddOn::Curl::GetBytes(id_curl curl, chars url, sint32* getsize, chars headerdata, SendType sendtype, chars senddata, sint32 datalen)
-    {return Core_AddOn_Curl_GetBytes()(curl, url, getsize, headerdata, sendtype, senddata, datalen);}
+    bytes AddOn::Curl::GetBytes(id_curl curl, chars url, sint32* getsize, Strings* getresponse, chars headerdata, SendType sendtype, chars senddata, sint32 datalen)
+    {return Core_AddOn_Curl_GetBytes()(curl, url, getsize, getresponse, headerdata, sendtype, senddata, datalen);}
 
     chars AddOn::Curl::GetRedirectUrl(id_curl curl, chars url, sint32 successcode, chars headerdata, SendType sendtype, chars senddata, sint32 datalen)
     {return Core_AddOn_Curl_GetRedirectUrl()(curl, url, successcode, headerdata, sendtype, senddata, datalen);}
