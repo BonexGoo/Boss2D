@@ -17,6 +17,7 @@
     #include <QFileInfo>
     #include <QDir>
     #include <QThread>
+    #include <QDateTime>
     #include <QStandardPaths>
     #include <QRandomGenerator>
     #include <QClipboard>
@@ -42,6 +43,8 @@
         #include <QListWidget>
         #include <QToolTip>
         #include <QSplashScreen>
+        #include <QStackedLayout>
+        #include <QGridLayout>
     #endif
 
     #include <QLocalSocket>
@@ -113,7 +116,14 @@
         inline const ShaderRole& shader() const {return mShader;}
         // Setter
         inline void SetFont(chars name, sint32 size)
-        {mPainter.setFont(QFontDatabase::font(name, "", size));}
+        {
+            const String FamilyAndStyle(name);
+            const sint32 DotPos = FamilyAndStyle.Find(0, ".");
+            if(DotPos != -1)
+                mPainter.setFont(QFontDatabase::font((chars) FamilyAndStyle.Left(DotPos),
+                    (chars) FamilyAndStyle.Offset(DotPos + 1), size));
+            else mPainter.setFont(QFontDatabase::font(name, "", size));
+        }
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)
         {
             mScissor = QRect(l, t, r - l, b - t);
@@ -172,6 +182,12 @@
         }
         ~MainView()
         {
+            if(mViewManager)
+            {
+                SendDestroy();
+                mViewManager->SetView(h_view::null());
+                delete mViewManager;
+            }
         }
 
     public:
@@ -324,15 +340,15 @@
             if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
             {
-                mViewManager->OnTouch(TT_Press, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_Press, 0, event->position().x(), event->position().y());
                 mLongpressTimer.start(500);
-                mLongpressX = event->x();
-                mLongpressY = event->y();
+                mLongpressX = event->position().x();
+                mLongpressY = event->position().y();
             }
             else if(event->button() == Qt::RightButton)
-                mViewManager->OnTouch(TT_ExtendPress, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_ExtendPress, 0, event->position().x(), event->position().y());
             else if(event->button() == Qt::MiddleButton)
-                mViewManager->OnTouch(TT_WheelPress, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_WheelPress, 0, event->position().x(), event->position().y());
             mTooltipTimer.stop();
         }
         void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE
@@ -344,31 +360,31 @@
             if(!mViewManager) return;
             if(event->buttons() == Qt::NoButton)
             {
-                mViewManager->OnTouch(TT_Moving, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_Moving, 0, event->position().x(), event->position().y());
                 mTooltipTimer.start(300);
                 Platform::Popup::HideToolTip();
             }
             else
             {
                 if(event->buttons() & Qt::LeftButton)
-                    mViewManager->OnTouch(TT_Dragging, 0, event->x(), event->y());
+                    mViewManager->OnTouch(TT_Dragging, 0, event->position().x(), event->position().y());
                 if(event->buttons() & Qt::RightButton)
-                    mViewManager->OnTouch(TT_ExtendDragging, 0, event->x(), event->y());
+                    mViewManager->OnTouch(TT_ExtendDragging, 0, event->position().x(), event->position().y());
                 if(event->buttons() & Qt::MiddleButton)
-                    mViewManager->OnTouch(TT_WheelDragging, 0, event->x(), event->y());
+                    mViewManager->OnTouch(TT_WheelDragging, 0, event->position().x(), event->position().y());
             }
-            if(5 < Math::Distance(mLongpressX, mLongpressY, event->x(), event->y()))
+            if(5 < Math::Distance(mLongpressX, mLongpressY, event->position().x(), event->position().y()))
                 mLongpressTimer.stop();
         }
         void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
             if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
-                mViewManager->OnTouch(TT_Release, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_Release, 0, event->position().x(), event->position().y());
             else if(event->button() == Qt::RightButton)
-                mViewManager->OnTouch(TT_ExtendRelease, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_ExtendRelease, 0, event->position().x(), event->position().y());
             else if(event->button() == Qt::MiddleButton)
-                mViewManager->OnTouch(TT_WheelRelease, 0, event->x(), event->y());
+                mViewManager->OnTouch(TT_WheelRelease, 0, event->position().x(), event->position().y());
             mLongpressTimer.stop();
         }
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE
@@ -499,10 +515,21 @@
         bool FirstVisible() const {return mNeedVisible;}
 
     public:
-        void InitForWidget(bool frameless, bool topmost)
+        void InitForWidget(bool frameless, bool topmost, QWidget* bgwidget)
         {
             mView = new MainView(this);
-            setCentralWidget(mView);
+            if(bgwidget)
+            {
+                bgwidget->setParent(this);
+                auto MainLayout = new QStackedLayout();
+                MainLayout->setStackingMode(QStackedLayout::StackAll);
+                MainLayout->addWidget(bgwidget);
+                MainLayout->addWidget(mView);
+                auto MainWidget = new QWidget();
+                MainWidget->setLayout(MainLayout);
+                setCentralWidget(MainWidget);
+            }
+            else setCentralWidget(mView);
 
             Qt::WindowFlags TypeCollector = Qt::Widget;
             if(frameless)
@@ -548,6 +575,151 @@
         MainView* mView {nullptr};
         bool mInited {false};
         bool mNeedVisible {true};
+    };
+
+    class ThreadClass : public QThread
+    {
+        Q_OBJECT
+
+    public:
+        static void Begin(ThreadCB cb, payload data, prioritytype priority)
+        {
+            auto pThread = new ThreadClass(cb, nullptr, data, priority);
+
+            connect(pThread, &ThreadClass::started,pThread, &ThreadClass::runslot);
+            QObject::connect(pThread, &ThreadClass::finished, pThread, &QObject::deleteLater);
+            pThread->moveToThread(pThread);
+            pThread->start();
+        }
+        static void* BeginEx(ThreadExCB cb, payload data, prioritytype priority)
+        {
+            return new ThreadClass(nullptr, cb, data, priority);
+        }
+
+    private:
+        ThreadClass(ThreadCB cb1, ThreadExCB cb2, payload data, prioritytype priority)
+        {
+            BOSS_ASSERT("cb1와 cb2가 모두 nullptr일 순 없습니다", cb1 || cb2);
+            m_cb1 = cb1;
+            m_cb2 = cb2;
+            m_data = data;
+            connect(this, SIGNAL(finished()), SLOT(OnFinished()));
+            switch(priority)
+            {
+            case prioritytype_lowest: start(QThread::Priority::LowestPriority); break;
+            case prioritytype_low: start(QThread::Priority::LowPriority); break;
+            case prioritytype_normal: start(QThread::Priority::NormalPriority); break;
+            case prioritytype_high: start(QThread::Priority::HighPriority); break;
+            case prioritytype_highest: start(QThread::Priority::HighestPriority); break;
+            }
+        }
+        virtual ~ThreadClass() {}
+
+    private slots:
+        void runslot()
+        {
+            if (m_cb1) this->m_cb1(m_data);
+            else if (m_cb2) this->m_cb2(m_data);
+        }
+
+        void OnFinished()
+        {
+            delete this;
+        }
+
+    private:
+        ThreadCB m_cb1;
+        ThreadExCB m_cb2;
+        payload m_data;
+    };
+
+    class ClockClass
+    {
+    public:
+        ClockClass()
+        {
+            m_prev = GetHead();
+            m_next = m_prev->m_next;
+            m_prev->m_next = this;
+            m_next->m_prev = this;
+            if(!GetTimer().isValid())
+            {
+                GetTotalMSecFromJulianDay() = ((sint64) EpochToJulian(QDateTime::currentMSecsSinceEpoch())) + GetLocalTimeMSecFromUtc();
+                GetTimer().start();
+            }
+            m_laptime = GetTimer().nsecsElapsed();
+        }
+        ClockClass(const ClockClass& rhs)
+        {
+            m_prev = GetHead();
+            m_next = m_prev->m_next;
+            m_prev->m_next = this;
+            m_next->m_prev = this;
+            operator=(rhs);
+        }
+        ~ClockClass()
+        {
+            m_prev->m_next = m_next;
+            m_next->m_prev = m_prev;
+        }
+
+    public:
+        void SetClock(sint32 year, sint32 month, sint32 day, sint32 hour, sint32 min, sint32 sec, sint64 nsec)
+        {
+            QDateTime NewTime = QDateTime::fromString(
+                (chars) String::Format("%04d-%02d-%02d %02d:%02d:%02d",
+                                       year, month, day, hour, min, sec), "yyyy-MM-dd HH:mm:ss");
+            const sint64 NewClockMSec = ((sint64) EpochToJulian(NewTime.toMSecsSinceEpoch())) + GetLocalTimeMSecFromUtc();
+            m_laptime = (NewClockMSec - GetTotalMSecFromJulianDay()) * 1000000 + nsec;
+        }
+        void SetClock(uint64 windowtime_msec)
+        {
+            const uint64 NewWindowMSec = WindowToEpoch(windowtime_msec);
+            const sint64 NewClockMSec = ((sint64) EpochToJulian(NewWindowMSec)) + GetLocalTimeMSecFromUtc();
+            m_laptime = (NewClockMSec - GetTotalMSecFromJulianDay()) * 1000000;
+        }
+
+    public:
+        inline ClockClass& operator=(const ClockClass& rhs)
+        {m_laptime = rhs.m_laptime; return *this;}
+
+    public:
+        inline sint64 GetLap() const {return m_laptime;}
+        inline void AddLap(sint64 nsec) {m_laptime += nsec;}
+        inline sint64 GetTotalSec() const
+        {return GetTotalMSecFromJulianDay() / 1000 + m_laptime / 1000000000;}
+        inline sint64 GetNSecInSec() const
+        {return ((GetTotalMSecFromJulianDay() % 1000) * 1000000 + 1000000000 + (m_laptime % 1000000000)) % 1000000000;}
+
+    public:
+        static void SetBaseTime(chars timestring)
+        {
+            QDateTime CurrentTime = QDateTime::fromString(timestring, "yyyy-MM-dd HH:mm:ss");
+            GetTotalMSecFromJulianDay() = ((sint64) EpochToJulian(CurrentTime.toMSecsSinceEpoch())) + GetLocalTimeMSecFromUtc();
+
+            const sint64 ChangedNSec = GetTimer().restart() * 1000000;
+            ClockClass* CurNode = GetHead();
+            while((CurNode = CurNode->m_next) != GetHead())
+                CurNode->m_laptime -= ChangedNSec;
+        }
+        static sint64 GetLocalTimeMSecFromUtc() {static sint64 _ = (sint64) (QDateTime::currentDateTime().offsetFromUtc() * 1000); return _;}
+
+    private:
+        static ClockClass* GetHead() {static ClockClass _(0); return &_;}
+        static QElapsedTimer& GetTimer() {static QElapsedTimer _; return _;}
+        static sint64& GetTotalMSecFromJulianDay() {static sint64 _ = 0; return _;}
+
+    private:
+        ClockClass(int) // Head전용
+        {
+            m_prev = this;
+            m_next = this;
+        }
+
+    private:
+        ClockClass* m_prev;
+        ClockClass* m_next;
+        sint64 m_laptime;
     };
 
     #if !BOSS_WASM

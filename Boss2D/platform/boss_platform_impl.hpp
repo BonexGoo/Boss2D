@@ -23,6 +23,9 @@ namespace BOSS
         {
             sint32 AddProcedure(ProcedureCB cb, payload data, sint32 msec);
             void SubProcedure(sint32 id);
+            void SetUserEventListener(chars event, UserEventCB cb, payload data);
+            void ClearUserEventListener(chars event);
+            void SendUserEvent(chars event, chars args);
 
             chars Utility_GetOSName();
             sint32 Utility_EnumPrograms(Context& programs, bool visible_only);

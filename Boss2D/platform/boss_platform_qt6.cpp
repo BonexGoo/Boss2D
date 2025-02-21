@@ -114,6 +114,7 @@
             g_canPopupAssert = true;
             int result = 0;
             {
+                QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
                 QApplication app(argc, argv);
 
                 MainWindow mainWindow;
@@ -164,6 +165,7 @@
         boss_snprintf(AssertInfo[0], 1024, "[QUERY] %s", query);
         boss_snprintf(AssertInfo[1], 1024, "[METHOD] %s()", BOSS_DBG_FUNC);
         boss_snprintf(AssertInfo[2], 1024, "[FILE/LINE] %s(%dLn)", BOSS_DBG_FILE, BOSS_DBG_LINE);
+        boss_snprintf(AssertInfo[3], 1024, "[THREAD_ID] %u", QThread::currentThreadId());
         #if BOSS_ANDROID
             __android_log_print(7, "*******", "************************************************************");
             __android_log_print(7, "*******", name);
@@ -352,14 +354,14 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
-        void Platform::InitForGL(bool frameless, bool topmost, chars url)
+        void Platform::InitForGL(bool frameless, bool topmost, chars bgweb)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::InitForMDI(bool frameless, bool topmost)
+        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget)
         {
-            g_window->InitForWidget(frameless, topmost);
+            g_window->InitForWidget(frameless, topmost, (QWidget*) bgwidget);
         }
 
         void Platform::SetViewCreator(View::CreatorCB creator)
@@ -484,6 +486,21 @@
             PlatformImpl::Wrap::SubProcedure(id);
         }
 
+        void Platform::SetUserEventListener(chars event, UserEventCB cb, payload data)
+        {
+            PlatformImpl::Wrap::SetUserEventListener(event, cb, data);
+        }
+
+        void Platform::ClearUserEventListener(chars event)
+        {
+            PlatformImpl::Wrap::ClearUserEventListener(event);
+        }
+
+        void Platform::SendUserEvent(chars event, chars args)
+        {
+            PlatformImpl::Wrap::SendUserEvent(event, args);
+        }
+
         void Platform::SetStatusText(chars text, UIStack stack)
         {
             BOSS_ASSERT("Further development is needed.", false);
@@ -572,13 +589,13 @@
         id_cloned_share Platform::SendNotify(h_view view, chars topic, id_share in, bool needout)
         {
             id_cloned_share Result = nullptr;
-            g_window->View()->SendNotify(NT_Normal, topic, in, (needout)? &Result : nullptr, false);
+            ((View*) view.get())->SendNotify(NT_Normal, topic, in, (needout)? &Result : nullptr, false);
             return Result;
         }
 
         void Platform::SendDirectNotify(h_view view, chars topic, id_share in)
         {
-            g_window->View()->SendNotify(NT_Normal, topic, in, nullptr, true);
+            ((View*) view.get())->SendNotify(NT_Normal, topic, in, nullptr, true);
         }
 
         void Platform::BroadcastNotify(chars topic, id_share in, NotifyType type, chars viewclass, bool directly)
@@ -598,7 +615,7 @@
                     if(g_window)
                     {
                         const Payload* Param = (const Payload*) param;
-                        g_window->View()->SendNotify(Param->type, Param->topic, Param->in, nullptr, Param->directly);
+                        ((View*) view->get())->SendNotify(Param->type, Param->topic, Param->in, nullptr, Param->directly);
                     }
                 }, &Param);
                 View::SearchEnd();
@@ -607,17 +624,37 @@
 
         void Platform::SendKeyEvent(h_view view, sint32 code, chars text, bool pressed)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            BOSS_TRACE("SendKeyEvent(%d, %s)", code, (pressed)? "pressed" : "released");
+            ((View*) view.get())->OnKey(code, text, pressed);
         }
 
         void Platform::PassAllViews(PassCB cb, payload data)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            BOSS_ASSERT("콜백함수가 nullptr입니다", cb);
+            if(auto Views = View::SearchBegin(nullptr))
+            {
+                struct Payload {PassCB cb; payload data; bool canceled;} Param = {cb, data, false};
+                Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
+                {
+                    Payload* Param = (Payload*) param;
+                    if(Param->canceled) return;
+                    Param->canceled = Param->cb(view->get(), Param->data);
+                }, &Param);
+                View::SearchEnd();
+            }
         }
 
         void Platform::UpdateAllViews()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto Views = View::SearchBegin(nullptr))
+            {
+                Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
+                {
+                    ((View*) view->get())->DirtyAllSurfaces();
+                    g_window->View()->update();
+                }, nullptr);
+                View::SearchEnd();
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -1031,11 +1068,26 @@
             return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
-        String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
+        Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));
-            const QString FontFamilyName = QFontDatabase::applicationFontFamilies(NewFontID).at(0);
-            return String(FontFamilyName.toUtf8().constData());
+            Strings FontFamilies;
+            for(auto& CurFontFamily : QFontDatabase::applicationFontFamilies(NewFontID))
+                FontFamilies.AtAdding() = String(CurFontFamily.toUtf8().constData());
+            return FontFamilies;
+        }
+
+        Strings Platform::Utility::EnumSystemFontStyles(chars fontfamily)
+        {
+            Strings FontStyles;
+            for(auto& CurFontStyle : QFontDatabase::styles(fontfamily))
+                FontStyles.AtAdding() = String(CurFontStyle.toUtf8().constData());
+            return FontStyles;
+        }
+
+        void Platform::Utility::RemoveSystemFontAll()
+        {
+            QFontDatabase::removeAllApplicationFonts();
         }
 
         void Platform::Utility::SetCursor(CursorRole role)
@@ -1128,25 +1180,22 @@
 
         void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            ThreadClass::Begin(cb, data, priority);
         }
 
         void* Platform::Utility::ThreadingEx(ThreadExCB cb, payload data, prioritytype priority)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            return ThreadClass::BeginEx(cb, data, priority);
         }
 
         uint64 Platform::Utility::CurrentThreadID()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return (uint64) QThread::currentThreadId();
         }
 
         uint32 Platform::Utility::IdealThreadCount()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 3;
+            return (uint32) QThread::idealThreadCount();
         }
 
         uint64 Platform::Utility::CurrentTimeMsec()
@@ -1187,74 +1236,82 @@
         ////////////////////////////////////////////////////////////////////////////////
         void Platform::Clock::SetBaseTime(chars timestring)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            ClockClass::SetBaseTime(timestring);
         }
 
         id_clock Platform::Clock::Create(sint32 year, sint32 month, sint32 day,
             sint32 hour, sint32 min, sint32 sec, sint64 nsec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            buffer NewClock = Buffer::Alloc<ClockClass>(BOSS_DBG 1);
+            ((ClockClass*) NewClock)->SetClock(year, month, day, hour, min, sec, nsec);
+            return (id_clock) NewClock;
         }
 
         id_clock Platform::Clock::CreateAsWindowTime(uint64 msec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            buffer NewClock = Buffer::Alloc<ClockClass>(BOSS_DBG 1);
+            ((ClockClass*) NewClock)->SetClock(msec);
+            return (id_clock) NewClock;
         }
 
         id_clock Platform::Clock::CreateAsCurrent()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            buffer NewClock = Buffer::Alloc<ClockClass>(BOSS_DBG 1);
+            return (id_clock) NewClock;
         }
 
         id_clock Platform::Clock::CreateAsClone(id_clock_read clock)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            BOSS_ASSERT("파라미터가 nullptr입니다", clock);
+            buffer NewClock = Buffer::AllocNoConstructorOnce<ClockClass>(BOSS_DBG 1);
+            BOSS_CONSTRUCTOR(NewClock, 0, ClockClass, *((const ClockClass*) clock));
+            return (id_clock) NewClock;
         }
 
         void Platform::Clock::Release(id_clock clock)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            Buffer::Free((buffer) clock);
         }
 
         sint64 Platform::Clock::GetPeriodNsec(id_clock_read from, id_clock_read to)
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", from && to);
-
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return ((const ClockClass*) to)->GetLap() - ((const ClockClass*) from)->GetLap();
         }
 
         void Platform::Clock::AddNsec(id_clock dest, sint64 nsec)
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", dest);
-
-            BOSS_ASSERT("Further development is needed.", false);
+            ((ClockClass*) dest)->AddLap(nsec);
         }
 
         uint64 Platform::Clock::GetMsec(id_clock clock)
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", clock);
-
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return ((const ClockClass*) clock)->GetTotalSec() * 1000 +
+                   (uint64) (((const ClockClass*) clock)->GetNSecInSec() / 1000000);
         }
 
         sint64 Platform::Clock::GetLocalMsecFromUTC()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return 0;
+            return ClockClass::GetLocalTimeMSecFromUtc();
         }
 
         void Platform::Clock::GetDetail(id_clock clock, sint64* nsec,
             sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year, sint32* weekday)
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", clock);
-
-            BOSS_ASSERT("Further development is needed.", false);
+            const sint64 CurTotalSec = ((const ClockClass*) clock)->GetTotalSec();
+            // JulianDay는 BC-4300년을 기점으로 계산된 일수
+            const QDate CurDate = QDate::fromJulianDay(CurTotalSec / (60 * 60 * 24));
+            if(nsec) *nsec = ((const ClockClass*) clock)->GetNSecInSec();
+            if(sec) *sec = CurTotalSec % 60;
+            if(min) *min = (CurTotalSec / 60) % 60;
+            if(hour) *hour = (CurTotalSec / (60 * 60)) % 24;
+            if(day) *day = CurDate.day();
+            if(month) *month = CurDate.month();
+            if(year) *year = CurDate.year();
+            if(weekday) *weekday = CurDate.dayOfWeek();
         }
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -1413,6 +1470,25 @@
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
             CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
+            CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
+        }
+
+        void Platform::Graphics::EraseRoundRect(float x, float y, float w, float h, sint32 r)
+        {
+            auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
+            r = Math::Min(Math::MinF(w, h) * 0.5 + 0.5, r);
+            CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y, w - r * 2, r));
+            CanvasClass::get()->painter().eraseRect(QRectF(x, y + r, w, h - r * 2));
+            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y + h - r, w - r * 2, r));
+            for(sint32 i = 0, ir = r, rr = r * r; i < r; ++i, --ir)
+            {
+                const sint32 CurR = Math::Sqrt(rr - ir * ir);
+                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + i, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + i, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + h - i - 1, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + h - i - 1, CurR, 1));
+            }
             CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
 
@@ -3076,7 +3152,7 @@
             case SocketBox::Type::WS:
             case SocketBox::Type::WSS:
                 {
-                    return CurSocketBox->m_wbytes.count();
+                    return CurSocketBox->m_wbytes.length();
                 }
                 break;
             }

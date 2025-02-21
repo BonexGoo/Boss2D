@@ -201,6 +201,32 @@ namespace BOSS
                     Core::g_DeleteProcedureIDs.Enqueue(id);
             }
 
+            class UserEventClass
+            {
+            public:
+                UserEventCB mCB {nullptr};
+                payload mData {nullptr};
+            };
+            Map<UserEventClass> g_UserEvents;
+
+            void SetUserEventListener(chars event, UserEventCB cb, payload data)
+            {
+                auto& CurUserEvent = g_UserEvents(event);
+                CurUserEvent.mCB = cb;
+                CurUserEvent.mData = data;
+            }
+
+            void ClearUserEventListener(chars event)
+            {
+                g_UserEvents.Remove(event);
+            }
+
+            void SendUserEvent(chars event, chars args)
+            {
+                if(auto OneUserEvent = g_UserEvents.Access(event))
+                    OneUserEvent->mCB(OneUserEvent->mData, args);
+            }
+
             chars Utility_GetOSName()
             {
                 #if BOSS_WINDOWS

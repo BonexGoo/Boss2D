@@ -164,14 +164,14 @@
         ////////////////////////////////////////////////////////////////////////////////
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
-        void Platform::InitForGL(bool frameless, bool topmost, chars url)
+        void Platform::InitForGL(bool frameless, bool topmost, chars bgweb)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::InitForMDI(bool frameless, bool topmost)
+        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
 
@@ -307,6 +307,21 @@
         void Platform::SubProcedure(sint32 id)
         {
             PlatformImpl::Wrap::SubProcedure(id);
+        }
+
+        void Platform::SetUserEventListener(chars event, UserEventCB cb, payload data)
+        {
+            PlatformImpl::Wrap::SetUserEventListener(event, cb, data);
+        }
+
+        void Platform::ClearUserEventListener(chars event)
+        {
+            PlatformImpl::Wrap::ClearUserEventListener(event);
+        }
+
+        void Platform::SendUserEvent(chars event, chars args)
+        {
+            PlatformImpl::Wrap::SendUserEvent(event, args);
         }
 
         void Platform::SetStatusText(chars text, UIStack stack)
@@ -735,10 +750,20 @@
             return String();
         }
 
-        String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
+        Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
-            return String();
+            return Strings();
+        }
+
+        Strings Platform::Utility::EnumSystemFontStyles(chars fontfamily)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return Strings();
+        }
+
+        void Platform::Utility::RemoveSystemFontAll()
+        {
         }
 
         void Platform::Utility::SetCursor(CursorRole role)
@@ -1040,6 +1065,13 @@
         }
 
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Graphics::EraseRoundRect(float x, float y, float w, float h, sint32 r)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
 

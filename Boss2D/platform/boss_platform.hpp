@@ -51,6 +51,7 @@ enum PurchaseType {PT_Consumable, PT_Unlockable};
 class ViewClass;
 class ViewManager;
 typedef void (*ProcedureCB)(payload data);
+typedef void (*UserEventCB)(payload data, chars param);
 typedef bool (*PassCB)(void* view, payload data);
 typedef void (*ThreadCB)(void* data);
 typedef uint32 (*ThreadExCB)(void* data);
@@ -65,13 +66,14 @@ public:
     /// @brief 플랫폼초기화(GL뷰)
     /// @param frameless : 프레임보더가 없는 스타일
     /// @param topmost : 항상 최상위에 올려진 스타일
-    /// @param url : 윈도우배경으로 쓸 URL
-    static void InitForGL(bool frameless = false, bool topmost = false, chars url = nullptr);
+    /// @param url : 배경레이어으로 쓸 URL
+    static void InitForGL(bool frameless = false, bool topmost = false, chars bgweb = nullptr);
 
     /// @brief 플랫폼초기화(MDI뷰)
     /// @param frameless : 프레임보더가 없는 스타일
     /// @param topmost : 항상 최상위에 올려진 스타일
-    static void InitForMDI(bool frameless = false, bool topmost = false);
+    /// @param bgwidget : 배경레이어으로 쓸 위젯
+    static void InitForMDI(bool frameless = false, bool topmost = false, void* bgwidget = nullptr);
 
     /// @brief 뷰생성기 설정
     /// @param creator : 뷰생성기
@@ -163,6 +165,21 @@ public:
     /// @brief 프로시저 제거
     /// @param id : 제거할 프로시저의 ID
     static void SubProcedure(sint32 id);
+
+    /// @brief 사용자이벤트 리스너 추가
+    /// @param event : 이벤트명
+    /// @param cb : 콜백함수
+    /// @param data : 콜백함수에 전달할 데이터
+    static void SetUserEventListener(chars event, UserEventCB cb, payload data = nullptr);
+
+    /// @brief 사용자이벤트 리스너 제거
+    /// @param event : 이벤트명
+    static void ClearUserEventListener(chars event);
+
+    /// @brief 사용자이벤트 전송
+    /// @param event : 이벤트명
+    /// @param args : 이벤트인수
+    static void SendUserEvent(chars event, chars args = nullptr);
 
     /// @brief 상태창 설정
     /// @param text : 스트링
@@ -541,8 +558,16 @@ public:
         /// @brief 시스템폰트 생성
         /// @param data : TTF폰트 데이터
         /// @param size : 데이터의 길이(byte)
-        /// @return 폰트패밀리명
-        static String CreateSystemFont(bytes data, const sint32 size);
+        /// @return 폰트패밀리들
+        static Strings CreateSystemFont(bytes data, const sint32 size);
+
+        /// @brief 시스템폰트 스타일열거
+        /// @param fontfamily : 폰트패밀리
+        /// @return 스타일들
+        static Strings EnumSystemFontStyles(chars fontfamily);
+
+        /// @brief 모든 시스템폰트 제거
+        static void RemoveSystemFontAll();
 
         /// @brief 커서모양 바꾸기
         /// @param role : 커서모양
@@ -814,6 +839,14 @@ public:
         /// @param w : 가로길이(px)
         /// @param h : 세로길이(px)
         static void EraseRect(float x, float y, float w, float h);
+
+        /// @brief 라운드식 사각영역 지우기
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param w : 가로길이(px)
+        /// @param h : 세로길이(px)
+        /// @param r : 반지름길이(px)
+        static void EraseRoundRect(float x, float y, float w, float h, sint32 r);
 
         /// @brief 사각형 출력
         /// @param x : 좌측위치(px)

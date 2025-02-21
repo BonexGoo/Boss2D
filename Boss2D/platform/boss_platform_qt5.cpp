@@ -380,14 +380,14 @@
         // PLATFORM
         ////////////////////////////////////////////////////////////////////////////////
         static bool gSavedFrameless = false;
-        void Platform::InitForGL(bool frameless, bool topmost, chars url)
+        void Platform::InitForGL(bool frameless, bool topmost, chars bgweb)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
-            g_data->initForGL(frameless, topmost, url);
+            g_data->initForGL(frameless, topmost, bgweb);
             gSavedFrameless = frameless;
         }
 
-        void Platform::InitForMDI(bool frameless, bool topmost)
+        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
             g_data->initForMDI(frameless, topmost);
@@ -579,6 +579,21 @@
         void Platform::SubProcedure(sint32 id)
         {
             PlatformImpl::Wrap::SubProcedure(id);
+        }
+
+        void Platform::SetUserEventListener(chars event, UserEventCB cb, payload data)
+        {
+            PlatformImpl::Wrap::SetUserEventListener(event, cb, data);
+        }
+
+        void Platform::ClearUserEventListener(chars event)
+        {
+            PlatformImpl::Wrap::ClearUserEventListener(event);
+        }
+
+        void Platform::SendUserEvent(chars event, chars args)
+        {
+            PlatformImpl::Wrap::SendUserEvent(event, args);
         }
 
         void Platform::SetStatusText(chars text, UIStack stack)
@@ -1432,11 +1447,26 @@
             return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
-        String Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
+        Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));
-            const QString FontFamilyName = QFontDatabase::applicationFontFamilies(NewFontID).at(0);
-            return String(FontFamilyName.toUtf8().constData());
+            Strings FontFamilies;
+            for(auto& CurFontFamily : QFontDatabase::applicationFontFamilies(NewFontID))
+                FontFamilies.AtAdding() = String(CurFontFamily.toUtf8().constData());
+            return FontFamilies;
+        }
+
+        Strings Platform::Utility::EnumSystemFontStyles(chars fontfamily)
+        {
+            Strings FontStyles;
+            for(auto& CurFontStyle : QFontDatabase::styles(fontfamily))
+                FontStyles.AtAdding() = String(CurFontStyle.toUtf8().constData());
+            return FontStyles;
+        }
+
+        void Platform::Utility::RemoveSystemFontAll()
+        {
+            QFontDatabase::removeAllApplicationFonts();
         }
 
         void Platform::Utility::SetCursor(CursorRole role)
@@ -1879,6 +1909,26 @@
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
             CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
+            CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
+        }
+
+        void Platform::Graphics::EraseRoundRect(float x, float y, float w, float h, sint32 r)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
+            auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
+            r = Math::Min(Math::MinF(w, h) * 0.5 + 0.5, r);
+            CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y, w - r * 2, r));
+            CanvasClass::get()->painter().eraseRect(QRectF(x, y + r, w, h - r * 2));
+            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y + h - r, w - r * 2, r));
+            for(sint32 i = 0, ir = r, rr = r * r; i < r; ++i, --ir)
+            {
+                const sint32 CurR = Math::Sqrt(rr - ir * ir);
+                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + i, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + i, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + h - i - 1, CurR, 1));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + h - i - 1, CurR, 1));
+            }
             CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
 
