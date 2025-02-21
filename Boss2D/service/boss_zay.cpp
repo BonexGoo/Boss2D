@@ -418,10 +418,12 @@ namespace BOSS
             Platform::Graphics::UnbindSurface(m_ref_surface);
     }
 
-    void ZayPanel::erase() const
+    void ZayPanel::erase(sint32 round) const
     {
         const Clip& LastClip = m_stack_clip[-1];
-        Platform::Graphics::EraseRect(LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height());
+        if(round == 0)
+            Platform::Graphics::EraseRect(LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height());
+        else Platform::Graphics::EraseRoundRect(LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height(), round);
     }
 
     void ZayPanel::fill() const
@@ -447,6 +449,12 @@ namespace BOSS
     {
         const Clip& LastClip = m_stack_clip[-1];
         Platform::Graphics::FillCircle(LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height());
+    }
+
+    void ZayPanel::circleline(float thick) const
+    {
+        const Clip& LastClip = m_stack_clip[-1];
+        Platform::Graphics::DrawCircle(LastClip.l, LastClip.t, LastClip.Width(), LastClip.Height(), thick);
     }
 
     void ZayPanel::bezier(const Vector& begin, const Vector& end, float thick) const

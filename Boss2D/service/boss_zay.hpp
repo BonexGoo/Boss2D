@@ -352,11 +352,12 @@ namespace BOSS
         };
 
     public:
-        void erase() const;
+        void erase(sint32 round = 0) const;
         void fill() const;
         void rect(float thick) const;
         void line(const Point& begin, const Point& end, float thick) const;
         void circle() const;
+        void circleline(float thick) const;
         void bezier(const Vector& begin, const Vector& end, float thick) const;
         void polygon(Points p) const;
         void polyline(Points p, float thick, bool ring = false) const;
@@ -386,6 +387,8 @@ namespace BOSS
         uint32 fbo() const;
 
     public:
+        inline const Rect scissor() const
+        {return m_stack_scissor[-1];}
         inline const Color color() const
         {return m_stack_color[-1];}
         inline const ZoomState zoom() const
