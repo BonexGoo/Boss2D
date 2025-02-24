@@ -478,7 +478,14 @@
 
         sint32 Platform::AddProcedure(ProcedureEvent event, ProcedureCB cb, payload data)
         {
-            return PlatformImpl::Wrap::AddProcedure(cb, data, 1000);
+            switch(event)
+            {
+            case PE_1SEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000);
+            case PE_100MSEC: return PlatformImpl::Wrap::AddProcedure(cb, data, 100);
+            case PE_FRAME: return PlatformImpl::Wrap::AddProcedure(cb, data, 1000 / USER_FRAMECOUNT);
+            }
+            BOSS_ASSERT("알 수 없는 ProcedureEvent입니다", false);
+            return -1;
         }
 
         void Platform::SubProcedure(sint32 id)
@@ -1478,17 +1485,13 @@
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             r = Math::Min(Math::MinF(w, h) * 0.5 + 0.5, r);
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
-            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y, w - r * 2, r));
-            CanvasClass::get()->painter().eraseRect(QRectF(x, y + r, w, h - r * 2));
-            CanvasClass::get()->painter().eraseRect(QRectF(x + r, y + h - r, w - r * 2, r));
             for(sint32 i = 0, ir = r, rr = r * r; i < r; ++i, --ir)
             {
-                const sint32 CurR = Math::Sqrt(rr - ir * ir);
-                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + i, CurR, 1));
-                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + i, CurR, 1));
-                CanvasClass::get()->painter().eraseRect(QRectF(x + r - CurR, y + h - i - 1, CurR, 1));
-                CanvasClass::get()->painter().eraseRect(QRectF(x + w - r, y + h - i - 1, CurR, 1));
+                const sint32 CurR = Math::Max(0, r - Math::Sqrt(rr - ir * ir));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + CurR, y + i, w - CurR * 2, 1.5));
+                CanvasClass::get()->painter().eraseRect(QRectF(x + CurR, y + h - i - 1.5, w - CurR * 2, 1.5));
             }
+            CanvasClass::get()->painter().eraseRect(QRectF(x, y + r, w, h - r * 2));
             CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
 
@@ -1548,7 +1551,7 @@
         {
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
+            CanvasClass::get()->painter().drawEllipse(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
         void Platform::Graphics::DrawBezier(const Vector& begin, const Vector& end, float thick)

@@ -550,6 +550,17 @@ namespace BOSS
                 return panel._push_scissor_clear();
             });
 
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "erase",
+            ZAY_DECLARE_COMPONENT(panel, pay)
+            {
+                if(pay.ParamCount() != 0 && pay.ParamCount() != 1)
+                    return panel._push_pass();
+                auto Round = (pay.ParamCount() < 1)? 0 : pay.Param(0).ToInteger();
+                panel.erase(Round);
+                return panel._push_pass();
+            },
+            "#[Round:0]");
+
         interface.AddComponent(ZayExtend::ComponentType::Content, "fill",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
@@ -568,23 +579,29 @@ namespace BOSS
             },
             "[Thick:1]");
 
-        interface.AddComponent(ZayExtend::ComponentType::Content, "circle",
+        interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "circle",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                panel.circle();
+                if(pay.ParamCount() != 0 && pay.ParamCount() != 1)
+                    return panel._push_pass();
+                auto Thick = (pay.ParamCount() < 1)? 0.0f : pay.Param(0).ToFloat();
+                if(Thick == 0.0f)
+                    panel.circle();
+                else panel.circleline(Thick);
                 return panel._push_pass();
-            });
+            },
+            "#[Thick:0]");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParameter, "line",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(pay.ParamCount() != 5)
+                if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 auto X1 = pay.Param(0).ToFloat();
                 auto Y1 = pay.Param(1).ToFloat();
                 auto X2 = pay.Param(2).ToFloat();
                 auto Y2 = pay.Param(3).ToFloat();
-                auto Thick = pay.Param(4).ToFloat();
+                auto Thick = (pay.ParamCount() < 5)? 1.0f : pay.Param(4).ToFloat();
                 panel.line(Point(X1, Y1), Point(X2, Y2), Thick);
                 return panel._push_pass();
             },
