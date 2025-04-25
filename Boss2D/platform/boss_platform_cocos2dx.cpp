@@ -1753,7 +1753,7 @@
             return (sint32) ftell((FILE*) file);
         }
 
-        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath)
+        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool)
         {
             String PathUTF8 = PlatformImpl::Core::NormalPath(dirname);
             PathUTF8.Replace('\\', '/');

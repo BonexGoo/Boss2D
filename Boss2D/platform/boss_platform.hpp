@@ -1331,8 +1331,9 @@ public:
         /// @param cb : 콜백함수
         /// @param data : 콜백함수에 전달할 데이터
         /// @param needfullpath : 콜백함수에 풀패스를 전달할지의 여부
+        /// @param fileonly : 파일만 검색할지의 여부
         /// @return 검색된 수량
-        static sint32 Search(chars dirname, SearchCB cb, payload data, bool needfullpath);
+        static sint32 Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool fileonly = false);
 
         /// @brief 아이템의 속성값 조사
         /// @param itemname : 아이템명(파일 또는 폴더)

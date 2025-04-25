@@ -28,7 +28,7 @@
 #define BOSS_FAKEWIN_DECLSPEC_DLLIMPORT //__declspec(dllimport)
 #define BOSS_FAKEWIN_STDCALL            //__stdcall
 
-#if BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE | BOSS_WINDOWS_MINGW
+#if BOSS_LINUX | BOSS_MAC_OSX | BOSS_IPHONE | BOSS_WINDOWS_MINGW | BOSS_WASM
     #ifndef alloca
         #define alloca(N) __builtin_alloca(N)
     #endif
@@ -166,7 +166,7 @@
     typedef void* HANDLE;
     typedef int SOCKET;
     typedef USHORT ADDRESS_FAMILY;
-    #if BOSS_IPHONE
+    #if BOSS_IPHONE | BOSS_WASM
         typedef int socklen_t;
         #define __socklen_t_defined
     #endif
@@ -237,6 +237,10 @@
     #endif
     #include <stdint.h>
     #include <fcntl.h>
+
+    #if BOSS_WASM
+        #define _SYS_SELECT_H
+    #endif
 
     #define socket boss_fakewin_socket
     #define connect boss_fakewin_connect
@@ -814,9 +818,14 @@
         typedef unsigned long u_long;
         #define __POCC__ 0
         #define __POCC__OLDNAMES
+    #elif BOSS_WASM
+        struct timeval {
+            long    tv_sec;         /* seconds */
+            long    tv_usec;        /* and microseconds */
+        };
     #endif
 
-    #ifdef  UNICODE                     
+    #ifdef  UNICODE
         #define __TEXT(quote)                L##quote
         #define LoadLibrary                  LoadLibraryW
         #define GetEnvironmentStrings        GetEnvironmentStringsW

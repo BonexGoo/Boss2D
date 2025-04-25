@@ -221,6 +221,7 @@
         } while(0)
     #define BOSS_ASSERT_PRM(TEXT, QUERY)
     #define BOSS_ASSERT_ARG(TEXT, QUERY, ...)
+    #define BOSS_DBG_BREAK do{} while(0)
 #else
     #define BOSS_DBG
     #define BOSS_DBG_PRM
@@ -233,6 +234,7 @@
     #define BOSS_ASSERT(TEXT, QUERY)
     #define BOSS_ASSERT_PRM(TEXT, QUERY)
     #define BOSS_ASSERT_ARG(TEXT, QUERY, ...)
+    #define BOSS_DBG_BREAK do{} while(0)
 #endif
 
 // About trace

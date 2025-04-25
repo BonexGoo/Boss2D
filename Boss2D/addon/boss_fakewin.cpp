@@ -1,7 +1,5 @@
 ﻿#include <boss.h>
 
-#if !BOSS_WASM
-
 #include <iostream>
 #include <functional>
 #include <cctype>
@@ -2647,5 +2645,3 @@ extern "C" DWORD boss_fakewin_GetCurrentDirectoryW(DWORD nBufferLength, LPWSTR l
     }
 
 #endif
-
-#endif // !BOSS_WASM

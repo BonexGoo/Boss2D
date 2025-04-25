@@ -249,12 +249,12 @@ namespace BOSS
         return (m_valueOffset)? GetInt() : value;
     }
 
-    const float Context::GetFloat() const
+    const double Context::GetFloat() const
     {
-        return Parser::GetFloat(m_valueOffset, m_valueLength);
+        return Parser::GetFloat<double>(m_valueOffset, m_valueLength);
     }
 
-    const float Context::GetFloat(const float value) const
+    const double Context::GetFloat(const double value) const
     {
         return (m_valueOffset)? GetFloat() : value;
     }

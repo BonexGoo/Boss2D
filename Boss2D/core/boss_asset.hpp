@@ -85,8 +85,7 @@ namespace BOSS
     class AssetPath
     {
     public:
-        typedef void (*FindFileCB)(id_assetpath_read assetpath, chars filename);
-        typedef void (*FindPathCB)(id_assetpath_read assetpath);
+        typedef void (*SearchCB)(chars filepath, chars filename, payload data);
 
         /// @brief 어셋패스 생성
         /// @return 어셋패스ID
@@ -108,15 +107,13 @@ namespace BOSS
         /// @see Create
         static void Release(id_assetpath assetpath);
 
-        /// @brief 기존 어셋패스에서 파일 및 폴더 검색
+        /// @brief 기존 어셋패스에서 파일 검색
         /// @param assetpath : 어셋패스ID
-        /// @param filecb : 검색된 파일용 콜백
-        /// @param pathcb : 검색된 폴더용 콜백
-        static void Find(id_assetpath_read assetpath,
-            FindFileCB filecb = nullptr, FindPathCB pathcb = nullptr);
-
-        /// @brief 기존 어셋패스의 하위 캐시파일을 제거
-        /// @param assetpath : 어셋패스ID
-        static void Reset(id_assetpath_read assetpath);
+        /// @param cb : 콜백함수
+        /// @param data : 콜백함수에 전달할 데이터
+        /// @param originalonly : 원본리소스만 대상으로 할지의 여부
+        /// @return 검색된 수량
+        static sint32 Search(id_assetpath_read assetpath,
+            SearchCB cb = nullptr, payload data = nullptr, bool originalonly = false);
     };
 }

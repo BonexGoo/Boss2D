@@ -135,6 +135,8 @@
     if(auto _ = (PANEL)._push_zoom_clear())
 #define ZAY_SCISSOR_CLEAR(PANEL) \
     if(auto _ = (PANEL)._push_scissor_clear())
+#define ZAY_SCISSOR_CLEAR_IF(PANEL, QUERY) \
+    if(auto _ = (QUERY)? (PANEL)._push_scissor_clear() : (PANEL)._push_pass())
 
 // 확장형 옵션스택
 // ZayExtend A가 파라미터가 없는 경우 : ZAY_EXTEND(A() >> panel) {...}

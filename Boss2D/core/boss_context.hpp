@@ -160,12 +160,12 @@ namespace BOSS
 
         /// @brief 자신의 소수값 얻기
         /// @return 소수값
-        const float GetFloat() const;
+        const double GetFloat() const;
 
         /// @brief 자신의 소수값 얻기(디폴트처리)
         /// @param value : 디폴트값
         /// @return 소수값
-        const float GetFloat(const float value) const;
+        const double GetFloat(const double value) const;
 
         /// @brief 자신의 BOOL 얻기 
         /// @return 소수값

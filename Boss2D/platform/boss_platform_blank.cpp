@@ -1589,7 +1589,7 @@
             return 0;
         }
 
-        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath)
+        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool fileonly)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return -1;

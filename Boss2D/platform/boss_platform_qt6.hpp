@@ -15,6 +15,7 @@
     #include <QDateTime>
     #include <QFile>
     #include <QFileInfo>
+    #include <QFileDialog>
     #include <QDir>
     #include <QThread>
     #include <QDateTime>
@@ -168,7 +169,9 @@
     public:
         MainView(QWidget* parent) : QWidget(parent)
         {
-            setAttribute(Qt::WA_PaintOnScreen);
+            #if !BOSS_WASM
+                setAttribute(Qt::WA_PaintOnScreen);
+            #endif
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
@@ -308,7 +311,6 @@
             mHeight = event->size().height();
             SendSizeWhenValid();
         }
-
         void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
             // for assert dialog's recursive call

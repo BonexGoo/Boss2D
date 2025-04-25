@@ -1632,7 +1632,7 @@
             return (sint32) ftell((FILE*) file);
         }
 
-        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath)
+        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool fileonly)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return -1;

@@ -3389,7 +3389,7 @@
             return (sint32) ((QFile*) file)->pos();
         }
 
-        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath)
+        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool fileonly)
         {
             String ParsedDirname = dirname;
             if(!ParsedDirname.Right(2).Compare("/*") || !ParsedDirname.Right(2).Compare("\\*"))
@@ -3423,10 +3423,12 @@
                 return -1;
             }
 
-            const QStringList& List = TargetDir.entryList(QDir::Files | QDir::Dirs | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+            const QStringList& List = TargetDir.entryList(((fileonly)? QDir::Files : QDir::Files | QDir::Dirs)
+                | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
             BOSS_TRACE("Search(%s) - %d", (chars) PathUTF8, List.size());
 
-            if(cb) for(sint32 i = 0, iend = List.size(); i < iend; ++i)
+            if(cb)
+            for(sint32 i = 0, iend = List.size(); i < iend; ++i)
             {
                 if(needfullpath)
                     cb(PlatformImpl::Core::NormalPath(

@@ -58,8 +58,8 @@
         }
         void WaitForWasmReady()
         {
-            while(!g_WasmReady)
-                emscripten_sleep(10);
+            //while(!g_WasmReady)
+            //    emscripten_sleep(10);
         }
         // Flush
         static bool g_WasmFlush = false;
@@ -78,8 +78,8 @@
                             Module._OnWasmFlush();
                     });
             );
-            while(!g_WasmFlush)
-                emscripten_sleep(10);
+            //while(!g_WasmFlush)
+            //    emscripten_sleep(10);
         }
     #endif
 
@@ -98,18 +98,18 @@
             //#ifdef __EMSCRIPTEN__
             //    emscripten_set_main_loop(em_callback_func func, int fps, int simulate_infinite_loop);
             //#endif
-            #if BOSS_WASM
-                EM_ASM
-                (
-                    FS.mkdir('/boss2d');
-                    FS.mount(IDBFS, {}, '/boss2d');
-                    FS.syncfs(true, function(err)
-                        {
-                            if(!err)
-                                Module._OnWasmReady();
-                        });
-                );
-            #endif
+            //#if BOSS_WASM
+            //    EM_ASM
+            //    (
+            //        FS.mkdir('/boss2d');
+            //        FS.mount(IDBFS, {}, '/boss2d');
+            //        FS.syncfs(true, function(err)
+            //            {
+            //                if(!err)
+            //                    Module._OnWasmReady();
+            //            });
+            //    );
+            //#endif
 
             g_canPopupAssert = true;
             int result = 0;
@@ -167,7 +167,7 @@
         boss_snprintf(AssertInfo[2], 1024, "[FILE/LINE] %s(%dLn)", BOSS_DBG_FILE, BOSS_DBG_LINE);
         boss_snprintf(AssertInfo[3], 1024, "[THREAD_ID] %u", QThread::currentThreadId());
         #if BOSS_ANDROID
-            __android_log_print(7, "*******", "************************************************************");
+            __android_log_print(7, "*******", "\n************************************************************");
             __android_log_print(7, "*******", name);
             __android_log_print(7, "*******", "------------------------------------------------------------");
             __android_log_print(7, "*******", AssertInfo[0]);
@@ -176,7 +176,7 @@
             __android_log_print(7, "*******", AssertInfo[3]);
             __android_log_print(7, "*******", "************************************************************");
         #else
-            qDebug().noquote() << "************************************************************";
+            qDebug().noquote() << "\n************************************************************";
             qDebug().noquote() << name;
             qDebug().noquote() << "------------------------------------------------------------";
             qDebug().noquote() << AssertInfo[0];
@@ -201,8 +201,8 @@
                     (wchars) WString::FromChars(AssertInfo[3]));
                 switch(MessageBoxW(NULL, AssertMessage, L"ASSERT BREAK", MB_ICONWARNING | MB_ABORTRETRYIGNORE))
                 {
-                case IDABORT: return 0;
-                case IDIGNORE: return 1;
+                case IDABORT: IsRunning = false; return 0;
+                case IDIGNORE: IsRunning = false; return 1;
                 }
             #elif BOSS_LINUX
                 String AssertMessage = String::Format(
@@ -214,9 +214,9 @@
                     (chars) AssertInfo[3]);
                 switch(Platform::Popup::MessageDialog("ASSERT BREAK", AssertMessage, DBT_OK_CANCEL_IGNORE))
                 {
-                case 0: return 0; // DBT_OK
-                case 1: return 2; // DBT_CANCEL
-                case 2: return 1; // DBT_IGNORE
+                case 0: IsRunning = false; return 0; // DBT_OK
+                case 1: IsRunning = false; return 2; // DBT_CANCEL
+                case 2: IsRunning = false; return 1; // DBT_IGNORE
                 }
             #else
                 char AssertMessage[4096];
@@ -232,8 +232,8 @@
                 const int Result = AssertBox.exec();
                 switch(Result)
                 {
-                case QMessageBox::Yes: return 0;
-                case QMessageBox::NoToAll: return 1;
+                case QMessageBox::Yes: IsRunning = false; return 0;
+                case QMessageBox::NoToAll: IsRunning = false; return 1;
                 }
             #endif
             IsRunning = false;
@@ -252,8 +252,8 @@
         #if BOSS_ANDROID
             __android_log_print(7, "#######", TraceMessage);
         #elif BOSS_WINDOWS
-            OutputDebugStringW((wchars) WString::FromChars(TraceMessage));
-            OutputDebugStringW(L"\n");
+            OutputDebugStringA(TraceMessage);
+            OutputDebugStringA("\n");
         #else
             qDebug().noquote() << TraceMessage;
         #endif
@@ -686,7 +686,33 @@
 
         void Platform::Popup::FileContentDialog(wchars filters)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #if BOSS_WASM // getOpenFileContent의 호출은 일단 Windows에서 크래시발생하여 WASM에서만 사용키로 함
+                const QString NameFilters = QString::fromUtf16((const char16_t*) filters);
+                QFileDialog::getOpenFileContent(NameFilters,
+                    [](const QString& filename, const QByteArray& filebuffer)->void
+                    {
+                        uint08s NewContent;
+                        Memory::Copy(NewContent.AtDumpingAdded(filebuffer.size()),
+                            filebuffer.constData(), filebuffer.size());
+                        // 결과전달
+                        Platform::BroadcastNotify(filename.toUtf8().constData(), NewContent, NT_FileContent);
+                    });
+            #else
+                String Path;
+                String ShortPath;
+                if(Platform::Popup::FileDialog(DST_FileOpen, Path, &ShortPath, "Open", filters))
+                {
+                    if(auto CurFile = Platform::File::OpenForRead(Path))
+                    {
+                        auto FileSize = Platform::File::Size(CurFile);
+                        uint08s NewContent;
+                        Platform::File::Read(CurFile, NewContent.AtDumpingAdded(FileSize), FileSize);
+                        Platform::File::Close(CurFile);
+                        // 결과전달
+                        Platform::BroadcastNotify(ShortPath, NewContent, NT_FileContent);
+                    }
+                }
+            #endif
         }
 
         sint32 Platform::Popup::MessageDialog(chars title, chars text, DialogButtonType type)
@@ -1811,8 +1837,11 @@
             if(image == nullptr) return;
 
             if(w == iw && h == ih)
-                CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
-            else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+                CanvasClass::get()->painter().drawPixmap(qRound(x), qRound(y), *((const QPixmap*) image), qRound(ix), qRound(iy), qRound(iw), qRound(ih));
+                //CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            else CanvasClass::get()->painter().drawPixmap(qRound(x), qRound(y), qRound(w), qRound(h),
+                *((const QPixmap*) image), qRound(ix), qRound(iy), qRound(iw), qRound(ih));
+                //CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)
@@ -2248,7 +2277,7 @@
             return (sint32) ((QFile*) file)->pos();
         }
 
-        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath)
+        sint32 Platform::File::Search(chars dirname, SearchCB cb, payload data, bool needfullpath, bool fileonly)
         {
             String ParsedDirname = dirname;
             if(!ParsedDirname.Right(2).Compare("/*") || !ParsedDirname.Right(2).Compare("\\*"))
@@ -2278,20 +2307,22 @@
             }
             if(!Exists)
             {
-                BOSS_TRACE("Search(%s) - The TargetDir is nonexistent", (chars) PathUTF8);
+                //BOSS_TRACE("Search(%s) - The TargetDir is nonexistent", (chars) PathUTF8);
                 return -1;
             }
 
-            const QStringList& List = TargetDir.entryList(QDir::Files | QDir::Dirs | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-            BOSS_TRACE("Search(%s) - %d", (chars) PathUTF8, List.size());
+            const QStringList& List = TargetDir.entryList(((fileonly)? QDir::Files : QDir::Files | QDir::Dirs)
+                | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+            //BOSS_TRACE("Search(%s) - %d", (chars) PathUTF8, List.size());
 
-            if(cb) for(sint32 i = 0, iend = List.size(); i < iend; ++i)
+            if(cb)
+            for(sint32 i = 0, iend = List.size(); i < iend; ++i)
             {
                 if(needfullpath)
                     cb(PlatformImpl::Core::NormalPath(
                         String::Format("%s/%s", (chars) ParsedDirname, List.at(i).toUtf8().constData()), false), data);
                 else cb(List.at(i).toUtf8().constData(), data);
-                BOSS_TRACE("Search() - Result: %s", List.at(i).toUtf8().constData());
+                //BOSS_TRACE("Search() - Result: %s", List.at(i).toUtf8().constData());
             }
             return List.size();
         }

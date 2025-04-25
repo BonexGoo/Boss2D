@@ -60,8 +60,8 @@ public:
     }
     static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
     {
-        return (Platform::File::GetAttributes(WString::FromChars(pathname),
-            size, ctime, atime, mtime) != -1);
+        const sint32 Result = Platform::File::GetAttributes(WString::FromChars(pathname), size, ctime, atime, mtime);
+        return (Result != -1 && (Result & 0x10) == 0);
     }
 
 public:
@@ -120,9 +120,47 @@ public:
         m_pos = Math::Clamp(m_pos + size, 0, m_embedded_file->mSize);
         return m_pos;
     }
+    static void SearchAsset(chars pathname, Platform::File::SearchCB cb, payload data)
+    {
+        const sint32 PathLen = boss_strlen(pathname);
+        for(sint32 i = 0; i < BOSS_EMBEDDED_ASSET_COUNT; ++i)
+        {
+            const String& CurPath = gSortedEmbeddedFiles[i].mPath;
+            if(!String::CompareNoCase(CurPath, pathname, PathLen))
+            {
+                const String& FileName = CurPath.Offset(PathLen);
+                if(FileName.Find(0, "/") == -1)
+                    cb(FileName, data);
+            }
+        }
+    }
+    static void SearchCache(chars pathname, Platform::File::SearchCB cb, payload data)
+    {
+        struct Payload
+        {
+            chars mPathName;
+            const boss_size_t mPathLen;
+            Platform::File::SearchCB mCB;
+            payload mData;
+        };
+        Payload OnePayload {pathname, boss_strlen(pathname), cb, data};
+
+        gEmbeddedCaches.AccessByCallback(
+            [](const MapPath* path, EmbeddedFile* file, payload data)->void
+            {
+                auto& CurPayload = *((Payload*) data);
+                const String& CurPath = file->mPath;
+                if(!String::CompareNoCase(CurPath, CurPayload.mPathName, CurPayload.mPathLen))
+                {
+                    const String& FileName = CurPath.Offset(CurPayload.mPathLen);
+                    if(FileName.Find(0, "/") == -1)
+                        CurPayload.mCB(FileName, CurPayload.mData);
+                }
+            }, &OnePayload);
+    }
 
 protected:
-    static EmbeddedFile* FindAsset(chars pathname)
+    static EmbeddedFile* MatchAsset(chars pathname)
     {
         // 이진탐색
         const String PathName = String(pathname).Lower();
@@ -139,7 +177,7 @@ protected:
         }
         return nullptr;
     }
-    static EmbeddedFile* FindCache(chars pathname, bool forced)
+    static EmbeddedFile* MatchCache(chars pathname, bool forced)
     {
         const String PathName = String(pathname).Lower();
         if(auto FindedCache = gEmbeddedCaches.Access(PathName))
@@ -173,7 +211,7 @@ class AssetEmbeddedReadFileClass : public AssetEmbeddedFileClass
 public:
     static AssetClass* CreateForAsset(chars pathname)
     {
-        if(auto OneFile = FindAsset(pathname))
+        if(auto OneFile = MatchAsset(pathname))
         {
             auto Result = new AssetEmbeddedReadFileClass();
             Result->m_embedded_file = OneFile;
@@ -183,7 +221,7 @@ public:
     }
     static AssetClass* CreateForCache(chars pathname)
     {
-        if(auto OneFile = FindCache(pathname, false))
+        if(auto OneFile = MatchCache(pathname, false))
         {
             auto Result = new AssetEmbeddedReadFileClass();
             Result->m_embedded_file = OneFile;
@@ -193,7 +231,7 @@ public:
     }
     static bool ExistForAsset(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
     {
-        if(auto OneFile = FindAsset(pathname))
+        if(auto OneFile = MatchAsset(pathname))
         {
             if(size) *size = OneFile->mSize;
             if(ctime) *ctime = OneFile->mCTime;
@@ -205,7 +243,7 @@ public:
     }
     static bool ExistForCache(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
     {
-        if(auto OneFile = FindCache(pathname, false))
+        if(auto OneFile = MatchCache(pathname, false))
         {
             if(size) *size = OneFile->mSize;
             if(ctime) *ctime = OneFile->mCTime;
@@ -251,7 +289,7 @@ class AssetEmbeddedWriteFileClass : public AssetEmbeddedFileClass
 public:
     static AssetClass* Create(chars pathname)
     {
-        if(auto OneFile = FindCache(pathname, true))
+        if(auto OneFile = MatchCache(pathname, true))
         {
             auto Result = new AssetEmbeddedWriteFileClass();
             Result->m_embedded_file = OneFile;
@@ -328,23 +366,48 @@ public:
     {
         return m_pathes[index];
     }
-    void Find(AssetPath::FindFileCB filecb, AssetPath::FindPathCB pathcb)
+    sint32 Search(AssetPath::SearchCB cb, payload data, bool originalonly)
     {
-        //////////////////////////////////////////
-        //////////////////////////////////////////
-        //////////////////////////////////////////
+        sint32 FindedCount = 0;
         for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
         {
+            Map<String> Collector;
+            auto SearchCB = [](chars itemname, payload data)->void
+            {
+                Map<String>& Collector = *((Map<String>*) data);
+                const String LowerName = String(itemname).Lower();
+                if(!Collector.Access(LowerName))
+                    Collector(LowerName) = itemname;
+            };
+
+            if(!originalonly)
+            {
+                #if BOSS_NEED_EMBEDDED_CACHE
+                    AssetEmbeddedFileClass::SearchCache(m_pathes[i], SearchCB, (payload) &Collector);
+                #else
+                    Platform::File::Search(Platform::File::RootForAssetsRem() + m_pathes[i] + "*",
+                        SearchCB, (payload) &Collector, false, true);
+                #endif
+            }
+
+            #if BOSS_NEED_EMBEDDED_ASSET
+                AssetEmbeddedFileClass::SearchAsset(m_pathes[i], SearchCB, (payload) &Collector);
+            #else
+                Platform::File::Search(Platform::File::RootForAssets() + m_pathes[i] + "*",
+                    SearchCB, (payload) &Collector, false, true);
+            #endif
+
+            if(cb)
+            for(sint32 j = 0, jend = Collector.Count(); j < jend; ++j)
+            {
+                if(const String* CurItemName = Collector.AccessByOrder(j))
+                {
+                    cb(m_pathes[i], *CurItemName, data);
+                    FindedCount++;
+                }
+            }
         }
-    }
-    void Reset()
-    {
-        //////////////////////////////////////////
-        //////////////////////////////////////////
-        //////////////////////////////////////////
-        for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
-        {
-        }
+        return FindedCount;
     }
 
 private:
@@ -375,6 +438,7 @@ namespace BOSS
                 ID.Replace("/", "_DIR_");
                 ID.Replace(" ", "_BLANK_");
                 ID.Replace(".", "_DOT_");
+                ID.Replace(",", "_COMMA_");
                 ID.Replace("-", "_MINUS_");
                 ID.Replace("+", "_PLUS_");
 
@@ -526,7 +590,7 @@ namespace BOSS
                     sint32 mIndex;
                     sint32 mCount;
                 };
-                Payload OnePayload = {&info("files"), &PartCounts, &GenText, 0, FileCount};
+                Payload OnePayload {&info("files"), &PartCounts, &GenText, 0, FileCount};
 
                 // 정렬된 순서대로 기록
                 Sortor.AccessByCallback([](const MapPath* path, sint32* data, payload param)->void
@@ -720,15 +784,10 @@ namespace BOSS
         Buffer::Free((buffer) assetpath);
     }
 
-    void AssetPath::Find(id_assetpath_read assetpath, FindFileCB filecb, FindPathCB pathcb)
+    sint32 AssetPath::Search(id_assetpath_read assetpath, SearchCB cb, payload data, bool originalonly)
     {
         if(auto CurAssetPath = (AssetPathClass*) assetpath)
-            CurAssetPath->Find(filecb, pathcb);
-    }
-
-    void AssetPath::Reset(id_assetpath_read assetpath)
-    {
-        if(auto CurAssetPath = (AssetPathClass*) assetpath)
-            CurAssetPath->Reset();
+            return CurAssetPath->Search(cb, data, originalonly);
+        return 0;
     }
 }

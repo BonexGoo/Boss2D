@@ -1759,7 +1759,7 @@ static CURLcode ossl_connect_step1(struct connectdata *conn, int sockindex)
     if(data->set.ssl.authtype == CURL_TLSAUTH_SRP)
       return CURLE_SSL_CONNECT_ERROR;
 #endif
-    req_method = SSLv3_client_method();
+    //bx250225_for_WASM: req_method = SSLv3_client_method();
     use_sni(FALSE);
     break;
 #endif
