@@ -1184,7 +1184,7 @@
 
         float Platform::Utility::GetReversedGuiRatio()
         {
-            return (g_window)? 1 / g_window->devicePixelRatio() : 1;
+            return (g_window)? (96.0 / g_window->logicalDpiX()) * (g_window->physicalDpiX() / 92.0) : 1;
         }
 
         chars Platform::Utility::GetOSName()
