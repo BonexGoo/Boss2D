@@ -1031,7 +1031,7 @@
             return QGuiApplication::screens().count();
         }
 
-        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only, bool apply_ratio)
         {
             const sint32 NumScreens = GetScreenCount();
             if(NumScreens == 0)
@@ -1046,10 +1046,11 @@
                         QRect GeometryRect = (available_only)?
                             QGuiApplication::screens()[i]->availableGeometry() :
                             QGuiApplication::screens()[i]->geometry();
-                        TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left());
-                        TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top());
-                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right() + 1);
-                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom() + 1);
+                        const qreal DeviceRatio = (apply_ratio)? QGuiApplication::screens()[i]->devicePixelRatio() : 1;
+                        TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left() * DeviceRatio);
+                        TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top() * DeviceRatio);
+                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right() * DeviceRatio + 1);
+                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom() * DeviceRatio + 1);
                     }
                     rect.l = TotalRect.l;
                     rect.t = TotalRect.t;
@@ -1061,10 +1062,11 @@
                     QRect GeometryRect = (available_only)?
                         QGuiApplication::screens()[screenid]->availableGeometry() :
                         QGuiApplication::screens()[screenid]->geometry();
-                    rect.l = GeometryRect.left();
-                    rect.t = GeometryRect.top();
-                    rect.r = GeometryRect.right() + 1;
-                    rect.b = GeometryRect.bottom() + 1;
+                    const qreal DeviceRatio = (apply_ratio)? QGuiApplication::screens()[screenid]->devicePixelRatio() : 1;
+                    rect.l = GeometryRect.left() * DeviceRatio;
+                    rect.t = GeometryRect.top() * DeviceRatio;
+                    rect.r = GeometryRect.right() * DeviceRatio + 1;
+                    rect.b = GeometryRect.bottom() * DeviceRatio + 1;
                 }
             }
         }
@@ -1182,7 +1184,7 @@
 
         float Platform::Utility::GetReversedGuiRatio()
         {
-            return (g_window)? (96.0 / g_window->logicalDpiX()) * (g_window->physicalDpiX() / 92.0) : 1;
+            return (g_window)? 1 / g_window->devicePixelRatio() : 1;
         }
 
         chars Platform::Utility::GetOSName()
@@ -1837,11 +1839,8 @@
             if(image == nullptr) return;
 
             if(w == iw && h == ih)
-                CanvasClass::get()->painter().drawPixmap(qRound(x), qRound(y), *((const QPixmap*) image), qRound(ix), qRound(iy), qRound(iw), qRound(ih));
-                //CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
-            else CanvasClass::get()->painter().drawPixmap(qRound(x), qRound(y), qRound(w), qRound(h),
-                *((const QPixmap*) image), qRound(ix), qRound(iy), qRound(iw), qRound(ih));
-                //CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+                CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)

@@ -1359,7 +1359,7 @@
             return QApplication::desktop()->numScreens();
         }
 
-        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only, bool apply_ratio)
         {
             const sint32 NumScreens = GetScreenCount();
             if(NumScreens == 0)
