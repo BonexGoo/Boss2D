@@ -1073,20 +1073,38 @@
 
         bool Platform::Utility::IsScreenConnected()
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #if BOSS_ANDROID
+                id_file_read Hdmi = Platform::File::OpenForRead("/sys/devices/virtual/switch/hdmi/state");
+                if(!Hdmi) Hdmi = Platform::File::OpenForRead("/sys/class/switch/hdmi/state");
+                if(Hdmi)
+                {
+                    sint32 Value = 0;
+                    Platform::File::Read(Hdmi, (uint08*) &Value, sizeof(sint32));
+                    const bool HasPhygicalMonitor = ((Value & 1) == 1);
+                    Platform::File::Close(Hdmi);
+                    return HasPhygicalMonitor;
+                }
+            #endif
             return true;
         }
 
         id_image_read Platform::Utility::GetScreenshotImage(const rect128& rect)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            QPixmap& ScreenshotPixmap = *BOSS_STORAGE_SYS(QPixmap);
+            ScreenshotPixmap = QGuiApplication::primaryScreen()->grabWindow(
+                0, rect.l, rect.t, rect.r - rect.l, rect.b - rect.t);
+            return (id_image_read) &ScreenshotPixmap;
         }
 
         id_bitmap Platform::Utility::ImageToBitmap(id_image_read image, orientationtype ori)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            if(!image) return nullptr;
+            QImage CurImage = ((QPixmap*) image)->toImage();
+            if(!CurImage.constBits()) return nullptr;
+            CurImage = CurImage.convertToFormat(QImage::Format_ARGB32);
+            id_bitmap Result = Bmp::CloneFromBits(CurImage.constBits(),
+                CurImage.width(), CurImage.height(), CurImage.bitPlaneCount(), ori);
+            return Result;
         }
 
         void Platform::Utility::SendToTextClipboard(chars text)
@@ -1184,7 +1202,7 @@
 
         float Platform::Utility::GetReversedGuiRatio()
         {
-            return (g_window)? 1 / g_window->devicePixelRatio() : 1;
+            return (g_window)? (96.0 / g_window->logicalDpiX()) * (g_window->physicalDpiX() / 92.0) : 1;
         }
 
         chars Platform::Utility::GetOSName()
