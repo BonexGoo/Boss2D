@@ -326,7 +326,7 @@
             mSavedCanvas->mPainterHeight = mPainterHeight;
         }
         mPainter.begin(device);
-        mPainter.setRenderHints(QPainter::Antialiasing);
+        mPainter.setRenderHint(QPainter::SmoothPixmapTransform, true);
         mPainterWidth = device->width();
         mPainterHeight = device->height();
         ST() = this;
@@ -340,7 +340,7 @@
             mPainterWidth = mSavedCanvas->mPainterWidth;
             mPainterHeight = mSavedCanvas->mPainterHeight;
             mSavedCanvas->mPainter.begin(mSavedCanvas->mPainter.device());
-            mSavedCanvas->mPainter.setRenderHints(QPainter::Antialiasing);
+            mSavedCanvas->mPainter.setRenderHint(QPainter::SmoothPixmapTransform, true);
             Platform::Graphics::SetZoom(mSavedCanvas->mSavedZoom.scale, mSavedCanvas->mSavedZoom.orientation);
             mSavedCanvas->mPainter.setFont(mSavedCanvas->mSavedFont);
             mSavedCanvas->mPainter.setClipRect(mSavedCanvas->mScissor);
@@ -1521,22 +1521,14 @@
                 break;
             }
             hook(CanvasClass::get()->painter())
-            {
                 fish.setTransform(NewTransform);
-                if(zoom < 1)
-                {
-                    if(!fish.testRenderHint(QPainter::SmoothPixmapTransform))
-                        fish.setRenderHint(QPainter::SmoothPixmapTransform, true);
-                }
-                else if(fish.testRenderHint(QPainter::SmoothPixmapTransform))
-                    fish.setRenderHint(QPainter::SmoothPixmapTransform, false);
-            }
         }
 
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
             CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
             CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
@@ -1546,6 +1538,7 @@
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             r = Math::Min(Math::MinF(w, h) * 0.5 + 0.5, r);
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             for(sint32 i = 0, ir = r, rr = r * r; i < r; ++i, --ir)
             {
                 const sint32 CurR = Math::Max(0, r - Math::Sqrt(rr - ir * ir));
@@ -1558,6 +1551,7 @@
 
         void Platform::Graphics::FillRect(float x, float y, float w, float h)
         {
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
             CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
         }
 
@@ -1570,6 +1564,7 @@
         {
             CanvasClass::get()->painter().setPen(Qt::NoPen);
             CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawEllipse(QRectF(x, y, w, h));
         }
 
@@ -1587,6 +1582,7 @@
 
             CanvasClass::get()->painter().setPen(Qt::NoPen);
             CanvasClass::get()->painter().setBrush(QBrush(CanvasClass::get()->color()));
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawPolygon(NewPoint, Count);
             delete[] NewPoint;
         }
@@ -1598,6 +1594,7 @@
             NewPen.setJoinStyle(Qt::MiterJoin);
             CanvasClass::get()->painter().setPen(NewPen);
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
             CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
@@ -1605,6 +1602,7 @@
         {
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawLine(QPointF(begin.x, begin.y), QPointF(end.x, end.y));
         }
 
@@ -1612,6 +1610,7 @@
         {
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawEllipse(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 
@@ -1624,6 +1623,7 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -1642,6 +1642,7 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawPolyline(NewPoint, RealCount);
             delete[] NewPoint;
         }
@@ -1674,6 +1675,7 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -1696,6 +1698,7 @@
 
             CanvasClass::get()->painter().setPen(QPen(QBrush(CanvasClass::get()->color()), thick));
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawPath(NewPath);
         }
 
@@ -1871,9 +1874,8 @@
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
             if(image == nullptr) return;
 
-            if(w == iw && h == ih)
-                CanvasClass::get()->painter().drawPixmap(QPointF(x, y), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
-            else CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
+            CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)
@@ -1963,10 +1965,12 @@
                 const QString ElidedText = CanvasClass::get()->painter().fontMetrics().elidedText(Text, _ExchangeTextElideMode(elide), w);
                 if(ElidedText != Text)
                 {
+                    CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
                     CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), ElidedText, QTextOption(_ExchangeAlignment(align)));
                     return true;
                 }
             }
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, true);
             CanvasClass::get()->painter().drawText(QRectF(x, y, w, h), Text, QTextOption(_ExchangeAlignment(align)));
             return false;
         }
