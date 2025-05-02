@@ -799,32 +799,39 @@ namespace BOSS
         void Load(const ZaySon& root, const Context& context) override
         {
             ZayUIElement::Load(root, context);
-
-            const String TextTest = context.GetText();
-            sint32 PosB, PosE;
-            if(ZaySonUtility::IsFunctionCall(TextTest, &PosB, &PosE)) // 함수호출
+            auto TryFunctionLoad = [this](const ZaySon& root, const String& text, bool has_lvalue)->bool
             {
-                mRequestType = ZaySonInterface::RequestType::Function;
-                mGlueFunction = root.FindGlue(TextTest.Left(PosB - 1));
-                if(!mGlueFunction)
-                    root.SendWarningLog("Binding Failed", String::Format("Glue function not found. (%s/Load)", (chars) TextTest.Left(PosB - 1)));
-                if(PosB < PosE)
+                sint32 PosB, PosE;
+                if(ZaySonUtility::IsFunctionCall(text, &PosB, &PosE)) // 함수호출
                 {
-                    auto Params = ZaySonUtility::GetCommaStrings(TextTest.Middle(PosB, PosE - PosB));
-                    for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
-                        mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
+                    mRequestType = (has_lvalue)? ZaySonInterface::RequestType::ReturnFunction : ZaySonInterface::RequestType::VoidFunction;
+                    mGlueFunction = root.FindGlue(text.Left(PosB - 1));
+                    if(!mGlueFunction)
+                        root.SendWarningLog("Binding Failed", String::Format("Glue function not found. (%s/Load)", (chars) text.Left(PosB - 1)));
+                    if(PosB < PosE)
+                    {
+                        auto Params = ZaySonUtility::GetCommaStrings(text.Middle(PosB, PosE - PosB));
+                        for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
+                            mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
+                    }
+                    return true;
                 }
-            }
-            else // 변수입력
+                return false;
+            };
+
+            if(!TryFunctionLoad(root, context.GetText(), false)) // void형 함수인지 판단
             {
                 chararray GetName;
                 const auto& GetValue = context(0, &GetName);
                 BOSS_ASSERT("함수콜이 아닌 Request는 좌우항으로 나누어져야 합니다", 0 < GetName.Count());
                 if(0 < GetName.Count())
                 {
-                    mRequestType = ZaySonInterface::RequestType::Variable;
                     mLSolver.Parse(&GetName[0]); // 좌항
-                    mRSolvers.AtAdding().Parse(GetValue.GetText()); // 우항
+                    if(!TryFunctionLoad(root, GetValue.GetText(), true)) // 리턴형 함수인지 판단
+                    {
+                        mRequestType = ZaySonInterface::RequestType::SetVariable; // 대입식으로 판단
+                        mRSolvers.AtAdding().Parse(GetValue.GetText()); // 우항
+                    }
                 }
             }
         }
@@ -832,38 +839,46 @@ namespace BOSS
     public:
         void InitForCreate()
         {
-            if(mRequestType == ZaySonInterface::RequestType::Variable)
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
                 mRSolvers.At(0).Link(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
                 mRSolvers.At(0).Execute();
             }
-            else if(mRequestType == ZaySonInterface::RequestType::Function)
+            else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
+                Transaction();
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
             {
-                if(mGlueFunction)
-                {
-                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload();
-                    for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
-                        ParamCollector(mRSolvers[i].ExecuteOnly());
-                    // ParamCollector가 소멸되면서 Glue함수가 호출됨
-                }
+                mLSolver.Link(mRefRoot->ViewName());
+                Transaction();
             }
         }
         void InitForInput()
         {
-            if(mRequestType == ZaySonInterface::RequestType::Variable)
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
                 mRSolvers.At(0).Link(mRefRoot->ViewName());
             }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+            }
         }
         void InitForClick(Map<String>& collector)
         {
-            if(mRequestType == ZaySonInterface::RequestType::Variable)
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
                 mRSolvers.At(0).Link(mRefRoot->ViewName());
-
+                // 변수때는 변수명에서도 캡쳐 목록화
+                const Strings Variables = mLSolver.GetTargetlessVariables();
+                for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
+                    collector(Variables[i]) = Variables[i];
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
                 // 변수때는 변수명에서도 캡쳐 목록화
                 const Strings Variables = mLSolver.GetTargetlessVariables();
                 for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
@@ -879,7 +894,7 @@ namespace BOSS
         }
         void Transaction()
         {
-            if(mRequestType == ZaySonInterface::RequestType::Variable)
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName()))
                 {
@@ -889,11 +904,23 @@ namespace BOSS
                 else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)",
                     (chars) mLSolver.ExecuteVariableName()));
             }
-            else if(mRequestType == ZaySonInterface::RequestType::Function)
+            else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
             {
                 if(mGlueFunction)
                 {
-                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload();
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(nullptr);
+                    for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                        ParamCollector(mRSolvers[i].ExecuteOnly());
+                    // ParamCollector가 소멸되면서 Glue함수가 호출됨
+                }
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                if(mGlueFunction)
+                {
+                    mLSolver.Link(mRefRoot->ViewName());
+                    Solver* FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(FindedSolver);
                     for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
                         ParamCollector(mRSolvers[i].ExecuteOnly());
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
@@ -1205,7 +1232,7 @@ namespace BOSS
                         mInsidersComponent = CurComponent;
                         mInsidersComponentName = ComponentName;
                         mInsidersDefaultName = defaultname;
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID, this);
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(nullptr, ComponentName, mID, this);
                         ZAY_EXTEND(ParamCollector >> panel)
                         {
                             if(mCompID == mRefRoot->debugFocusedCompID())
@@ -1253,7 +1280,7 @@ namespace BOSS
                         mInsidersComponent = CurComponent;
                         mInsidersComponentName = ComponentName;
                         mInsidersDefaultName = DefaultName;
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, mID, this);
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(nullptr, ComponentName, mID, this);
                         if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
                         {
                             for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)

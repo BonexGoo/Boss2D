@@ -225,7 +225,7 @@ namespace BOSS
     {
         if(auto OneGlue = mZaySon.FindGlue(name))
         {
-            ZayExtend::Payload ParamCollector = OneGlue->MakePayload();
+            ZayExtend::Payload ParamCollector = OneGlue->MakePayload(nullptr);
             for(sint32 i = 0, iend = params.Count(); i < iend; ++i)
                 ParamCollector(params[i]);
             // ParamCollector가 소멸되면서 Glue함수가 호출됨
@@ -1183,6 +1183,18 @@ namespace BOSS
             ZAY_DECLARE_GLUE(pay, RefZaySon)
             {
                 RefZaySon->JumpClear();
+            });
+
+        interface.AddGlue("inputtext",
+            ZAY_DECLARE_GLUE(pay)
+            {
+                const String Title = (0 < pay.ParamCount())? pay.Param(0).ToText() : String("No Title");
+                const String Topic = (1 < pay.ParamCount())? pay.Param(1).ToText() : String("No Topic");
+                String Text = (2 < pay.ParamCount())? pay.Param(2).ToText() : String();
+                const bool IsPassword = (3 < pay.ParamCount())? (pay.Param(3).ToInteger() != 0) : false;
+                if(Platform::Popup::TextDialog(Text, Title, Topic, IsPassword))
+                if(pay.CanReturn())
+                    pay.Return("'" + Text + "'");
             });
     }
 

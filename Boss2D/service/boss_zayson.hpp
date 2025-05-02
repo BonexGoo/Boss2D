@@ -61,7 +61,7 @@ namespace BOSS
             IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed,
             IfUpSwiped, IfNUpSwiped, IfDownSwiped, IfNDownSwiped, IfLeftSwiped, IfNLeftSwiped, IfRightSwiped, IfNRightSwiped,
             IfOutReleased, IfCancelReleased, Else, Endif};
-        enum class RequestType {Unknown, Function, Variable};
+        enum class RequestType {Unknown, SetVariable, VoidFunction, ReturnFunction};
 
     public:
         virtual void SetViewAndDom(chars viewname, chars domheader) = 0;

@@ -529,9 +529,9 @@ namespace BOSS
     public: // 페이로드
         class Payload
         {
-            BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(Payload, mElementID(-1), mRefRenderer(nullptr))
+            BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(Payload, mElementID(-1), mRefLValue(nullptr), mRefRenderer(nullptr))
         public:
-            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr);
+            Payload(const ZayExtend* owner, chars uiname = nullptr, sint32 elementid = -1, Solver* lvalue = nullptr, const Renderer* renderer = nullptr);
             Payload(const ZayExtend* owner, const SolverValue& param);
             ~Payload();
 
@@ -557,6 +557,8 @@ namespace BOSS
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
             ShaderRole ParamToShader(sint32 i, bool& error) const;
             OrientationRole ParamToOrientation(sint32 i, bool& error) const;
+            bool CanReturn() const;
+            void Return(const String& formula) const;
             const Renderer* TakeRenderer() const;
 
         private:
@@ -567,6 +569,7 @@ namespace BOSS
             chars mUIName;
             const sint32 mElementID;
             SolverValues mParams;
+            Solver* const mRefLValue;
             const Renderer* const mRefRenderer;
         };
         const Payload operator()() const;
@@ -582,7 +585,7 @@ namespace BOSS
         bool HasGlue() const;
         void ResetForComponent(ComponentType type, ComponentCB cb);
         void ResetForGlue(GlueCB cb);
-        Payload MakePayload(chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr) const;
+        Payload MakePayload(Solver* lvalue, chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr) const;
 
     private:
         ComponentType mComponentType;

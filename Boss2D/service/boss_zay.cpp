@@ -1562,15 +1562,15 @@ namespace BOSS
     {
     }
 
-    ZayExtend::Payload::Payload(const ZayExtend* owner, chars uiname, sint32 elementid, const Renderer* renderer)
-        : mElementID(elementid), mRefRenderer(renderer)
+    ZayExtend::Payload::Payload(const ZayExtend* owner, chars uiname, sint32 elementid, Solver* lvalue, const Renderer* renderer)
+        : mElementID(elementid), mRefLValue(lvalue), mRefRenderer(renderer)
     {
         mOwner = owner;
         mUIName = uiname;
     }
 
     ZayExtend::Payload::Payload(const ZayExtend* owner, const SolverValue& param)
-        : mElementID(-1), mRefRenderer(nullptr)
+        : mElementID(-1), mRefLValue(nullptr), mRefRenderer(nullptr)
     {
         mOwner = owner;
         mUIName = nullptr;
@@ -1863,6 +1863,20 @@ namespace BOSS
         return OR_Normal;
     }
 
+    bool ZayExtend::Payload::CanReturn() const
+    {
+        return (mRefLValue != nullptr);
+    }
+
+    void ZayExtend::Payload::Return(const String& formula) const
+    {
+        if(mRefLValue)
+        {
+            mRefLValue->Parse(formula);
+            mRefLValue->Execute();
+        }
+    }
+
     const ZayExtend::Renderer* ZayExtend::Payload::TakeRenderer() const
     {
         return mRefRenderer;
@@ -1930,9 +1944,9 @@ namespace BOSS
         mGlueCB = cb;
     }
 
-    ZayExtend::Payload ZayExtend::MakePayload(chars uiname, sint32 elementid, const Renderer* renderer) const
+    ZayExtend::Payload ZayExtend::MakePayload(Solver* lvalue, chars uiname, sint32 elementid, const Renderer* renderer) const
     {
-        return Payload(this, uiname, elementid, renderer);
+        return Payload(this, uiname, elementid, lvalue, renderer);
     }
 
     ////////////////////////////////////////////////////////////////////////////////

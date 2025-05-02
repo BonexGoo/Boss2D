@@ -13,10 +13,12 @@
     #include <QScreen>
     #include <QTimer>
     #include <QDateTime>
+    #include <QDir>
     #include <QFile>
     #include <QFileInfo>
     #include <QFileDialog>
-    #include <QDir>
+    #include <QInputDialog>
+    #include <QColorDialog>
     #include <QThread>
     #include <QDateTime>
     #include <QStandardPaths>

@@ -669,14 +669,29 @@
         ////////////////////////////////////////////////////////////////////////////////
         bool Platform::Popup::TextDialog(String& text, chars title, chars topic, bool ispassword)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            bool IsOk = false;
+            QString NewText = QInputDialog::getText(g_window,
+                QString::fromUtf8(title, -1),
+                QString::fromUtf8(topic, -1),
+                (ispassword)? QLineEdit::Password : QLineEdit::Normal,
+                QString::fromUtf8(text, -1), &IsOk);
+            if(IsOk) text = NewText.toUtf8().constData();
+            return IsOk;
         }
 
         bool Platform::Popup::ColorDialog(uint08& r, uint08& g, uint08& b, uint08& a, chars title)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            QColor NewColor = QColorDialog::getColor(QColor(r, g, b, a), g_window,
+                QString::fromUtf8(title, -1), QColorDialog::ShowAlphaChannel);
+            const bool IsOk = NewColor.isValid();
+            if(IsOk)
+            {
+                r = NewColor.red();
+                g = NewColor.green();
+                b = NewColor.blue();
+                a = NewColor.alpha();
+            }
+            return IsOk;
         }
 
         bool Platform::Popup::FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult)
