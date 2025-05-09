@@ -557,7 +557,7 @@ namespace BOSS
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
             ShaderRole ParamToShader(sint32 i, bool& error) const;
             OrientationRole ParamToOrientation(sint32 i, bool& error) const;
-            bool CanReturn() const;
+            bool CanReturn(SolverValue* out_lvalue = nullptr) const;
             void Return(const String& formula) const;
             const Renderer* TakeRenderer() const;
 

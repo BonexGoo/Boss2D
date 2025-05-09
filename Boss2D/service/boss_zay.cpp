@@ -1863,9 +1863,15 @@ namespace BOSS
         return OR_Normal;
     }
 
-    bool ZayExtend::Payload::CanReturn() const
+    bool ZayExtend::Payload::CanReturn(SolverValue* out_lvalue) const
     {
-        return (mRefLValue != nullptr);
+        if(mRefLValue)
+        {
+            if(out_lvalue)
+                *out_lvalue = mRefLValue->ExecuteOnly();
+            return true;
+        }
+        return false;
     }
 
     void ZayExtend::Payload::Return(const String& formula) const
