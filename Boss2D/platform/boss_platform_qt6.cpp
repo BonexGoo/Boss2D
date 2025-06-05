@@ -359,9 +359,9 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget)
+        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget, chars bgweb)
         {
-            g_window->InitForWidget(frameless, topmost, (QWidget*) bgwidget);
+            g_window->InitForWidget(frameless, topmost, (QWidget*) bgwidget, bgweb);
         }
 
         void Platform::SetViewCreator(View::CreatorCB creator)
@@ -427,7 +427,7 @@
 
         void Platform::SetWindowWebUrl(chars url)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            g_window->setWindowWebUrl(url);
         }
 
         void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
@@ -737,12 +737,12 @@
 
         void Platform::Popup::WebBrowserDialog(chars url)
         {
-            return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
+            PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
         }
 
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
-            return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
+            PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
         }
 
         void Platform::Popup::CloseProgramDialog(ublock pid)
@@ -1357,7 +1357,7 @@
         {
             BOSS_ASSERT("파라미터가 nullptr입니다", clock);
             return ((const ClockClass*) clock)->GetTotalSec() * 1000 +
-                   (uint64) (((const ClockClass*) clock)->GetNSecInSec() / 1000000);
+                (uint64) (((const ClockClass*) clock)->GetNSecInSec() / 1000000);
         }
 
         sint64 Platform::Clock::GetLocalMsecFromUTC()

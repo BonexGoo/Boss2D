@@ -219,7 +219,7 @@
             BOSS_ASSERT("frameless를 개발해야 합니다", false);
         }
 
-        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget)
+        void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget, chars bgweb)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
             g_data->initForMDI();

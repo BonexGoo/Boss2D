@@ -196,16 +196,19 @@ extern "C"
 
 extern "C" int boss_isalpha(int c)
 {
+    if(c < 0 || 255 < c) return 0;
     return isalpha(c);
 }
 
 extern "C" int boss_isdigit(int c)
 {
+    if(c < 0 || 255 < c) return 0;
     return isdigit(c);
 }
 
 extern "C" int boss_isalnum(int c)
 {
+    if(c < 0 || 255 < c) return 0;
     return isalnum(c);
 }
 

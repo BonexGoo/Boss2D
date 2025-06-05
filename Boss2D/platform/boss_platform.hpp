@@ -66,14 +66,16 @@ public:
     /// @brief 플랫폼초기화(GL뷰)
     /// @param frameless : 프레임보더가 없는 스타일
     /// @param topmost : 항상 최상위에 올려진 스타일
-    /// @param url : 배경레이어으로 쓸 URL
+    /// @param bgurl : 배경레이어으로 쓸 URL
     static void InitForGL(bool frameless = false, bool topmost = false, chars bgweb = nullptr);
 
     /// @brief 플랫폼초기화(MDI뷰)
     /// @param frameless : 프레임보더가 없는 스타일
     /// @param topmost : 항상 최상위에 올려진 스타일
     /// @param bgwidget : 배경레이어으로 쓸 위젯
-    static void InitForMDI(bool frameless = false, bool topmost = false, void* bgwidget = nullptr);
+    /// @param bgurl : 배경레이어으로 쓸 URL
+    static void InitForMDI(bool frameless = false, bool topmost = false,
+        void* bgwidget = nullptr, chars bgweb = nullptr);
 
     /// @brief 뷰생성기 설정
     /// @param creator : 뷰생성기

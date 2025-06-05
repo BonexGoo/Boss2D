@@ -62,6 +62,8 @@
     #include <QtNetwork/QSslKey>
     #include <QTcpServer>
     #include <QWebSocketServer>
+    #include <QtWebEngineCore/QWebEnginePage>
+    #include <QtWebEngineWidgets/QWebEngineView>
 
     #define USER_FRAMECOUNT (60)
 
@@ -457,8 +459,8 @@
                             Parser::GetInt(Args[0]), Parser::GetInt(Args[1]),
                             Parser::GetInt(Args[2]), Parser::GetInt(Args[3]));
                         show();
-                        activateWindow(); // setFocus()는 작동하지 않는다!
-                        raise(); // 부모기준 첫번째 자식으로 올림
+                        activateWindow();
+                        raise();
                     }
                 }
                 mRequest = WR_Null;
@@ -499,6 +501,164 @@
         String mRequestArg;
     };
 
+    class MainWebPage : public QWebEnginePage
+    {
+        Q_OBJECT
+
+    public:
+        MainWebPage(QObject* parent = nullptr) : QWebEnginePage(parent)
+        {
+            mCb = nullptr;
+            mData = nullptr;
+
+            connect(this, SIGNAL(certificateError(QWebEngineCertificateError)),
+                SLOT(certificateError(QWebEngineCertificateError)));
+        }
+        ~MainWebPage() override
+        {
+        }
+
+    public:
+        void SetCallback(Platform::Web::EventCB cb, payload data)
+        {
+            mCb = cb;
+            mData = data;
+        }
+
+    private:
+        void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
+        {
+            if(mCb)
+                mCb(mData, String::Format("JSConsole:%d", level), message.toUtf8().constData());
+        }
+
+    private slots:
+        bool certificateError(const QWebEngineCertificateError& error)
+        {
+            // 인증서 오류를 무시
+            return true;
+        }
+
+    private:
+        Platform::Web::EventCB mCb;
+        payload mData;
+    };
+
+    class MainWebView : public QWebEngineView
+    {
+        Q_OBJECT
+
+    public:
+        MainWebView(QWidget* parent = nullptr) : QWebEngineView(parent)
+        {
+            mNowLoading = false;
+            mLoadingProgress = 100;
+            mLoadingRate = 1;
+            mCb = nullptr;
+            mData = nullptr;
+
+            setPage(new MainWebPage(this));
+            setMouseTracking(true);
+            setStyleSheet("background-color:transparent;");
+            page()->setBackgroundColor(Qt::transparent);
+
+            connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
+            connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
+            connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
+            connect(this, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
+            connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
+            connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
+                SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
+            connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
+                SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
+        }
+        ~MainWebView() override
+        {
+        }
+
+    public:
+        void SetCallback(Platform::Web::EventCB cb, payload data)
+        {
+            mCb = cb;
+            mData = data;
+            ((MainWebPage*) page())->SetCallback(cb, data);
+        }
+        void CallJSFunction(chars script, sint32 matchid)
+        {
+            page()->runJavaScript(script,
+                [this, matchid](const QVariant& v)->void
+                {
+                    if(mCb)
+                    {
+                        const String Result = v.toString().toUtf8().constData();
+                        if(0 < Result.Length())
+                            mCb(mData, String::Format("JSFunction:%d", matchid), Result);
+                    }
+                });
+        }
+
+    private slots:
+        void onTitleChanged(const QString& title)
+        {
+            if(mCb)
+                mCb(mData, "TitleChanged", title.toUtf8().constData());
+        }
+        void onUrlChanged(const QUrl& url)
+        {
+            if(mCb)
+                mCb(mData, "UrlChanged", url.url().toUtf8().constData());
+        }
+        void onLoadStarted()
+        {
+            mNowLoading = true;
+            mLoadingProgress = 0;
+            mLoadingRate = 0;
+        }
+        void onLoadProgress(int progress)
+        {
+            mNowLoading = true;
+            mLoadingProgress = progress;
+        }
+        void onLoadFinished(bool)
+        {
+            mNowLoading = false;
+            mLoadingProgress = 100;
+            mLoadingRate = 1;
+            if(mCb)
+                mCb(mData, "LoadFinished", "");
+        }
+        void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+        {
+            if(mCb)
+            {
+                switch(terminationStatus)
+                {
+                case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
+                case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
+                case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
+                case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
+                }
+            }
+        }
+        void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
+        {
+            page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
+        }
+
+    protected:
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
+        {
+            event->accept();
+        }
+
+    private:
+        bool mNowLoading;
+        int mLoadingProgress;
+        float mLoadingRate;
+        Platform::Web::EventCB mCb;
+        payload mData;
+    };
+
     class MainWindow : public QMainWindow
     {
         Q_OBJECT
@@ -510,6 +670,8 @@
         }
         ~MainWindow()
         {
+            delete mBgWindow;
+            delete mWebWindow;
         }
 
     public:
@@ -519,55 +681,120 @@
         bool FirstVisible() const {return mNeedVisible;}
 
     public:
-        void InitForWidget(bool frameless, bool topmost, QWidget* bgwidget)
+        void InitForWidget(bool frameless, bool topmost, QWidget* bgwidget, chars bgweb)
         {
             mView = new MainView(this);
-            if(bgwidget)
-            {
-                bgwidget->setParent(this);
-                auto MainLayout = new QStackedLayout();
-                MainLayout->setStackingMode(QStackedLayout::StackAll);
-                MainLayout->addWidget(bgwidget);
-                MainLayout->addWidget(mView);
-                auto MainWidget = new QWidget();
-                MainWidget->setLayout(MainLayout);
-                setCentralWidget(MainWidget);
-            }
-            else setCentralWidget(mView);
-
+            setCentralWidget(mView);
             Qt::WindowFlags TypeCollector = Qt::Widget;
             if(frameless)
             {
+                setAttribute(Qt::WA_TranslucentBackground);
                 #if BOSS_MAC_OSX
                     TypeCollector |= Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint;
                 #elif BOSS_WINDOWS | BOSS_LINUX
                     TypeCollector |= Qt::FramelessWindowHint;
                 #endif
-                setAttribute(Qt::WA_TranslucentBackground);
             }
             if(topmost)
                 TypeCollector |= Qt::WindowStaysOnTopHint;
             if(TypeCollector != Qt::Widget)
                 setWindowFlags(TypeCollector);
+
+            if(bgwidget)
+            {
+                mBgWindow = new QMainWindow();
+                bgwidget->setParent(mBgWindow);
+                mBgWindow->setCentralWidget(bgwidget);
+                mBgWindow->setAttribute(Qt::WA_TranslucentBackground);
+                #if BOSS_MAC_OSX
+                    mBgWindow->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+                #elif BOSS_WINDOWS | BOSS_LINUX
+                    mBgWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+                #endif
+                mBgWindow->setGeometry(geometry());
+                mBgWindow->show();
+            }
+
+            if(bgweb)
+            {
+                mWebWindow = new QMainWindow();
+                mWebView = new MainWebView(mWebWindow);
+                mWebView->load(QUrl(bgweb));
+                mWebWindow->setCentralWidget(mWebView);
+                mWebWindow->setAttribute(Qt::WA_TranslucentBackground);
+                #if BOSS_MAC_OSX
+                    mWebWindow->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+                #elif BOSS_WINDOWS | BOSS_LINUX
+                    mWebWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+                #endif
+                mWebWindow->setGeometry(geometry());
+                mWebWindow->show();
+            }
         }
         inline MainView* View()
         {
             return mView;
         }
+        void setWindowWebUrl(chars bgweb)
+        {
+            if(mWebView)
+            {
+                if(bgweb)
+                {
+                    mWebView->load(QUrl(bgweb));
+                    mWebView->show();
+                }
+                else
+                {
+                    mWebView->hide();
+                }
+            }
+        }
 
     protected:
         void moveEvent(QMoveEvent* event) Q_DECL_OVERRIDE
         {
+            if(mBgWindow)
+                mBgWindow->move(event->pos());
+            if(mWebWindow)
+                mWebWindow->move(event->pos());
+            QWidget::moveEvent(event);
         }
         void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
         {
+            if(mBgWindow)
+                mBgWindow->resize(event->size());
+            if(mWebWindow)
+                mWebWindow->resize(event->size());
             QWidget::resizeEvent(event);
         }
         void changeEvent(QEvent* event) Q_DECL_OVERRIDE
         {
             auto EventType = event->type();
             if(EventType == QEvent::ActivationChange)
-                mView->OnActivateEvent(isActiveWindow());
+            {
+                if(isActiveWindow())
+                {
+                    mView->OnActivateEvent(true);
+                    // 윈도우 순서정렬
+                    if(mWebWindow)
+                    {
+                        if(mWebWindow->isMinimized())
+                            mWebWindow->showNormal();
+                        mWebWindow->activateWindow();
+                        mWebWindow->raise();
+                    }
+                    if(mBgWindow)
+                    {
+                        if(mBgWindow->isMinimized())
+                            mBgWindow->showNormal();
+                        mBgWindow->activateWindow();
+                        mBgWindow->raise();
+                    }
+                    raise();
+                }
+                else mView->OnActivateEvent(false);
+            }
             QWidget::changeEvent(event);
         }
         void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
@@ -577,6 +804,9 @@
 
     private:
         MainView* mView {nullptr};
+        QMainWindow* mBgWindow {nullptr};
+        QMainWindow* mWebWindow {nullptr};
+        MainWebView* mWebView {nullptr};
         bool mInited {false};
         bool mNeedVisible {true};
     };
