@@ -382,24 +382,24 @@
 
         void Platform::SetWindowPos(sint32 x, sint32 y)
         {
-            const QRect LastGeometry = g_window->geometry();
-            g_window->setGeometry(x, y, LastGeometry.width(), LastGeometry.height());
+            const QRect LastGeometry = g_window->GetWindowRect();
+            g_window->SetWindowRect(x, y, LastGeometry.width(), LastGeometry.height());
         }
 
         void Platform::SetWindowSize(sint32 width, sint32 height)
         {
-            const QRect LastGeometry = g_window->geometry();
-            g_window->setGeometry(LastGeometry.x(), LastGeometry.y(), width, height);
+            const QRect LastGeometry = g_window->GetWindowRect();
+            g_window->SetWindowRect(LastGeometry.x(), LastGeometry.y(), width, height);
         }
 
         void Platform::SetWindowRect(sint32 x, sint32 y, sint32 width, sint32 height)
         {
-            g_window->setGeometry(x, y, width, height);
+            g_window->SetWindowRect(x, y, width, height);
         }
 
         rect128 Platform::GetWindowRect(bool normally)
         {
-            const QRect LastGeometry = g_window->geometry();
+            const QRect LastGeometry = g_window->GetWindowRect();
             return {LastGeometry.x(), LastGeometry.y(),
                 (LastGeometry.x() + LastGeometry.width()),
                 (LastGeometry.y() + LastGeometry.height())};
@@ -412,6 +412,11 @@
             else if(visible)
                 g_window->show();
             else g_window->hide();
+        }
+
+        void Platform::SetWindowRaise()
+        {
+            g_window->raise();
         }
 
         void Platform::SetWindowTopMost(bool enable)
@@ -427,7 +432,12 @@
 
         void Platform::SetWindowWebUrl(chars url)
         {
-            g_window->setWindowWebUrl(url);
+            g_window->SetWindowWebUrl(url);
+        }
+
+        void Platform::ReloadWindowWeb()
+        {
+            g_window->ReloadWindowWeb();
         }
 
         void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
@@ -1198,7 +1208,7 @@
         {
             if(!g_window) return false;
             const QPoint CursorPos = QCursor::pos();
-            const QRect ClientRect = g_window->geometry();
+            const QRect ClientRect = g_window->GetWindowRect();
             pos.x = CursorPos.x() - ClientRect.left();
             pos.y = CursorPos.y() - ClientRect.top();
             return !(CursorPos.x() < ClientRect.left() || CursorPos.y() < ClientRect.top()

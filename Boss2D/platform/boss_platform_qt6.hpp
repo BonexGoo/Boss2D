@@ -65,6 +65,10 @@
     #include <QtWebEngineCore/QWebEnginePage>
     #include <QtWebEngineWidgets/QWebEngineView>
 
+    #if BOSS_WINDOWS
+        #include <Windows.h>
+    #endif
+
     #define USER_FRAMECOUNT (60)
 
     class FTFontClass
@@ -659,7 +663,28 @@
         payload mData;
     };
 
-    class MainWindow : public QMainWindow
+    class GroupingWindow : public QMainWindow
+    {
+        Q_OBJECT
+
+    public:
+        typedef std::function<void(bool active)> ActivatorCB;
+        void SetActivator(ActivatorCB cb) {mActivatorCB = cb;}
+
+    protected:
+        void changeEvent(QEvent* event) Q_DECL_OVERRIDE
+        {
+            auto EventType = event->type();
+            if(EventType == QEvent::ActivationChange)
+                mActivatorCB(isActiveWindow());
+            QWidget::changeEvent(event);
+        }
+
+    private:
+        ActivatorCB mActivatorCB;
+    };
+
+    class MainWindow : public GroupingWindow
     {
         Q_OBJECT
 
@@ -684,6 +709,7 @@
         void InitForWidget(bool frameless, bool topmost, QWidget* bgwidget, chars bgweb)
         {
             mView = new MainView(this);
+            SetDefaultActivator(this);
             setCentralWidget(mView);
             Qt::WindowFlags TypeCollector = Qt::Widget;
             if(frameless)
@@ -699,47 +725,30 @@
                 TypeCollector |= Qt::WindowStaysOnTopHint;
             if(TypeCollector != Qt::Widget)
                 setWindowFlags(TypeCollector);
+            mWindowRect = geometry();
 
             if(bgwidget)
             {
-                mBgWindow = new QMainWindow();
+                mBgWindow = NewGroupingWindow(bgwidget, mWindowRect, true);
                 bgwidget->setParent(mBgWindow);
-                mBgWindow->setCentralWidget(bgwidget);
-                mBgWindow->setAttribute(Qt::WA_TranslucentBackground);
-                #if BOSS_MAC_OSX
-                    mBgWindow->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
-                #elif BOSS_WINDOWS | BOSS_LINUX
-                    mBgWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-                #endif
-                mBgWindow->setGeometry(geometry());
-                mBgWindow->show();
             }
-
             if(bgweb)
             {
-                mWebWindow = new QMainWindow();
-                mWebView = new MainWebView(mWebWindow);
+                mWebView = new MainWebView();
                 mWebView->load(QUrl(bgweb));
-                mWebWindow->setCentralWidget(mWebView);
-                mWebWindow->setAttribute(Qt::WA_TranslucentBackground);
-                #if BOSS_MAC_OSX
-                    mWebWindow->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
-                #elif BOSS_WINDOWS | BOSS_LINUX
-                    mWebWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-                #endif
-                mWebWindow->setGeometry(geometry());
-                mWebWindow->show();
+                mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
+                mWebView->setParent(mWebWindow);
             }
         }
         inline MainView* View()
         {
             return mView;
         }
-        void setWindowWebUrl(chars bgweb)
+        void SetWindowWebUrl(chars bgweb)
         {
             if(mWebView)
             {
-                if(bgweb)
+                if(bgweb && *bgweb)
                 {
                     mWebView->load(QUrl(bgweb));
                     mWebView->show();
@@ -750,63 +759,82 @@
                 }
             }
         }
+        void ReloadWindowWeb()
+        {
+            if(mWebView)
+                mWebView->reload();
+        }
+        QRect GetWindowRect() const
+        {
+            return mWindowRect;
+        }
+        void SetWindowRect(sint32 x, sint32 y, sint32 width, sint32 height)
+        {
+            mWindowRect.setRect(x, y, width, height);
+            setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
+            if(mBgWindow)
+                mBgWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
+            if(mWebWindow)
+                mWebWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
+        }
 
     protected:
-        void moveEvent(QMoveEvent* event) Q_DECL_OVERRIDE
-        {
-            if(mBgWindow)
-                mBgWindow->move(event->pos());
-            if(mWebWindow)
-                mWebWindow->move(event->pos());
-            QWidget::moveEvent(event);
-        }
-        void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
-        {
-            if(mBgWindow)
-                mBgWindow->resize(event->size());
-            if(mWebWindow)
-                mWebWindow->resize(event->size());
-            QWidget::resizeEvent(event);
-        }
-        void changeEvent(QEvent* event) Q_DECL_OVERRIDE
-        {
-            auto EventType = event->type();
-            if(EventType == QEvent::ActivationChange)
-            {
-                if(isActiveWindow())
-                {
-                    mView->OnActivateEvent(true);
-                    // 윈도우 순서정렬
-                    if(mWebWindow)
-                    {
-                        if(mWebWindow->isMinimized())
-                            mWebWindow->showNormal();
-                        mWebWindow->activateWindow();
-                        mWebWindow->raise();
-                    }
-                    if(mBgWindow)
-                    {
-                        if(mBgWindow->isMinimized())
-                            mBgWindow->showNormal();
-                        mBgWindow->activateWindow();
-                        mBgWindow->raise();
-                    }
-                    raise();
-                }
-                else mView->OnActivateEvent(false);
-            }
-            QWidget::changeEvent(event);
-        }
         void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             mView->OnCloseEvent(event);
         }
 
     private:
+        GroupingWindow* NewGroupingWindow(QWidget* widget, QRect rect, bool transparency)
+        {
+            auto NewWindow = new GroupingWindow();
+            SetDefaultActivator(NewWindow);
+            NewWindow->setCentralWidget(widget);
+            if(transparency)
+                NewWindow->setAttribute(Qt::WA_TranslucentBackground);
+            #if BOSS_MAC_OSX
+                NewWindow->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+            #elif BOSS_WINDOWS | BOSS_LINUX
+                NewWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+            #endif
+            NewWindow->setGeometry(rect);
+            NewWindow->show();
+            return NewWindow;
+        }
+        void SetDefaultActivator(GroupingWindow* window)
+        {
+            window->SetActivator([this](bool active)->void
+            {
+                if(active)
+                {
+                    mView->OnActivateEvent(true);
+                    // 일괄팝업
+                    if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
+                    {
+                        auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
+                        auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
+                        if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
+                        {
+                            WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
+                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                            if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
+                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                            if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
+                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                            EndDeferWindowPos(WinPos);
+                        }
+                    }
+                }
+                else mView->OnActivateEvent(false);
+            });
+        }
+
+    private:
         MainView* mView {nullptr};
-        QMainWindow* mBgWindow {nullptr};
-        QMainWindow* mWebWindow {nullptr};
+        GroupingWindow* mBgWindow {nullptr};
+        GroupingWindow* mWebWindow {nullptr};
         MainWebView* mWebView {nullptr};
+        QRect mWindowRect;
         bool mInited {false};
         bool mNeedVisible {true};
     };

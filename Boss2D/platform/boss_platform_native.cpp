@@ -263,6 +263,13 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::SetWindowRaise()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::SetWindowTopMost(bool enable)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
@@ -279,6 +286,13 @@
         }
 
         void Platform::SetWindowWebUrl(chars url)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::ReloadWindowWeb()
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 

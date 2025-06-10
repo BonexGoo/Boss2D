@@ -116,6 +116,9 @@ public:
     /// @param visible : 보여짐여부
     static void SetWindowVisible(bool visible);
 
+    /// @brief 윈도우를 최상위로 올림
+    static void SetWindowRaise();
+
     /// @brief 최상위 윈도우스타일 변경
     /// @param enable : 활성여부
     static void SetWindowTopMost(bool enable);
@@ -127,6 +130,9 @@ public:
     /// @brief 윈도우웹 URL설정
     /// @param url : 웹으로 윈도우배경을 만들 URL
     static void SetWindowWebUrl(chars url);
+
+    /// @brief 윈도우웹 다시 로드
+    static void ReloadWindowWeb();
 
     /// @brief 윈도우웹 터치이벤트 전달
     /// @param type : 터치타입

@@ -493,6 +493,11 @@
             }
         }
 
+        void Platform::SetWindowRaise()
+        {
+            g_window->raise();
+        }
+
         void Platform::SetWindowTopMost(bool enable)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data);
@@ -509,6 +514,11 @@
         {
             if(g_data)
                 g_data->setWindowWebUrl(url);
+        }
+
+        void Platform::ReloadWindowWeb()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
         }
 
         void Platform::SendWindowWebTouchEvent(TouchType type, sint32 x, sint32 y)
