@@ -117,7 +117,7 @@
                 QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
                 QApplication app(argc, argv);
 
-                MainWindow mainWindow;
+                MainWindow mainWindow(&app);
                 g_window = &mainWindow;
                 g_argc = argc;
                 g_argv = argv;
@@ -416,7 +416,7 @@
 
         void Platform::SetWindowRaise()
         {
-            g_window->raise();
+            g_window->GroupRaise();
         }
 
         void Platform::SetWindowTopMost(bool enable)
@@ -448,6 +448,11 @@
         void Platform::SendWindowWebKeyEvent(sint32 code, chars text, bool pressed)
         {
             BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebChannel(chars text)
+        {
+            g_window->SendWindowWebChannel(text);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)

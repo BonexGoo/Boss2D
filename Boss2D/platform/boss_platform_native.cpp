@@ -313,6 +313,13 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::SendWindowWebChannel(chars text)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);

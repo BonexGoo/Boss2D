@@ -1473,6 +1473,9 @@ extern "C" void boss_seterrno(int err)
 #if !defined(BOSS_NEED_NATIVE_OPENGL) || (BOSS_NEED_NATIVE_OPENGL != 0 && BOSS_NEED_NATIVE_OPENGL != 1)
     #error BOSS_NEED_NATIVE_OPENGL macro is invalid use
 #endif
+#if !defined(BOSS_NEED_CEF_WEBVIEW) || (BOSS_NEED_CEF_WEBVIEW != 0 && BOSS_NEED_CEF_WEBVIEW != 1)
+    #error BOSS_NEED_CEF_WEBVIEW macro is invalid use
+#endif
 #if !defined(BOSS_NEED_EMBEDDED_ASSET) || (BOSS_NEED_EMBEDDED_ASSET != 0 && BOSS_NEED_EMBEDDED_ASSET != 1)
     #error BOSS_NEED_EMBEDDED_ASSET macro is invalid use
 #endif

@@ -58,12 +58,19 @@
     #include <QUdpSocket>
     #include <QWebSocket>
     #include <QNetworkInterface>
-    #include <QtNetwork/QSslCertificate>
-    #include <QtNetwork/QSslKey>
+    #include <QSslCertificate>
+    #include <QSslKey>
     #include <QTcpServer>
     #include <QWebSocketServer>
-    #include <QtWebEngineCore/QWebEnginePage>
-    #include <QtWebEngineWidgets/QWebEngineView>
+
+    #if BOSS_NEED_CEF_WEBVIEW
+        #include <QCefContext.h>
+        #include <QCefView.h>
+    #else
+        #include <QWebChannel>
+        #include <QWebEnginePage>
+        #include <QWebEngineView>
+    #endif
 
     #if BOSS_WINDOWS
         #include <Windows.h>
@@ -505,163 +512,329 @@
         String mRequestArg;
     };
 
-    class MainWebPage : public QWebEnginePage
-    {
-        Q_OBJECT
+    #if BOSS_NEED_CEF_WEBVIEW
+        class CefWebView : public QCefView
+        {
+            Q_OBJECT
 
-    public:
-        MainWebPage(QObject* parent = nullptr) : QWebEnginePage(parent)
-        {
-            mCb = nullptr;
-            mData = nullptr;
-
-            connect(this, SIGNAL(certificateError(QWebEngineCertificateError)),
-                SLOT(certificateError(QWebEngineCertificateError)));
-        }
-        ~MainWebPage() override
-        {
-        }
-
-    public:
-        void SetCallback(Platform::Web::EventCB cb, payload data)
-        {
-            mCb = cb;
-            mData = data;
-        }
-
-    private:
-        void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
-        {
-            if(mCb)
-                mCb(mData, String::Format("JSConsole:%d", level), message.toUtf8().constData());
-        }
-
-    private slots:
-        bool certificateError(const QWebEngineCertificateError& error)
-        {
-            // 인증서 오류를 무시
-            return true;
-        }
-
-    private:
-        Platform::Web::EventCB mCb;
-        payload mData;
-    };
-
-    class MainWebView : public QWebEngineView
-    {
-        Q_OBJECT
-
-    public:
-        MainWebView(QWidget* parent = nullptr) : QWebEngineView(parent)
-        {
-            mNowLoading = false;
-            mLoadingProgress = 100;
-            mLoadingRate = 1;
-            mCb = nullptr;
-            mData = nullptr;
-
-            setPage(new MainWebPage(this));
-            setMouseTracking(true);
-            setStyleSheet("background-color:transparent;");
-            page()->setBackgroundColor(Qt::transparent);
-
-            connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
-            connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
-            connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
-            connect(this, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
-            connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
-            connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
-                SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
-            connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
-                SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
-        }
-        ~MainWebView() override
-        {
-        }
-
-    public:
-        void SetCallback(Platform::Web::EventCB cb, payload data)
-        {
-            mCb = cb;
-            mData = data;
-            ((MainWebPage*) page())->SetCallback(cb, data);
-        }
-        void CallJSFunction(chars script, sint32 matchid)
-        {
-            page()->runJavaScript(script,
-                [this, matchid](const QVariant& v)->void
-                {
-                    if(mCb)
-                    {
-                        const String Result = v.toString().toUtf8().constData();
-                        if(0 < Result.Length())
-                            mCb(mData, String::Format("JSFunction:%d", matchid), Result);
-                    }
-                });
-        }
-
-    private slots:
-        void onTitleChanged(const QString& title)
-        {
-            if(mCb)
-                mCb(mData, "TitleChanged", title.toUtf8().constData());
-        }
-        void onUrlChanged(const QUrl& url)
-        {
-            if(mCb)
-                mCb(mData, "UrlChanged", url.url().toUtf8().constData());
-        }
-        void onLoadStarted()
-        {
-            mNowLoading = true;
-            mLoadingProgress = 0;
-            mLoadingRate = 0;
-        }
-        void onLoadProgress(int progress)
-        {
-            mNowLoading = true;
-            mLoadingProgress = progress;
-        }
-        void onLoadFinished(bool)
-        {
-            mNowLoading = false;
-            mLoadingProgress = 100;
-            mLoadingRate = 1;
-            if(mCb)
-                mCb(mData, "LoadFinished", "");
-        }
-        void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
-        {
-            if(mCb)
+        public:
+            CefWebView(const QString url, const QCefSetting* setting, QWidget* parent = nullptr)
+                : QCefView(url, setting, parent)
             {
-                switch(terminationStatus)
+                //QPalette pal = palette();
+                //pal.setColor(QPalette::Window, Qt::green);
+                //setPalette(pal);
+
+                //setContextMenuPolicy(Qt::NoContextMenu);
+                //setContextMenuPolicy(Qt::ActionsContextMenu);
+                //setContextMenuPolicy(Qt::CustomContextMenu);
+                //setContextMenuPolicy(Qt::PreventContextMenu);
+                //setContextMenuPolicy(Qt::DefaultContextMenu);
+
+                //setAcceptDrops(true);
+                //setAllowDrag(true);
+
+                connect(this, &QCefView::draggableRegionChanged, this, &CefWebView::onDraggableRegionChanged);
+                connect(this, &QCefView::nativeBrowserCreated, this, &CefWebView::onNativeBrowserWindowCreated);
+                connect(this, &QCefView::invokeMethod, this, &CefWebView::onInvokeMethod);
+                connect(this, &QCefView::cefUrlRequest, this, &CefWebView::onQCefUrlRequest);
+                connect(this, &QCefView::cefQueryRequest, this, &CefWebView::onQCefQueryRequest);
+                connect(this, &QCefView::reportJavascriptResult, this, &CefWebView::onJavascriptResult);
+                connect(this, &QCefView::loadStart, this, &CefWebView::onLoadStart);
+                connect(this, &QCefView::loadEnd, this, &CefWebView::onLoadEnd);
+                connect(this, &QCefView::loadError, this, &CefWebView::onLoadError);
+            }
+            ~CefWebView()
+            {
+            }
+
+        public:
+            void SendChannel(chars text)
+            {
+            }
+
+        public:
+            void load(const QUrl &url)
+            {
+                navigateToUrl(url.toEncoded());
+            }
+            void reload()
+            {
+                browserReload();
+            }
+
+        protected slots:
+            void onScreenChanged(QScreen* screen)
+            {
+                if(!m_pCefWindow)
+                    return;
+                updateMask();
+            }
+            void onNativeBrowserWindowCreated(QWindow* window)
+            {
+                m_pCefWindow = window;
+                if(!m_pCefWindow)
+                    return;
+                connect(this->window()->windowHandle(), SIGNAL(screenChanged(QScreen*)), this, SLOT(onScreenChanged(QScreen*)));
+                updateMask();
+            }
+            void onDraggableRegionChanged(const QRegion& draggableRegion, const QRegion& nonDraggableRegion)
+            {
+                m_draggableRegion = draggableRegion;
+                m_nonDraggableRegion = nonDraggableRegion;
+            }
+            void onInvokeMethod(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& method, const QVariantList& arguments)
+            {
+            }
+            void onQCefUrlRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& url)
+            {
+            }
+            void onQCefQueryRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QCefQuery& query)
+            {
+            }
+            void onJavascriptResult(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& context, const QVariant& result)
+            {
+            }
+            void onLoadStart(const QCefBrowserId& browserId, const QCefFrameId& frameId, bool isMainFrame, int transitionType)
+            {
+            }
+            void onLoadEnd(const QCefBrowserId& browserId, const QCefFrameId& frameId, bool isMainFrame, int httpStatusCode)
+            {
+            }
+            void onLoadError(const QCefBrowserId& browserId, const QCefFrameId& frameId, bool isMainFrame, int errorCode, const QString& errorMsg, const QString& failedUrl)
+            {
+            }
+
+        protected:
+            bool onNewPopup(const QCefFrameId& sourceFrameId, const QString& targetUrl, QString& targetFrameName,
+                QCefView::CefWindowOpenDisposition targetDisposition, QRect& rect, QCefSetting& settings, bool& disableJavascriptAccess) override
+            {
+                return false;
+            }
+            void onNewDownloadItem(const QSharedPointer<QCefDownloadItem>& item, const QString& suggestedName) override
+            {
+                //DownloadManager::getInstance().AddNewDownloadItem(item);
+            }
+            void onUpdateDownloadItem(const QSharedPointer<QCefDownloadItem>& item) override
+            {
+                //DownloadManager::getInstance().UpdateDownloadItem(item);
+            }
+
+        protected:
+            void resizeEvent(QResizeEvent* event) override
+            {
+                updateMask();
+                QCefView::resizeEvent(event);
+            }
+            void mousePressEvent(QMouseEvent* event) override
+            {
+                QCefView::mousePressEvent(event);
+            }
+
+        private:
+            void updateMask()
+            {
+                //QPainterPath path;
+                //path.addRoundedRect(rect(), 50, 50);
+                //QRegion mask = QRegion(path.toFillPolygon().toPolygon());
+                //setMask(mask);
+            }
+
+        private:
+            QWindow* m_pCefWindow {nullptr};
+            int m_iCornerRadius {50};
+            QRegion m_draggableRegion;
+            QRegion m_nonDraggableRegion;
+        };
+    #else
+        class MainWebPage : public QWebEnginePage
+        {
+            Q_OBJECT
+
+        public:
+            MainWebPage(QObject* parent = nullptr) : QWebEnginePage(parent)
+            {
+                mCb = nullptr;
+                mData = nullptr;
+
+                connect(this, SIGNAL(certificateError(QWebEngineCertificateError)),
+                    SLOT(certificateError(QWebEngineCertificateError)));
+            }
+            ~MainWebPage() override
+            {
+            }
+
+        public:
+            void SetCallback(Platform::Web::EventCB cb, payload data)
+            {
+                mCb = cb;
+                mData = data;
+            }
+
+        private:
+            void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
+            {
+                if(mCb)
+                    mCb(mData, String::Format("JSConsole:%d", level), message.toUtf8().constData());
+            }
+
+        private slots:
+            bool certificateError(const QWebEngineCertificateError& error)
+            {
+                // 인증서 오류를 무시
+                return true;
+            }
+
+        private:
+            Platform::Web::EventCB mCb;
+            payload mData;
+        };
+
+        class MainWebBridge : public QObject
+        {
+            Q_OBJECT
+
+        public:
+            explicit MainWebBridge(QObject* parent = nullptr) : QObject(parent)
+            {
+            }
+
+        public slots:
+            void sendTextFromJs(const QString& text)
+            {
+                Platform::BroadcastNotify(String::Format("Channel:<%s>", text.toUtf8().constData()), nullptr, NT_WindowWeb);
+            }
+
+        signals:
+            void sendTextFromCpp(const QString& text);
+            void sendTextFromPy(const QString& text);
+        };
+
+        class MainWebView : public QWebEngineView
+        {
+            Q_OBJECT
+
+        public:
+            MainWebView(QWidget* parent = nullptr) : QWebEngineView(parent)
+            {
+                mNowLoading = false;
+                mLoadingProgress = 100;
+                mLoadingRate = 1;
+                mCb = nullptr;
+                mData = nullptr;
+
+                auto NewPage = new MainWebPage(this);
+                auto NewChannel = new QWebChannel(NewPage);
+                auto NewBridge = new MainWebBridge(this);
+                NewPage->setWebChannel(NewChannel);
+                NewChannel->registerObject("BossChannel", NewBridge);
+
+                setPage(NewPage);
+                setMouseTracking(true);
+                setStyleSheet("background-color:transparent;");
+                page()->setBackgroundColor(Qt::transparent);
+
+                connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
+                connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
+                connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
+                connect(this, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
+                connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
+                connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
+                    SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
+                connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
+                    SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
+            }
+            ~MainWebView() override
+            {
+            }
+
+        public:
+            void SetCallback(Platform::Web::EventCB cb, payload data)
+            {
+                mCb = cb;
+                mData = data;
+                ((MainWebPage*) page())->SetCallback(cb, data);
+            }
+            void SendChannel(chars text)
+            {
+                page()->runJavaScript((chars) String::Format("sendTextFromCpp('%s');", text));
+            }
+            void CallJSFunction(chars script, sint32 matchid)
+            {
+                page()->runJavaScript(script,
+                    [this, matchid](const QVariant& v)->void
+                    {
+                        if(mCb)
+                        {
+                            const String Result = v.toString().toUtf8().constData();
+                            if(0 < Result.Length())
+                                mCb(mData, String::Format("JSFunction:%d", matchid), Result);
+                        }
+                    });
+            }
+
+        private slots:
+            void onTitleChanged(const QString& title)
+            {
+                if(mCb)
+                    mCb(mData, "TitleChanged", title.toUtf8().constData());
+            }
+            void onUrlChanged(const QUrl& url)
+            {
+                if(mCb)
+                    mCb(mData, "UrlChanged", url.url().toUtf8().constData());
+            }
+            void onLoadStarted()
+            {
+                mNowLoading = true;
+                mLoadingProgress = 0;
+                mLoadingRate = 0;
+            }
+            void onLoadProgress(int progress)
+            {
+                mNowLoading = true;
+                mLoadingProgress = progress;
+            }
+            void onLoadFinished(bool)
+            {
+                mNowLoading = false;
+                mLoadingProgress = 100;
+                mLoadingRate = 1;
+                if(mCb)
+                    mCb(mData, "LoadFinished", "");
+            }
+            void onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+            {
+                if(mCb)
                 {
-                case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
-                case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
-                case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
-                case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
+                    switch(terminationStatus)
+                    {
+                    case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
+                    case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
+                    case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
+                    case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
+                    }
                 }
             }
-        }
-        void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
-        {
-            page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
-        }
+            void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
+            {
+                page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
+            }
 
-    protected:
-        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
-        {
-            event->accept();
-        }
+        protected:
+            void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
+            {
+                event->accept();
+            }
 
-    private:
-        bool mNowLoading;
-        int mLoadingProgress;
-        float mLoadingRate;
-        Platform::Web::EventCB mCb;
-        payload mData;
-    };
+        private:
+            bool mNowLoading;
+            int mLoadingProgress;
+            float mLoadingRate;
+            Platform::Web::EventCB mCb;
+            payload mData;
+        };
+    #endif
 
     class GroupingWindow : public QMainWindow
     {
@@ -689,7 +862,7 @@
         Q_OBJECT
 
     public:
-        MainWindow()
+        MainWindow(QApplication* app = nullptr) : mRefApplication(app)
         {
             setUnifiedTitleAndToolBarOnMac(true);
         }
@@ -697,6 +870,10 @@
         {
             delete mBgWindow;
             delete mWebWindow;
+            #if BOSS_NEED_CEF_WEBVIEW
+                delete mWebConfig;
+                delete mWebContext;
+            #endif
         }
 
     public:
@@ -734,10 +911,47 @@
             }
             if(bgweb)
             {
-                mWebView = new MainWebView();
-                mWebView->load(QUrl(bgweb));
-                mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
-                mWebView->setParent(mWebWindow);
+                #if BOSS_NEED_CEF_WEBVIEW
+                    mWebConfig = new QCefConfig();
+                    //mWebConfig->setUserAgent("BossCefView");
+                    mWebConfig->setLogLevel(QCefConfig::LOGSEVERITY_DEFAULT);
+                    mWebConfig->setBridgeObjectName("CallBridge");
+                    mWebConfig->setBuiltinSchemeName("CefView");
+                    mWebConfig->setRemoteDebuggingPort(9000);
+                    //mWebConfig->setBackgroundColor(Qt::lightGray);
+                    mWebConfig->setWindowlessRenderingEnabled(true);
+                    mWebConfig->setStandaloneMessageLoopEnabled(true);
+                    mWebConfig->setSandboxDisabled(true);
+                    mWebConfig->addCommandLineSwitch("use-mock-keychain");
+                    //mWebConfig->addCommandLineSwitch("disable-gpu");
+                    //mWebConfig->addCommandLineSwitch("enable-media-stream");
+                    //mWebConfig->addCommandLineSwitch("allow-file-access-from-files");
+                    //mWebConfig->addCommandLineSwitch("disable-spell-checking");
+                    //mWebConfig->addCommandLineSwitch("disable-site-isolation-trials");
+                    //mWebConfig->addCommandLineSwitch("enable-aggressive-domstorage-flushing");
+                    mWebConfig->addCommandLineSwitchWithValue("renderer-process-limit", "1");
+                    mWebConfig->addCommandLineSwitchWithValue("remote-allow-origins", "*");
+                    mWebConfig->setCachePath(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+                    mWebContext = new QCefContext(mRefApplication, 0, nullptr, mWebConfig);
+
+                    QDir dir = QCoreApplication::applicationDirPath();
+                    QString webResourceDir = QDir::toNativeSeparators(dir.filePath("webres"));
+                    QCefContext::instance()->addLocalFolderResource(webResourceDir, "http://QCefViewDoc");
+
+                    QCefSetting WebSetting;
+                    WebSetting.setHardwareAccelerationEnabled(true);
+                    WebSetting.setWindowlessFrameRate(60);
+                    QColor BackgroundColor(0, 255, 0, 255);
+                    WebSetting.setBackgroundColor(BackgroundColor);
+                    mWebView = new CefWebView(bgweb, &WebSetting);
+                    mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
+                    mWebView->setParent(mWebWindow);
+                #else
+                    mWebView = new MainWebView();
+                    mWebView->load(QUrl(bgweb));
+                    mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
+                    mWebView->setParent(mWebWindow);
+                #endif
             }
         }
         inline MainView* View()
@@ -764,6 +978,11 @@
             if(mWebView)
                 mWebView->reload();
         }
+        void SendWindowWebChannel(chars text)
+        {
+            if(mWebView)
+                mWebView->SendChannel(text);
+        }
         QRect GetWindowRect() const
         {
             return mWindowRect;
@@ -776,6 +995,24 @@
                 mBgWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
             if(mWebWindow)
                 mWebWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
+        }
+        void GroupRaise()
+        {
+            if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
+            {
+                auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
+                auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
+                if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
+                {
+                    WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
+                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                    if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
+                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                    if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
+                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                    EndDeferWindowPos(WinPos);
+                }
+            }
         }
 
     protected:
@@ -808,32 +1045,24 @@
                 if(active)
                 {
                     mView->OnActivateEvent(true);
-                    // 일괄팝업
-                    if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
-                    {
-                        auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
-                        auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
-                        if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
-                        {
-                            WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
-                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                            if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
-                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                            if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
-                                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                            EndDeferWindowPos(WinPos);
-                        }
-                    }
+                    GroupRaise();
                 }
                 else mView->OnActivateEvent(false);
             });
         }
 
     private:
+        QApplication* const mRefApplication;
         MainView* mView {nullptr};
         GroupingWindow* mBgWindow {nullptr};
         GroupingWindow* mWebWindow {nullptr};
-        MainWebView* mWebView {nullptr};
+        #if BOSS_NEED_CEF_WEBVIEW
+            CefWebView* mWebView {nullptr};
+            QCefConfig* mWebConfig {nullptr};
+            QCefContext* mWebContext {nullptr};
+        #else
+            MainWebView* mWebView {nullptr};
+        #endif
         QRect mWindowRect;
         bool mInited {false};
         bool mNeedVisible {true};

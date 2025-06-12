@@ -533,6 +533,11 @@
                 g_data->sendWindowWebKeyEvent(code, text, pressed);
         }
 
+        void Platform::SendWindowWebChannel(chars text)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
             if(g_data)

@@ -146,9 +146,15 @@ public:
     /// @param pressed : 눌려짐 여부
     static void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed);
 
+    /// @brief 윈도우웹 채널텍스트 송신
+    /// @param text : 보낼 텍스트(Notify를 통해 결과받음/NT_WindowWeb)
+    /// @details : Notify를 통해 수신받음(NT_WindowWeb), topic = Channel:<message>
+    static void SendWindowWebChannel(chars text);
+
     /// @brief 윈도우웹 자바스크립트함수 호출
     /// @param script : 자바스크립트 소스코드(예시: "func(1, 2);")
-    /// @param matchid : 호출결과를 매칭하기 위한 ID(Notify를 통해 결과받음/NT_WindowWeb)
+    /// @param matchid : 호출결과를 매칭하기 위한 ID
+    /// @details : Notify를 통해 결과받음(NT_WindowWeb), topic = JSConsole[level/sourceid/line]:<message>
     static void CallWindowWebJSFunction(chars script, sint32 matchid = 0);
 
     /// @brief 윈도우 강조하기

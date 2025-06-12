@@ -4590,7 +4590,7 @@
             if(mCb)
                 mCb(mData, "LoadFinished", "");
         }
-        void renderProcessTerminated(WebEnginePageClass::RenderProcessTerminationStatus terminationStatus, int exitCode)
+        void onRenderProcessTerminated(WebEnginePageClass::RenderProcessTerminationStatus terminationStatus, int exitCode)
         {
             if(mCb)
             {

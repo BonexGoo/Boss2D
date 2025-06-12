@@ -102,139 +102,59 @@ int MainView::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 namespace {
-struct qt_meta_tag_ZN11MainWebPageE_t {};
+struct qt_meta_tag_ZN10CefWebViewE_t {};
 } // unnamed namespace
 
 
 #ifdef QT_MOC_HAS_STRINGDATA
-static constexpr auto qt_meta_stringdata_ZN11MainWebPageE = QtMocHelpers::stringData(
-    "MainWebPage",
-    "certificateError",
+static constexpr auto qt_meta_stringdata_ZN10CefWebViewE = QtMocHelpers::stringData(
+    "CefWebView",
+    "onScreenChanged",
     "",
-    "QWebEngineCertificateError",
-    "error"
-);
-#else  // !QT_MOC_HAS_STRINGDATA
-#error "qtmochelpers.h not found or too old."
-#endif // !QT_MOC_HAS_STRINGDATA
-
-Q_CONSTINIT static const uint qt_meta_data_ZN11MainWebPageE[] = {
-
- // content:
-      12,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       1,   14, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
-
- // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   20,    2, 0x08,    1 /* Private */,
-
- // slots: parameters
-    QMetaType::Bool, 0x80000000 | 3,    4,
-
-       0        // eod
-};
-
-Q_CONSTINIT const QMetaObject MainWebPage::staticMetaObject = { {
-    QMetaObject::SuperData::link<QWebEnginePage::staticMetaObject>(),
-    qt_meta_stringdata_ZN11MainWebPageE.offsetsAndSizes,
-    qt_meta_data_ZN11MainWebPageE,
-    qt_static_metacall,
-    nullptr,
-    qt_incomplete_metaTypeArray<qt_meta_tag_ZN11MainWebPageE_t,
-        // Q_OBJECT / Q_GADGET
-        QtPrivate::TypeAndForceComplete<MainWebPage, std::true_type>,
-        // method 'certificateError'
-        QtPrivate::TypeAndForceComplete<bool, std::false_type>,
-        QtPrivate::TypeAndForceComplete<const QWebEngineCertificateError &, std::false_type>
-    >,
-    nullptr
-} };
-
-void MainWebPage::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-{
-    auto *_t = static_cast<MainWebPage *>(_o);
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        switch (_id) {
-        case 0: { bool _r = _t->certificateError((*reinterpret_cast< std::add_pointer_t<QWebEngineCertificateError>>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        default: ;
-        }
-    }
-}
-
-const QMetaObject *MainWebPage::metaObject() const
-{
-    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-}
-
-void *MainWebPage::qt_metacast(const char *_clname)
-{
-    if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_ZN11MainWebPageE.stringdata0))
-        return static_cast<void*>(this);
-    return QWebEnginePage::qt_metacast(_clname);
-}
-
-int MainWebPage::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
-{
-    _id = QWebEnginePage::qt_metacall(_c, _id, _a);
-    if (_id < 0)
-        return _id;
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
-            qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
-    }
-    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 1)
-            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 1;
-    }
-    return _id;
-}
-namespace {
-struct qt_meta_tag_ZN11MainWebViewE_t {};
-} // unnamed namespace
-
-
-#ifdef QT_MOC_HAS_STRINGDATA
-static constexpr auto qt_meta_stringdata_ZN11MainWebViewE = QtMocHelpers::stringData(
-    "MainWebView",
-    "onTitleChanged",
-    "",
-    "title",
-    "onUrlChanged",
+    "QScreen*",
+    "screen",
+    "onNativeBrowserWindowCreated",
+    "QWindow*",
+    "window",
+    "onDraggableRegionChanged",
+    "draggableRegion",
+    "nonDraggableRegion",
+    "onInvokeMethod",
+    "browserId",
+    "frameId",
+    "method",
+    "QVariantList",
+    "arguments",
+    "onQCefUrlRequest",
     "url",
-    "onLoadStarted",
-    "onLoadProgress",
-    "progress",
-    "onLoadFinished",
-    "renderProcessTerminated",
-    "QWebEnginePage::RenderProcessTerminationStatus",
-    "terminationStatus",
-    "exitCode",
-    "onFeaturePermissionRequested",
-    "q",
-    "QWebEnginePage::Feature",
-    "f"
+    "onQCefQueryRequest",
+    "QCefQuery",
+    "query",
+    "onJavascriptResult",
+    "context",
+    "QVariant",
+    "result",
+    "onLoadStart",
+    "isMainFrame",
+    "transitionType",
+    "onLoadEnd",
+    "httpStatusCode",
+    "onLoadError",
+    "errorCode",
+    "errorMsg",
+    "failedUrl"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
 #endif // !QT_MOC_HAS_STRINGDATA
 
-Q_CONSTINIT static const uint qt_meta_data_ZN11MainWebViewE[] = {
+Q_CONSTINIT static const uint qt_meta_data_ZN10CefWebViewE[] = {
 
  // content:
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -242,105 +162,170 @@ Q_CONSTINIT static const uint qt_meta_data_ZN11MainWebViewE[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   56,    2, 0x08,    1 /* Private */,
-       4,    1,   59,    2, 0x08,    3 /* Private */,
-       6,    0,   62,    2, 0x08,    5 /* Private */,
-       7,    1,   63,    2, 0x08,    6 /* Private */,
-       9,    1,   66,    2, 0x08,    8 /* Private */,
-      10,    2,   69,    2, 0x08,   10 /* Private */,
-      14,    2,   74,    2, 0x08,   13 /* Private */,
+       1,    1,   74,    2, 0x09,    1 /* Protected */,
+       5,    1,   77,    2, 0x09,    3 /* Protected */,
+       8,    2,   80,    2, 0x09,    5 /* Protected */,
+      11,    4,   85,    2, 0x09,    8 /* Protected */,
+      17,    3,   94,    2, 0x09,   13 /* Protected */,
+      19,    3,  101,    2, 0x09,   17 /* Protected */,
+      22,    4,  108,    2, 0x09,   21 /* Protected */,
+      26,    4,  117,    2, 0x09,   26 /* Protected */,
+      29,    4,  126,    2, 0x09,   31 /* Protected */,
+      31,    6,  135,    2, 0x09,   36 /* Protected */,
 
  // slots: parameters
-    QMetaType::Void, QMetaType::QString,    3,
-    QMetaType::Void, QMetaType::QUrl,    5,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,    8,
-    QMetaType::Void, QMetaType::Bool,    2,
-    QMetaType::Void, 0x80000000 | 11, QMetaType::Int,   12,   13,
-    QMetaType::Void, QMetaType::QUrl, 0x80000000 | 16,   15,   17,
+    QMetaType::Void, 0x80000000 | 3,    4,
+    QMetaType::Void, 0x80000000 | 6,    7,
+    QMetaType::Void, QMetaType::QRegion, QMetaType::QRegion,    9,   10,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString, 0x80000000 | 15,   12,   13,   14,   16,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString,   12,   13,   18,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, 0x80000000 | 20,   12,   13,   21,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString, 0x80000000 | 24,   12,   13,   23,   25,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Bool, QMetaType::Int,   12,   13,   27,   28,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Bool, QMetaType::Int,   12,   13,   27,   30,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Bool, QMetaType::Int, QMetaType::QString, QMetaType::QString,   12,   13,   27,   32,   33,   34,
 
        0        // eod
 };
 
-Q_CONSTINIT const QMetaObject MainWebView::staticMetaObject = { {
-    QMetaObject::SuperData::link<QWebEngineView::staticMetaObject>(),
-    qt_meta_stringdata_ZN11MainWebViewE.offsetsAndSizes,
-    qt_meta_data_ZN11MainWebViewE,
+Q_CONSTINIT const QMetaObject CefWebView::staticMetaObject = { {
+    QMetaObject::SuperData::link<QCefView::staticMetaObject>(),
+    qt_meta_stringdata_ZN10CefWebViewE.offsetsAndSizes,
+    qt_meta_data_ZN10CefWebViewE,
     qt_static_metacall,
     nullptr,
-    qt_incomplete_metaTypeArray<qt_meta_tag_ZN11MainWebViewE_t,
+    qt_incomplete_metaTypeArray<qt_meta_tag_ZN10CefWebViewE_t,
         // Q_OBJECT / Q_GADGET
-        QtPrivate::TypeAndForceComplete<MainWebView, std::true_type>,
-        // method 'onTitleChanged'
+        QtPrivate::TypeAndForceComplete<CefWebView, std::true_type>,
+        // method 'onScreenChanged'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<QScreen *, std::false_type>,
+        // method 'onNativeBrowserWindowCreated'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<QWindow *, std::false_type>,
+        // method 'onDraggableRegionChanged'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QRegion &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QRegion &, std::false_type>,
+        // method 'onInvokeMethod'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
-        // method 'onUrlChanged'
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QVariantList &, std::false_type>,
+        // method 'onQCefUrlRequest'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<const QUrl &, std::false_type>,
-        // method 'onLoadStarted'
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'onQCefQueryRequest'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        // method 'onLoadProgress'
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QCefQuery &, std::false_type>,
+        // method 'onJavascriptResult'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<int, std::false_type>,
-        // method 'onLoadFinished'
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QVariant &, std::false_type>,
+        // method 'onLoadStart'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
         QtPrivate::TypeAndForceComplete<bool, std::false_type>,
-        // method 'renderProcessTerminated'
-        QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<QWebEnginePage::RenderProcessTerminationStatus, std::false_type>,
         QtPrivate::TypeAndForceComplete<int, std::false_type>,
-        // method 'onFeaturePermissionRequested'
+        // method 'onLoadEnd'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<QUrl, std::false_type>,
-        QtPrivate::TypeAndForceComplete<QWebEnginePage::Feature, std::false_type>
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<bool, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        // method 'onLoadError'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const int &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<bool, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>
     >,
     nullptr
 } };
 
-void MainWebView::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CefWebView::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    auto *_t = static_cast<MainWebView *>(_o);
+    auto *_t = static_cast<CefWebView *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->onTitleChanged((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 1: _t->onUrlChanged((*reinterpret_cast< std::add_pointer_t<QUrl>>(_a[1]))); break;
-        case 2: _t->onLoadStarted(); break;
-        case 3: _t->onLoadProgress((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
-        case 4: _t->onLoadFinished((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
-        case 5: _t->renderProcessTerminated((*reinterpret_cast< std::add_pointer_t<QWebEnginePage::RenderProcessTerminationStatus>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[2]))); break;
-        case 6: _t->onFeaturePermissionRequested((*reinterpret_cast< std::add_pointer_t<QUrl>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QWebEnginePage::Feature>>(_a[2]))); break;
+        case 0: _t->onScreenChanged((*reinterpret_cast< std::add_pointer_t<QScreen*>>(_a[1]))); break;
+        case 1: _t->onNativeBrowserWindowCreated((*reinterpret_cast< std::add_pointer_t<QWindow*>>(_a[1]))); break;
+        case 2: _t->onDraggableRegionChanged((*reinterpret_cast< std::add_pointer_t<QRegion>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QRegion>>(_a[2]))); break;
+        case 3: _t->onInvokeMethod((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QVariantList>>(_a[4]))); break;
+        case 4: _t->onQCefUrlRequest((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3]))); break;
+        case 5: _t->onQCefQueryRequest((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QCefQuery>>(_a[3]))); break;
+        case 6: _t->onJavascriptResult((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QVariant>>(_a[4]))); break;
+        case 7: _t->onLoadStart((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<bool>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[4]))); break;
+        case 8: _t->onLoadEnd((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<bool>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[4]))); break;
+        case 9: _t->onLoadError((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<bool>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<int>>(_a[4])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[5])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[6]))); break;
         default: ;
+        }
+    }
+    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+        case 0:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+            case 0:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QScreen* >(); break;
+            }
+            break;
+        case 1:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+            case 0:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QWindow* >(); break;
+            }
+            break;
+        case 5:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
+            case 2:
+                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QCefQuery >(); break;
+            }
+            break;
         }
     }
 }
 
-const QMetaObject *MainWebView::metaObject() const
+const QMetaObject *CefWebView::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *MainWebView::qt_metacast(const char *_clname)
+void *CefWebView::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_ZN11MainWebViewE.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_ZN10CefWebViewE.stringdata0))
         return static_cast<void*>(this);
-    return QWebEngineView::qt_metacast(_clname);
+    return QCefView::qt_metacast(_clname);
 }
 
-int MainWebView::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CefWebView::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QWebEngineView::qt_metacall(_c, _id, _a);
+    _id = QCefView::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 10;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
-            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 7;
+        if (_id < 10)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 10;
     }
     return _id;
 }
