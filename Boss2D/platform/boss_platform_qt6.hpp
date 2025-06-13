@@ -551,6 +551,8 @@
         public:
             void SendChannel(chars text)
             {
+                executeJavascriptWithResult(QCefView::MainFrameID,
+                    (chars) String::Format("boss_cpp2js('%s');", text), "", "BossChannel");
             }
 
         public:
@@ -566,17 +568,11 @@
         protected slots:
             void onScreenChanged(QScreen* screen)
             {
-                if(!m_pCefWindow)
-                    return;
-                updateMask();
             }
             void onNativeBrowserWindowCreated(QWindow* window)
             {
-                m_pCefWindow = window;
-                if(!m_pCefWindow)
-                    return;
-                connect(this->window()->windowHandle(), SIGNAL(screenChanged(QScreen*)), this, SLOT(onScreenChanged(QScreen*)));
-                updateMask();
+                if(window)
+                    connect(this->window()->windowHandle(), SIGNAL(screenChanged(QScreen*)), this, SLOT(onScreenChanged(QScreen*)));
             }
             void onDraggableRegionChanged(const QRegion& draggableRegion, const QRegion& nonDraggableRegion)
             {
@@ -585,6 +581,11 @@
             }
             void onInvokeMethod(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& method, const QVariantList& arguments)
             {
+                if(method == "boss_js2cpp")
+                {
+                    const QString Text = arguments.value(0).toString();
+                    Platform::BroadcastNotify(String::Format("Channel:<%s>", Text.toUtf8().constData()), nullptr, NT_WindowWeb);
+                }
             }
             void onQCefUrlRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& url)
             {
@@ -623,7 +624,6 @@
         protected:
             void resizeEvent(QResizeEvent* event) override
             {
-                updateMask();
                 QCefView::resizeEvent(event);
             }
             void mousePressEvent(QMouseEvent* event) override
@@ -632,17 +632,6 @@
             }
 
         private:
-            void updateMask()
-            {
-                //QPainterPath path;
-                //path.addRoundedRect(rect(), 50, 50);
-                //QRegion mask = QRegion(path.toFillPolygon().toPolygon());
-                //setMask(mask);
-            }
-
-        private:
-            QWindow* m_pCefWindow {nullptr};
-            int m_iCornerRadius {50};
             QRegion m_draggableRegion;
             QRegion m_nonDraggableRegion;
         };
@@ -913,25 +902,25 @@
             {
                 #if BOSS_NEED_CEF_WEBVIEW
                     mWebConfig = new QCefConfig();
-                    //mWebConfig->setUserAgent("BossCefView");
+                    mWebConfig->setUserAgent("BossCefView");
                     mWebConfig->setLogLevel(QCefConfig::LOGSEVERITY_DEFAULT);
-                    mWebConfig->setBridgeObjectName("CallBridge");
+                    mWebConfig->setBridgeObjectName("BossChannel");
                     mWebConfig->setBuiltinSchemeName("CefView");
                     mWebConfig->setRemoteDebuggingPort(9000);
                     //mWebConfig->setBackgroundColor(Qt::lightGray);
-                    mWebConfig->setWindowlessRenderingEnabled(true);
+                    mWebConfig->setWindowlessRenderingEnabled(false);
                     mWebConfig->setStandaloneMessageLoopEnabled(true);
                     mWebConfig->setSandboxDisabled(true);
                     mWebConfig->addCommandLineSwitch("use-mock-keychain");
                     //mWebConfig->addCommandLineSwitch("disable-gpu");
                     //mWebConfig->addCommandLineSwitch("enable-media-stream");
-                    //mWebConfig->addCommandLineSwitch("allow-file-access-from-files");
+                    mWebConfig->addCommandLineSwitch("allow-file-access-from-files");
                     //mWebConfig->addCommandLineSwitch("disable-spell-checking");
                     //mWebConfig->addCommandLineSwitch("disable-site-isolation-trials");
                     //mWebConfig->addCommandLineSwitch("enable-aggressive-domstorage-flushing");
                     mWebConfig->addCommandLineSwitchWithValue("renderer-process-limit", "1");
                     mWebConfig->addCommandLineSwitchWithValue("remote-allow-origins", "*");
-                    mWebConfig->setCachePath(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+                    mWebConfig->setCachePath(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/BossCefView");
                     mWebContext = new QCefContext(mRefApplication, 0, nullptr, mWebConfig);
 
                     QDir dir = QCoreApplication::applicationDirPath();
@@ -941,8 +930,8 @@
                     QCefSetting WebSetting;
                     WebSetting.setHardwareAccelerationEnabled(true);
                     WebSetting.setWindowlessFrameRate(60);
-                    QColor BackgroundColor(0, 255, 0, 255);
-                    WebSetting.setBackgroundColor(BackgroundColor);
+                    //QColor BackgroundColor(0, 255, 0, 255);
+                    //WebSetting.setBackgroundColor(BackgroundColor);
                     mWebView = new CefWebView(bgweb, &WebSetting);
                     mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
                     mWebView->setParent(mWebWindow);
