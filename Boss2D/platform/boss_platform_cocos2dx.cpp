@@ -324,6 +324,34 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::SendWindowWebPythonStart(chars pid, chars filename, chars args)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonStop(chars pid)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonStopAll()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonText(chars pid, chars text)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);

@@ -533,7 +533,22 @@
                 g_data->sendWindowWebKeyEvent(code, text, pressed);
         }
 
-        void Platform::SendWindowWebChannel(chars text)
+        void Platform::SendWindowWebPythonStart(chars pid, chars filename, chars args)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonStop(chars pid)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonStopAll()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::SendWindowWebPythonText(chars pid, chars text)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

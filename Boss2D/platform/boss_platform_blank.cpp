@@ -284,7 +284,28 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::SendWindowWebChannel(chars text)
+        void Platform::SendWindowWebPythonStart(chars pid, chars filename, chars args)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::SendWindowWebPythonStop(chars pid)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::SendWindowWebPythonStopAll()
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
+
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::SendWindowWebPythonText(chars pid, chars text)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 

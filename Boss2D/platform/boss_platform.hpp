@@ -146,10 +146,24 @@ public:
     /// @param pressed : 눌려짐 여부
     static void SendWindowWebKeyEvent(sint32 code, chars text, bool pressed);
 
-    /// @brief 윈도우웹 채널텍스트 송신
+    /// @brief 윈도우웹 파이썬 인스턴스 시작
+    /// @param pid : 파이썬 인스턴스를 매칭하기 위한 ID
+    /// @param filename : 파이썬 소스코드 파일경로
+    /// @param args : 콤마로 분리된 실행 아규먼트들
+    static void SendWindowWebPythonStart(chars pid, chars filename, chars args);
+
+    /// @brief 윈도우웹 파이썬 인스턴스 종료
+    /// @param pid : 파이썬 인스턴스를 매칭하기 위한 ID
+    static void SendWindowWebPythonStop(chars pid);
+
+    /// @brief 윈도우웹 파이썬 인스턴스 전체 종료
+    static void SendWindowWebPythonStopAll();
+
+    /// @brief 윈도우웹 파이썬 텍스트 송신
+    /// @param pid : 파이썬 인스턴스를 매칭하기 위한 ID
     /// @param text : 보낼 텍스트(Notify를 통해 결과받음/NT_WindowWeb)
-    /// @details : Notify를 통해 수신받음(NT_WindowWeb), topic = Channel:<message>
-    static void SendWindowWebChannel(chars text);
+    /// @details : Notify를 통해 수신받음(NT_WindowWeb), topic = Python[id]:<message>
+    static void SendWindowWebPythonText(chars pid, chars text);
 
     /// @brief 윈도우웹 자바스크립트함수 호출
     /// @param script : 자바스크립트 소스코드(예시: "func(1, 2);")

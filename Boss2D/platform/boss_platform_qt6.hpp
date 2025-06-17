@@ -549,10 +549,24 @@
             }
 
         public:
-            void SendChannel(chars text)
+            void SendPythonStart(chars pid, chars filename, chars args)
             {
                 executeJavascriptWithResult(QCefView::MainFrameID,
-                    (chars) String::Format("boss_cpp2js('%s');", text), "", "BossChannel");
+                    (chars) String::Format("boss_start('%s', '%s', '%s');", pid, filename, args), "", "BossChannel");
+            }
+            void SendPythonStop(chars pid)
+            {
+                executeJavascriptWithResult(QCefView::MainFrameID,
+                    (chars) String::Format("boss_stop('%s');", pid), "", "BossChannel");
+            }
+            void SendPythonStopAll()
+            {
+                executeJavascriptWithResult(QCefView::MainFrameID, "boss_stop_all();", "", "BossChannel");
+            }
+            void SendPythonText(chars pid, chars text)
+            {
+                executeJavascriptWithResult(QCefView::MainFrameID,
+                    (chars) String::Format("boss_cpp2js('%s', '%s');", pid, text), "", "BossChannel");
             }
 
         public:
@@ -583,8 +597,10 @@
             {
                 if(method == "boss_js2cpp")
                 {
-                    const QString Text = arguments.value(0).toString();
-                    Platform::BroadcastNotify(String::Format("Channel:<%s>", Text.toUtf8().constData()), nullptr, NT_WindowWeb);
+                    const QString ID = arguments.value(0).toString();
+                    const QString Text = arguments.value(1).toString();
+                    Platform::BroadcastNotify(String::Format("Python[%s]:<%s>",
+                        ID.toUtf8().constData(), Text.toUtf8().constData()), nullptr, NT_WindowWeb);
                 }
             }
             void onQCefUrlRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& url)
@@ -907,14 +923,14 @@
                     mWebConfig->setBridgeObjectName("BossChannel");
                     mWebConfig->setBuiltinSchemeName("CefView");
                     mWebConfig->setRemoteDebuggingPort(9000);
-                    //mWebConfig->setBackgroundColor(Qt::lightGray);
                     mWebConfig->setWindowlessRenderingEnabled(false);
                     mWebConfig->setStandaloneMessageLoopEnabled(true);
                     mWebConfig->setSandboxDisabled(true);
                     mWebConfig->addCommandLineSwitch("use-mock-keychain");
+                    mWebConfig->addCommandLineSwitch("allow-file-access");
+                    mWebConfig->addCommandLineSwitch("allow-file-access-from-files");
                     //mWebConfig->addCommandLineSwitch("disable-gpu");
                     //mWebConfig->addCommandLineSwitch("enable-media-stream");
-                    mWebConfig->addCommandLineSwitch("allow-file-access-from-files");
                     //mWebConfig->addCommandLineSwitch("disable-spell-checking");
                     //mWebConfig->addCommandLineSwitch("disable-site-isolation-trials");
                     //mWebConfig->addCommandLineSwitch("enable-aggressive-domstorage-flushing");
@@ -930,8 +946,6 @@
                     QCefSetting WebSetting;
                     WebSetting.setHardwareAccelerationEnabled(true);
                     WebSetting.setWindowlessFrameRate(60);
-                    //QColor BackgroundColor(0, 255, 0, 255);
-                    //WebSetting.setBackgroundColor(BackgroundColor);
                     mWebView = new CefWebView(bgweb, &WebSetting);
                     mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
                     mWebView->setParent(mWebWindow);
@@ -967,10 +981,25 @@
             if(mWebView)
                 mWebView->reload();
         }
-        void SendWindowWebChannel(chars text)
+        void SendWindowWebPythonStart(chars pid, chars filename, chars args)
         {
             if(mWebView)
-                mWebView->SendChannel(text);
+                mWebView->SendPythonStart(pid, filename, args);
+        }
+        void SendWindowWebPythonStop(chars pid)
+        {
+            if(mWebView)
+                mWebView->SendPythonStop(pid);
+        }
+        void SendWindowWebPythonStopAll()
+        {
+            if(mWebView)
+                mWebView->SendPythonStopAll();
+        }
+        void SendWindowWebPythonText(chars pid, chars text)
+        {
+            if(mWebView)
+                mWebView->SendPythonText(pid, text);
         }
         QRect GetWindowRect() const
         {

@@ -450,9 +450,24 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::SendWindowWebChannel(chars text)
+        void Platform::SendWindowWebPythonStart(chars pid, chars filename, chars args)
         {
-            g_window->SendWindowWebChannel(text);
+            g_window->SendWindowWebPythonStart(pid, filename, args);
+        }
+
+        void Platform::SendWindowWebPythonStop(chars pid)
+        {
+            g_window->SendWindowWebPythonStop(pid);
+        }
+
+        void Platform::SendWindowWebPythonStopAll()
+        {
+            g_window->SendWindowWebPythonStopAll();
+        }
+
+        void Platform::SendWindowWebPythonText(chars pid, chars text)
+        {
+            g_window->SendWindowWebPythonText(pid, text);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
