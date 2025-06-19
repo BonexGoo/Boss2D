@@ -63,13 +63,15 @@
     #include <QTcpServer>
     #include <QWebSocketServer>
 
-    #if BOSS_NEED_CEF_WEBVIEW
-        #include <QCefContext.h>
-        #include <QCefView.h>
-    #else
-        #include <QWebChannel>
-        #include <QWebEnginePage>
-        #include <QWebEngineView>
+    #if !BOSS_WASM
+        #if BOSS_NEED_CEF_WEBVIEW
+            #include <QCefContext.h>
+            #include <QCefView.h>
+        #else
+            #include <QWebChannel>
+            #include <QWebEnginePage>
+            #include <QWebEngineView>
+        #endif
     #endif
 
     #if BOSS_WINDOWS
@@ -512,7 +514,8 @@
         String mRequestArg;
     };
 
-    #if BOSS_NEED_CEF_WEBVIEW
+    #if BOSS_WASM
+    #elif BOSS_NEED_CEF_WEBVIEW
         class CefWebView : public QCefView
         {
             Q_OBJECT
@@ -552,7 +555,7 @@
             void SendPythonStart(chars pid, chars filename, chars args)
             {
                 executeJavascriptWithResult(QCefView::MainFrameID,
-                    (chars) String::Format("boss_start('%s', '%s', '%s');", pid, filename, args), "", "BossChannel");
+                    (chars) String::Format("boss_start('%s','%s',`%s`);", pid, filename, args), "", "BossChannel");
             }
             void SendPythonStop(chars pid)
             {
@@ -566,7 +569,7 @@
             void SendPythonText(chars pid, chars text)
             {
                 executeJavascriptWithResult(QCefView::MainFrameID,
-                    (chars) String::Format("boss_cpp2js('%s', '%s');", pid, text), "", "BossChannel");
+                    (chars) String::Format("boss_cpp2js('%s',`%s`);", pid, text), "", "BossChannel");
             }
 
         public:
@@ -601,6 +604,74 @@
                     const QString Text = arguments.value(1).toString();
                     Platform::BroadcastNotify(String::Format("Python[%s]:<%s>",
                         ID.toUtf8().constData(), Text.toUtf8().constData()), nullptr, NT_WindowWeb);
+                }
+                else if(method == "boss_findfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String DirPath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    Context Files;
+                    if(auto NewPath = AssetPath::Create())
+                    {
+                        AssetPath::AddPath(NewPath, DirPath);
+                        AssetPath::Search(NewPath, [](chars filepath, chars filename, payload data)->void
+                            {
+                                auto& Files = *((Context*) data);
+                                Files.AtAdding().Set(filename);
+                            }, &Files);
+                        AssetPath::Release(NewPath);
+                    }
+                    if(0 < Files.LengthOfIndexable())
+                        executeJavascriptWithResult(frameId, (chars) String::Format(
+                            "boss_findfile_return(%d,%s);", CallID, (chars) Files.SaveJson()), "", "BossChannel");
+                    else executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_findfile_return(%d,[]);", CallID), "", "BossChannel");
+                }
+                else if(method == "boss_existfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    uint64 Size = 0, CTime = 0, ATime = 0, MTime = 0;
+                    if(Asset::Exist(FilePath, nullptr, &Size, &CTime, &ATime, &MTime))
+                        executeJavascriptWithResult(frameId, (chars) String::Format(
+                            "boss_existfile_return(%d,{'exist':true,'size':%llu,'ctime':%llu,'atime':%llu,'mtime':%llu});",
+                            CallID, Size, CTime, ATime, MTime), "", "BossChannel");
+                    else executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_existfile_return(%d,{'exist':false});", CallID), "", "BossChannel");
+                }
+                else if(method == "boss_readfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    if(auto NewBuffer = Asset::ToBuffer(FilePath))
+                    {
+                        const sint32 FileSize = Buffer::CountOf(NewBuffer);
+                        executeJavascriptWithResult(frameId, (chars) String::Format("boss_readfile_return(%d,'%s');",
+                            CallID, AddOn::Ssl::ToBASE64((bytes) NewBuffer, FileSize)), "", "BossChannel");
+                        Buffer::Free(NewBuffer);
+                    }
+                    else executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_readfile_return(%d,'');", CallID), "", "BossChannel");
+                }
+                else if(method == "boss_writefile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    chars Base64 = arguments.value(2).toString().toUtf8().constData();
+                    if(auto NewBuffer = AddOn::Ssl::FromBASE64(Base64))
+                    {
+                        if(auto NewAsset = Asset::OpenForWrite(FilePath, true))
+                        {
+                            const sint32 FileSize = Buffer::CountOf(NewBuffer);
+                            Asset::Write(NewAsset, (bytes) NewBuffer, FileSize);
+                            Asset::Close(NewAsset);
+                            executeJavascriptWithResult(frameId, (chars) String::Format(
+                                "boss_writefile_return(%d,%d);", CallID, FileSize), "", "BossChannel");
+                        }
+                        else executeJavascriptWithResult(frameId, (chars) String::Format(
+                            "boss_writefile_return(%d,0);", CallID), "", "BossChannel");
+                    }
+                    else executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_writefile_return(%d,0);", CallID), "", "BossChannel");
                 }
             }
             void onQCefUrlRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& url)
@@ -875,7 +946,7 @@
         {
             delete mBgWindow;
             delete mWebWindow;
-            #if BOSS_NEED_CEF_WEBVIEW
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 delete mWebConfig;
                 delete mWebContext;
             #endif
@@ -916,7 +987,8 @@
             }
             if(bgweb)
             {
-                #if BOSS_NEED_CEF_WEBVIEW
+                #if BOSS_WASM
+                #elif BOSS_NEED_CEF_WEBVIEW
                     mWebConfig = new QCefConfig();
                     mWebConfig->setUserAgent("BossCefView");
                     mWebConfig->setLogLevel(QCefConfig::LOGSEVERITY_DEFAULT);
@@ -963,43 +1035,55 @@
         }
         void SetWindowWebUrl(chars bgweb)
         {
-            if(mWebView)
-            {
-                if(bgweb && *bgweb)
+            #if !BOSS_WASM
+                if(mWebView)
                 {
-                    mWebView->load(QUrl(bgweb));
-                    mWebView->show();
+                    if(bgweb && *bgweb)
+                    {
+                        mWebView->load(QUrl(bgweb));
+                        mWebView->show();
+                    }
+                    else
+                    {
+                        mWebView->hide();
+                    }
                 }
-                else
-                {
-                    mWebView->hide();
-                }
-            }
+            #endif
         }
         void ReloadWindowWeb()
         {
-            if(mWebView)
-                mWebView->reload();
+            #if !BOSS_WASM
+                if(mWebView)
+                    mWebView->reload();
+            #endif
         }
         void SendWindowWebPythonStart(chars pid, chars filename, chars args)
         {
-            if(mWebView)
-                mWebView->SendPythonStart(pid, filename, args);
+            #if !BOSS_WASM
+                if(mWebView)
+                    mWebView->SendPythonStart(pid, filename, args);
+            #endif
         }
         void SendWindowWebPythonStop(chars pid)
         {
-            if(mWebView)
-                mWebView->SendPythonStop(pid);
+            #if !BOSS_WASM
+                if(mWebView)
+                    mWebView->SendPythonStop(pid);
+            #endif
         }
         void SendWindowWebPythonStopAll()
         {
-            if(mWebView)
-                mWebView->SendPythonStopAll();
+            #if !BOSS_WASM
+                if(mWebView)
+                    mWebView->SendPythonStopAll();
+            #endif
         }
         void SendWindowWebPythonText(chars pid, chars text)
         {
-            if(mWebView)
-                mWebView->SendPythonText(pid, text);
+            #if !BOSS_WASM
+                if(mWebView)
+                    mWebView->SendPythonText(pid, text);
+            #endif
         }
         QRect GetWindowRect() const
         {
@@ -1016,21 +1100,23 @@
         }
         void GroupRaise()
         {
-            if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
-            {
-                auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
-                auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
-                if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
+            #if BOSS_WINDOWS
+                if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
                 {
-                    WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
-                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                    if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
-                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                    if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
-                        0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                    EndDeferWindowPos(WinPos);
+                    auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
+                    auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
+                    if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
+                    {
+                        WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
+                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                        if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
+                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                        if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
+                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                        EndDeferWindowPos(WinPos);
+                    }
                 }
-            }
+            #endif
         }
 
     protected:
@@ -1074,7 +1160,8 @@
         MainView* mView {nullptr};
         GroupingWindow* mBgWindow {nullptr};
         GroupingWindow* mWebWindow {nullptr};
-        #if BOSS_NEED_CEF_WEBVIEW
+        #if BOSS_WASM
+        #elif BOSS_NEED_CEF_WEBVIEW
             CefWebView* mWebView {nullptr};
             QCefConfig* mWebConfig {nullptr};
             QCefContext* mWebContext {nullptr};
