@@ -47,6 +47,20 @@ namespace BOSS
         /// @see Close
         static id_asset OpenForWrite(chars filename, bool autocreatedir = false);
 
+        /// @brief 어셋삭제(쓰기전용)
+        /// @param filename : 파일명
+        /// @param autoremovedir : 파일삭제후 상위폴더가 비어버린 경우 자동으로 폴더 삭제
+        /// @return 성공여부
+        /// @see OpenForWrite
+        static bool RemoveForWrite(chars filename, bool autoremovedir = false);
+
+        /// @brief 어셋개명(쓰기전용)
+        /// @param old_filename : 예전 파일명
+        /// @param new_filename : 새 파일명
+        /// @return 성공여부
+        /// @see OpenForWrite
+        static bool RenameForWrite(chars old_filename, chars new_filename);
+
         /// @brief 어셋닫기
         /// @param asset : 어셋ID
         /// @see OpenForRead, OpenForWrite

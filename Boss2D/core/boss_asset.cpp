@@ -90,6 +90,16 @@ public:
         }
         return nullptr;
     }
+    static bool Remove(chars pathname, bool autoremovedir)
+    {
+        return Platform::File::Remove(WString::FromChars(pathname), autoremovedir);
+    }
+    static bool Rename(chars old_pathname, chars new_pathname)
+    {
+        return Platform::File::Rename(
+            WString::FromChars(old_pathname),
+            WString::FromChars(new_pathname));
+    }
 
 public:
     sint32 Read(uint08* data, const sint32 size) override
@@ -725,6 +735,27 @@ namespace BOSS
         #else
             return (id_asset) AssetWriteFileClass::Create(
                 Platform::File::RootForAssetsRem() + filename, autocreatedir);
+        #endif
+    }
+
+    bool Asset::RemoveForWrite(chars filename, bool autoremovedir)
+    {
+        #if BOSS_NEED_EMBEDDED_CACHE
+            return false;
+        #else
+            return AssetWriteFileClass::Remove(
+                Platform::File::RootForAssetsRem() + filename, autoremovedir);
+        #endif
+    }
+
+    bool Asset::RenameForWrite(chars old_filename, chars new_filename)
+    {
+        #if BOSS_NEED_EMBEDDED_CACHE
+            return false;
+        #else
+            return AssetWriteFileClass::Rename(
+                Platform::File::RootForAssetsRem() + old_filename,
+                Platform::File::RootForAssetsRem() + new_filename);
         #endif
     }
 

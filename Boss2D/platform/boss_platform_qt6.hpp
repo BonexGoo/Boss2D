@@ -626,6 +626,31 @@
                     else executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_findfile_return(%d,[]);", CallID), "", "BossChannel");
                 }
+                else if(method == "boss_pickupfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String Filter = String(arguments.value(1).toString().toUtf8().constData()).Trim().Replace("/", ";*.");
+                    const String TargetPath = String("webpython/") + arguments.value(2).toString().toUtf8().constData();
+                    const String FilterScript = (Filter.Length() == 0)? String("All Files(*.*)\0*.*\0") : "Some files\0*." + Filter + "\0";
+                    bool Success = false;
+                    String FilePath;
+                    if(Platform::Popup::FileDialog(DST_FileOpen, FilePath, nullptr, "Please select a file", WString::FromChars(FilterScript)))
+                    if(auto OldFile = Platform::File::OpenForRead(FilePath))
+                    {
+                        auto FileSize = Platform::File::Size(OldFile);
+                        auto NewBuffer = Buffer::Alloc(BOSS_DBG FileSize);
+                        Platform::File::Read(OldFile, (uint08*) NewBuffer, FileSize);
+                        Platform::File::Close(OldFile);
+                        if(auto NewAsset = Asset::OpenForWrite(TargetPath, true))
+                        {
+                            Asset::Write(NewAsset, (bytes) NewBuffer, FileSize);
+                            Asset::Close(NewAsset);
+                            Success = true;
+                        }
+                    }
+                    executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_pickupfile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
+                }
                 else if(method == "boss_existfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
@@ -657,21 +682,47 @@
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
                     chars Base64 = arguments.value(2).toString().toUtf8().constData();
+                    sint32 FileSize = 0;
                     if(auto NewBuffer = AddOn::Ssl::FromBASE64(Base64))
+                    if(auto NewAsset = Asset::OpenForWrite(FilePath, true))
                     {
-                        if(auto NewAsset = Asset::OpenForWrite(FilePath, true))
-                        {
-                            const sint32 FileSize = Buffer::CountOf(NewBuffer);
-                            Asset::Write(NewAsset, (bytes) NewBuffer, FileSize);
-                            Asset::Close(NewAsset);
-                            executeJavascriptWithResult(frameId, (chars) String::Format(
-                                "boss_writefile_return(%d,%d);", CallID, FileSize), "", "BossChannel");
-                        }
-                        else executeJavascriptWithResult(frameId, (chars) String::Format(
-                            "boss_writefile_return(%d,0);", CallID), "", "BossChannel");
+                        FileSize = Buffer::CountOf(NewBuffer);
+                        Asset::Write(NewAsset, (bytes) NewBuffer, FileSize);
+                        Asset::Close(NewAsset);
+                    }
+                    executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_writefile_return(%d,%d);", CallID, FileSize), "", "BossChannel");
+                }
+                else if(method == "boss_resetfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    const bool Success = Asset::RemoveForWrite(FilePath, true);
+                    executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_resetfile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
+                }
+                else if(method == "boss_movefile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String OldFilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    const String NewFilePath = String("webpython/") + arguments.value(2).toString().toUtf8().constData();
+                    const bool Success = Asset::RenameForWrite(OldFilePath, NewFilePath);
+                    executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_movefile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
+                }
+                else if(method == "boss_hashfile")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
+                    if(auto NewBuffer = Asset::ToBuffer(FilePath))
+                    {
+                        const sint32 FileSize = Buffer::CountOf(NewBuffer);
+                        executeJavascriptWithResult(frameId, (chars) String::Format("boss_hashfile_return(%d,'%s');",
+                            CallID, AddOn::Ssl::ToSHA256((bytes) NewBuffer, FileSize, true)), "", "BossChannel");
+                        Buffer::Free(NewBuffer);
                     }
                     else executeJavascriptWithResult(frameId, (chars) String::Format(
-                        "boss_writefile_return(%d,0);", CallID), "", "BossChannel");
+                        "boss_hashfile_return(%d,'');", CallID), "", "BossChannel");
                 }
             }
             void onQCefUrlRequest(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& url)
