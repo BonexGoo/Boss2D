@@ -56,6 +56,7 @@ namespace BOSS
             void File_SetAttributeHidden(wchars itemname);
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash);
             WString File_GetShortName(wchars itemname);
+            WString File_ExtensionName(wchars itemname);
             sint32 File_GetDriveCode();
             bool File_Tempname(char* format, sint32 length);
 

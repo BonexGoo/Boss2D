@@ -79,6 +79,7 @@
     #endif
 
     #define USER_FRAMECOUNT (60)
+    extern h_view g_view;
 
     class FTFontClass
     {
@@ -222,20 +223,16 @@
             mViewManager = manager;
             if(mViewManager)
             {
-                h_view NewViewHandle = h_view::create_by_ptr(BOSS_DBG manager);
-                mViewManager->SetView(NewViewHandle);
+                g_view = h_view::create_by_ptr(BOSS_DBG manager);
+                mViewManager->SetView(g_view);
                 mViewManager->SetCallback(
                     [](payload data, sint32 count, chars arg)->void
                     {((MainView*) data)->Update(count, arg);}, (payload) this);
                 SendCreate();
                 SendSizeWhenValid();
-                return NewViewHandle;
+                return g_view;
             }
             return h_view::null();
-        }
-        void SendNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out, bool direct)
-        {
-            mViewManager->SendNotify(type, topic, in, out, direct);
         }
 
     private:
@@ -564,12 +561,13 @@
             }
             void SendPythonStopAll()
             {
-                executeJavascriptWithResult(QCefView::MainFrameID, "boss_stop_all();", "", "BossChannel");
+                executeJavascriptWithResult(QCefView::MainFrameID,
+                    "boss_stop_all();", "", "BossChannel");
             }
-            void SendPythonText(chars pid, chars text)
+            void SendPythonCall(chars pid, chars func, chars args)
             {
                 executeJavascriptWithResult(QCefView::MainFrameID,
-                    (chars) String::Format("boss_cpp2js('%s',`%s`);", pid, text), "", "BossChannel");
+                    (chars) String::Format("boss_call('%s','%s',%s);", pid, func, args), "", "BossChannel");
             }
 
         public:
@@ -598,14 +596,62 @@
             }
             void onInvokeMethod(const QCefBrowserId& browserId, const QCefFrameId& frameId, const QString& method, const QVariantList& arguments)
             {
-                if(method == "boss_js2cpp")
+                branch;
+                // DOM처리
+                jump(method == "boss_log")
                 {
-                    const QString ID = arguments.value(0).toString();
-                    const QString Text = arguments.value(1).toString();
-                    Platform::BroadcastNotify(String::Format("Python[%s]:<%s>",
-                        ID.toUtf8().constData(), Text.toUtf8().constData()), nullptr, NT_WindowWeb);
+                    const String Text = arguments.value(0).toString().toUtf8().constData();
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonLog", Text, nullptr, false);
                 }
-                else if(method == "boss_findfile")
+                jump(method == "boss_set")
+                {
+                    Strings Args;
+                    Args.AtAdding() = arguments.value(0).toString().toUtf8().constData(); // Key
+                    Args.AtAdding() = arguments.value(1).toString().toUtf8().constData(); // Value
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonSet", Args, nullptr, false);
+                }
+                jump(method == "boss_setjson")
+                {
+                    Strings Args;
+                    Args.AtAdding() = arguments.value(0).toString().toUtf8().constData(); // KeyHead
+                    Args.AtAdding() = arguments.value(1).toString().toUtf8().constData(); // Json
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonSetJson", Args, nullptr, false);
+                }
+                jump(method == "boss_get")
+                {
+                    const sint32 CallID = arguments.value(0).toInt();
+                    const String Key = arguments.value(1).toString().toUtf8().constData();
+                    id_cloned_share Out = nullptr;
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonGet", Key, &Out, true);
+                    if(Out)
+                    {
+                        const String Value(Out);
+                        executeJavascriptWithResult(frameId, (chars) String::Format(
+                            "boss_get_return(%d,'%s');", CallID, (chars) Value), "", "BossChannel");
+                    }
+                    else executeJavascriptWithResult(frameId, (chars) String::Format(
+                        "boss_get_return(%d,'');", CallID), "", "BossChannel");
+                }
+                jump(method == "boss_rem")
+                {
+                    const String KeyHead = arguments.value(0).toString().toUtf8().constData();
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonRem", KeyHead, nullptr, false);
+                }
+                jump(method == "boss_gluecall")
+                {
+                    Strings Args;
+                    Args.AtAdding() = arguments.value(0).toString().toUtf8().constData(); // Name
+                    for(sint32 i = 1, iend = arguments.count(); i < iend; ++i)
+                        Args.AtAdding() = arguments.value(i).toString().toUtf8().constData(); // Params
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonGlueCall", Args, nullptr, false);
+                }
+                jump(method == "boss_jumpcall")
+                {
+                    const String Name = arguments.value(0).toString().toUtf8().constData();
+                    ((View*) g_view.get())->SendNotify(NT_WindowWeb, "PythonJumpCall", Name, nullptr, false);
+                }
+                // 파일처리
+                jump(method == "boss_findfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String DirPath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
@@ -626,44 +672,53 @@
                     else executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_findfile_return(%d,[]);", CallID), "", "BossChannel");
                 }
-                else if(method == "boss_pickupfile")
+                jump(method == "boss_pickupfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
-                    const String Filter = String(arguments.value(1).toString().toUtf8().constData()).Trim().Replace("/", ";*.");
-                    const String TargetPath = String("webpython/") + arguments.value(2).toString().toUtf8().constData();
-                    const String FilterScript = (Filter.Length() == 0)? String("All Files(*.*)\0*.*\0") : "Some files\0*." + Filter + "\0";
-                    bool Success = false;
+                    const WString FilterW = WString::FromChars(String(arguments.value(1).toString().toUtf8().constData()).Trim().Replace("/", ";*."));
+                    const String FileTitle = String("webpython/") + arguments.value(2).toString().toUtf8().constData();
+                    wchararray FilterScriptW;
+                    if(FilterW.Length() == 0)
+                        Memory::Copy(FilterScriptW.AtDumpingAdded(20), L"All Files(*.*)\0*.*\0", sizeof(wchar_t) * 20);
+                    else
+                    {
+                        Memory::Copy(FilterScriptW.AtDumpingAdded(13), L"Some files\0*.", sizeof(wchar_t) * 13);
+                        Memory::Copy(FilterScriptW.AtDumpingAdded(FilterW.Length()), (wchars) FilterW, sizeof(wchar_t) * FilterW.Length());
+                        Memory::Copy(FilterScriptW.AtDumpingAdded(2), L"\0", sizeof(wchar_t) * 2);
+                    }
+                    String TargetFilePath;
                     String FilePath;
-                    if(Platform::Popup::FileDialog(DST_FileOpen, FilePath, nullptr, "Please select a file", WString::FromChars(FilterScript)))
+                    if(Platform::Popup::FileDialog(DST_FileOpen, FilePath, nullptr, "Please select a file", &FilterScriptW[0]))
                     if(auto OldFile = Platform::File::OpenForRead(FilePath))
                     {
+                        auto ExtName = String::FromWChars(Platform::File::GetExtensionName(WString::FromChars(FilePath)));
                         auto FileSize = Platform::File::Size(OldFile);
                         auto NewBuffer = Buffer::Alloc(BOSS_DBG FileSize);
                         Platform::File::Read(OldFile, (uint08*) NewBuffer, FileSize);
                         Platform::File::Close(OldFile);
-                        if(auto NewAsset = Asset::OpenForWrite(TargetPath, true))
+                        if(auto NewAsset = Asset::OpenForWrite(FileTitle + ExtName, true))
                         {
                             Asset::Write(NewAsset, (bytes) NewBuffer, FileSize);
                             Asset::Close(NewAsset);
-                            Success = true;
+                            TargetFilePath = FileTitle + ExtName;
                         }
                     }
                     executeJavascriptWithResult(frameId, (chars) String::Format(
-                        "boss_pickupfile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
+                        "boss_pickupfile_return(%d,'%s');", CallID, (chars) TargetFilePath), "", "BossChannel");
                 }
-                else if(method == "boss_existfile")
+                jump(method == "boss_infofile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
                     uint64 Size = 0, CTime = 0, ATime = 0, MTime = 0;
                     if(Asset::Exist(FilePath, nullptr, &Size, &CTime, &ATime, &MTime))
                         executeJavascriptWithResult(frameId, (chars) String::Format(
-                            "boss_existfile_return(%d,{'exist':true,'size':%llu,'ctime':%llu,'atime':%llu,'mtime':%llu});",
+                            "boss_infofile_return(%d,{'exist':true,'size':%llu,'ctime':%llu,'atime':%llu,'mtime':%llu});",
                             CallID, Size, CTime, ATime, MTime), "", "BossChannel");
                     else executeJavascriptWithResult(frameId, (chars) String::Format(
-                        "boss_existfile_return(%d,{'exist':false});", CallID), "", "BossChannel");
+                        "boss_infofile_return(%d,{'exist':false});", CallID), "", "BossChannel");
                 }
-                else if(method == "boss_readfile")
+                jump(method == "boss_readfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
@@ -677,11 +732,11 @@
                     else executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_readfile_return(%d,'');", CallID), "", "BossChannel");
                 }
-                else if(method == "boss_writefile")
+                jump(method == "boss_writefile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
-                    chars Base64 = arguments.value(2).toString().toUtf8().constData();
+                    const String Base64 = arguments.value(2).toString().toUtf8().constData();
                     sint32 FileSize = 0;
                     if(auto NewBuffer = AddOn::Ssl::FromBASE64(Base64))
                     if(auto NewAsset = Asset::OpenForWrite(FilePath, true))
@@ -693,7 +748,7 @@
                     executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_writefile_return(%d,%d);", CallID, FileSize), "", "BossChannel");
                 }
-                else if(method == "boss_resetfile")
+                jump(method == "boss_resetfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
@@ -701,7 +756,7 @@
                     executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_resetfile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
                 }
-                else if(method == "boss_movefile")
+                jump(method == "boss_movefile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String OldFilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
@@ -710,7 +765,7 @@
                     executeJavascriptWithResult(frameId, (chars) String::Format(
                         "boss_movefile_return(%d,%s);", CallID, (Success)? "true" : "false"), "", "BossChannel");
                 }
-                else if(method == "boss_hashfile")
+                jump(method == "boss_hashfile")
                 {
                     const sint32 CallID = arguments.value(0).toInt();
                     const String FilePath = String("webpython/") + arguments.value(1).toString().toUtf8().constData();
@@ -995,6 +1050,7 @@
         }
         ~MainWindow()
         {
+            delete mView;
             delete mBgWindow;
             delete mWebWindow;
             #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
@@ -1129,11 +1185,11 @@
                     mWebView->SendPythonStopAll();
             #endif
         }
-        void SendWindowWebPythonText(chars pid, chars text)
+        void SendWindowWebPythonCall(chars pid, chars func, chars args)
         {
             #if !BOSS_WASM
                 if(mWebView)
-                    mWebView->SendPythonText(pid, text);
+                    mWebView->SendPythonCall(pid, func, args);
             #endif
         }
         QRect GetWindowRect() const

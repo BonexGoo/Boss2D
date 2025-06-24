@@ -548,7 +548,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::SendWindowWebPythonText(chars pid, chars text)
+        void Platform::SendWindowWebPythonCall(chars pid, chars func, chars args)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }
@@ -3524,6 +3524,11 @@
         WString Platform::File::GetShortName(wchars itemname)
         {
             return PlatformImpl::Wrap::File_GetShortName(itemname);
+        }
+
+        WString Platform::File::GetExtensionName(wchars itemname)
+        {
+            return PlatformImpl::Wrap::File_ExtensionName(itemname);
         }
 
         sint32 Platform::File::GetDriveCode()

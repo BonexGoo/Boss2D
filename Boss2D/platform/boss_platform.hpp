@@ -159,11 +159,11 @@ public:
     /// @brief 윈도우웹 파이썬 인스턴스 전체 종료
     static void SendWindowWebPythonStopAll();
 
-    /// @brief 윈도우웹 파이썬 텍스트 송신
+    /// @brief 윈도우웹 파이썬 함수콜
     /// @param pid : 파이썬 인스턴스를 매칭하기 위한 ID
-    /// @param text : 보낼 텍스트(Notify를 통해 결과받음/NT_WindowWeb)
-    /// @details : Notify를 통해 수신받음(NT_WindowWeb), topic = Python[id]:<message>
-    static void SendWindowWebPythonText(chars pid, chars text);
+    /// @param func : 호출할 함수명
+    /// @param args : 전달할 인자들(콤마로 분리)
+    static void SendWindowWebPythonCall(chars pid, chars func, chars args);
 
     /// @brief 윈도우웹 자바스크립트함수 호출
     /// @param script : 자바스크립트 소스코드(예시: "func(1, 2);")
@@ -1393,6 +1393,11 @@ public:
         /// @param itemname : 아이템명(파일 또는 폴더)
         /// @return 단축명
         static WString GetShortName(wchars itemname);
+
+        /// @brief 아이템의 확장자명 조사
+        /// @param itemname : 아이템명(파일 또는 폴더)
+        /// @return 확장자명
+        static WString GetExtensionName(wchars itemname);
 
         /// @brief 작업드라이브 코드명얻기
         /// @return 코드명(1~26)

@@ -988,7 +988,23 @@ namespace BOSS
 
                     for(sint32 i = ItemnameUTF8.Length() - 1; 0 <= i; --i)
                         if(ItemnameUTF8[i] == L'/' || ItemnameUTF8[i] == L'\\')
-                            return WString::FromChars(&((chars) ItemnameUTF8)[i + 1]);
+                            return WString::FromChars(((chars) ItemnameUTF8) + i + 1);
+                }
+                return L"";
+            }
+
+            WString File_ExtensionName(wchars itemname)
+            {
+                if(itemname && itemname[0] != L'\0')
+                {
+                    String ItemnameUTF8 = String::FromWChars(itemname);
+                    for(sint32 i = ItemnameUTF8.Length() - 1; 0 <= i; --i)
+                    {
+                        if(ItemnameUTF8[i] == L'/' || ItemnameUTF8[i] == L'\\')
+                            break;
+                        else if(ItemnameUTF8[i] == L'.')
+                            return WString::FromChars(((chars) ItemnameUTF8) + i);
+                    }
                 }
                 return L"";
             }

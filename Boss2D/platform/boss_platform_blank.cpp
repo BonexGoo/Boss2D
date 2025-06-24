@@ -305,7 +305,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::SendWindowWebPythonText(chars pid, chars text)
+        void Platform::SendWindowWebPythonCall(chars pid, chars func, chars args)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", g_data && g_window);
 
@@ -1675,6 +1675,11 @@
         WString Platform::File::GetShortName(wchars itemname)
         {
             return PlatformImpl::Wrap::File_GetShortName(itemname);
+        }
+
+        WString Platform::File::GetExtensionName(wchars itemname)
+        {
+            return PlatformImpl::Wrap::File_ExtensionName(itemname);
         }
 
         sint32 Platform::File::GetDriveCode()

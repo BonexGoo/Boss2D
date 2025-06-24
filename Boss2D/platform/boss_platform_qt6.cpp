@@ -83,6 +83,7 @@
         }
     #endif
 
+    h_view g_view;
     MainWindow* g_window = nullptr;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
@@ -465,9 +466,9 @@
             g_window->SendWindowWebPythonStopAll();
         }
 
-        void Platform::SendWindowWebPythonText(chars pid, chars text)
+        void Platform::SendWindowWebPythonCall(chars pid, chars func, chars args)
         {
-            g_window->SendWindowWebPythonText(pid, text);
+            g_window->SendWindowWebPythonCall(pid, func, args);
         }
 
         void Platform::CallWindowWebJSFunction(chars script, sint32 matchid)
@@ -1272,8 +1273,13 @@
 
         chars Platform::Utility::GetLocaleBCP47()
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return "ko";
+            static char BCP47Code[8] = {'\0'};
+            if(BCP47Code[0] == '\0')
+            {
+                const QString BCP47Text = QLocale::system().bcp47Name();
+                boss_strcpy(BCP47Code, BCP47Text.toUtf8().constData());
+            }
+            return BCP47Code;
         }
 
         void Platform::Utility::Threading(ThreadCB cb, payload data, prioritytype priority)
@@ -2448,6 +2454,11 @@
         WString Platform::File::GetShortName(wchars itemname)
         {
             return PlatformImpl::Wrap::File_GetShortName(itemname);
+        }
+
+        WString Platform::File::GetExtensionName(wchars itemname)
+        {
+            return PlatformImpl::Wrap::File_ExtensionName(itemname);
         }
 
         sint32 Platform::File::GetDriveCode()
