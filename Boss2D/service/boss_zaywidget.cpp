@@ -1460,6 +1460,7 @@ namespace BOSS
                 {
                     if(t == GT_KeyPressed)
                     {
+                        BOSS_TRACE("GT_KeyPressed(code=%d, key=%d)", x, y);
                         auto& Self = ST();
                         Self.OnKeyPressed(v, n, domname, x, (char) y, dualsave);
                         Self.mLastPressCode = x;
@@ -1468,6 +1469,7 @@ namespace BOSS
                     }
                     else if(t == GT_KeyReleased)
                     {
+                        BOSS_TRACE("GT_KeyReleased(code=%d, key=%d)", x, y);
                         auto& Self = ST();
                         if(Self.mLastPressCode == x)
                             Self.mLastPressCode = 0; // 키해제
@@ -1947,8 +1949,6 @@ namespace BOSS
 
     void ZayControl::OnKeyPressed(ZayObject* view, const String& uiname, const String& domname, sint32 code, char key, bool dualsave)
     {
-        BOSS_TRACE("OnKeyPressed(code=%d, key=%d)", code, key);
-
         branch;
         jump((code == 37 && key == '\0') || code == 16777234) // Left
         {

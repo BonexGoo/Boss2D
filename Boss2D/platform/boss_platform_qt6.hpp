@@ -317,6 +317,14 @@
             }
             else event->ignore();
         }
+        void ForcedKeyClick(sint32 code, chars text)
+        {
+            if(mViewManager)
+            {
+                mViewManager->OnKey(code, text, true);
+                mViewManager->OnKey(code, text, false);
+            }
+        }
 
     protected:
         void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
@@ -1166,28 +1174,28 @@
         }
         void SendWindowWebPythonStart(chars pid, chars filename, chars args)
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                     mWebView->SendPythonStart(pid, filename, args);
             #endif
         }
         void SendWindowWebPythonStop(chars pid)
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                     mWebView->SendPythonStop(pid);
             #endif
         }
         void SendWindowWebPythonStopAll()
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                     mWebView->SendPythonStopAll();
             #endif
         }
         void SendWindowWebPythonCall(chars pid, chars func, chars args)
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                     mWebView->SendPythonCall(pid, func, args);
             #endif
@@ -1227,6 +1235,20 @@
         }
 
     protected:
+        bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) Q_DECL_OVERRIDE
+        {
+            #ifdef Q_OS_WIN
+                MSG* msg = static_cast<MSG*>(message);
+                if(msg->message == WM_KEYDOWN || msg->message == WM_SYSKEYDOWN)
+                if(msg->wParam == VK_HANGUL || msg->wParam == VK_HANJA)
+                {
+                    mView->ForcedKeyClick(msg->wParam, "");
+                    *result = 1;
+                    return true;
+                }
+            #endif
+            return QMainWindow::nativeEvent(eventType, message, result);
+        }
         void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
             mView->OnCloseEvent(event);
