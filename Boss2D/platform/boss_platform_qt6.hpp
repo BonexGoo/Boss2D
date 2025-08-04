@@ -1055,6 +1055,7 @@
         MainWindow(QApplication* app = nullptr) : mRefApplication(app)
         {
             setUnifiedTitleAndToolBarOnMac(true);
+            mWindowRect.setRect(0, 0, 640, 480);
         }
         ~MainWindow()
         {
@@ -1093,7 +1094,7 @@
                 TypeCollector |= Qt::WindowStaysOnTopHint;
             if(TypeCollector != Qt::Widget)
                 setWindowFlags(TypeCollector);
-            mWindowRect = geometry();
+            setGeometry(mWindowRect);
 
             if(bgwidget)
             {
@@ -1209,7 +1210,7 @@
             const bool EnableMove = (mWindowRect.x() != x || mWindowRect.y() != y);
             const bool EnableSize = (mWindowRect.width() != width || mWindowRect.height() != height);
             mWindowRect.setRect(x, y, width, height);
-            if(!SetGroupGeometry(EnableMove, EnableSize, x, y, width, height))
+            if(mView && !SetGroupGeometry(EnableMove, EnableSize, x, y, width, height))
             {
                 setGeometry(x, y, width, height);
                 if(mBgWindow) mBgWindow->setGeometry(x, y, width, height);
@@ -1225,8 +1226,7 @@
                     auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
                     if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
                     {
-                        const UINT Flag = SWP_NOACTIVATE |
-                            ((enable_move)? 0 : SWP_NOMOVE) | ((enable_size)? 0 : SWP_NOSIZE);
+                        const UINT Flag = SWP_NOACTIVATE | ((enable_move)? 0 : SWP_NOMOVE) | ((enable_size)? 0 : SWP_NOSIZE);
                         WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP, x, y, width, height, Flag);
                         if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId, x, y, width, height, Flag);
                         if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId, x, y, width, height, Flag);
