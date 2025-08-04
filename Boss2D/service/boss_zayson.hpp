@@ -67,9 +67,10 @@ namespace BOSS
         virtual void SetViewAndDom(chars viewname, chars domheader) = 0;
         virtual const String& ViewName() const = 0;
         virtual const String& DomHeader() const = 0;
-        virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
-            ZayExtend::ComponentCB cb, chars paramcomments = nullptr, chars insidenames = nullptr) = 0;
-        virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) = 0;
+        virtual ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb,
+            chars param_comments = nullptr, chars inside_samples = nullptr) = 0;
+        virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
+            chars param_comments = nullptr, chars document = nullptr) = 0;
         virtual void JumpCall(chars gatename, sint32 runcount) = 0;
         virtual void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) = 0;
         virtual void JumpClear() = 0;
@@ -106,9 +107,10 @@ namespace BOSS
         void SetViewAndDom(chars viewname, chars domheader) override;
         const String& ViewName() const override;
         const String& DomHeader() const override;
-        ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name,
-            ZayExtend::ComponentCB cb, chars comments = nullptr, chars samples = nullptr) override;
-        ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb) override;
+        ZaySonInterface& AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb,
+            chars param_comments = nullptr, chars inside_samples = nullptr) override;
+        ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
+            chars param_comments = nullptr, chars document = nullptr) override;
         void JumpCall(chars gatename, sint32 runcount) override;
         void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) override;
         void JumpClear() override;

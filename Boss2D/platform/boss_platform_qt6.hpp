@@ -1206,14 +1206,17 @@
         }
         void SetWindowRect(sint32 x, sint32 y, sint32 width, sint32 height)
         {
+            const bool EnableMove = (mWindowRect.x() != x || mWindowRect.y() != y);
+            const bool EnableSize = (mWindowRect.width() != width || mWindowRect.height() != height);
             mWindowRect.setRect(x, y, width, height);
-            setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
-            if(mBgWindow)
-                mBgWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
-            if(mWebWindow)
-                mWebWindow->setGeometry(mWindowRect.x(), mWindowRect.y(), mWindowRect.width(), mWindowRect.height());
+            if(!SetGroupGeometry(EnableMove, EnableSize, x, y, width, height))
+            {
+                setGeometry(x, y, width, height);
+                if(mBgWindow) mBgWindow->setGeometry(x, y, width, height);
+                if(mWebWindow) mWebWindow->setGeometry(x, y, width, height);
+            }
         }
-        void GroupRaise()
+        bool SetGroupGeometry(bool enable_move, bool enable_size, sint32 x = 0, sint32 y = 0, sint32 width = 0, sint32 height = 0)
         {
             #if BOSS_WINDOWS
                 if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
@@ -1222,16 +1225,17 @@
                     auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
                     if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))
                     {
-                        WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP,
-                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                        if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId,
-                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-                        if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId,
-                            0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                        const UINT Flag = SWP_NOACTIVATE |
+                            ((enable_move)? 0 : SWP_NOMOVE) | ((enable_size)? 0 : SWP_NOSIZE);
+                        WinPos = DeferWindowPos(WinPos, ViewWinId, HWND_TOP, x, y, width, height, Flag);
+                        if(BgWinId) WinPos = DeferWindowPos(WinPos, BgWinId, ViewWinId, x, y, width, height, Flag);
+                        if(WebWinId) WinPos = DeferWindowPos(WinPos, WebWinId, (BgWinId)? BgWinId : ViewWinId, x, y, width, height, Flag);
                         EndDeferWindowPos(WinPos);
+                        return true;
                     }
                 }
             #endif
+            return false;
         }
 
     protected:
@@ -1278,7 +1282,7 @@
                 if(active)
                 {
                     mView->OnActivateEvent(true);
-                    GroupRaise();
+                    SetGroupGeometry(false, false);
                 }
                 else mView->OnActivateEvent(false);
             });

@@ -417,7 +417,7 @@
 
         void Platform::SetWindowRaise()
         {
-            g_window->GroupRaise();
+            g_window->SetGroupGeometry(false, false);
         }
 
         void Platform::SetWindowTopMost(bool enable)

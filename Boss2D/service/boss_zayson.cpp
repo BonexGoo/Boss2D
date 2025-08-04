@@ -1616,8 +1616,8 @@ namespace BOSS
         return mDomHeader;
     }
 
-    ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name,
-        ZayExtend::ComponentCB cb, chars comments, chars samples)
+    ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb,
+        chars param_comments, chars inside_samples)
     {
         String OneName = name;
         const sint32 Pos = OneName.Find(0, ' ');
@@ -1628,7 +1628,8 @@ namespace BOSS
         return *this;
     }
 
-    ZaySonInterface& ZaySon::AddGlue(chars name, ZayExtend::GlueCB cb)
+    ZaySonInterface& ZaySon::AddGlue(chars name, ZayExtend::GlueCB cb,
+        chars param_comments, chars document)
     {
         String OneName = name;
         const sint32 Pos = OneName.Find(0, ' ');
