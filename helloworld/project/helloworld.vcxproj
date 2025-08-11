@@ -116,26 +116,30 @@
     <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$$(SolutionDir)..\bin_$(Configuration)$(PlatformArchitecture)\</OutDir>
     <IncludePath>$(IncludePath);</IncludePath>
     <TargetName>helloworld</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin_$(Configuration)$(PlatformArchitecture)\</OutDir>
     <IncludePath>$(IncludePath);</IncludePath>
     <EmbedManifest>false</EmbedManifest>
     <TargetName>helloworld</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin_$(Configuration)$(PlatformArchitecture)\</OutDir>
     <IncludePath>$(IncludePath);</IncludePath>
     <TargetName>helloworld</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin_$(Configuration)$(PlatformArchitecture)\</OutDir>
     <IncludePath>$(IncludePath);</IncludePath>
     <EmbedManifest>false</EmbedManifest>
     <TargetName>helloworld</TargetName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)..\bin_$(Configuration)$(PlatformArchitecture)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -159,10 +163,9 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(OutDir)$(TargetFileName)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(OutDir)$(TargetName).pdb" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
-"$(QTDIR)\bin\windeployqt.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
+      <Command>xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
+xcopy "..\..\Boss2D\platform\win32\QCefView-v2025.5.0\bin\$(Configuration)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
+"$(QTDIR)\bin\windeployqt6.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>
@@ -181,6 +184,7 @@ xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Micr
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,10 +194,9 @@ xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Micr
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(OutDir)$(TargetFileName)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(OutDir)$(TargetName).pdb" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
-"$(QTDIR)\bin\windeployqt.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
+      <Command>xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
+xcopy "..\..\Boss2D\platform\win32\QCefView-v2025.5.0\bin\$(Configuration)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
+"$(QTDIR)\bin\windeployqt6.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>
@@ -224,10 +227,9 @@ xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Micr
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(OutDir)$(TargetFileName)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(OutDir)$(TargetName).pdb" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
-"$(QTDIR)\bin\windeployqt.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
+      <Command>xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
+xcopy "..\..\Boss2D\platform\win32\QCefView-v2025.5.0\bin\$(Configuration)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
+"$(QTDIR)\bin\windeployqt6.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>
@@ -249,6 +251,7 @@ xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Micr
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -258,10 +261,9 @@ xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Micr
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(OutDir)$(TargetFileName)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(OutDir)$(TargetName).pdb" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
-xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
-"$(QTDIR)\bin\windeployqt.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
+      <Command>xcopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarget)\Microsoft.VC$(PlatformToolsetVersion).CRT\*.*" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /R /Y /I
+xcopy "..\..\Boss2D\platform\win32\QCefView-v2025.5.0\bin\$(Configuration)" "..\bin_$(Configuration)$(PlatformArchitecture)" /F /S /R /Y /I
+"$(QTDIR)\bin\windeployqt6.exe" "..\bin_$(Configuration)$(PlatformArchitecture)\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>

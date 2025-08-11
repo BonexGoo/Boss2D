@@ -6,18 +6,12 @@
 
 bool PlatformInit()
 {
-    #if BOSS_WASM
-        Platform::InitForMDI(true);
-    #else
-        Platform::InitForMDI();
-        if(Asset::RebuildForEmbedded())
+    #if !BOSS_WASM
+        if (Asset::RebuildForEmbedded())
             return false;
     #endif
 
-    Platform::SetViewCreator(ZayView::Creator);
-    Platform::SetWindowName("Hello World");
-
-    // 윈도우 위치설정
+    // 윈도우 불러오기
     String WindowInfoString = String::FromAsset("windowinfo.json");
     Context WindowInfo(ST_Json, SO_OnlyReference, WindowInfoString, WindowInfoString.Length());
     const sint32 ScreenID = WindowInfo("screen").GetInt(0);
@@ -28,32 +22,40 @@ bool PlatformInit()
     const sint32 WindowWidth = WindowInfo("w").GetInt(800);
     const sint32 WindowHeight = WindowInfo("h").GetInt(600);
     const sint32 WindowX = Math::Clamp(WindowInfo("x").GetInt((ScreenWidth - WindowWidth) / 2), 0, ScreenWidth - WindowWidth);
-    const sint32 WindowY = Math::Clamp(WindowInfo("y").GetInt((ScreenHeight - WindowHeight) / 2), 30, ScreenHeight - WindowHeight);
+    const sint32 WindowY = Math::Clamp(WindowInfo("y").GetInt((ScreenHeight - WindowHeight) / 2), 0, ScreenHeight - WindowHeight);
     Platform::SetWindowRect(ScreenRect.l + WindowX, ScreenRect.t + WindowY, WindowWidth, WindowHeight);
 
-    // 아틀라스 동적로딩
+    // 아틀라스 불러오기
     const String AtlasInfoString = String::FromAsset("atlasinfo.json");
     Context AtlasInfo(ST_Json, SO_OnlyReference, AtlasInfoString, AtlasInfoString.Length());
     R::SetAtlasDir("image");
     R::AddAtlas("ui_atlaskey2.png", "atlas.png", AtlasInfo, 2);
-    if(R::IsAtlasUpdated()) R::RebuildAll();
+    if (R::IsAtlasUpdated()) R::RebuildAll();
     Platform::AddProcedure(PE_100MSEC,
         [](payload data)->void
         {
-            if(R::IsAtlasUpdated())
+            if (R::IsAtlasUpdated())
             {
                 R::RebuildAll();
                 Platform::UpdateAllViews();
             }
         });
 
+    // 윈도우 설정
+    #if BOSS_WASM
+        Platform::InitForMDI(true);
+    #else
+        Platform::InitForMDI();
+    #endif
+    Platform::SetViewCreator(ZayView::Creator);
+    Platform::SetWindowName("Hello World");
     Platform::SetWindowView("helloworldWidget"); // 또는 "helloworldView"
     return true;
 }
 
 void PlatformQuit()
 {
-    // 윈도우
+    // 윈도우 저장하기
     const rect128 WindowRect = Platform::GetWindowRect(true);
     const sint32 ScreenID = Platform::Utility::GetScreenID(
         {(WindowRect.l + WindowRect.r) / 2, (WindowRect.t + WindowRect.b) / 2});
@@ -67,7 +69,7 @@ void PlatformQuit()
     WindowInfo.At("h").Set(String::FromInteger(WindowRect.b - WindowRect.t));
     WindowInfo.SaveJson().ToAsset("windowinfo.json", true);
 
-    // 아틀라스
+    // 아틀라스 저장하기
     Context AtlasInfo;
     R::SaveAtlas(AtlasInfo);
     AtlasInfo.SaveJson().ToAsset("atlasinfo.json", true);

@@ -63,15 +63,9 @@
     #include <QTcpServer>
     #include <QWebSocketServer>
 
-    #if !BOSS_WASM
-        #if BOSS_NEED_CEF_WEBVIEW
-            #include <QCefContext.h>
-            #include <QCefView.h>
-        #else
-            #include <QWebChannel>
-            #include <QWebEnginePage>
-            #include <QWebEngineView>
-        #endif
+    #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
+        #include <QCefContext.h>
+        #include <QCefView.h>
     #endif
 
     #if BOSS_WINDOWS
@@ -519,8 +513,7 @@
         String mRequestArg;
     };
 
-    #if BOSS_WASM
-    #elif BOSS_NEED_CEF_WEBVIEW
+    #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
         class CefWebView : public QCefView
         {
             Q_OBJECT
@@ -836,194 +829,6 @@
             QRegion m_draggableRegion;
             QRegion m_nonDraggableRegion;
         };
-    #else
-        class MainWebPage : public QWebEnginePage
-        {
-            Q_OBJECT
-
-        public:
-            MainWebPage(QObject* parent = nullptr) : QWebEnginePage(parent)
-            {
-                mCb = nullptr;
-                mData = nullptr;
-
-                connect(this, SIGNAL(certificateError(QWebEngineCertificateError)),
-                    SLOT(certificateError(QWebEngineCertificateError)));
-            }
-            ~MainWebPage() override
-            {
-            }
-
-        public:
-            void SetCallback(Platform::Web::EventCB cb, payload data)
-            {
-                mCb = cb;
-                mData = data;
-            }
-
-        private:
-            void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override
-            {
-                if(mCb)
-                    mCb(mData, String::Format("JSConsole:%d", level), message.toUtf8().constData());
-            }
-
-        private slots:
-            bool certificateError(const QWebEngineCertificateError& error)
-            {
-                // 인증서 오류를 무시
-                return true;
-            }
-
-        private:
-            Platform::Web::EventCB mCb;
-            payload mData;
-        };
-
-        class MainWebBridge : public QObject
-        {
-            Q_OBJECT
-
-        public:
-            explicit MainWebBridge(QObject* parent = nullptr) : QObject(parent)
-            {
-            }
-
-        public slots:
-            void sendTextFromJs(const QString& text)
-            {
-                Platform::BroadcastNotify(String::Format("Channel:<%s>", text.toUtf8().constData()), nullptr, NT_WindowWeb);
-            }
-
-        signals:
-            void sendTextFromCpp(const QString& text);
-            void sendTextFromPy(const QString& text);
-        };
-
-        class MainWebView : public QWebEngineView
-        {
-            Q_OBJECT
-
-        public:
-            MainWebView(QWidget* parent = nullptr) : QWebEngineView(parent)
-            {
-                mNowLoading = false;
-                mLoadingProgress = 100;
-                mLoadingRate = 1;
-                mCb = nullptr;
-                mData = nullptr;
-
-                auto NewPage = new MainWebPage(this);
-                auto NewChannel = new QWebChannel(NewPage);
-                auto NewBridge = new MainWebBridge(this);
-                NewPage->setWebChannel(NewChannel);
-                NewChannel->registerObject("BossChannel", NewBridge);
-
-                setPage(NewPage);
-                setMouseTracking(true);
-                setStyleSheet("background-color:transparent;");
-                page()->setBackgroundColor(Qt::transparent);
-
-                connect(this, SIGNAL(titleChanged(QString)), SLOT(onTitleChanged(QString)));
-                connect(this, SIGNAL(urlChanged(QUrl)), SLOT(onUrlChanged(QUrl)));
-                connect(this, SIGNAL(loadStarted()), SLOT(onLoadStarted()));
-                connect(this, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
-                connect(this, SIGNAL(loadFinished(bool)), SLOT(onLoadFinished(bool)));
-                connect(this, SIGNAL(renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)),
-                    SLOT(onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus, int)));
-                connect(page(), SIGNAL(featurePermissionRequested(QUrl, QWebEnginePage::Feature)),
-                    SLOT(onFeaturePermissionRequested(QUrl, QWebEnginePage::Feature)));
-            }
-            ~MainWebView() override
-            {
-            }
-
-        public:
-            void SetCallback(Platform::Web::EventCB cb, payload data)
-            {
-                mCb = cb;
-                mData = data;
-                ((MainWebPage*) page())->SetCallback(cb, data);
-            }
-            void SendChannel(chars text)
-            {
-                page()->runJavaScript((chars) String::Format("sendTextFromCpp('%s');", text));
-            }
-            void CallJSFunction(chars script, sint32 matchid)
-            {
-                page()->runJavaScript(script,
-                    [this, matchid](const QVariant& v)->void
-                    {
-                        if(mCb)
-                        {
-                            const String Result = v.toString().toUtf8().constData();
-                            if(0 < Result.Length())
-                                mCb(mData, String::Format("JSFunction:%d", matchid), Result);
-                        }
-                    });
-            }
-
-        private slots:
-            void onTitleChanged(const QString& title)
-            {
-                if(mCb)
-                    mCb(mData, "TitleChanged", title.toUtf8().constData());
-            }
-            void onUrlChanged(const QUrl& url)
-            {
-                if(mCb)
-                    mCb(mData, "UrlChanged", url.url().toUtf8().constData());
-            }
-            void onLoadStarted()
-            {
-                mNowLoading = true;
-                mLoadingProgress = 0;
-                mLoadingRate = 0;
-            }
-            void onLoadProgress(int progress)
-            {
-                mNowLoading = true;
-                mLoadingProgress = progress;
-            }
-            void onLoadFinished(bool)
-            {
-                mNowLoading = false;
-                mLoadingProgress = 100;
-                mLoadingRate = 1;
-                if(mCb)
-                    mCb(mData, "LoadFinished", "");
-            }
-            void onRenderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
-            {
-                if(mCb)
-                {
-                    switch(terminationStatus)
-                    {
-                    case QWebEnginePage::NormalTerminationStatus: mCb(mData, "RenderTerminated", "Normal"); break;
-                    case QWebEnginePage::AbnormalTerminationStatus: mCb(mData, "RenderTerminated", "Abnormal"); break;
-                    case QWebEnginePage::CrashedTerminationStatus: mCb(mData, "RenderTerminated", "Crashed"); break;
-                    case QWebEnginePage::KilledTerminationStatus: mCb(mData, "RenderTerminated", "Killed"); break;
-                    }
-                }
-            }
-            void onFeaturePermissionRequested(QUrl q, QWebEnginePage::Feature f)
-            {
-                page()->setFeaturePermission(q, f, QWebEnginePage::PermissionGrantedByUser);
-            }
-
-        protected:
-            void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
-            {
-                event->accept();
-            }
-
-        private:
-            bool mNowLoading;
-            int mLoadingProgress;
-            float mLoadingRate;
-            Platform::Web::EventCB mCb;
-            payload mData;
-        };
     #endif
 
     class GroupingWindow : public QMainWindow
@@ -1103,8 +908,7 @@
             }
             if(bgweb)
             {
-                #if BOSS_WASM
-                #elif BOSS_NEED_CEF_WEBVIEW
+                #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                     mWebConfig = new QCefConfig();
                     mWebConfig->setUserAgent("BossCefView");
                     mWebConfig->setLogLevel(QCefConfig::LOGSEVERITY_DEFAULT);
@@ -1137,11 +941,6 @@
                     mWebView = new CefWebView(bgweb, &WebSetting);
                     mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
                     mWebView->setParent(mWebWindow);
-                #else
-                    mWebView = new MainWebView();
-                    mWebView->load(QUrl(bgweb));
-                    mWebWindow = NewGroupingWindow(mWebView, mWindowRect, false);
-                    mWebView->setParent(mWebWindow);
                 #endif
             }
         }
@@ -1151,7 +950,7 @@
         }
         void SetWindowWebUrl(chars bgweb)
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                 {
                     if(bgweb && *bgweb)
@@ -1168,7 +967,7 @@
         }
         void ReloadWindowWeb()
         {
-            #if !BOSS_WASM
+            #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 if(mWebView)
                     mWebView->reload();
             #endif
@@ -1293,13 +1092,10 @@
         MainView* mView {nullptr};
         GroupingWindow* mBgWindow {nullptr};
         GroupingWindow* mWebWindow {nullptr};
-        #if BOSS_WASM
-        #elif BOSS_NEED_CEF_WEBVIEW
+        #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
             CefWebView* mWebView {nullptr};
             QCefConfig* mWebConfig {nullptr};
             QCefContext* mWebContext {nullptr};
-        #else
-            MainWebView* mWebView {nullptr};
         #endif
         QRect mWindowRect;
         bool mInited {false};
