@@ -181,7 +181,7 @@
     public:
         MainView(QWidget* parent) : QWidget(parent)
         {
-            #if !BOSS_WASM
+            #if BOSS_WINDOWS
                 setAttribute(Qt::WA_PaintOnScreen);
             #endif
             setAttribute(Qt::WA_NoSystemBackground);

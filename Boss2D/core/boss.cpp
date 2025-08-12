@@ -17,6 +17,7 @@
     #include <unistd.h>
     #include <strings.h>
     #include <errno.h>
+    #include <cstdlib>
 #elif BOSS_MAC_OSX || BOSS_IPHONE
     #include <sys/stat.h>
     #include <dirent.h>

@@ -7,9 +7,10 @@
         #include <windows.h>
     #elif BOSS_WASM
         #include <emscripten.h>
-    #elif _POSIX_C_SOURCE >= 199309L
-        #include <time.h>
     #else
+        #if !BOSS_LINUX && _POSIX_C_SOURCE >= 199309L
+            #include <time.h>
+        #endif
         #include <unistd.h>
     #endif
     #include <format/boss_bmp.hpp>
@@ -213,11 +214,11 @@
                     (chars) AssertInfo[1],
                     (chars) AssertInfo[2],
                     (chars) AssertInfo[3]);
-                switch(Platform::Popup::MessageDialog("ASSERT BREAK", AssertMessage, DBT_OK_CANCEL_IGNORE))
+                switch(Platform::Popup::MessageDialog("ASSERT BREAK", AssertMessage, DBT_OkCancelIgnore))
                 {
-                case 0: IsRunning = false; return 0; // DBT_OK
-                case 1: IsRunning = false; return 2; // DBT_CANCEL
-                case 2: IsRunning = false; return 1; // DBT_IGNORE
+                case 0: IsRunning = false; return 0; // IDOK
+                case 1: IsRunning = false; return 2; // IDCANCEL
+                case 2: IsRunning = false; return 1; // IDIGNORE
                 }
             #else
                 char AssertMessage[4096];
@@ -2806,9 +2807,16 @@
                 }
             #elif BOSS_LINUX
                 String NewPath = String::Format("Q:%s/../assets/", QCoreApplication::applicationDirPath().toUtf8().constData());
-                const String AssetsPath = String::Format("Q:%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                if(Platform::File::ExistForDir(AssetsPath + "/assets"))
-                    NewPath = AssetsPath + "/assets/";
+                for(sint32 i = 1; i < 5; ++i)
+                {
+                    String AssetsPath = String::Format("Q:%s", QCoreApplication::applicationDirPath().toUtf8().constData());
+                    for(sint32 j = 0; j < i; ++j) AssetsPath += "/..";
+                    if(Platform::File::ExistForDir(AssetsPath + "/assets"))
+                    {
+                        NewPath = AssetsPath + "/assets/";
+                        break;
+                    }
+                }
             #elif BOSS_MAC_OSX
                 String NewPath = String::Format("Q:%s/../../assets/", QCoreApplication::applicationDirPath().toUtf8().constData());
             #elif BOSS_IPHONE
@@ -2844,9 +2852,16 @@
                 }
             #elif BOSS_LINUX
                 String NewPath = String::Format("Q:%s/..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                const String AssetsPath = String::Format("Q:%s/../..", QCoreApplication::applicationDirPath().toUtf8().constData());
-                if(Platform::File::ExistForDir(AssetsPath + "/assets"))
-                    NewPath = AssetsPath;
+                for(sint32 i = 1; i < 5; ++i)
+                {
+                    String AssetsPath = String::Format("Q:%s", QCoreApplication::applicationDirPath().toUtf8().constData());
+                    for(sint32 j = 0; j < i; ++j) AssetsPath += "/..";
+                    if(Platform::File::ExistForDir(AssetsPath + "/assets"))
+                    {
+                        NewPath = AssetsPath;
+                        break;
+                    }
+                }
             #elif BOSS_MAC_OSX
                 String NewPath = String::Format("Q:%s/../../../..", QCoreApplication::applicationDirPath().toUtf8().constData());
             #else
