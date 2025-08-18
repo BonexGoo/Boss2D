@@ -68,6 +68,11 @@
         #include <QCefView.h>
     #endif
 
+    #ifdef QT_HAVE_SERIALPORT
+        #include <QSerialPort>
+        #include <QSerialPortInfo>
+    #endif
+
     #if BOSS_WINDOWS
         #include <Windows.h>
     #endif
@@ -2436,5 +2441,38 @@
         sint16 s_port;
         chars s_proto;
     };
+
+    #ifdef QT_HAVE_SERIALPORT
+        class SerialClass : public QSerialPort
+        {
+            Q_OBJECT
+        public:
+            static Strings EnumDevice(String* spec)
+            {
+                Strings Result;
+                Context SpecCollector;
+                const QList<QSerialPortInfo>& AllPorts = QSerialPortInfo::availablePorts();
+                foreach(const auto& CurPort, AllPorts)
+                {
+                    String CurName = CurPort.portName().toUtf8().constData();
+                    if(CurName.Length() == 0)
+                        CurName = CurPort.description().toUtf8().constData();
+                    Result.AtAdding() = CurName;
+                    if(spec)
+                    {
+                        Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
+                        NewChild.At("portname").Set(CurPort.portName().toUtf8().constData());
+                        NewChild.At("description").Set(CurPort.description().toUtf8().constData());
+                        NewChild.At("systemlocation").Set(CurPort.systemLocation().toUtf8().constData());
+                        NewChild.At("manufacturer").Set(CurPort.manufacturer().toUtf8().constData());
+                        NewChild.At("serialnumber").Set(CurPort.serialNumber().toUtf8().constData());
+                    }
+                }
+                if(spec)
+                    *spec = SpecCollector.SaveJson(*spec);
+                return Result;
+            }
+        };
+    #endif
 
 #endif

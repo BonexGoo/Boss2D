@@ -7,41 +7,41 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\lib\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6OpenGLWidgetsd.lib;Qt6WebSocketsd.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6OpenGLWidgetsd.lib;Qt6WebSocketsd.lib;Qt6SerialPortd.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BOSS_NDEBUG=0;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtSerialPort;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOSS_NDEBUG=0;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;QT_HAVE_SERIALPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\lib\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6OpenGLWidgetsd.lib;Qt6WebSocketsd.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Cored.lib;Qt6Guid.lib;Qt6Networkd.lib;Qt6OpenGLd.lib;Qt6Widgetsd.lib;Qt6OpenGLWidgetsd.lib;Qt6WebSocketsd.lib;Qt6SerialPortd.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BOSS_NDEBUG=0;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtSerialPort;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOSS_NDEBUG=0;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;QT_HAVE_SERIALPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\lib\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6OpenGLWidgets.lib;Qt6WebSockets.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6OpenGLWidgets.lib;Qt6WebSockets.lib;Qt6SerialPort.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BOSS_NDEBUG=1;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtSerialPort;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOSS_NDEBUG=1;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;QT_HAVE_SERIALPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\[boss2d]\bin\$(Configuration)$(PlatformArchitecture);$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\lib\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6OpenGLWidgets.lib;Qt6WebSockets.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>boss2d.lib;opengl32.lib;glu32.lib;Qt6Core.lib;Qt6Gui.lib;Qt6Network.lib;Qt6OpenGL.lib;Qt6Widgets.lib;Qt6OpenGLWidgets.lib;Qt6WebSockets.lib;Qt6SerialPort.lib;QCefView.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BOSS_NDEBUG=1;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\source;$(SolutionDir)..\source-gen;$(SolutionDir)..\..\Boss2D\core;$(SolutionDir)..\..\Boss2D;$(SolutionDir)..\..\Boss2D\platform\win32\QCefView-v2025.5.0\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtOpenGLWidgets;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtSerialPort;.\GeneratedFiles;.\GeneratedFiles\$(ConfigurationName);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOSS_NDEBUG=1;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLWIDGETS_LIB;QT_WEBSOCKETS_LIB;QT_HAVE_GRAPHICS;QT_HAVE_SERIALPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

@@ -3824,8 +3824,11 @@
         ////////////////////////////////////////////////////////////////////////////////
         Strings Platform::Serial::GetAllNames(String* spec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return Strings();
+            #ifdef QT_HAVE_SERIALPORT
+                return SerialClass::EnumDevice(spec);
+            #else
+                return Strings();
+            #endif
         }
 
         id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
