@@ -71,6 +71,10 @@
     #ifdef QT_HAVE_SERIALPORT
         #include <QSerialPort>
         #include <QSerialPortInfo>
+        #if BOSS_LINUX
+            #include <libudev.h>
+            #include <QSocketNotifier>
+        #endif
     #endif
 
     #if BOSS_WINDOWS
@@ -876,15 +880,36 @@
         {
             setUnifiedTitleAndToolBarOnMac(true);
             mWindowRect.setRect(0, 0, 640, 480);
+
+            #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
+                if(mUsbUdev = udev_new())
+                if(mUsbUdevMon = udev_monitor_new_from_netlink(mUsbUdev, "udev"))
+                {
+                    udev_monitor_filter_add_match_subsystem_devtype(mUsbUdevMon, "usb", "usb_device");
+                    if(0 <= udev_monitor_enable_receiving(mUsbUdevMon))
+                    {
+                        int UdevMonFD = udev_monitor_get_fd(mUsbUdevMon);
+                        mUsbNotifier = new QSocketNotifier(UdevMonFD, QSocketNotifier::Read, this);
+                        connect(mUsbNotifier, &QSocketNotifier::activated, this, &MainWindow::onUdevActivated);
+                    }
+                }
+            #endif
         }
         ~MainWindow()
         {
             delete mView;
             delete mBgWindow;
             delete mWebWindow;
+
             #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
                 delete mWebConfig;
                 delete mWebContext;
+            #endif
+
+            #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
+                if(mUsbNotifier) mUsbNotifier->deleteLater();
+                if(mUsbUdevMon) udev_monitor_unref(mUsbUdevMon);
+                if(mUsbUdev) udev_unref(mUsbUdev);
             #endif
         }
 
@@ -1053,6 +1078,10 @@
         }
 
     protected:
+        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
+        {
+            mView->OnCloseEvent(event);
+        }
         bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) Q_DECL_OVERRIDE
         {
             #ifdef Q_OS_WIN
@@ -1076,10 +1105,25 @@
             #endif
             return QMainWindow::nativeEvent(eventType, message, result);
         }
-        void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
-        {
-            mView->OnCloseEvent(event);
-        }
+        #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
+            private slots:
+            void onUdevActivated(int fd)
+            {
+                while(true)
+                {
+                    udev_device* CurDev = udev_monitor_receive_device(mUsbUdevMon);
+                    if(!CurDev) break;
+                    if(const char* CurAction = udev_device_get_action(CurDev))
+                    {
+                        if(!String::Compare(CurAction, "add"))
+                            mView->OnDeviceArrivalEvent(true);
+                        else if(!String::Compare(CurAction, "remove"))
+                            mView->OnDeviceArrivalEvent(false);
+                    }
+                    udev_device_unref(CurDev);
+                }
+            }
+        #endif
 
     private:
         GroupingWindow* NewGroupingWindow(QWidget* widget, QRect rect, bool transparency)
@@ -1124,6 +1168,11 @@
         QRect mWindowRect;
         bool mInited {false};
         bool mNeedVisible {true};
+        #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
+            struct udev* mUsbUdev {nullptr};
+            struct udev_monitor* mUsbUdevMon {nullptr};
+            QSocketNotifier* mUsbNotifier {nullptr};
+        #endif
     };
 
     class ThreadClass : public QThread
@@ -2498,17 +2547,30 @@
             {
                 mReadMutex = Mutex::Open();
                 mReadFocus = 0;
-                setPortName(name);
-                setBaudRate((QSerialPort::BaudRate) baudrate);
-                setDataBits(QSerialPort::Data8);
-                setParity(QSerialPort::NoParity);
-                setStopBits(QSerialPort::OneStop);
-                setFlowControl(QSerialPort::NoFlowControl);
+                const QList<QSerialPortInfo>& AllPorts = QSerialPortInfo::availablePorts();
+                foreach(const auto& CurPort, AllPorts)
+                {
+                    if(*name == '\0' || CurPort.portName() == name)
+                    {
+                        if(baudrate != -1)
+                        {
+                            setPortName(name);
+                            setBaudRate((QSerialPort::BaudRate) baudrate);
+                            setDataBits(QSerialPort::Data8);
+                            setParity(QSerialPort::NoParity);
+                            setStopBits(QSerialPort::OneStop);
+                            setFlowControl(QSerialPort::NoFlowControl);
+                        }
+                        else setPort(CurPort);
+                        break;
+                    }
+                }
                 if(open(QIODevice::ReadWrite))
                 {
                     connect(this, &QSerialPort::errorOccurred, this, &SerialClass::OnErrorOccurred);
                     connect(this, &QSerialPort::readyRead, this, &SerialClass::OnRead);
                 }
+                else OnErrorOccurred(error());
             }
             ~SerialClass()
             {
@@ -2518,7 +2580,9 @@
         private slots:
             void OnErrorOccurred(QSerialPort::SerialPortError error)
             {
-                Platform::BroadcastNotify("error", nullptr, NT_Serial);
+                const String ErrorText = String::Format("%s at %s", errorString().toUtf8().constData(), portName().toUtf8().constData());
+                BOSS_TRACE("시리얼통신에서 에러가 발생하였습니다(%s)", (chars) ErrorText);
+                Platform::BroadcastNotify("error", ErrorText, NT_Serial);
             }
             void OnRead()
             {

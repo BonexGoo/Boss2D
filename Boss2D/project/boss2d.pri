@@ -93,6 +93,10 @@ equals(QT_PACKAGE_RPATH, "ok"){
     linux-g++: QMAKE_LFLAGS_RPATH=
     linux-g++: QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN/lib\'"
 }
+qtHaveModule(serialport){
+    linux-g++: PKGCONFIG += libudev
+    # sudo apt-get install build-essential libudev-dev pkg-config
+}
 TOPPATH = $$PWD/../../Boss2D
 INCLUDEPATH += $$TOPPATH/core
 !android: INCLUDEPATH += $$TOPPATH/addon/trick_for_fakewin
