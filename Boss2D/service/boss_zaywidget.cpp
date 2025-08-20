@@ -784,7 +784,7 @@ namespace BOSS
             "[EnableFlag:true|false]"
             "[PasswordFlag:false|true]"
             "[DualSaveFlag:false|true]",
-            "cursor|focus|copying|default");
+            "cursor|focus|copying|default|content");
 
         interface.AddComponent(ZayExtend::ComponentType::ContentWithParamAndInsider, "button",
             ZAY_DECLARE_COMPONENT(panel, pay, ViewName)
