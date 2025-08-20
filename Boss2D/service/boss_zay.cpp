@@ -2086,6 +2086,13 @@ namespace BOSS
         m_viewfunc.m_unlock();
     }
 
+    void ZayView::OnDeviceArrival(bool connected)
+    {
+        m_viewfunc.m_lock(m_data);
+        m_viewfunc.m_command(CT_DeviceArrival, boolo(connected), nullptr);
+        m_viewfunc.m_unlock();
+    }
+
     void ZayView::OnSize(sint32 w, sint32 h)
     {
         sint32s WH;

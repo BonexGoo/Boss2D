@@ -2151,6 +2151,20 @@ public:
         /// @return 모여진 쓰기스트림의 바이트길이(에러시, BOSS_SERIAL_ERROR계열)
         static sint32 Write(id_serial serial, chars format, ...);
 
+        /// @brief 읽기스트림에서 읽기
+        /// @param serial : 시리얼통신ID
+        /// @param data : 데이터를 받을 공간
+        /// @param size : data의 크기(바이트단위)
+        /// @return 읽은 크기(바이트단위, 에러시 -1)
+        static sint32 ReadData(id_serial serial, uint08* data, const sint32 size);
+
+        /// @brief 쓰기스트림에 쓰기
+        /// @param serial : 시리얼통신ID
+        /// @param data : 보낼 데이터
+        /// @param size : data의 크기(바이트단위)
+        /// @return 성공여부
+        static bool WriteData(id_serial serial, bytes data, const sint32 size);
+
         /// @brief 쓰기스트림을 송신하기
         /// @param serial : 시리얼통신ID
         /// @param type : 인코더에 전달될 패킷타입ID

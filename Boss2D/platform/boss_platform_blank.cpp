@@ -2504,6 +2504,18 @@
             return 0;
         }
 
+        sint32 Platform::Serial::ReadData(id_serial serial, uint08* data, const sint32 size)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return 0;
+        }
+
+        bool Platform::Serial::WriteData(id_serial serial, bytes data, const sint32 size)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
         void Platform::Serial::WriteFlush(id_serial serial, sint32 type)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

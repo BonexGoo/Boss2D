@@ -162,6 +162,10 @@ namespace BOSS
     {
     }
 
+    void View::OnDeviceArrival(bool connected)
+    {
+    }
+
     void View::OnSize(sint32 w, sint32 h)
     {
     }

@@ -3826,37 +3826,61 @@
         {
             #ifdef QT_HAVE_SERIALPORT
                 return SerialClass::EnumDevice(spec);
-            #else
-                return Strings();
             #endif
+            return Strings();
         }
 
         id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                SerialClass* NewSerial = new SerialClass(name, baudrate);
+                if(NewSerial->IsValid())
+                    return (id_serial) NewSerial;
+                delete NewSerial;
+            #endif
             return nullptr;
         }
 
         void Platform::Serial::Close(id_serial serial)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                delete (SerialClass*) serial;
+            #endif
         }
 
         bool Platform::Serial::Connected(id_serial serial)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->Connected();
+                }
+            #endif
             return false;
         }
 
         bool Platform::Serial::ReadReady(id_serial serial, sint32* gettype)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->ReadReady(gettype);
+                }
+            #endif
             return false;
         }
 
         sint32 Platform::Serial::ReadAvailable(id_serial serial)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->ReadAvailable();
+                }
+            #endif
             return 0;
         }
 
@@ -3872,9 +3896,39 @@
             return 0;
         }
 
+        sint32 Platform::Serial::ReadData(id_serial serial, uint08* data, const sint32 size)
+        {
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->ReadData(data, size);
+                }
+            #endif
+            return 0;
+        }
+
+        bool Platform::Serial::WriteData(id_serial serial, bytes data, const sint32 size)
+        {
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->WriteData(data, size);
+                }
+            #endif
+            return false;
+        }
+
         void Platform::Serial::WriteFlush(id_serial serial, sint32 type)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_SERIALPORT
+                if(serial)
+                {
+                    SerialClass* CurSerial = (SerialClass*) serial;
+                    return CurSerial->WriteFlush(type);
+                }
+            #endif
         }
 
         ////////////////////////////////////////////////////////////////////////////////

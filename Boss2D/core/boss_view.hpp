@@ -52,6 +52,7 @@ namespace BOSS
         virtual bool OnCanQuit();
         virtual void OnDestroy();
         virtual void OnActivate(bool actived);
+        virtual void OnDeviceArrival(bool connected);
         virtual void OnSize(sint32 w, sint32 h);
         virtual void OnTick();
         virtual void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);

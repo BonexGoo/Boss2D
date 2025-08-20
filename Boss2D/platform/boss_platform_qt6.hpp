@@ -75,6 +75,7 @@
 
     #if BOSS_WINDOWS
         #include <Windows.h>
+        #include <Dbt.h>
     #endif
 
     #define USER_FRAMECOUNT (60)
@@ -258,6 +259,11 @@
             if(mViewManager)
                 mViewManager->OnActivate(actived);
         }
+        void SendDeviceArrival(bool connected)
+        {
+            if(mViewManager)
+                mViewManager->OnDeviceArrival(connected);
+        }
         void SendSizeWhenValid()
         {
             if(mViewManager && 0 < mWidth && 0 < mHeight)
@@ -305,6 +311,10 @@
         void OnActivateEvent(bool actived)
         {
             SendActivate(actived);
+        }
+        void OnDeviceArrivalEvent(bool connected)
+        {
+            SendDeviceArrival(connected);
         }
         void OnCloseEvent(QCloseEvent* event)
         {
@@ -1048,11 +1058,20 @@
             #ifdef Q_OS_WIN
                 MSG* msg = static_cast<MSG*>(message);
                 if(msg->message == WM_KEYDOWN || msg->message == WM_SYSKEYDOWN)
-                if(msg->wParam == VK_HANGUL || msg->wParam == VK_HANJA)
                 {
-                    mView->ForcedKeyClick(msg->wParam, "");
-                    *result = 1;
-                    return true;
+                    if(msg->wParam == VK_HANGUL || msg->wParam == VK_HANJA)
+                    {
+                        mView->ForcedKeyClick(msg->wParam, "");
+                        *result = 1;
+                        return true;
+                    }
+                }
+                else if(msg->message == WM_DEVICECHANGE)
+                {
+                    if(msg->wParam == DBT_DEVICEARRIVAL)
+                        mView->OnDeviceArrivalEvent(true);
+                    else if(msg->wParam == DBT_DEVICEREMOVECOMPLETE)
+                        mView->OnDeviceArrivalEvent(false);
                 }
             #endif
             return QMainWindow::nativeEvent(eventType, message, result);
@@ -2446,6 +2465,7 @@
         class SerialClass : public QSerialPort
         {
             Q_OBJECT
+
         public:
             static Strings EnumDevice(String* spec)
             {
@@ -2472,6 +2492,113 @@
                     *spec = SpecCollector.SaveJson(*spec);
                 return Result;
             }
+
+        public:
+            SerialClass(chars name, sint32 baudrate)
+            {
+                mReadMutex = Mutex::Open();
+                mReadFocus = 0;
+                setPortName(name);
+                setBaudRate((QSerialPort::BaudRate) baudrate);
+                setDataBits(QSerialPort::Data8);
+                setParity(QSerialPort::NoParity);
+                setStopBits(QSerialPort::OneStop);
+                setFlowControl(QSerialPort::NoFlowControl);
+                if(open(QIODevice::ReadWrite))
+                {
+                    connect(this, &QSerialPort::errorOccurred, this, &SerialClass::OnErrorOccurred);
+                    connect(this, &QSerialPort::readyRead, this, &SerialClass::OnRead);
+                }
+            }
+            ~SerialClass()
+            {
+                Mutex::Close(mReadMutex);
+            }
+
+        private slots:
+            void OnErrorOccurred(QSerialPort::SerialPortError error)
+            {
+                Platform::BroadcastNotify("error", nullptr, NT_Serial);
+            }
+            void OnRead()
+            {
+                QByteArray NewArray = readAll();
+                if(0 < NewArray.length())
+                {
+                    Mutex::Lock(mReadMutex);
+                    {
+                        if(0 < mReadFocus)
+                        {
+                            const sint32 CopyLength = mReadStream.Count() - mReadFocus;
+                            if(0 < CopyLength)
+                            {
+                                uint08s NewReadStream;
+                                Memory::Copy(NewReadStream.AtDumpingAdded(CopyLength), &mReadStream[mReadFocus], CopyLength);
+                                mReadStream = NewReadStream;
+                            }
+                            else mReadStream.SubtractionAll();
+                            mReadFocus = 0;
+                        }
+                        Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
+                    }
+                    Mutex::Unlock(mReadMutex);
+                    Platform::BroadcastNotify("message", nullptr, NT_Serial);
+                }
+            }
+
+        public:
+            bool IsValid()
+            {
+                return isOpen();
+            }
+            bool Connected()
+            {
+                auto ErrorCode = error();
+                return (ErrorCode == QSerialPort::NoError);
+            }
+            bool ReadReady(sint32* gettype)
+            {
+                return (0 < ReadAvailable());
+            }
+            sint32 ReadAvailable()
+            {
+                sint32 ReadSize = 0;
+                Mutex::Lock(mReadMutex);
+                {
+                    ReadSize = mReadStream.Count() - mReadFocus;
+                }
+                Mutex::Unlock(mReadMutex);
+                return ReadSize;
+            }
+            sint32 ReadData(uint08* data, const sint32 size)
+            {
+                sint32 CopySize = 0;
+                Mutex::Lock(mReadMutex);
+                {
+                    CopySize = Math::Min(size, mReadStream.Count() - mReadFocus);
+                    Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
+                    mReadFocus += CopySize;
+                }
+                Mutex::Unlock(mReadMutex);
+                return CopySize;
+            }
+            bool WriteData(bytes data, const sint32 size)
+            {
+                Memory::Copy(mWriteStream.AtDumpingAdded(size), data, size);
+                return true;
+            }
+            void WriteFlush(sint32 type)
+            {
+                write((const char*) &mWriteStream[0], mWriteStream.Count());
+                flush();
+                mWriteStream.SubtractionAll();
+            }
+
+        private:
+            id_mutex mReadMutex;
+            sint32 mReadFocus;
+            uint08s mReadStream;
+            uint08s mWriteStream;
         };
     #endif
 
