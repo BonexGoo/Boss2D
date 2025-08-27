@@ -3866,7 +3866,7 @@
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
-                    return CurSerial->ReadReady(gettype);
+                    return CurSerial->ReadReady();
                 }
             #endif
             return false;
@@ -3914,7 +3914,8 @@
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
-                    return CurSerial->WriteData(data, size);
+                    CurSerial->WriteData(data, size);
+                    return true;
                 }
             #endif
             return false;
@@ -3926,7 +3927,7 @@
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
-                    return CurSerial->WriteFlush(type);
+                    CurSerial->WriteFlush();
                 }
             #endif
         }

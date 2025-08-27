@@ -2543,18 +2543,19 @@
             }
 
         public:
-            SerialClass(chars name, sint32 baudrate)
+            SerialClass(chars port, sint32 baudrate)
             {
+				mReadFocus = 0;
                 mReadMutex = Mutex::Open();
-                mReadFocus = 0;
+                mWriteMutex = Mutex::Open();
                 const QList<QSerialPortInfo>& AllPorts = QSerialPortInfo::availablePorts();
                 foreach(const auto& CurPort, AllPorts)
                 {
-                    if(*name == '\0' || CurPort.portName() == name)
+                    if(*port == '\0' || CurPort.portName() == port)
                     {
                         if(baudrate != -1)
                         {
-                            setPortName(name);
+                            setPortName(port);
                             setBaudRate((QSerialPort::BaudRate) baudrate);
                             setDataBits(QSerialPort::Data8);
                             setParity(QSerialPort::NoParity);
@@ -2575,6 +2576,7 @@
             ~SerialClass()
             {
                 Mutex::Close(mReadMutex);
+				Mutex::Close(mWriteMutex);
             }
 
         private slots:
@@ -2595,11 +2597,7 @@
                         {
                             const sint32 CopyLength = mReadStream.Count() - mReadFocus;
                             if(0 < CopyLength)
-                            {
-                                uint08s NewReadStream;
-                                Memory::Copy(NewReadStream.AtDumpingAdded(CopyLength), &mReadStream[mReadFocus], CopyLength);
-                                mReadStream = NewReadStream;
-                            }
+								mReadStream.SubtractionSection(0, mReadFocus);
                             else mReadStream.SubtractionAll();
                             mReadFocus = 0;
                         }
@@ -2620,7 +2618,7 @@
                 auto ErrorCode = error();
                 return (ErrorCode == QSerialPort::NoError);
             }
-            bool ReadReady(sint32* gettype)
+            bool ReadReady()
             {
                 return (0 < ReadAvailable());
             }
@@ -2646,21 +2644,30 @@
                 Mutex::Unlock(mReadMutex);
                 return CopySize;
             }
-            bool WriteData(bytes data, const sint32 size)
+            void WriteData(bytes data, const sint32 size)
             {
-                Memory::Copy(mWriteStream.AtDumpingAdded(size), data, size);
-                return true;
+				Mutex::Lock(mWriteMutex);
+				{
+					Memory::Copy(mWriteStream.AtDumpingAdded(size), data, size);
+				}
+				Mutex::Unlock(mWriteMutex);
             }
-            void WriteFlush(sint32 type)
+            bool WriteFlush(uint08s* get = nullptr)
             {
-                write((const char*) &mWriteStream[0], mWriteStream.Count());
-                flush();
-                mWriteStream.SubtractionAll();
+				Mutex::Lock(mWriteMutex);
+				{
+					write((const char*) &mWriteStream[0], mWriteStream.Count());
+					if(get) *get = ToReference(mWriteStream);
+					else mWriteStream.SubtractionAll();
+				}
+				Mutex::Unlock(mWriteMutex);
+				return flush();;
             }
 
         private:
+			sint32 mReadFocus;
             id_mutex mReadMutex;
-            sint32 mReadFocus;
+            id_mutex mWriteMutex;
             uint08s mReadStream;
             uint08s mWriteStream;
         };
