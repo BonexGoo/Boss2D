@@ -1078,7 +1078,7 @@
             return QGuiApplication::screens().count();
         }
 
-        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only, bool apply_ratio)
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
         {
             const sint32 NumScreens = GetScreenCount();
             if(NumScreens == 0)
@@ -1093,11 +1093,10 @@
                         QRect GeometryRect = (available_only)?
                             QGuiApplication::screens()[i]->availableGeometry() :
                             QGuiApplication::screens()[i]->geometry();
-                        const qreal DeviceRatio = (apply_ratio)? QGuiApplication::screens()[i]->devicePixelRatio() : 1;
-                        TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left() * DeviceRatio);
-                        TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top() * DeviceRatio);
-                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right() * DeviceRatio + 1);
-                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom() * DeviceRatio + 1);
+                        TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left());
+                        TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top());
+                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right());
+                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom());
                     }
                     rect.l = TotalRect.l;
                     rect.t = TotalRect.t;
@@ -1109,11 +1108,10 @@
                     QRect GeometryRect = (available_only)?
                         QGuiApplication::screens()[screenid]->availableGeometry() :
                         QGuiApplication::screens()[screenid]->geometry();
-                    const qreal DeviceRatio = (apply_ratio)? QGuiApplication::screens()[screenid]->devicePixelRatio() : 1;
-                    rect.l = GeometryRect.left() * DeviceRatio;
-                    rect.t = GeometryRect.top() * DeviceRatio;
-                    rect.r = GeometryRect.right() * DeviceRatio + 1;
-                    rect.b = GeometryRect.bottom() * DeviceRatio + 1;
+                    rect.l = GeometryRect.left();
+                    rect.t = GeometryRect.top();
+                    rect.r = GeometryRect.right();
+                    rect.b = GeometryRect.bottom();
                 }
             }
         }

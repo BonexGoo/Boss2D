@@ -1049,7 +1049,9 @@
             const bool EnableMove = (mWindowRect.x() != x || mWindowRect.y() != y);
             const bool EnableSize = (mWindowRect.width() != width || mWindowRect.height() != height);
             mWindowRect.setRect(x, y, width, height);
-            if(mView && !SetGroupGeometry(EnableMove, EnableSize, x, y, width, height))
+            // 논리좌표계를 DeferWindowPos에서 사용할 물리좌료계로 제대로 바뀌지 않아서
+            // 일단 SetWindowRect에는 사용보류
+            //if(mView && !SetGroupGeometry(EnableMove, EnableSize, x, y, width, height))
             {
                 setGeometry(x, y, width, height);
                 if(mBgWindow) mBgWindow->setGeometry(x, y, width, height);
@@ -1061,6 +1063,17 @@
             #if BOSS_WINDOWS
                 if(auto ViewWinId = reinterpret_cast<HWND>(winId()))
                 {
+                    if(enable_move || enable_size)
+                    {
+                        POINT TopLeft = {x, y};
+                        POINT BottomRight = {x + width, y + height};
+                        LogicalToPhysicalPointForPerMonitorDPI(ViewWinId, &TopLeft);
+                        LogicalToPhysicalPointForPerMonitorDPI(ViewWinId, &BottomRight);
+                        x = TopLeft.x;
+                        y = TopLeft.y;
+                        width = BottomRight.x - TopLeft.x;
+                        height = BottomRight.y - TopLeft.y;
+                    }
                     auto BgWinId = (mBgWindow)? reinterpret_cast<HWND>(mBgWindow->winId()) : NULL;
                     auto WebWinId = (mWebWindow)? reinterpret_cast<HWND>(mWebWindow->winId()) : NULL;
                     if(auto WinPos = BeginDeferWindowPos(1 + (BgWinId != NULL) + (WebWinId != NULL)))

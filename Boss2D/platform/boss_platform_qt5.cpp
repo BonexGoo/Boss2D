@@ -1389,7 +1389,7 @@
             return QApplication::desktop()->numScreens();
         }
 
-        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only, bool apply_ratio)
+        void Platform::Utility::GetScreenRect(rect128& rect, sint32 screenid, bool available_only)
         {
             const sint32 NumScreens = GetScreenCount();
             if(NumScreens == 0)
@@ -1406,8 +1406,8 @@
                             QApplication::desktop()->screenGeometry(i);
                         TotalRect.l = Math::Min(TotalRect.l, GeometryRect.left());
                         TotalRect.t = Math::Min(TotalRect.t, GeometryRect.top());
-                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right() + 1);
-                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom() + 1);
+                        TotalRect.r = Math::Max(TotalRect.r, GeometryRect.right());
+                        TotalRect.b = Math::Max(TotalRect.b, GeometryRect.bottom());
                     }
                     rect.l = TotalRect.l;
                     rect.t = TotalRect.t;
@@ -1421,8 +1421,8 @@
                         QApplication::desktop()->screenGeometry(screenid);
                     rect.l = GeometryRect.left();
                     rect.t = GeometryRect.top();
-                    rect.r = GeometryRect.right() + 1;
-                    rect.b = GeometryRect.bottom() + 1;
+                    rect.r = GeometryRect.right();
+                    rect.b = GeometryRect.bottom();
                 }
             }
         }
