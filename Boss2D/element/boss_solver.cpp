@@ -1228,9 +1228,25 @@ namespace BOSS
                 branch;
                 jump(('0' <= *formula && *formula <= '9') || *formula == '+' || *formula == '-')
                 {
-                    sint32 WordSize = 0;
-                    NewOperand = SolverLiteral(SolverValue::MakeByFloat(Parser::GetFloat<SolverValue::Float>(formula, -1, &WordSize))).clone();
-                    formula += WordSize - 1;
+                    sint32 IntegerSize = 0, FloatSize = 0, HexSize = 0;
+                    auto IntegerValue = Parser::GetInt<SolverValue::Integer>(formula, -1, &IntegerSize);
+                    auto FloatValue = Parser::GetFloat<SolverValue::Float>(formula, -1, &FloatSize);
+                    auto HexValue = Parser::GetHex32<uint64>(formula, -1, &HexSize);
+                    if(IntegerSize < HexSize && FloatSize < HexSize)
+                    {
+                        NewOperand = SolverLiteral(SolverValue::MakeByInteger(HexValue)).clone();
+                        formula += HexSize - 1;
+                    }
+                    else if(IntegerSize < FloatSize)
+                    {
+                        NewOperand = SolverLiteral(SolverValue::MakeByFloat(FloatValue)).clone();
+                        formula += FloatSize - 1;
+                    }
+                    else
+                    {
+                        NewOperand = SolverLiteral(SolverValue::MakeByInteger(IntegerValue)).clone();
+                        formula += IntegerSize - 1;
+                    }
                 }
                 jump(*formula == '\'' || *formula == '\"')
                 {
