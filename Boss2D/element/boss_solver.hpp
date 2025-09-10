@@ -8,7 +8,7 @@ namespace BOSS
     enum class SolverValueType {Null, Range, Integer, Float, Text};
     enum class SolverOperandType {Unknown, Literal, Variable, Formula, Comment};
     enum class SolverOperatorType {Unknown,
-        Addition, Subtract, Multiply, Divide, Remainder, // +, -, *, /, %
+        Addition, Subtract, Multiply, Divide, Remainder, BitAnd, BitOr, // +, -, *, /, %, &, |
         Variabler, Commenter, RangeTarget, RangeTimer, // @, ?, ~, :
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
@@ -94,6 +94,8 @@ namespace BOSS
         public: SolverValue Multiply(const SolverValue& rhs) const;
         public: SolverValue Divide(const SolverValue& rhs) const;
         public: SolverValue Remainder(const SolverValue& rhs) const;
+        public: SolverValue BitAnd(const SolverValue& rhs) const;
+        public: SolverValue BitOr(const SolverValue& rhs) const;
         public: SolverValue Variabler(const SolverValue& rhs, const SolverChain* chain) const;
         public: SolverValue RangeTarget(const SolverValue& rhs) const;
         public: SolverValue RangeTimer(const SolverValue& rhs) const;

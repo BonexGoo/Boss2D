@@ -163,6 +163,8 @@ namespace BOSS
             case SolverOperatorType::Multiply:        collector += "* "; break;
             case SolverOperatorType::Divide:          collector += "/ "; break;
             case SolverOperatorType::Remainder:       collector += "% "; break;
+            case SolverOperatorType::BitAnd:          collector += "& "; break;
+            case SolverOperatorType::BitOr:           collector += "| "; break;
             case SolverOperatorType::Variabler:       collector += "@ "; break;
             case SolverOperatorType::Commenter:       collector += "?"; break;
             case SolverOperatorType::RangeTarget:     collector += "~ "; break;
@@ -219,6 +221,8 @@ namespace BOSS
             case SolverOperatorType::Multiply:        return mOperandL->result(Zero).Multiply(mOperandR->result(One));
             case SolverOperatorType::Divide:          return mOperandL->result(Zero).Divide(mOperandR->result(One));
             case SolverOperatorType::Remainder:       return mOperandL->result(Zero).Remainder(mOperandR->result(One));
+            case SolverOperatorType::BitAnd:          return mOperandL->result(Zero).BitAnd(mOperandR->result(One));
+            case SolverOperatorType::BitOr:           return mOperandL->result(Zero).BitOr(mOperandR->result(One));
             case SolverOperatorType::Variabler:       return mOperandL->result(Zero).Variabler(mOperandR->result(One), mChain);
             case SolverOperatorType::Commenter:       return mOperandL->result(Zero);
             case SolverOperatorType::RangeTarget:     return mOperandL->result(Zero).RangeTarget(mOperandR->result(Zero));
@@ -641,6 +645,16 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::BitAnd(const SolverValue& rhs) const
+    {
+        return MakeByInteger(ToInteger() & rhs.ToInteger());
+    }
+
+    SolverValue SolverValue::BitOr(const SolverValue& rhs) const
+    {
+        return MakeByInteger(ToInteger() | rhs.ToInteger());
+    }
+
     SolverValue SolverValue::Variabler(const SolverValue& rhs, const SolverChain* chain) const
     {
         if(auto CurSolver = SolverVariable::FindTarget(chain, rhs.ToText()))
@@ -1032,7 +1046,8 @@ namespace BOSS
             case SolverOperatorType::Commenter: // 9순위> ?
                 NewPriority += PriorityCount - 9;
                 break;
-            case SolverOperatorType::RangeTarget: // 3순위> ~
+            case SolverOperatorType::BitAnd: case SolverOperatorType::BitOr:
+            case SolverOperatorType::RangeTarget: // 3순위> &, |, ~
                 NewPriority += PriorityCount - 3;
                 break;
             case SolverOperatorType::RangeTimer: // 4순위> :
@@ -1103,6 +1118,8 @@ namespace BOSS
                 jump(*formula == '*') AddOperator(OperandFocus, SolverOperatorType::Multiply, deep);
                 jump(*formula == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
                 jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
+                jump(*formula == '&') AddOperator(OperandFocus, SolverOperatorType::BitAnd, deep);
+                jump(*formula == '|') AddOperator(OperandFocus, SolverOperatorType::BitOr, deep);
                 jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
                 jump(*formula == '?') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
                 jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
