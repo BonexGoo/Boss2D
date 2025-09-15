@@ -2558,6 +2558,7 @@
         public:
             SerialClass(chars port, sint32 baudrate)
             {
+                mPort = port;
 				mReadFocus = 0;
                 mReadMutex = Mutex::Open();
                 mWriteMutex = Mutex::Open();
@@ -2595,9 +2596,9 @@
         private slots:
             void OnErrorOccurred(QSerialPort::SerialPortError error)
             {
-                const String ErrorText = String::Format("%s at %s", errorString().toUtf8().constData(), portName().toUtf8().constData());
+                const String ErrorText = String::Format(":%s at %s", errorString().toUtf8().constData(), portName().toUtf8().constData());
                 BOSS_TRACE("시리얼통신에서 에러가 발생하였습니다(%s)", (chars) ErrorText);
-                Platform::BroadcastNotify("error", ErrorText, NT_Serial);
+                Platform::BroadcastNotify("error", mPort + ErrorText, NT_Serial);
             }
             void OnRead()
             {
@@ -2617,7 +2618,7 @@
                         Memory::Copy(mReadStream.AtDumpingAdded(NewArray.length()), NewArray.constData(), NewArray.length());
                     }
                     Mutex::Unlock(mReadMutex);
-                    Platform::BroadcastNotify("message", nullptr, NT_Serial);
+                    Platform::BroadcastNotify("message", mPort, NT_Serial);
                 }
             }
 
@@ -2678,6 +2679,7 @@
             }
 
         private:
+            String mPort;
 			sint32 mReadFocus;
             id_mutex mReadMutex;
             id_mutex mWriteMutex;
