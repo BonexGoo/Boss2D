@@ -1936,6 +1936,7 @@
             const sint32 NewPeerID = PeerPacket::MakeID();
             Peer->setProperty("id", NewPeerID);
             Peer->setProperty("needs", 0);
+            mPeers[NewPeerID] = Peer;
             mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewPeerID, 0));
 
             if(!mUsingSizeField) connect(Peer, SIGNAL(readyRead()), this, SLOT(readyPeer()));
@@ -2000,10 +2001,12 @@
         {
             QTcpSocket* Peer = (QTcpSocket*) sender();
             const sint32 PeerID = Peer->property("id").toInt();
-
-            mPeers.Remove(PeerID);
-            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
-            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            if(mPeers.Access(PeerID))
+            {
+                mPeers.Remove(PeerID);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            }
         }
 
     private:
@@ -2031,7 +2034,6 @@
         {
             if(QTcpSocket** Peer = mPeers.Access(peerid))
             {
-                (*Peer)->disconnectFromHost();
                 (*Peer)->deleteLater();
                 mPeers.Remove(peerid);
                 mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
@@ -2179,6 +2181,7 @@
             const sint32 NewPeerID = PeerPacket::MakeID();
             Peer->setProperty("id", NewPeerID);
             Peer->setProperty("needs", 0);
+            mPeers[NewPeerID] = Peer;
             mPacketQueue.Enqueue(new PeerPacket(packettype_entrance, NewPeerID, 0));
 
             connect(Peer, &QWebSocket::textFrameReceived, this, &WSServerClass::textReceived);
@@ -2211,10 +2214,12 @@
         {
             QWebSocket* Peer = (QWebSocket*) sender();
             const sint32 PeerID = Peer->property("id").toInt();
-
-            mPeers.Remove(PeerID);
-            mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
-            Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            if(mPeers.Access(PeerID))
+            {
+                mPeers.Remove(PeerID);
+                mPacketQueue.Enqueue(new PeerPacket(packettype_leaved, PeerID, 0));
+                Platform::BroadcastNotify("leaved", nullptr, NT_SocketReceive);
+            }
         }
 
         #if !BOSS_WASM
@@ -2258,7 +2263,6 @@
         {
             if(QWebSocket** Peer = mPeers.Access(peerid))
             {
-                (*Peer)->disconnect();
                 (*Peer)->deleteLater();
                 mPeers.Remove(peerid);
                 mPacketQueue.Enqueue(new PeerPacket(packettype_kicked, peerid, 0));
