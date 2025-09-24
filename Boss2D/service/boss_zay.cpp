@@ -488,6 +488,12 @@ namespace BOSS
         Platform::Graphics::DrawRingBezier(LastClip.l, LastClip.t, p, thick, curve);
     }
 
+    void ZayPanel::fillbezier(Points p, float curve) const
+    {
+        const Clip& LastClip = m_stack_clip[-1];
+        Platform::Graphics::FillBezier(LastClip.l, LastClip.t, p, curve);
+    }
+
     void ZayPanel::polyimage(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3]) const
     {
         const Color& LastColor = m_stack_color[-1];

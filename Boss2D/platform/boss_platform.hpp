@@ -905,6 +905,13 @@ public:
         /// @param p : 꼭지점들(px)
         static void FillPolygon(float x, float y, Points p);
 
+        /// @brief 베지어 출력
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param p : 꼭지점들(px)
+        /// @param curve : 커브율
+        static void FillBezier(float x, float y, Points p, float curve);
+
         /// @brief 사각라인 출력(FillRect출력영역 바깥으로 두께만큼)
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)
@@ -927,7 +934,7 @@ public:
         /// @param thick : 두께(px)
         static void DrawCircle(float x, float y, float w, float h, float thick);
 
-        /// @brief 베지어 출력
+        /// @brief 베지어라인 출력
         /// @param begin : 시작점(px)
         /// @param end : 끝점(px)
         /// @param thick : 두께(px)

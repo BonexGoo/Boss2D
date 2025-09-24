@@ -139,6 +139,11 @@ namespace BOSS
         /// @return 아크탄젠트
         static double Atan(const double x, const double y);
 
+        /// @brief 상용로그 구하기
+        /// @param value : 값
+        /// @return 상용로그
+        static double Log10(const double value);
+
         /// @brief 각도를 라디안으로 변환하기
         /// @param deg : 각도
         /// @return 라디안

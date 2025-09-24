@@ -365,6 +365,7 @@ namespace BOSS
         void polyline(Points p, float thick, bool ring = false) const;
         void polybezier(Points p, float thick, bool showfirst, bool showlast) const;
         void ringbezier(Points p, float thick, float curve = 0.2) const;
+        void fillbezier(Points p, float curve = 0.2) const;
         void polyimage(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3]) const;
         bool polyimageNative(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3], const Color (&colors)[3]) const;
         InsideBinder icon(const Image& image, UIAlign align, float degree = 0, bool visible = true);

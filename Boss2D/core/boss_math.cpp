@@ -80,6 +80,11 @@ namespace BOSS
         return atan2(y, x);
     }
 
+    double Math::Log10(const double value)
+    {
+        return log10(value);
+    }
+
     float Math::Distance(const float x1, const float y1, const float x2, const float y2)
     {
         const float X = x1 - x2;
