@@ -17,7 +17,7 @@
     #include <unistd.h>
     #include <strings.h>
     #include <errno.h>
-    #include <cstdlib>
+    #include <stdlib.h>
 #elif BOSS_MAC_OSX || BOSS_IPHONE
     #include <sys/stat.h>
     #include <dirent.h>
@@ -113,7 +113,7 @@ extern "C"
     #if BOSS_WINDOWS & !BOSS_WINDOWS_MINGW
         extern const wchar_t* wcspbrk(const wchar_t*, const wchar_t*);
     #elif BOSS_LINUX
-        extern "C++" const wchar_t* wcspbrk(const wchar_t*, const wchar_t*) THROW;
+        extern "C++" const wchar_t* wcspbrk(const wchar_t*, const wchar_t*);
     #else
         extern wchar_t* wcspbrk(const wchar_t*, const wchar_t*);
     #endif
@@ -215,7 +215,11 @@ extern "C" int boss_isalnum(int c)
 
 extern "C" int boss_atoi(const char* str)
 {
-    return atoi(str);
+    #if BOSS_LINUX
+        return strtod(str, nullptr);
+    #else
+        return atoi(str);
+    #endif
 }
 
 extern "C" double boss_atof(const char* str)
