@@ -13,7 +13,7 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_Cos, Function_Sin, Function_Tan, Function_Atan, // [cos], [sin], [tan], [atan]
-        Function_And, Function_Or, Function_Divide, Function_Find}; // [and], [or], [divide], [find]
+        Function_And, Function_Or, Function_Multiply, Function_Divide, Function_Find}; // [and], [or], [multiply], [divide], [find]
 
     // 업데이트체인
     class SolverChainPair
@@ -115,6 +115,7 @@ namespace BOSS
         public: SolverValue Function_Atan(const SolverValue& rhs) const;
         public: SolverValue Function_And(const SolverValue& rhs) const;
         public: SolverValue Function_Or(const SolverValue& rhs) const;
+        public: SolverValue Function_Multiply(const SolverValue& rhs) const;
         public: SolverValue Function_Divide(const SolverValue& rhs) const;
         public: SolverValue Function_Find(const SolverValue& rhs) const;
 

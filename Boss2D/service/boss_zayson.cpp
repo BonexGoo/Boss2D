@@ -846,11 +846,11 @@ namespace BOSS
                 mRSolvers.At(0).Execute();
             }
             else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
-                Transaction();
+                Transaction(nullptr);
             else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                Transaction();
+                Transaction(nullptr);
             }
         }
         void InitForInput()
@@ -892,17 +892,22 @@ namespace BOSS
                     collector(Variables[j]) = Variables[j];
             }
         }
-        void Transaction()
+        const String Transaction(String* newvariable)
         {
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
-                if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName()))
+                const String CurVariableName = mLSolver.ExecuteVariableName();
+                if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), CurVariableName))
                 {
                     FindedSolver->Parse(mRSolvers[0].ExecuteOnly().ToText(true));
                     FindedSolver->Execute();
                 }
-                else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)",
-                    (chars) mLSolver.ExecuteVariableName()));
+                else if(newvariable)
+                {
+                    *newvariable = CurVariableName;
+                    return mRSolvers[0].ExecuteOnly().ToText(true);
+                }
+                else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)", (chars) CurVariableName));
             }
             else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
             {
@@ -926,6 +931,7 @@ namespace BOSS
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
                 }
             }
+            return String();
         }
 
     public:
@@ -1182,7 +1188,10 @@ namespace BOSS
                         for(sint32 i = 0, iend = CollectedCodes.Count(); i < iend; ++i)
                         {
                             auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
-                            CurCompCode->Transaction();
+                            String NewVariableName; // 코드문에서 처음 등장한 변수는 지역변수화
+                            const String Formula = CurCompCode->Transaction(&NewVariableName);
+                            if(0 < NewVariableName.Length())
+                                LocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
                         }
                         RenderChildren(mChildren, panel, nullptr, defaultname, logs);
                     }
@@ -1360,7 +1369,7 @@ namespace BOSS
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
-                    CurClickCode->Transaction();
+                    CurClickCode->Transaction(nullptr);
                 }
                 return true;
             }

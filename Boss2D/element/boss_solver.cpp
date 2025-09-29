@@ -185,6 +185,7 @@ namespace BOSS
             case SolverOperatorType::Function_Atan:   collector += "[atan] "; break;
             case SolverOperatorType::Function_And:    collector += "[and] "; break;
             case SolverOperatorType::Function_Or:     collector += "[or] "; break;
+            case SolverOperatorType::Function_Multiply: collector += "[multiply] "; break;
             case SolverOperatorType::Function_Divide: collector += "[divide] "; break;
             case SolverOperatorType::Function_Find: collector += "[find] "; break;
             }
@@ -216,35 +217,36 @@ namespace BOSS
             if(0 < reliable())
             switch(mOperatorType)
             {
-            case SolverOperatorType::Addition:        return mOperandL->result(Zero).Addition(mOperandR->result(Zero));
-            case SolverOperatorType::Subtract:        return mOperandL->result(Zero).Subtract(mOperandR->result(Zero));
-            case SolverOperatorType::Multiply:        return mOperandL->result(Zero).Multiply(mOperandR->result(One));
-            case SolverOperatorType::Divide:          return mOperandL->result(Zero).Divide(mOperandR->result(One));
-            case SolverOperatorType::Remainder:       return mOperandL->result(Zero).Remainder(mOperandR->result(One));
-            case SolverOperatorType::BitAnd:          return mOperandL->result(Zero).BitAnd(mOperandR->result(One));
-            case SolverOperatorType::BitOr:           return mOperandL->result(Zero).BitOr(mOperandR->result(One));
-            case SolverOperatorType::Variabler:       return mOperandL->result(Zero).Variabler(mOperandR->result(One), mChain);
-            case SolverOperatorType::Commenter:       return mOperandL->result(Zero);
-            case SolverOperatorType::RangeTarget:     return mOperandL->result(Zero).RangeTarget(mOperandR->result(Zero));
-            case SolverOperatorType::RangeTimer:      return mOperandL->result(Zero).RangeTimer(mOperandR->result(Zero));
-            case SolverOperatorType::Greater:         return mOperandL->result(Zero).Greater(mOperandR->result(Zero));
-            case SolverOperatorType::GreaterOrEqual:  return mOperandL->result(Zero).GreaterOrEqual(mOperandR->result(Zero));
-            case SolverOperatorType::Less:            return mOperandL->result(Zero).Less(mOperandR->result(Zero));
-            case SolverOperatorType::LessOrEqual:     return mOperandL->result(Zero).LessOrEqual(mOperandR->result(Zero));
-            case SolverOperatorType::Equal:           return mOperandL->result(Zero).Equal(mOperandR->result(Zero));
-            case SolverOperatorType::Different:       return mOperandL->result(Zero).Different(mOperandR->result(Zero));
-            case SolverOperatorType::Function_Min:    return mOperandL->result(Zero).Function_Min(mOperandR->result(One));
-            case SolverOperatorType::Function_Max:    return mOperandL->result(Zero).Function_Max(mOperandR->result(One));
-            case SolverOperatorType::Function_Abs:    return mOperandL->result(Zero).Function_Abs(mOperandR->result(One));
-            case SolverOperatorType::Function_Pow:    return mOperandL->result(Zero).Function_Pow(mOperandR->result(One));
-            case SolverOperatorType::Function_Cos:    return mOperandL->result(Zero).Function_Cos(mOperandR->result(One));
-            case SolverOperatorType::Function_Sin:    return mOperandL->result(Zero).Function_Sin(mOperandR->result(One));
-            case SolverOperatorType::Function_Tan:    return mOperandL->result(Zero).Function_Tan(mOperandR->result(One));
-            case SolverOperatorType::Function_Atan:   return mOperandL->result(Zero).Function_Atan(mOperandR->result(One));
-            case SolverOperatorType::Function_And:    return mOperandL->result(Zero).Function_And(mOperandR->result(One));
-            case SolverOperatorType::Function_Or:     return mOperandL->result(Zero).Function_Or(mOperandR->result(One));
-            case SolverOperatorType::Function_Divide: return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
-            case SolverOperatorType::Function_Find: return mOperandL->result(Zero).Function_Find(mOperandR->result(One));
+            case SolverOperatorType::Addition:          return mOperandL->result(Zero).Addition(mOperandR->result(Zero));
+            case SolverOperatorType::Subtract:          return mOperandL->result(Zero).Subtract(mOperandR->result(Zero));
+            case SolverOperatorType::Multiply:          return mOperandL->result(Zero).Multiply(mOperandR->result(One));
+            case SolverOperatorType::Divide:            return mOperandL->result(Zero).Divide(mOperandR->result(One));
+            case SolverOperatorType::Remainder:         return mOperandL->result(Zero).Remainder(mOperandR->result(One));
+            case SolverOperatorType::BitAnd:            return mOperandL->result(Zero).BitAnd(mOperandR->result(One));
+            case SolverOperatorType::BitOr:             return mOperandL->result(Zero).BitOr(mOperandR->result(One));
+            case SolverOperatorType::Variabler:         return mOperandL->result(Zero).Variabler(mOperandR->result(One), mChain);
+            case SolverOperatorType::Commenter:         return mOperandL->result(Zero);
+            case SolverOperatorType::RangeTarget:       return mOperandL->result(Zero).RangeTarget(mOperandR->result(Zero));
+            case SolverOperatorType::RangeTimer:        return mOperandL->result(Zero).RangeTimer(mOperandR->result(Zero));
+            case SolverOperatorType::Greater:           return mOperandL->result(Zero).Greater(mOperandR->result(Zero));
+            case SolverOperatorType::GreaterOrEqual:    return mOperandL->result(Zero).GreaterOrEqual(mOperandR->result(Zero));
+            case SolverOperatorType::Less:              return mOperandL->result(Zero).Less(mOperandR->result(Zero));
+            case SolverOperatorType::LessOrEqual:       return mOperandL->result(Zero).LessOrEqual(mOperandR->result(Zero));
+            case SolverOperatorType::Equal:             return mOperandL->result(Zero).Equal(mOperandR->result(Zero));
+            case SolverOperatorType::Different:         return mOperandL->result(Zero).Different(mOperandR->result(Zero));
+            case SolverOperatorType::Function_Min:      return mOperandL->result(Zero).Function_Min(mOperandR->result(One));
+            case SolverOperatorType::Function_Max:      return mOperandL->result(Zero).Function_Max(mOperandR->result(One));
+            case SolverOperatorType::Function_Abs:      return mOperandL->result(Zero).Function_Abs(mOperandR->result(One));
+            case SolverOperatorType::Function_Pow:      return mOperandL->result(Zero).Function_Pow(mOperandR->result(One));
+            case SolverOperatorType::Function_Cos:      return mOperandL->result(Zero).Function_Cos(mOperandR->result(One));
+            case SolverOperatorType::Function_Sin:      return mOperandL->result(Zero).Function_Sin(mOperandR->result(One));
+            case SolverOperatorType::Function_Tan:      return mOperandL->result(Zero).Function_Tan(mOperandR->result(One));
+            case SolverOperatorType::Function_Atan:     return mOperandL->result(Zero).Function_Atan(mOperandR->result(One));
+            case SolverOperatorType::Function_And:      return mOperandL->result(Zero).Function_And(mOperandR->result(One));
+            case SolverOperatorType::Function_Or:       return mOperandL->result(Zero).Function_Or(mOperandR->result(One));
+            case SolverOperatorType::Function_Multiply: return mOperandL->result(Zero).Function_Multiply(mOperandR->result(One));
+            case SolverOperatorType::Function_Divide:   return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
+            case SolverOperatorType::Function_Find:     return mOperandL->result(Zero).Function_Find(mOperandR->result(One));
             }
             return zero;
         }
@@ -848,13 +850,24 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::Function_Multiply(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Max(1, rhs.ToInteger()));
+        case SolverValueType::Float: return MakeByInteger(ToFloat() * Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeByInteger(ToFloat() * Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        }
+        return SolverValue();
+    }
+
     SolverValue SolverValue::Function_Divide(const SolverValue& rhs) const
     {
         switch(GetMergedType(rhs))
         {
         case SolverValueType::Integer: return MakeByInteger(ToInteger() / Math::Max(1, rhs.ToInteger()));
         case SolverValueType::Float: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByInteger(ToText().Length() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
         return SolverValue();
     }
@@ -1036,8 +1049,8 @@ namespace BOSS
             case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
                 NewPriority += PriorityCount - 2;
                 break;
-            case SolverOperatorType::Multiply: case SolverOperatorType::Divide:
-            case SolverOperatorType::Remainder: case SolverOperatorType::Function_Divide: // 1순위> *, /, %, [divide]
+            case SolverOperatorType::Multiply: case SolverOperatorType::Divide: case SolverOperatorType::Remainder:
+            case SolverOperatorType::Function_Multiply: case SolverOperatorType::Function_Divide: // 1순위> *, /, %, [multiply], [divide]
                 NewPriority += PriorityCount - 1;
                 break;
             case SolverOperatorType::Variabler: case SolverOperatorType::Function_Find: // 5순위> @, [find]
@@ -1204,6 +1217,11 @@ namespace BOSS
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Or, deep);
                         formula += 4 - 1;
+                    }
+                    jump(!String::Compare("[multiply]", formula, 10))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Multiply, deep);
+                        formula += 10 - 1;
                     }
                     jump(!String::Compare("[divide]", formula, 8))
                     {
