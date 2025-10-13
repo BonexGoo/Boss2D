@@ -1697,14 +1697,14 @@ namespace BOSS
                         if(HasDoubleClick && ZaySonElementCall::IsValidDoubleClick(ElementID))
                         {
                             if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false, false, false, false, false))
-                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
+                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_PointingHand);
                             ReleaseUIName.Empty();
                             ReleaseMsec = 0;
                         }
                         else
                         {
                             if(ZaySonElementCall::SendClick(ElementID, n, false, false, false, false, false, false, t == GT_OutReleased, t == GT_CancelReleased))
-                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_Busy);
+                                ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_PointingHand);
                             ReleaseUIName = n;
                             ReleaseMsec = CurReleaseMsec;
                         }
