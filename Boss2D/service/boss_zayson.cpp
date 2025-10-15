@@ -207,7 +207,7 @@ namespace BOSS
                 Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
                 if(FloatOffset == Value.Length())
                     CurSolver.Parse(Value);
-                else CurSolver.Parse(String::Format("\'%s\'", (chars) Value));
+                else CurSolver.Parse(String::Format("\"%s\"", (chars) Value));
             }
             CurSolver.Execute(true);
         }
@@ -1361,7 +1361,7 @@ namespace BOSS
 
                 // 변수를 지역변수화
                 if(key && value)
-                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).Parse(String::Format("\'%s\'", value)).Execute();
+                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).Parse(String::Format("\"%s\"", value)).Execute();
 
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
