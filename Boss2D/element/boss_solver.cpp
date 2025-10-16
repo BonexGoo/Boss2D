@@ -615,8 +615,8 @@ namespace BOSS
         case SolverValueType::Float: return MakeByFloat(ToFloat() * rhs.ToFloat());
         case SolverValueType::Text:
             {
-                const Text Src = ToText();
                 Text Dest;
+                const Text Src = ToText();
                 for(float i = rhs.ToFloat(); 0 < i; i -= 1.0f)
                     Dest += Src.Left(Src.Length() * Math::MinF(i, 1.0f));
                 return MakeByText(Dest);
@@ -629,7 +629,14 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() / Math::Max(1, rhs.ToInteger()));
+        case SolverValueType::Integer:
+            {
+                auto Lhs = ToInteger();
+                auto Rhs = rhs.ToInteger();
+                if(Rhs <= Lhs && 0 < Rhs && Lhs % Rhs == 0)
+                    return MakeByInteger(Lhs / Rhs);
+                return MakeByFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+            }
         case SolverValueType::Float: return MakeByFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         case SolverValueType::Text: return MakeByFloat(ToText().Length() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
@@ -854,9 +861,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Max(1, rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByInteger(ToFloat() * Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByInteger(ToFloat() * Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Integer: return MakeByInteger(ToInteger() * rhs.ToInteger());
+        case SolverValueType::Float:
+        case SolverValueType::Text: return MakeByInteger(ToFloat() * rhs.ToFloat());
         }
         return SolverValue();
     }
@@ -866,7 +873,7 @@ namespace BOSS
         switch(GetMergedType(rhs))
         {
         case SolverValueType::Integer: return MakeByInteger(ToInteger() / Math::Max(1, rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Float:
         case SolverValueType::Text: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
         return SolverValue();
@@ -876,8 +883,8 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToText().Find(0, rhs.ToText()));
-        case SolverValueType::Float: return MakeByInteger(ToText().Find(0, rhs.ToText()));
+        case SolverValueType::Integer:
+        case SolverValueType::Float:
         case SolverValueType::Text: return MakeByInteger(ToText().Find(0, rhs.ToText()));
         }
         return SolverValue();
