@@ -1654,6 +1654,16 @@ namespace BOSS
         mJumpCalls.AtAdding() = String::Format("%s,0,%d", gatename, runcount);
     }
 
+    void ZaySon::JumpCallDirectly(chars gatename)
+    {
+        if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(gatename))
+        {
+            ZayPanel NullPanel(nullptr, 0, 0);
+            ZayUIElement::DebugLogs LogCollector;
+            CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", LogCollector);
+        }
+    }
+
     void ZaySon::JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h)
     {
         mJumpCalls.AtAdding() = String::Format("%s,0,%d,%f,%f,%f,%f", gatename, runcount, x, y, w, h);

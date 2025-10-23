@@ -239,6 +239,11 @@ namespace BOSS
         mZaySon.JumpCall(name, count);
     }
 
+    void ZayWidget::JumpCallDirectly(chars name)
+    {
+        mZaySon.JumpCallDirectly(name);
+    }
+
     void ZayWidget::UpdateAtlas(chars json)
     {
         mZaySon.SendAtlas(json);
@@ -1167,7 +1172,9 @@ namespace BOSS
                 {
                     const String GateName = pay.Param(0).ToText();
                     const sint32 RunCount = (1 < pay.ParamCount())? pay.Param(1).ToInteger() : 1;
-                    if(pay.ParamCount() == 6)
+                    if(RunCount == 0)
+                        RefZaySon->JumpCallDirectly(GateName);
+                    else if(pay.ParamCount() == 6)
                     {
                         const float X = pay.Param(2).ToFloat();
                         const float Y = pay.Param(3).ToFloat();
