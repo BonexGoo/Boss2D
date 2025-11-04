@@ -363,6 +363,18 @@ namespace BOSS
             m_ref_surface = nullptr;
             m_ref_touch = nullptr;
             m_ref_touch_collector = nullptr;
+
+            const sint32 Dpi = Platform::Utility::GetPhysicalDpi();
+            m_stack_clip.AtAdding() = Clip(0, 0, m_width, m_height, true);
+            m_stack_scissor.AtAdding() = Rect(0, 0, m_width, m_height);
+            m_stack_color.AtAdding() = Color(Color::ColoringDefault);
+            m_stack_mask.AtAdding() = MR_Default;
+            m_stack_shader.AtAdding() = SR_Normal;
+            m_stack_font.AtAdding().system_size *= 100 / (float) Dpi;
+            auto& NewZoom = m_stack_zoom.AtAdding();
+            NewZoom.scale = 1;
+            NewZoom.orientation = OR_Normal;
+
             m_clipped_width = m_width;
             m_clipped_height = m_height;
             m_test_scissor = false;

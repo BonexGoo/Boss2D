@@ -763,7 +763,7 @@ namespace BOSS
         char Result[1024];
         const bool Minus = (value < 0);
         const uint64 Value = ((Minus)? value * -10000 : value * 10000) + 0.5;
-        sint32 ResultLength = boss_snprintf(Result, 1024, "%s%lld.%lld", (Minus)? "-" : "", Value / 10000, Value % 10000);
+        sint32 ResultLength = boss_snprintf(Result, 1024, "%s%lld.%04lld", (Minus)? "-" : "", Value / 10000, Value % 10000);
         while(Result[ResultLength - 1] == '0') ResultLength--;
         if(Result[ResultLength - 1] == '.') ResultLength--;
         return String(Result, ResultLength);
@@ -773,8 +773,8 @@ namespace BOSS
     {
         char Result[1024];
         const bool Minus = (value < 0);
-        const uint64 Value = ((Minus)? value * -10000 : value * 10000) + 0.5;
-        sint32 ResultLength = boss_snprintf(Result, 1024, "%s%lld.%lld", (Minus)? "-" : "", Value / 10000, Value % 10000);
+        const uint64 Value = ((Minus)? value * -1000000 : value * 1000000) + 0.5;
+        sint32 ResultLength = boss_snprintf(Result, 1024, "%s%lld.%06lld", (Minus)? "-" : "", Value / 1000000, Value % 1000000);
         while(Result[ResultLength - 1] == '0') ResultLength--;
         if(Result[ResultLength - 1] == '.') ResultLength--;
         return String(Result, ResultLength);

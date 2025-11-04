@@ -647,7 +647,10 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() % Math::Max(1, rhs.ToInteger()));
+        case SolverValueType::Integer:
+            if(auto Rhs = rhs.ToInteger())
+                return MakeByInteger(ToInteger() % Rhs);
+            else return MakeByText("Remainder_Error");
         case SolverValueType::Float: return MakeByFloat(Math::Mod(ToFloat(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
         case SolverValueType::Text: return MakeByFloat(Math::Mod(ToText().Length(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
         }
@@ -872,7 +875,10 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() / Math::Max(1, rhs.ToInteger()));
+        case SolverValueType::Integer:
+            if(auto Rhs = rhs.ToInteger())
+                return MakeByInteger(ToInteger() / Rhs);
+            else return MakeByText("Divide_Error");
         case SolverValueType::Float:
         case SolverValueType::Text: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
