@@ -1693,6 +1693,12 @@
             return false;
         }
 
+        chars Platform::Utility::GetTimeRTC(chars devicepath,
+            sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year, sint32* weekday)
+        {
+            return PlatformImpl::Wrap::Utility_GetTimeRTC(devicepath, sec, min, hour, day, month, year, weekday);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // CLOCK
         ////////////////////////////////////////////////////////////////////////////////

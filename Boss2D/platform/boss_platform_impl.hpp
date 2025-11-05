@@ -32,6 +32,7 @@ namespace BOSS
             chars Utility_GetDeviceID();
             sint64 Utility_CurrentAvailableMemory(sint64* totalbytes);
             double Utility_CurrentTrafficCPU();
+            chars Utility_GetTimeRTC(chars devicepath, sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year, sint32* weekday);
 
             void Option_SetOptionFlag(chars name, bool flag);
             bool Option_GetOptionFlag(chars name);

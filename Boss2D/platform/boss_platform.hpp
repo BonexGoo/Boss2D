@@ -696,6 +696,20 @@ public:
         /// @param virtualkey : 가상키값
         /// @return 문자화 가능여부
         static bool IsWordableKey(sint32 virtualkey);
+
+        /// @brief RTC모듈에서 시간정보 얻기(리눅스용이며 그 외엔 OS시계)
+        /// @param devicepath : RTC모듈의 경로정보
+        /// @param sec : 1분미만의 초(0 ~ 59)
+        /// @param min : 1시간미만의 분(0 ~ 59)
+        /// @param hour : 1일미만의 시간(0 ~ 23)
+        /// @param day : 1개월미만의 일수(1 ~ 31)
+        /// @param month : 1년미만의 개월수(1 ~ 12)
+        /// @param year : 연도(2014, 2015, 2016, ...)
+        /// @param weekday : 요일정보(1 ~ 7, 월요일 ~ 일요일)
+        /// @return 밧데리 상태정보
+        static chars GetTimeRTC(chars devicepath = "/dev/rtc0",
+            sint32* sec = nullptr, sint32* min = nullptr, sint32* hour = nullptr, sint32* day = nullptr,
+            sint32* month = nullptr, sint32* year = nullptr, sint32* weekday = nullptr);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

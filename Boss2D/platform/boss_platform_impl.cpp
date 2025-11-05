@@ -19,6 +19,16 @@
     #include <arpa/inet.h>
     #include <sys/ioctl.h>
     #include <net/if.h>
+    #include <ctime>
+    #include <cstdio>
+    #include <cstring>
+    #include <string>
+    #include <linux/rtc.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+    #include <cerrno>
+    #include <cstdlib>
 #elif BOSS_IPHONE
     #include "ios/src/BossWebView.h"
 #elif BOSS_ANDROID
@@ -466,6 +476,166 @@ namespace BOSS
                     return CounterVal.doubleValue * 0.01;
                 #endif
                 return 0;
+            }
+
+            chars Utility_GetTimeRTC(chars devicepath, sint32* sec, sint32* min, sint32* hour, sint32* day, sint32* month, sint32* year, sint32* weekday)
+            {
+                static thread_local std::string s_status;
+                #if BOSS_WINDOWS
+                    (void) devicepath; // unused 경고 방지
+
+                    // 1) UTC 시스템 시간 읽기
+                    SYSTEMTIME st_utc{};
+                    ::GetSystemTime(&st_utc);
+
+                    // 2) UTC → Local 변환
+                    TIME_ZONE_INFORMATION tzi{};
+                    ::GetTimeZoneInformation(&tzi);
+                    SYSTEMTIME st_local{};
+                    if(!SystemTimeToTzSpecificLocalTime(&tzi, &st_utc, &st_local))
+                    {
+                        s_status = "error: SystemTimeToTzSpecificLocalTime failed";
+                        return s_status.c_str();
+                    }
+
+                    // 3) 결과 채우기 (Local)
+                    if(sec)   *sec   = static_cast<sint32>(st_local.wSecond);
+                    if(min)   *min   = static_cast<sint32>(st_local.wMinute);
+                    if(hour)  *hour  = static_cast<sint32>(st_local.wHour);
+                    if(day)   *day   = static_cast<sint32>(st_local.wDay);
+                    if(month) *month = static_cast<sint32>(st_local.wMonth);
+                    if(year)  *year  = static_cast<sint32>(st_local.wYear);
+
+                    // 요일: tm_wday 기준이 아니므로 tm으로 한번 변환해서 월(1)~일(7)로 변환
+                    std::tm lt{};
+                    lt.tm_year = st_local.wYear - 1900;
+                    lt.tm_mon  = st_local.wMonth - 1;
+                    lt.tm_mday = st_local.wDay;
+                    lt.tm_hour = st_local.wHour;
+                    lt.tm_min  = st_local.wMinute;
+                    lt.tm_sec  = st_local.wSecond;
+                    lt.tm_isdst = -1;
+                    std::mktime(&lt); // 요일 계산
+                    if(weekday)
+                    {
+                        // tm_wday: 0=Sun..6=Sat  → 요구사항: 1=Mon..7=Sun
+                        int wd = (lt.tm_wday == 0) ? 7 : lt.tm_wday; // Sun(0) → 7
+                        if(wd >= 1 && wd <= 6) wd = wd;              // Mon(1)..Sat(6)
+                        if(weekday) *weekday = static_cast<sint32>(wd);
+                    }
+
+                    // Windows는 표준 API로 RTC 배터리 플래그 미제공
+                    s_status = "unsupported";
+                #elif BOSS_LINUX
+                    // 1) /dev/rtcX 열기 (가능하면 R/W, 실패 시 R/O)
+                    int fd = ::open(devicepath, O_RDWR | O_CLOEXEC);
+                    if(fd < 0) fd = ::open(devicepath, O_RDONLY | O_CLOEXEC);
+                    if(fd < 0)
+                    {
+                        s_status = std::string("error: open ") + devicepath + " failed: " + std::strerror(errno);
+                        return s_status.c_str();
+                    }
+
+                    // 2) RTC 시간(UTC) 읽기
+                    rtc_time rt{};
+                    if(::ioctl(fd, RTC_RD_TIME, &rt) < 0)
+                    {
+                        s_status = std::string("error: RTC_RD_TIME failed: ") + std::strerror(errno);
+                        ::close(fd);
+                        return s_status.c_str();
+                    }
+
+                    // 3) rtc_time(UTC) → time_t(UTC) → local tm
+                    std::tm tm_utc{};
+                    tm_utc.tm_sec  = rt.tm_sec;
+                    tm_utc.tm_min  = rt.tm_min;
+                    tm_utc.tm_hour = rt.tm_hour;
+                    tm_utc.tm_mday = rt.tm_mday;
+                    tm_utc.tm_mon  = rt.tm_mon;   // 0~11
+                    tm_utc.tm_year = rt.tm_year;  // 1900부터
+                    tm_utc.tm_isdst = 0;
+
+                    // glibc 환경: timegm 사용 가능
+                    time_t t_utc;
+                    #if defined(_GNU_SOURCE) || defined(__USE_MISC) || defined(__GLIBC__)
+                        t_utc = ::timegm(&tm_utc);
+                    #else
+                        // fallback (거의 사용되지 않음)
+                        char* oldtz = std::getenv("TZ");
+                        if (oldtz) oldtz = ::strdup(oldtz);
+                        ::setenv("TZ", "UTC", 1); ::tzset();
+                        t_utc = std::mktime(&tm_utc);
+                        if (oldtz) { ::setenv("TZ", oldtz, 1); ::free(oldtz); }
+                        else ::unsetenv("TZ");
+                        ::tzset();
+                    #endif
+
+                    if(t_utc == (time_t) -1)
+                    {
+                        s_status = "error: timegm failed";
+                        ::close(fd);
+                        return s_status.c_str();
+                    }
+
+                    std::tm tm_local{};
+                    localtime_r(&t_utc, &tm_local);
+
+                    // 4) 결과 채우기 (Local)
+                    if(sec)   *sec   = static_cast<sint32>(tm_local.tm_sec);
+                    if(min)   *min   = static_cast<sint32>(tm_local.tm_min);
+                    if(hour)  *hour  = static_cast<sint32>(tm_local.tm_hour);
+                    if(day)   *day   = static_cast<sint32>(tm_local.tm_mday);
+                    if(month) *month = static_cast<sint32>(tm_local.tm_mon + 1);   // 1~12
+                    if(year)  *year  = static_cast<sint32>(tm_local.tm_year + 1900);
+                    if(weekday)
+                    {
+                        // tm_wday: 0=Sun..6=Sat → 1=Mon..7=Sun
+                        int wd = (tm_local.tm_wday == 0) ? 7 : tm_local.tm_wday;
+                        *weekday = static_cast<sint32>(wd);
+                    }
+
+                    // 5) 배터리/저전압 플래그 (드라이버가 지원할 때만)
+                    std::string status;
+                    bool any = false;
+                    bool supported = false;
+                    #ifdef RTC_VL_READ
+                        {
+                            int vl = 0;
+                            if(::ioctl(fd, RTC_VL_READ, &vl) == 0)
+                            {
+                                supported = true;
+                                #ifdef RTC_VL_DATA_INVALID
+                                    if(vl & RTC_VL_DATA_INVALID) { if(any) status += ", "; status += "DATA_INVALID"; any = true; }
+                                #endif
+                                #ifdef RTC_VL_ACCURACY_LOW
+                                    if(vl & RTC_VL_ACCURACY_LOW) { if(any) status += ", "; status += "ACCURACY_LOW"; any = true; }
+                                #endif
+                                #ifdef RTC_VL_BACKUP_LOW
+                                    if(vl & RTC_VL_BACKUP_LOW)   { if(any) status += ", "; status += "BACKUP_LOW";   any = true; }
+                                #endif
+                                #ifdef RTC_VL_BACKUP_EMPTY
+                                    if(vl & RTC_VL_BACKUP_EMPTY) { if(any) status += ", "; status += "BACKUP_EMPTY"; any = true; }
+                                #endif
+                            }
+                        }
+                    #endif
+                    ::close(fd);
+
+                    if(!supported)          s_status = "unsupported";
+                    else if(!any)           s_status = "ok";
+                    else                    s_status = status;
+                #else
+                    (void) devicepath; // unused 경고 방지
+                    if(sec)   *sec   = 0;
+                    if(min)   *min   = 0;
+                    if(hour)  *hour  = 0;
+                    if(day)   *day   = 1;
+                    if(month) *month = 1;
+                    if(year)  *year  = 1970;
+                    if(weekday) *weekday = 4; // 1970-01-01 목요일(요구 스펙과 다를 수 있음)
+                    s_status = "unsupported";
+                #endif
+                return s_status.c_str();
             }
 
             class StaticalMutexClass
