@@ -12,6 +12,10 @@
     #pragma comment(lib, "pdh.lib")
     #include <psapi.h>
     #pragma comment(lib, "psapi.lib")
+    #include <ctime>
+    #include <cstdio>
+    #include <cstring>
+    #include <string>
 #elif BOSS_LINUX
     #ifndef BOSS_SILENT_NIGHT_IS_ENABLED
         #include <gtk/gtk.h>
