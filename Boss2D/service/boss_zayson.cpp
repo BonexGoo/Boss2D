@@ -74,17 +74,7 @@ namespace BOSS
         }
 
     public:
-        class DebugLog
-        {
-        public:
-            Rect mRect;
-            bool mFill;
-            String mUIName;
-        };
-        typedef Array<DebugLog> DebugLogs;
-
-    public:
-        virtual void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const {}
+        virtual void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const {}
         virtual void SetCursor(CursorRole role) {}
         virtual bool OnLambda(chars uiname, LambdaID id,
             chars key, chars value, bool doubleclicked, bool longpressed,
@@ -1000,7 +990,7 @@ namespace BOSS
         }
 
     public:
-        void RenderByCall(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const
+        void RenderByCall(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const
         {
             // 자식으로 재귀
             if(0 < mChildren.Count())
@@ -1156,12 +1146,12 @@ namespace BOSS
         }
 
     private:
-        void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const override
+        void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
         {
             if(auto CurComponent = mRefRoot->FindComponent(mCompName))
             {
                 // 디버깅 정보수집
-                auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
+                auto AddDebugLog = [](ZaySon::DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
                 {
                     auto& NewLog = logs.AtAdding();
                     NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
@@ -1306,7 +1296,7 @@ namespace BOSS
             }
             else mRefRoot->SendWarningLog("Rendering Failed", String::Format("Component not found. (%s/Render)", (chars) mCompName));
         }
-        void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, DebugLogs& logs) const
+        void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, ZaySon::DebugLogs& logs) const
         {
             // 클릭코드를 위한 변수를 사전 캡쳐
             for(sint32 i = 0, iend = (sint32) LambdaID::Max; i < iend; ++i)
@@ -1406,7 +1396,7 @@ namespace BOSS
         bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override
         {
             // 디버깅 정보수집
-            auto AddDebugLog = [](DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
+            auto AddDebugLog = [](ZaySon::DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
             {
                 auto& NewLog = logs.AtAdding();
                 NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
@@ -1450,7 +1440,7 @@ namespace BOSS
 
     public:
         ZayUIs mInsiders;
-        mutable DebugLogs* mInsidersLogs {nullptr};
+        mutable ZaySon::DebugLogs* mInsidersLogs {nullptr};
         mutable const ZayExtend* mInsidersComponent {nullptr};
         mutable chars mInsidersComponentName {nullptr};
         mutable chars mInsidersDefaultName {nullptr};
@@ -1508,7 +1498,7 @@ namespace BOSS
         }
 
     private:
-        void Render(ZayPanel& panel, const String& defaultname, DebugLogs& logs) const override
+        void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
         {
             sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren,
                     &panel, false, false, false, false, false, false, false, false);
@@ -1654,13 +1644,22 @@ namespace BOSS
         mJumpCalls.AtAdding() = String::Format("%s,0,%d", gatename, runcount);
     }
 
-    void ZaySon::JumpCallDirectly(chars gatename)
+    void ZaySon::JumpCallDirectly(chars gatename, ZayPanel* panel)
     {
         if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(gatename))
         {
-            ZayPanel NullPanel(nullptr, 0, 0);
-            ZayUIElement::DebugLogs LogCollector;
-            CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", LogCollector);
+            if(panel)
+            {
+                DebugLogs LogCollector;
+                CurGate->RenderByCall(*panel, mViewName + ".jumpcall", LogCollector);
+                RenderLogs(*panel, LogCollector);
+            }
+            else
+            {
+                ZayPanel NullPanel(nullptr, 0, 0);
+                DebugLogs BlankCollector;
+                CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", BlankCollector);
+            }
         }
     }
 
@@ -1753,7 +1752,7 @@ namespace BOSS
 
         Solvers GlobalSolvers;
         SetGlobalSolvers(GlobalSolvers);
-        ZayUIElement::DebugLogs LogCollector;
+        DebugLogs LogCollector;
         ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
         Solver::ClearReplacer();
 
@@ -1808,12 +1807,18 @@ namespace BOSS
         else mJumpCalls.Clear();
 
         // 수집된 디버그로그(GUI툴에 의한 포커스표현)
+        RenderLogs(panel, LogCollector);
+        return true;
+    }
+
+    void ZaySon::RenderLogs(ZayPanel& panel, DebugLogs& logs)
+    {
         const Point ViewPos = panel.toview(0, 0);
         ZAY_ZOOM_CLEAR(panel)
         ZAY_MOVE(panel, -ViewPos.x, -ViewPos.y)
-        for(sint32 i = 0, iend = LogCollector.Count(); i < iend; ++i)
+        for(sint32 i = 0, iend = logs.Count(); i < iend; ++i)
         {
-            hook(LogCollector[i])
+            hook(logs[i])
             ZAY_RECT(panel, fish.mRect)
             ZAY_FONT(panel, Math::MaxF(0.8, (fish.mRect.r - fish.mRect.l) * 0.005))
             {
@@ -1845,7 +1850,6 @@ namespace BOSS
                 }
             }
         }
-        return true;
     }
 
     void ZaySon::SetGlobalSolvers(Solvers& solvers) const

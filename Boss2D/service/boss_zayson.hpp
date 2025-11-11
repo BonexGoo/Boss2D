@@ -72,7 +72,7 @@ namespace BOSS
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) = 0;
         virtual void JumpCall(chars gatename, sint32 runcount) = 0;
-        virtual void JumpCallDirectly(chars gatename) = 0;
+        virtual void JumpCallDirectly(chars gatename, ZayPanel* panel) = 0;
         virtual void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) = 0;
         virtual void JumpClear() = 0;
     };
@@ -100,6 +100,14 @@ namespace BOSS
     public:
         enum class LogType {Info, Warning, Error, Option};
         typedef std::function<void(LogType type, chars title, chars detail)> LoggerCB;
+        class DebugLog
+        {
+        public:
+            Rect mRect;
+            bool mFill;
+            String mUIName;
+        };
+        typedef Array<DebugLog> DebugLogs;
 
     public:
         void Load(chars viewname, chars domheader, const Context& context);
@@ -113,7 +121,7 @@ namespace BOSS
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) override;
         void JumpCall(chars gatename, sint32 runcount) override;
-        void JumpCallDirectly(chars gatename) override;
+        void JumpCallDirectly(chars gatename, ZayPanel* panel) override;
         void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) override;
         void JumpClear() override;
         const ZayExtend* FindComponent(chars name) const;
@@ -123,6 +131,7 @@ namespace BOSS
         const Strings AllGlueNames() const;
         const Strings AllGateNames() const;
         bool Render(ZayPanel& panel);
+        void RenderLogs(ZayPanel& panel, DebugLogs& logs);
 
     private:
         void SetGlobalSolvers(Solvers& solvers) const;
