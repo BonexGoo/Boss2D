@@ -1609,25 +1609,25 @@ namespace BOSS
 
     ZayExtend::Payload& ZayExtend::Payload::operator()(sint32 value)
     {
-        AddParam(SolverValue::MakeByInteger(value));
+        AddParam(SolverValue::MakeInteger(value));
         return *this;
     }
 
     ZayExtend::Payload& ZayExtend::Payload::operator()(sint64 value)
     {
-        AddParam(SolverValue::MakeByInteger(value));
+        AddParam(SolverValue::MakeInteger(value));
         return *this;
     }
 
     ZayExtend::Payload& ZayExtend::Payload::operator()(SolverValue::Float value)
     {
-        AddParam(SolverValue::MakeByFloat(value));
+        AddParam(SolverValue::MakeFloat(value));
         return *this;
     }
 
     ZayExtend::Payload& ZayExtend::Payload::operator()(SolverValue::Text value)
     {
-        AddParam(SolverValue::MakeByText(value));
+        AddParam(SolverValue::MakeText(value));
         return *this;
     }
 
@@ -1923,22 +1923,22 @@ namespace BOSS
 
     ZayExtend::Payload ZayExtend::operator()(sint32 value) const
     {
-        return Payload(this, SolverValue::MakeByInteger(value));
+        return Payload(this, SolverValue::MakeInteger(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(sint64 value) const
     {
-        return Payload(this, SolverValue::MakeByInteger(value));
+        return Payload(this, SolverValue::MakeInteger(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(SolverValue::Float value) const
     {
-        return Payload(this, SolverValue::MakeByFloat(value));
+        return Payload(this, SolverValue::MakeFloat(value));
     }
 
     ZayExtend::Payload ZayExtend::operator()(SolverValue::Text value) const
     {
-        return Payload(this, SolverValue::MakeByText(value));
+        return Payload(this, SolverValue::MakeText(value));
     }
 
     bool ZayExtend::HasComponent() const

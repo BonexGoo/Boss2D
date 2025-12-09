@@ -112,7 +112,7 @@ namespace BOSS
             {
                 if(auto CurSolver = FindTarget(mChain, mName))
                     return CurSolver->result();
-                return SolverValue::MakeByText(mName); // 해당 Solver를 찾지 못하면 텍스트타입
+                return SolverValue::MakeText(mName); // 해당 Solver를 찾지 못하면 텍스트타입
             }
             return zero;
         }
@@ -188,6 +188,7 @@ namespace BOSS
             case SolverOperatorType::Function_Multiply: collector += "[multiply] "; break;
             case SolverOperatorType::Function_Divide: collector += "[divide] "; break;
             case SolverOperatorType::Function_Find: collector += "[find] "; break;
+            case SolverOperatorType::Function_Truncate: collector += "[truncate] "; break;
             }
 
             // 우항
@@ -212,8 +213,8 @@ namespace BOSS
         }
         public: virtual SolverValue result(SolverValue zero) const override
         {
-            const SolverValue& Zero = SolverValue::MakeByInteger(0);
-            const SolverValue& One = SolverValue::MakeByInteger(1);
+            const SolverValue& Zero = SolverValue::MakeInteger(0);
+            const SolverValue& One = SolverValue::MakeInteger(1);
             if(0 < reliable())
             switch(mOperatorType)
             {
@@ -247,6 +248,7 @@ namespace BOSS
             case SolverOperatorType::Function_Multiply: return mOperandL->result(Zero).Function_Multiply(mOperandR->result(One));
             case SolverOperatorType::Function_Divide:   return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
             case SolverOperatorType::Function_Find:     return mOperandL->result(Zero).Function_Find(mOperandR->result(One));
+            case SolverOperatorType::Function_Truncate: return mOperandL->result(Zero).Function_Truncate(mOperandR->result(One));
             }
             return zero;
         }
@@ -462,21 +464,28 @@ namespace BOSS
         return mType;
     }
 
-    SolverValue SolverValue::MakeByInteger(Integer value)
+    SolverValue SolverValue::MakeInteger(Integer value)
     {
         SolverValue Result(SolverValueType::Integer);
         Result.mInteger = value;
         return Result;
     }
 
-    SolverValue SolverValue::MakeByFloat(Float value)
+    SolverValue SolverValue::MakeIntegerByRound(Float value)
+    {
+        SolverValue Result(SolverValueType::Integer);
+        Result.mInteger = SolverValue::Integer(value + 0.5);
+        return Result;
+    }
+
+    SolverValue SolverValue::MakeFloat(Float value)
     {
         SolverValue Result(SolverValueType::Float);
         Result.mFloat = value;
         return Result;
     }
 
-    SolverValue SolverValue::MakeByText(Text value)
+    SolverValue SolverValue::MakeText(Text value)
     {
         value.Replace("\\\\", "\\");
         value.Replace("\\\'", "\'");
@@ -486,7 +495,7 @@ namespace BOSS
         return Result;
     }
 
-    SolverValue SolverValue::MakeByRange(Float value1, Float value2)
+    SolverValue SolverValue::MakeRange(Float value1, Float value2)
     {
         SolverValue Result(SolverValueType::Range);
         Result.mRange.mValue1 = value1;
@@ -494,7 +503,7 @@ namespace BOSS
         return Result;
     }
 
-    SolverValue SolverValue::MakeByRangeTime(Range value, Float sec)
+    SolverValue SolverValue::MakeRangeTime(Range value, Float sec)
     {
         SolverValue Result(SolverValueType::Range);
         Result.mRange.mValue1 = value.mValue1;
@@ -504,7 +513,7 @@ namespace BOSS
         return Result;
     }
 
-    SolverValue SolverValue::MakeByRangeTime(chars code)
+    SolverValue SolverValue::MakeRangeTime(chars code)
     {
         SolverValue Result(SolverValueType::Range);
         if(*(code++) == '$' && *(code++) == 'R' && *(code++) == ':') // $R:0_0_0_0$
@@ -589,9 +598,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() + rhs.ToInteger());
-        case SolverValueType::Float: return MakeByFloat(ToFloat() + rhs.ToFloat());
-        case SolverValueType::Text: return MakeByText(ToText() + rhs.ToText());
+        case SolverValueType::Integer: return MakeInteger(ToInteger() + rhs.ToInteger());
+        case SolverValueType::Float: return MakeFloat(ToFloat() + rhs.ToFloat());
+        case SolverValueType::Text: return MakeText(ToText() + rhs.ToText());
         }
         return SolverValue();
     }
@@ -600,9 +609,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() - rhs.ToInteger());
-        case SolverValueType::Float: return MakeByFloat(ToFloat() - rhs.ToFloat());
-        case SolverValueType::Text: return MakeByText(Text(ToText()).Replace(rhs.ToText(), ""));
+        case SolverValueType::Integer: return MakeInteger(ToInteger() - rhs.ToInteger());
+        case SolverValueType::Float: return MakeFloat(ToFloat() - rhs.ToFloat());
+        case SolverValueType::Text: return MakeText(Text(ToText()).Replace(rhs.ToText(), ""));
         }
         return SolverValue();
     }
@@ -611,15 +620,15 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * rhs.ToInteger());
-        case SolverValueType::Float: return MakeByFloat(ToFloat() * rhs.ToFloat());
+        case SolverValueType::Integer: return MakeInteger(ToInteger() * rhs.ToInteger());
+        case SolverValueType::Float: return MakeFloat(ToFloat() * rhs.ToFloat());
         case SolverValueType::Text:
             {
                 Text Dest;
                 const Text Src = ToText();
                 for(float i = rhs.ToFloat(); 0 < i; i -= 1.0f)
                     Dest += Src.Left(Src.Length() * Math::MinF(i, 1.0f));
-                return MakeByText(Dest);
+                return MakeText(Dest);
             }
         }
         return SolverValue();
@@ -634,11 +643,11 @@ namespace BOSS
                 auto Lhs = ToInteger();
                 auto Rhs = rhs.ToInteger();
                 if(Rhs <= Lhs && 0 < Rhs && Lhs % Rhs == 0)
-                    return MakeByInteger(Lhs / Rhs);
-                return MakeByFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+                    return MakeInteger(Lhs / Rhs);
+                return MakeFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
             }
-        case SolverValueType::Float: return MakeByFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByFloat(ToText().Length() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Float: return MakeFloat(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeFloat(ToText().Length() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
         return SolverValue();
     }
@@ -649,22 +658,22 @@ namespace BOSS
         {
         case SolverValueType::Integer:
             if(auto Rhs = rhs.ToInteger())
-                return MakeByInteger(ToInteger() % Rhs);
-            else return MakeByText("Remainder_Error");
-        case SolverValueType::Float: return MakeByFloat(Math::Mod(ToFloat(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
-        case SolverValueType::Text: return MakeByFloat(Math::Mod(ToText().Length(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
+                return MakeInteger(ToInteger() % Rhs);
+            else return MakeText("Remainder_Error");
+        case SolverValueType::Float: return MakeFloat(Math::Mod(ToFloat(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
+        case SolverValueType::Text: return MakeFloat(Math::Mod(ToText().Length(), Math::MaxF(Math::FloatMin(), rhs.ToFloat())));
         }
         return SolverValue();
     }
 
     SolverValue SolverValue::BitAnd(const SolverValue& rhs) const
     {
-        return MakeByInteger(ToInteger() & rhs.ToInteger());
+        return MakeInteger(ToInteger() & rhs.ToInteger());
     }
 
     SolverValue SolverValue::BitOr(const SolverValue& rhs) const
     {
-        return MakeByInteger(ToInteger() | rhs.ToInteger());
+        return MakeInteger(ToInteger() | rhs.ToInteger());
     }
 
     SolverValue SolverValue::Variabler(const SolverValue& rhs, const SolverChain* chain) const
@@ -676,21 +685,21 @@ namespace BOSS
 
     SolverValue SolverValue::RangeTarget(const SolverValue& rhs) const
     {
-        return MakeByRange(ToFloat(), rhs.ToFloat());
+        return MakeRange(ToFloat(), rhs.ToFloat());
     }
 
     SolverValue SolverValue::RangeTimer(const SolverValue& rhs) const
     {
-        return MakeByRangeTime(ToRange(), rhs.ToFloat());
+        return MakeRangeTime(ToRange(), rhs.ToFloat());
     }
 
     SolverValue SolverValue::Greater(const SolverValue& rhs) const
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() < rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() < rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) < 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() < rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() < rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) < 0);
         }
         return SolverValue();
     }
@@ -699,9 +708,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() <= rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() <= rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) <= 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() <= rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() <= rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) <= 0);
         }
         return SolverValue();
     }
@@ -710,9 +719,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() > rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() > rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) > 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() > rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() > rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) > 0);
         }
         return SolverValue();
     }
@@ -721,9 +730,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() >= rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() >= rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) >= 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() >= rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() >= rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) >= 0);
         }
         return SolverValue();
     }
@@ -732,9 +741,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() == rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() == rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) == 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() == rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() == rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) == 0);
         }
         return SolverValue();
     }
@@ -743,9 +752,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() != rhs.ToInteger());
-        case SolverValueType::Float: return MakeByInteger(ToFloat() != rhs.ToFloat());
-        case SolverValueType::Text: return MakeByInteger(ToText().Compare(rhs.ToText()) != 0);
+        case SolverValueType::Integer: return MakeInteger(ToInteger() != rhs.ToInteger());
+        case SolverValueType::Float: return MakeInteger(ToFloat() != rhs.ToFloat());
+        case SolverValueType::Text: return MakeInteger(ToText().Compare(rhs.ToText()) != 0);
         }
         return SolverValue();
     }
@@ -754,9 +763,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(Math::Min(ToInteger(), rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByFloat(Math::MinF(ToFloat(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByText((ToText().Compare(rhs.ToText()) < 0)? ToText() : rhs.ToText());
+        case SolverValueType::Integer: return MakeInteger(Math::Min(ToInteger(), rhs.ToInteger()));
+        case SolverValueType::Float: return MakeFloat(Math::MinF(ToFloat(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeText((ToText().Compare(rhs.ToText()) < 0)? ToText() : rhs.ToText());
         }
         return SolverValue();
     }
@@ -765,9 +774,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(Math::Max(ToInteger(), rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByFloat(Math::MaxF(ToFloat(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByText((ToText().Compare(rhs.ToText()) > 0)? ToText() : rhs.ToText());
+        case SolverValueType::Integer: return MakeInteger(Math::Max(ToInteger(), rhs.ToInteger()));
+        case SolverValueType::Float: return MakeFloat(Math::MaxF(ToFloat(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeText((ToText().Compare(rhs.ToText()) > 0)? ToText() : rhs.ToText());
         }
         return SolverValue();
     }
@@ -776,9 +785,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() + Math::Abs(rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByFloat(ToFloat() + Math::AbsF(rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByText("Abs_Error");
+        case SolverValueType::Integer: return MakeInteger(ToInteger() + Math::Abs(rhs.ToInteger()));
+        case SolverValueType::Float: return MakeFloat(ToFloat() + Math::AbsF(rhs.ToFloat()));
+        case SolverValueType::Text: return MakeText("Abs_Error");
         }
         return SolverValue();
     }
@@ -787,9 +796,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(Math::Pow(ToInteger(), rhs.ToInteger()));
-        case SolverValueType::Float: return MakeByFloat(Math::Pow(ToFloat(), rhs.ToFloat()));
-        case SolverValueType::Text: return MakeByText("Pow_Error");
+        case SolverValueType::Integer: return MakeIntegerByRound(Math::Pow(ToInteger(), rhs.ToInteger()));
+        case SolverValueType::Float: return MakeFloat(Math::Pow(ToFloat(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeText("Pow_Error");
         }
         return SolverValue();
     }
@@ -798,9 +807,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Cos(Math::ToRadian(rhs.ToInteger())));
-        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Cos(Math::ToRadian(rhs.ToFloat())));
-        case SolverValueType::Text: return MakeByText("Cos_Error");
+        case SolverValueType::Integer: return MakeIntegerByRound(ToInteger() * Math::Cos(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeFloat(ToFloat() * Math::Cos(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeText("Cos_Error");
         }
         return SolverValue();
     }
@@ -809,9 +818,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Sin(Math::ToRadian(rhs.ToInteger())));
-        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Sin(Math::ToRadian(rhs.ToFloat())));
-        case SolverValueType::Text: return MakeByText("Sin_Error");
+        case SolverValueType::Integer: return MakeIntegerByRound(ToInteger() * Math::Sin(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeFloat(ToFloat() * Math::Sin(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeText("Sin_Error");
         }
         return SolverValue();
     }
@@ -820,9 +829,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * Math::Tan(Math::ToRadian(rhs.ToInteger())));
-        case SolverValueType::Float: return MakeByFloat(ToFloat() * Math::Tan(Math::ToRadian(rhs.ToFloat())));
-        case SolverValueType::Text: return MakeByText("Tan_Error");
+        case SolverValueType::Integer: return MakeIntegerByRound(ToInteger() * Math::Tan(Math::ToRadian(rhs.ToInteger())));
+        case SolverValueType::Float: return MakeFloat(ToFloat() * Math::Tan(Math::ToRadian(rhs.ToFloat())));
+        case SolverValueType::Text: return MakeText("Tan_Error");
         }
         return SolverValue();
     }
@@ -831,9 +840,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(Math::Atan(rhs.ToInteger(), ToInteger()));
-        case SolverValueType::Float: return MakeByFloat(Math::Atan(rhs.ToFloat(), ToFloat()));
-        case SolverValueType::Text: return MakeByText("Atan_Error");
+        case SolverValueType::Integer: return MakeIntegerByRound(Math::Atan(rhs.ToInteger(), ToInteger()));
+        case SolverValueType::Float: return MakeFloat(Math::Atan(rhs.ToFloat(), ToFloat()));
+        case SolverValueType::Text: return MakeText("Atan_Error");
         }
         return SolverValue();
     }
@@ -842,9 +851,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() != 0 && rhs.ToInteger() != 0);
-        case SolverValueType::Float: return MakeByInteger(ToFloat() != 0 && rhs.ToFloat() != 0);
-        case SolverValueType::Text: return MakeByInteger(0 < ToText().Length() && 0 < rhs.ToText().Length());
+        case SolverValueType::Integer: return MakeInteger(ToInteger() != 0 && rhs.ToInteger() != 0);
+        case SolverValueType::Float: return MakeInteger(ToFloat() != 0 && rhs.ToFloat() != 0);
+        case SolverValueType::Text: return MakeInteger(0 < ToText().Length() && 0 < rhs.ToText().Length());
         }
         return SolverValue();
     }
@@ -853,9 +862,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() != 0 || rhs.ToInteger() != 0);
-        case SolverValueType::Float: return MakeByInteger(ToFloat() != 0 || rhs.ToFloat() != 0);
-        case SolverValueType::Text: return MakeByInteger(0 < ToText().Length() || 0 < rhs.ToText().Length());
+        case SolverValueType::Integer: return MakeInteger(ToInteger() != 0 || rhs.ToInteger() != 0);
+        case SolverValueType::Float: return MakeInteger(ToFloat() != 0 || rhs.ToFloat() != 0);
+        case SolverValueType::Text: return MakeInteger(0 < ToText().Length() || 0 < rhs.ToText().Length());
         }
         return SolverValue();
     }
@@ -864,9 +873,9 @@ namespace BOSS
     {
         switch(GetMergedType(rhs))
         {
-        case SolverValueType::Integer: return MakeByInteger(ToInteger() * rhs.ToInteger());
+        case SolverValueType::Integer: return MakeInteger(ToInteger() * rhs.ToInteger());
         case SolverValueType::Float:
-        case SolverValueType::Text: return MakeByInteger(ToFloat() * rhs.ToFloat());
+        case SolverValueType::Text: return MakeIntegerByRound(ToFloat() * rhs.ToFloat());
         }
         return SolverValue();
     }
@@ -877,10 +886,10 @@ namespace BOSS
         {
         case SolverValueType::Integer:
             if(auto Rhs = rhs.ToInteger())
-                return MakeByInteger(ToInteger() / Rhs);
-            else return MakeByText("Divide_Error");
+                return MakeInteger(ToInteger() / Rhs);
+            else return MakeText("Divide_Error");
         case SolverValueType::Float:
-        case SolverValueType::Text: return MakeByInteger(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
+        case SolverValueType::Text: return MakeIntegerByRound(ToFloat() / Math::MaxF(Math::FloatMin(), rhs.ToFloat()));
         }
         return SolverValue();
     }
@@ -891,7 +900,28 @@ namespace BOSS
         {
         case SolverValueType::Integer:
         case SolverValueType::Float:
-        case SolverValueType::Text: return MakeByInteger(ToText().Find(0, rhs.ToText()));
+        case SolverValueType::Text: return MakeInteger(ToText().Find(0, rhs.ToText()));
+        }
+        return SolverValue();
+    }
+
+    SolverValue SolverValue::Function_Truncate(const SolverValue& rhs) const
+    {
+        switch(GetMergedType(rhs))
+        {
+        case SolverValueType::Integer:
+        case SolverValueType::Float:
+        case SolverValueType::Text:
+            if(auto Rhs = rhs.ToInteger())
+            {
+                const sint32 DotPos = Math::Log10(Rhs);
+                const String Value = String::FromInteger(int(ToFloat() + 0.5));
+                String Text = Value.Left(Value.Length() - DotPos) + '.' + Value.Right(DotPos);
+                while(Text[-2] == '0') Text.SubTail(1);
+                if(Text[-2] == '.') Text.SubTail(1);
+                return MakeText(Text);
+            }
+            else return MakeText("Truncate_Error");
         }
         return SolverValue();
     }
@@ -900,7 +930,7 @@ namespace BOSS
     {
         mLinkedChain = nullptr;
         mReliable = 0;
-        mResult = SolverValue::MakeByInteger(0);
+        mResult = SolverValue::MakeInteger(0);
         mUpdatedFormulaMsec = 0;
         mUpdatedResultMsec = 0;
     }
@@ -1059,18 +1089,12 @@ namespace BOSS
             sint32 NewPriority = deep * PriorityCount;
             switch(type)
             {
-            case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
-                NewPriority += PriorityCount - 2;
-                break;
             case SolverOperatorType::Multiply: case SolverOperatorType::Divide: case SolverOperatorType::Remainder:
             case SolverOperatorType::Function_Multiply: case SolverOperatorType::Function_Divide: // 1순위> *, /, %, [multiply], [divide]
                 NewPriority += PriorityCount - 1;
                 break;
-            case SolverOperatorType::Variabler: case SolverOperatorType::Function_Find: // 5순위> @, [find]
-                NewPriority += PriorityCount - 5;
-                break;
-            case SolverOperatorType::Commenter: // 9순위> ?
-                NewPriority += PriorityCount - 9;
+            case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
+                NewPriority += PriorityCount - 2;
                 break;
             case SolverOperatorType::BitAnd: case SolverOperatorType::BitOr:
             case SolverOperatorType::RangeTarget: // 3순위> &, |, ~
@@ -1079,18 +1103,25 @@ namespace BOSS
             case SolverOperatorType::RangeTimer: // 4순위> :
                 NewPriority += PriorityCount - 4;
                 break;
+            case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 5순위> [min], [max], [abs], [pow], [cos], [sin], [tan], [atan], [find], [truncate]
+            case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
+            case SolverOperatorType::Function_Cos: case SolverOperatorType::Function_Sin:
+            case SolverOperatorType::Function_Tan: case SolverOperatorType::Function_Atan:
+            case SolverOperatorType::Function_Find: case SolverOperatorType::Function_Truncate:
+                NewPriority += PriorityCount - 5;
+                break;
+            case SolverOperatorType::Variabler: // 6순위> @
+                NewPriority += PriorityCount - 6;
+                break;
             case SolverOperatorType::Greater: case SolverOperatorType::GreaterOrEqual: case SolverOperatorType::Less: // 7순위> <, <=, >, >=, ==, !=
             case SolverOperatorType::LessOrEqual: case SolverOperatorType::Equal: case SolverOperatorType::Different:
                 NewPriority += PriorityCount - 7;
                 break;
-            case SolverOperatorType::Function_Min: case SolverOperatorType::Function_Max: // 6순위> [min], [max], [abs], [pow], [cos], [sin], [tan], [atan]
-            case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
-            case SolverOperatorType::Function_Cos: case SolverOperatorType::Function_Sin:
-            case SolverOperatorType::Function_Tan: case SolverOperatorType::Function_Atan:
-                NewPriority += PriorityCount - 6;
-                break;
             case SolverOperatorType::Function_And: case SolverOperatorType::Function_Or: // 8순위> [and], [or]
                 NewPriority += PriorityCount - 8;
+                break;
+            case SolverOperatorType::Commenter: // 9순위> ?
+                NewPriority += PriorityCount - 9;
                 break;
             }
 
@@ -1246,6 +1277,11 @@ namespace BOSS
                         AddOperator(OperandFocus, SolverOperatorType::Function_Find, deep);
                         formula += 6 - 1;
                     }
+                    jump(!String::Compare("[truncate]", formula, 10))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Truncate, deep);
+                        formula += 10 - 1;
+                    }
                     else
                     {
                         BOSS_ASSERT(String::Format("알 수 없는 함수기호입니다([%c%c...)", formula[1], formula[2]), false);
@@ -1282,17 +1318,17 @@ namespace BOSS
                     auto HexValue = Parser::GetHex32<uint64>(formula, -1, &HexSize);
                     if(IntegerSize < HexSize && FloatSize < HexSize)
                     {
-                        NewOperand = SolverLiteral(SolverValue::MakeByInteger(HexValue)).clone();
+                        NewOperand = SolverLiteral(SolverValue::MakeInteger(HexValue)).clone();
                         formula += HexSize - 1;
                     }
                     else if(IntegerSize < FloatSize)
                     {
-                        NewOperand = SolverLiteral(SolverValue::MakeByFloat(FloatValue)).clone();
+                        NewOperand = SolverLiteral(SolverValue::MakeFloat(FloatValue)).clone();
                         formula += FloatSize - 1;
                     }
                     else
                     {
-                        NewOperand = SolverLiteral(SolverValue::MakeByInteger(IntegerValue)).clone();
+                        NewOperand = SolverLiteral(SolverValue::MakeInteger(IntegerValue)).clone();
                         formula += IntegerSize - 1;
                     }
                 }
@@ -1304,14 +1340,14 @@ namespace BOSS
                         if(End[0] == '\\' && End[1] != '\0') End++;
                         else if(*End == *formula) break;
                     }
-                    NewOperand = SolverLiteral(SolverValue::MakeByText(String(formula + 1, End - formula - 1))).clone();
+                    NewOperand = SolverLiteral(SolverValue::MakeText(String(formula + 1, End - formula - 1))).clone();
                     formula += (End - formula - 1 + 2) - 1;
                 }
                 jump(formula[0] == '$' && formula[1] == 'R' && formula[2] == ':')
                 {
                     chars End = formula;
                     while(*(++End)) if(*End == *formula) break;
-                    NewOperand = SolverLiteral(SolverValue::MakeByRangeTime(String(formula, End - formula + 1))).clone();
+                    NewOperand = SolverLiteral(SolverValue::MakeRangeTime(String(formula, End - formula + 1))).clone();
                     formula += (End - formula - 1 + 2) - 1;
                 }
                 // 변수
@@ -1365,7 +1401,7 @@ namespace BOSS
         const float OldReliable = mReliable;
         const SolverValue OldResult = ToReference(mResult);
         const float NewReliable = mOperandTop->reliable();
-        const SolverValue& NewResult = mOperandTop->result(SolverValue::MakeByInteger(0));
+        const SolverValue& NewResult = mOperandTop->result(SolverValue::MakeInteger(0));
 
         // 필터확인후 입력
         if(mResultCB == nullptr || mResultCB(mParsedFormula, NewResult, NewReliable))
@@ -1383,7 +1419,7 @@ namespace BOSS
 
     SolverValue Solver::ExecuteOnly() const
     {
-        return mOperandTop->result(SolverValue::MakeByInteger(0));
+        return mOperandTop->result(SolverValue::MakeInteger(0));
     }
 
     String Solver::ExecuteVariableName() const

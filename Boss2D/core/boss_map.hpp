@@ -276,6 +276,7 @@ namespace BOSS
         /// @return 성공여부
         bool Remove(chars key)
         {
+            BOSS_ASSERT("Remove의 과도한 재귀호출입니다", boss_strlen(key) < 2048);
             if(RemoveCoreByNameable(key))
             {
                 Info->Count--;
@@ -289,6 +290,7 @@ namespace BOSS
         /// @return 성공여부
         bool Remove(wchars key)
         {
+            BOSS_ASSERT("Remove의 과도한 재귀호출입니다", boss_wcslen(key) < 2048);
             if(RemoveCoreByNameable(key))
             {
                 Info->Count--;

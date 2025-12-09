@@ -13,7 +13,8 @@ namespace BOSS
         Greater, GreaterOrEqual, Less, LessOrEqual, Equal, Different, // <, <=, >, >=, ==, !=
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_Cos, Function_Sin, Function_Tan, Function_Atan, // [cos], [sin], [tan], [atan]
-        Function_And, Function_Or, Function_Multiply, Function_Divide, Function_Find}; // [and], [or], [multiply], [divide], [find]
+        Function_And, Function_Or, Function_Multiply, Function_Divide, // [and], [or], [multiply], [divide]
+        Function_Find, Function_Truncate}; // [find], [truncate]
 
     // 업데이트체인
     class SolverChainPair
@@ -75,12 +76,13 @@ namespace BOSS
         public: SolverValue& operator=(const SolverValue& rhs);
         public: SolverValue& operator=(SolverValue&& rhs);
 
-        public: static SolverValue MakeByInteger(Integer value);
-        public: static SolverValue MakeByFloat(Float value);
-        public: static SolverValue MakeByText(Text value);
-        public: static SolverValue MakeByRange(Float value1, Float value2);
-        public: static SolverValue MakeByRangeTime(Range value, Float sec);
-        public: static SolverValue MakeByRangeTime(chars code);
+        public: static SolverValue MakeInteger(Integer value);
+        public: static SolverValue MakeIntegerByRound(Float value);
+        public: static SolverValue MakeFloat(Float value);
+        public: static SolverValue MakeText(Text value);
+        public: static SolverValue MakeRange(Float value1, Float value2);
+        public: static SolverValue MakeRangeTime(Range value, Float sec);
+        public: static SolverValue MakeRangeTime(chars code);
 
         // 함수
         public: SolverValueType GetType() const;
@@ -118,6 +120,7 @@ namespace BOSS
         public: SolverValue Function_Multiply(const SolverValue& rhs) const;
         public: SolverValue Function_Divide(const SolverValue& rhs) const;
         public: SolverValue Function_Find(const SolverValue& rhs) const;
+        public: SolverValue Function_Truncate(const SolverValue& rhs) const;
 
         // 멤버
         private: SolverValueType mType;
@@ -196,7 +199,7 @@ namespace BOSS
             {
                 chars Sample = mResult.ToText();
                 if(Sample[0] == '$' && Sample[1] == 'R' && Sample[2] == ':')
-                    return SolverValue::MakeByRangeTime(Sample);
+                    return SolverValue::MakeRangeTime(Sample);
             }
             return mResult;
         }
