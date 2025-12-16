@@ -213,8 +213,8 @@ namespace BOSS
         }
         public: virtual SolverValue result(SolverValue zero) const override
         {
-            const SolverValue& Zero = SolverValue::MakeInteger(0);
-            const SolverValue& One = SolverValue::MakeInteger(1);
+            static const SolverValue Zero = SolverValue::MakeInteger(0);
+            static const SolverValue One  = SolverValue::MakeInteger(1);
             if(0 < reliable())
             switch(mOperatorType)
             {
@@ -337,7 +337,7 @@ namespace BOSS
         for(sint32 i = 0, iend = mObserverMap.Count(); i < iend; ++i)
         {
             auto& CurObserver = *mObserverMap.AccessByOrder(i);
-            if(!CurObserver.mUpdateID != mTarget.mUpdateID)
+            if(CurObserver.mUpdateID != mTarget.mUpdateID)
             {
                 CurObserver.mUpdateID = mTarget.mUpdateID;
                 CurObserver.mSolver->Execute(true);
@@ -1404,7 +1404,8 @@ namespace BOSS
         const float OldReliable = mReliable;
         const SolverValue OldResult = ToReference(mResult);
         const float NewReliable = mOperandTop->reliable();
-        const SolverValue& NewResult = mOperandTop->result(SolverValue::MakeInteger(0));
+        static const SolverValue Zero = SolverValue::MakeInteger(0);
+        const SolverValue& NewResult = mOperandTop->result(Zero);
 
         // 필터확인후 입력
         if(mResultCB == nullptr || mResultCB(mParsedFormula, NewResult, NewReliable))
@@ -1422,7 +1423,8 @@ namespace BOSS
 
     SolverValue Solver::ExecuteOnly() const
     {
-        return mOperandTop->result(SolverValue::MakeInteger(0));
+        static const SolverValue Zero = SolverValue::MakeInteger(0);
+        return mOperandTop->result(Zero);
     }
 
     String Solver::ExecuteVariableName() const
