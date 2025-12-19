@@ -837,6 +837,11 @@ public:
     class Graphics
     {
     public:
+        /// @brief 랜더링품질지정
+        /// @param smooth : SmoothPixmapTransform여부
+        /// @param antialiasing : Antialiasing여부
+        static void SetRenderHint(bool smooth, bool antialiasing);
+
         /// @brief 절단면지정
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)

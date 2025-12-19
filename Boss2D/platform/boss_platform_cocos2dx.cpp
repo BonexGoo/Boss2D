@@ -1114,6 +1114,13 @@
         ////////////////////////////////////////////////////////////////////////////////
         // GRAPHICS
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::Graphics::SetRenderHint(bool smooth, bool antialiasing)
+        {
+            BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
+
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         void Platform::Graphics::SetScissor(double x, double y, double w, double h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());

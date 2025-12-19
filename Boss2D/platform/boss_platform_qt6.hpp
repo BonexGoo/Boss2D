@@ -134,10 +134,17 @@
         inline sint32 painter_width() const {return mPainterWidth;}
         inline sint32 painter_height() const {return mPainterHeight;}
         inline double zoom() const {return mPainter.transform().m11();}
+        inline bool& smooth() {static bool _ = true; return _;}
+        inline bool& antialiasing() {static bool _ = true; return _;}
         inline const QRect& scissor() const {return mScissor;}
         inline const QColor& color() const {return mColor;}
         inline const ShaderRole& shader() const {return mShader;}
         // Setter
+        inline void SetRenderHint(bool s, bool a)
+        {
+            smooth() = s;
+            antialiasing() = a;
+        }
         inline void SetFont(chars name, sint32 size)
         {
             const String FamilyAndStyle(name);
