@@ -463,34 +463,34 @@ namespace BOSS
         static inline uint64 ShiftedKey(uint64 key, sint32& step)
         {
             uint32 flag;
-            flag = !(key & oxFFFFFFFF00000000); key <<= flag << 5; step += flag << 3;
-            flag = !(key & oxFFFF000000000000); key <<= flag << 4; step += flag << 2;
-            flag = !(key & oxFF00000000000000); key <<= flag << 3; step += flag << 1;
-            flag = !(key & oxF000000000000000); key <<= flag << 2; step += flag << 0;
+            flag = ((key & oxFFFFFFFF00000000) == 0); key <<= flag << 5; step += flag << 3;
+            flag = ((key & oxFFFF000000000000) == 0); key <<= flag << 4; step += flag << 2;
+            flag = ((key & oxFF00000000000000) == 0); key <<= flag << 3; step += flag << 1;
+            flag = ((key & oxF000000000000000) == 0); key <<= flag << 2; step += flag << 0;
             return key;
         }
 
         static inline uint32 ShiftedKey(uint32 key, sint32& step)
         {
             uint32 flag;
-            flag = !(key & 0xFFFF0000); key <<= flag << 4; step += flag << 2;
-            flag = !(key & 0xFF000000); key <<= flag << 3; step += flag << 1;
-            flag = !(key & 0xF0000000); key <<= flag << 2; step += flag << 0;
+            flag = ((key & 0xFFFF0000) == 0); key <<= flag << 4; step += flag << 2;
+            flag = ((key & 0xFF000000) == 0); key <<= flag << 3; step += flag << 1;
+            flag = ((key & 0xF0000000) == 0); key <<= flag << 2; step += flag << 0;
             return key;
         }
 
         static inline uint16 ShiftedKey(uint16 key, sint32& step)
         {
             uint32 flag;
-            flag = !(key & 0xFF00); key <<= flag << 3; step += flag << 1;
-            flag = !(key & 0xF000); key <<= flag << 2; step += flag << 0;
+            flag = ((key & 0xFF00) == 0); key <<= flag << 3; step += flag << 1;
+            flag = ((key & 0xF000) == 0); key <<= flag << 2; step += flag << 0;
             return key;
         }
 
         static inline uint08 ShiftedKey(uint08 key, sint32& step)
         {
             uint32 flag;
-            flag = !(key & 0xF0); key <<= flag << 2; step += flag << 0;
+            flag = ((key & 0xF0) == 0); key <<= flag << 2; step += flag << 0;
             return key;
         }
 
