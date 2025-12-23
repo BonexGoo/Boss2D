@@ -18,7 +18,7 @@ namespace BOSS
         TT_WheelUp, TT_WheelDown, TT_WheelPress, TT_WheelDragging, TT_WheelDraggingIdle, TT_WheelRelease,
         TT_ExtendPress, TT_ExtendDragging, TT_ExtendDraggingIdle, TT_ExtendRelease,
         // 특수
-        TT_ToolTip, TT_LongPress, TT_Render};
+        TT_ToolTip, TT_LongPress, TT_RepeatPress, TT_Render};
 
     /// @brief 뷰지원
     class View

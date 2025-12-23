@@ -1655,6 +1655,7 @@ namespace BOSS
             {
                 static bool PressMode = false;
                 static bool HasLongPress = false;
+                static bool HasRepeatPress = false;
                 static const sint32 SwipeGap = 50;
                 static sint32 OldSwipeX = 0;
                 static sint32 OldSwipeY = 0;
@@ -1678,6 +1679,7 @@ namespace BOSS
                         ZaySonElementCall::SetCursor(ElementID, CR_Busy);
                     }
                     HasLongPress = false;
+                    HasRepeatPress = false;
                     OldSwipeX = x;
                     OldSwipeY = y;
                 }
@@ -1694,7 +1696,7 @@ namespace BOSS
                         {
                             OldSwipeX = x;
                             OldSwipeY = y;
-                            if(ZaySonElementCall::SendClick(ElementID, n, false, false,
+                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, false,
                                 (SwipeID == 1), (SwipeID == 2), (SwipeID == 3), (SwipeID == 4), false, false))
                                 v->invalidate();
                         }
@@ -1702,20 +1704,20 @@ namespace BOSS
                 }
                 else if(t == GT_InReleased || (PressMode && (t == GT_OutReleased || t == GT_CancelReleased)))
                 {
-                    if(!HasLongPress)
+                    if(!HasLongPress && !HasRepeatPress)
                     {
                         const uint64 CurReleaseMsec = Platform::Utility::CurrentTimeMsec();
                         const bool HasDoubleClick = (CurReleaseMsec < ReleaseMsec + 300 && ReleaseUIName == n);
                         if(HasDoubleClick && ZaySonElementCall::IsValidDoubleClick(ElementID))
                         {
-                            if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false, false, false, false, false))
+                            if(ZaySonElementCall::SendClick(ElementID, n, true, false, false, false, false, false, false, false, false))
                                 ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_PointingHand);
                             ReleaseUIName.Empty();
                             ReleaseMsec = 0;
                         }
                         else
                         {
-                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, false, false, false, false, t == GT_OutReleased, t == GT_CancelReleased))
+                            if(ZaySonElementCall::SendClick(ElementID, n, false, false, false, false, false, false, false, t == GT_OutReleased, t == GT_CancelReleased))
                                 ZaySonElementCall::SetCursor(ElementID, (PressMode)? CR_Arrow : CR_PointingHand);
                             ReleaseUIName = n;
                             ReleaseMsec = CurReleaseMsec;
@@ -1727,9 +1729,18 @@ namespace BOSS
                 {
                     if(ZaySonElementCall::IsValidLongPress(ElementID))
                     {
-                        if(ZaySonElementCall::SendClick(ElementID, n, false, true, false, false, false, false, false, false))
+                        if(ZaySonElementCall::SendClick(ElementID, n, false, true, false, false, false, false, false, false, false))
                             v->invalidate();
                         HasLongPress = true;
+                    }
+                }
+                else if(t == GT_RepeatPressed)
+                {
+                    if(ZaySonElementCall::IsValidRepeatPress(ElementID))
+                    {
+                        if(ZaySonElementCall::SendClick(ElementID, n, false, false, true, false, false, false, false, false, false))
+                            v->invalidate();
+                        HasRepeatPress = true;
                     }
                 }
             };
@@ -2298,6 +2309,10 @@ namespace BOSS
                 break;
             case TT_LongPress:
                 CurElement.m_cb(this, &CurElement, GT_LongPressed, x, y);
+                break;
+            case TT_RepeatPress:
+                if(PressElement && PressElement->m_cb)
+                    PressElement->m_cb(this, PressElement, GT_RepeatPressed, x, y);
                 break;
             }
             m_viewfunc.m_unlock();

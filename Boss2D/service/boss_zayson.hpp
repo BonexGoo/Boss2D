@@ -45,10 +45,11 @@ namespace BOSS
         static void SetCursor(sint32 elementid, CursorRole role);
         static bool SetVariable(sint32 elementid, chars uiname, chars key, chars value);
         static bool SendPress(sint32 elementid, chars uiname);
-        static bool SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed,
+        static bool SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool repeatpressed,
             bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased);
         static bool IsValidDoubleClick(sint32 elementid);
         static bool IsValidLongPress(sint32 elementid);
+        static bool IsValidRepeatPress(sint32 elementid);
         static bool IsValidSwipe(sint32 elementid);
         static sint32 GetCompID(sint32 elementid);
     };
@@ -58,7 +59,7 @@ namespace BOSS
     {
     public:
         enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed,
-            IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed,
+            IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed, IfRepeatPressed, IfNRepeatPressed,
             IfUpSwiped, IfNUpSwiped, IfDownSwiped, IfNDownSwiped, IfLeftSwiped, IfNLeftSwiped, IfRightSwiped, IfNRightSwiped,
             IfOutReleased, IfCancelReleased, Else, Endif};
         enum class RequestType {Unknown, SetVariable, VoidFunction, ReturnFunction};

@@ -77,11 +77,12 @@ namespace BOSS
         virtual void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const {}
         virtual void SetCursor(CursorRole role) {}
         virtual bool OnLambda(chars uiname, LambdaID id,
-            chars key, chars value, bool doubleclicked, bool longpressed,
+            chars key, chars value, bool doubleclicked, bool longpressed, bool repeatpressed,
             bool upswiped, bool downswiped, bool leftswiped, bool rightswiped,
             bool outreleased, bool cancelreleased) {return false;}
         virtual bool IsValidDoubleClick() const {return false;}
         virtual bool IsValidLongPress() const {return false;}
+        virtual bool IsValidRepeatPress() const {return false;}
         virtual bool IsValidSwipe() const {return false;}
         virtual sint32 GetCompID() const {return -1;}
 
@@ -259,7 +260,7 @@ namespace BOSS
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
             return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnSet,
-                key, value, false, false, false, false, false, false, false, false);
+                key, value, false, false, false, false, false, false, false, false, false);
         return false;
     }
 
@@ -267,16 +268,16 @@ namespace BOSS
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
             return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnTouch,
-                nullptr, nullptr, false, false, false, false, false, false, false, false);
+                nullptr, nullptr, false, false, false, false, false, false, false, false, false);
         return false;
     }
 
-    bool ZaySonElementCall::SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed,
+    bool ZaySonElementCall::SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool repeatpressed,
         bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
             return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnClick,
-                nullptr, nullptr, doubleclicked, longpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
+                nullptr, nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
         return false;
     }
 
@@ -291,6 +292,13 @@ namespace BOSS
     {
         if(auto CurUIElement = ZayUIElement::Get(elementid))
             return CurUIElement->IsValidLongPress();
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidRepeatPress(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidRepeatPress();
         return false;
     }
 
@@ -432,6 +440,10 @@ namespace BOSS
             return ZaySonInterface::ConditionType::IfLongPressed;
         jump(!String::Compare(text, "ifnlongpressed"))
             return ZaySonInterface::ConditionType::IfNLongPressed;
+        jump(!String::Compare(text, "ifrepeatpressed"))
+            return ZaySonInterface::ConditionType::IfRepeatPressed;
+        jump(!String::Compare(text, "ifnrepeatpressed"))
+            return ZaySonInterface::ConditionType::IfNRepeatPressed;
         jump(!String::Compare(text, "ifupswiped"))
             return ZaySonInterface::ConditionType::IfUpSwiped;
         jump(!String::Compare(text, "ifnupswiped"))
@@ -492,6 +504,16 @@ namespace BOSS
         {
             if(withelse) *withelse = true;
             return ZaySonInterface::ConditionType::IfNLongPressed;
+        }
+        jump(!String::Compare(text, "elifrepeatpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfRepeatPressed;
+        }
+        jump(!String::Compare(text, "elifnrepeatpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNRepeatPressed;
         }
         jump(!String::Compare(text, "elifupswiped"))
         {
@@ -613,7 +635,8 @@ namespace BOSS
             return false;
         };
         static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel,
-            bool doubleclicked, bool longpressed, bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
+            bool doubleclicked, bool longpressed, bool repeatpressed,
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
         {
             sint32s Collector;
             // 조건문처리로 유효한 CompValue를 수집
@@ -666,6 +689,12 @@ namespace BOSS
                     // 롱프레스가 아님을 확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNLongPressed)
                         IsTrue = !longpressed;
+                    // 리피트프레스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfRepeatPressed)
+                        IsTrue = repeatpressed;
+                    // 리피트프레스가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNRepeatPressed)
+                        IsTrue = !repeatpressed;
 
                     // Up스와이프확인
                     else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfUpSwiped)
@@ -996,7 +1025,7 @@ namespace BOSS
             if(0 < mChildren.Count())
             {
                 sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren,
-                    &panel, false, false, false, false, false, false, false, false);
+                    &panel, false, false, false, false, false, false, false, false, false);
                 for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
                 {
                     auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
@@ -1029,6 +1058,7 @@ namespace BOSS
             mCompID = -2;
             mValidDoubleClicked = false;
             mValidLongPressed = false;
+            mValidRepeatPressed = false;
             mValidSwipe = false;
         }
         ~ZayComponentElement() override {}
@@ -1080,30 +1110,42 @@ namespace BOSS
                 {
                     mValidDoubleClicked = true;
                     mValidLongPressed = false;
+                    mValidRepeatPressed = false;
                     mValidSwipe = false;
                 }
                 else if(!fish.GetText().Compare("Click_LongPress"))
                 {
                     mValidDoubleClicked = false;
                     mValidLongPressed = true;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = false;
+                }
+                else if(!fish.GetText().Compare("Click_RepeatPress"))
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = false;
+                    mValidRepeatPressed = true;
                     mValidSwipe = false;
                 }
                 else if(!fish.GetText().Compare("Click_Swipe"))
                 {
                     mValidDoubleClicked = false;
                     mValidLongPressed = false;
+                    mValidRepeatPressed = false;
                     mValidSwipe = true;
                 }
                 else if(!fish.GetText().Compare("Click_DoubleClick_LongPress"))
                 {
                     mValidDoubleClicked = true;
                     mValidLongPressed = true;
+                    mValidRepeatPressed = false;
                     mValidSwipe = false;
                 }
                 else
                 {
                     mValidDoubleClicked = false;
                     mValidLongPressed = false;
+                    mValidRepeatPressed = false;
                     mValidSwipe = false;
                 }
             }
@@ -1174,7 +1216,7 @@ namespace BOSS
                         LocalSolvers.AtAdding().Link(ViewName, "pH").Parse(String::FromFloat(panel.h())).Execute();
 
                         sint32s CollectedCodes = ZayConditionElement::Collect(ViewName, mInputCodes,
-                            nullptr, false, false, false, false, false, false, false, false);
+                            nullptr, false, false, false, false, false, false, false, false, false);
                         for(sint32 i = 0, iend = CollectedCodes.Count(); i < iend; ++i)
                         {
                             auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
@@ -1244,7 +1286,7 @@ namespace BOSS
                 {
                     // 조건문에 의해 살아남은 유효한 CompValue를 모두 실행
                     sint32s CollectedCompValues = ZayConditionElement::Collect(ViewName, mCompValues,
-                        &panel, false, false, false, false, false, false, false, false);
+                        &panel, false, false, false, false, false, false, false, false, false);
                     for(sint32 i = 0, iend = CollectedCompValues.Count(); i < iend; ++i)
                     {
                         const String DefaultName(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : ""));
@@ -1322,7 +1364,7 @@ namespace BOSS
             if(0 < children.Count())
             {
                 sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), children,
-                        &panel, false, false, false, false, false, false, false, false);
+                        &panel, false, false, false, false, false, false, false, false, false);
                 for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
                 {
                     auto CurChildren = (const ZayUIElement*) children[CollectedChildren[i]].ConstPtr();
@@ -1334,7 +1376,7 @@ namespace BOSS
         {
             mRefRoot->SendCursor(role);
         }
-        bool OnLambda(chars uiname, LambdaID id, chars key, chars value, bool doubleclicked, bool longpressed,
+        bool OnLambda(chars uiname, LambdaID id, chars key, chars value, bool doubleclicked, bool longpressed, bool repeatpressed,
             bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased) override
         {
             if(0 < mLambdas[(sint32) id].mCodes.Count())
@@ -1355,7 +1397,7 @@ namespace BOSS
 
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
-                    nullptr, doubleclicked, longpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
+                    nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
@@ -1372,6 +1414,10 @@ namespace BOSS
         bool IsValidLongPress() const override
         {
             return mValidLongPressed;
+        }
+        bool IsValidRepeatPress() const override
+        {
+            return mValidRepeatPressed;
         }
         bool IsValidSwipe() const override
         {
@@ -1435,6 +1481,7 @@ namespace BOSS
         Lambda mLambdas[(sint32) LambdaID::Max];
         bool mValidDoubleClicked;
         bool mValidLongPressed;
+        bool mValidRepeatPressed;
         bool mValidSwipe;
         ZayUIs mChildren;
 
@@ -1501,7 +1548,7 @@ namespace BOSS
         void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
         {
             sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren,
-                    &panel, false, false, false, false, false, false, false, false);
+                    &panel, false, false, false, false, false, false, false, false, false);
             for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
             {
                 auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();

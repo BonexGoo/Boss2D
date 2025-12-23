@@ -213,7 +213,7 @@ namespace BOSS
         // 키보드
         GT_KeyPressed, GT_KeyReleased,
         // 특수
-        GT_ToolTip, GT_LongPressed};
+        GT_ToolTip, GT_LongPressed, GT_RepeatPressed};
     enum PanelState {PS_Null = 0x00, PS_Hovered = 0x01, PS_Focused = 0x02,
         PS_Pressed = 0x04, PS_Dragging = 0x08, PS_Dropping = 0x10, PS_Captured = 0x20};
     static PanelState operator|(PanelState a, PanelState b) {return (PanelState) (int(a) | int(b));}

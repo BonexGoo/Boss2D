@@ -211,6 +211,7 @@
             connect(&mUpdateTimer, &QTimer::timeout, this, &MainView::UpdateTimeout);
             connect(&mTooltipTimer, &QTimer::timeout, this, &MainView::TooltipTimeout);
             connect(&mLongpressTimer, &QTimer::timeout, this, &MainView::LongpressTimeout);
+            connect(&mRepeatpressTimer, &QTimer::timeout, this, &MainView::RepeatpressTimeout);
         }
         ~MainView()
         {
@@ -388,6 +389,7 @@
                 mLongpressTimer.start(500);
                 mLongpressX = event->position().x();
                 mLongpressY = event->position().y();
+                mRepeatpressTimer.start(300);
             }
             else if(event->button() == Qt::RightButton)
                 mViewManager->OnTouch(TT_ExtendPress, 0, event->position().x(), event->position().y());
@@ -430,6 +432,7 @@
             else if(event->button() == Qt::MiddleButton)
                 mViewManager->OnTouch(TT_WheelRelease, 0, event->position().x(), event->position().y());
             mLongpressTimer.stop();
+            mRepeatpressTimer.stop();
         }
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE
         {
@@ -523,6 +526,13 @@
             mLongpressTimer.stop();
             mViewManager->OnTouch(TT_LongPress, 0, mLongpressX, mLongpressY);
         }
+        void RepeatpressTimeout()
+        {
+            mRepeatpressTimer.start(100);
+            point64 CursorPos;
+            if(Platform::Utility::GetCursorPosInWindow(CursorPos))
+                mViewManager->OnTouch(TT_RepeatPress, 0, CursorPos.x, CursorPos.y);
+        }
 
     private:
         View* mViewManager {nullptr};
@@ -534,6 +544,7 @@
         QTimer mLongpressTimer;
         sint32 mLongpressX {0};
         sint32 mLongpressY {0};
+        QTimer mRepeatpressTimer;
         sint32 mPaintCount {0};
         WidgetRequest mRequest {WR_Null};
         String mRequestArg;
