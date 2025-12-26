@@ -165,6 +165,9 @@ namespace BOSS
             case SolverOperatorType::Remainder:       collector += "% "; break;
             case SolverOperatorType::BitAnd:          collector += "& "; break;
             case SolverOperatorType::BitOr:           collector += "| "; break;
+            case SolverOperatorType::BitXor:          collector += "^ "; break;
+            case SolverOperatorType::BitShiftL:       collector += "<< "; break;
+            case SolverOperatorType::BitShiftR:       collector += ">> "; break;
             case SolverOperatorType::Variabler:       collector += "@ "; break;
             case SolverOperatorType::Commenter:       collector += "?"; break;
             case SolverOperatorType::RangeTarget:     collector += "~ "; break;
@@ -225,6 +228,9 @@ namespace BOSS
             case SolverOperatorType::Remainder:         return mOperandL->result(Zero).Remainder(mOperandR->result(One));
             case SolverOperatorType::BitAnd:            return mOperandL->result(Zero).BitAnd(mOperandR->result(One));
             case SolverOperatorType::BitOr:             return mOperandL->result(Zero).BitOr(mOperandR->result(One));
+            case SolverOperatorType::BitXor:            return mOperandL->result(Zero).BitXor(mOperandR->result(One));
+            case SolverOperatorType::BitShiftL:         return mOperandL->result(Zero).BitShiftL(mOperandR->result(One));
+            case SolverOperatorType::BitShiftR:         return mOperandL->result(Zero).BitShiftR(mOperandR->result(One));
             case SolverOperatorType::Variabler:         return mOperandL->result(Zero).Variabler(mOperandR->result(One), mChain);
             case SolverOperatorType::Commenter:         return mOperandL->result(Zero);
             case SolverOperatorType::RangeTarget:       return mOperandL->result(Zero).RangeTarget(mOperandR->result(Zero));
@@ -676,6 +682,21 @@ namespace BOSS
         return MakeInteger(ToInteger() | rhs.ToInteger());
     }
 
+    SolverValue SolverValue::BitXor(const SolverValue& rhs) const
+    {
+        return MakeInteger(ToInteger() ^ rhs.ToInteger());
+    }
+
+    SolverValue SolverValue::BitShiftL(const SolverValue& rhs) const
+    {
+        return MakeInteger(ToInteger() << rhs.ToInteger());
+    }
+
+    SolverValue SolverValue::BitShiftR(const SolverValue& rhs) const
+    {
+        return MakeInteger(ToInteger() >> rhs.ToInteger());
+    }
+
     SolverValue SolverValue::Variabler(const SolverValue& rhs, const SolverChain* chain) const
     {
         if(auto CurSolver = SolverVariable::FindTarget(chain, rhs.ToText()))
@@ -1099,8 +1120,9 @@ namespace BOSS
             case SolverOperatorType::Addition: case SolverOperatorType::Subtract: // 2순위> +, -
                 NewPriority += PriorityCount - 2;
                 break;
-            case SolverOperatorType::BitAnd: case SolverOperatorType::BitOr:
-            case SolverOperatorType::RangeTarget: // 3순위> &, |, ~
+            case SolverOperatorType::BitAnd: case SolverOperatorType::BitOr: case SolverOperatorType::BitXor:
+            case SolverOperatorType::BitShiftL: case SolverOperatorType::BitShiftR:
+            case SolverOperatorType::RangeTarget: // 3순위> &, |, <<, >>, ~
                 NewPriority += PriorityCount - 3;
                 break;
             case SolverOperatorType::RangeTimer: // 4순위> :
@@ -1180,13 +1202,19 @@ namespace BOSS
                 jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
                 jump(*formula == '&') AddOperator(OperandFocus, SolverOperatorType::BitAnd, deep);
                 jump(*formula == '|') AddOperator(OperandFocus, SolverOperatorType::BitOr, deep);
+                jump(*formula == '^') AddOperator(OperandFocus, SolverOperatorType::BitXor, deep);
                 jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
                 jump(*formula == '?') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
                 jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
                 jump(*formula == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
                 jump(*formula == '<')
                 {
-                    if(formula[1] == '=')
+                    if(formula[1] == '<')
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::BitShiftL, deep);
+                        formula += 1;
+                    }
+                    else if(formula[1] == '=')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::GreaterOrEqual, deep);
                         formula += 1;
@@ -1195,7 +1223,12 @@ namespace BOSS
                 }
                 jump(*formula == '>')
                 {
-                    if(formula[1] == '=')
+                    if(formula[1] == '>')
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::BitShiftR, deep);
+                        formula += 1;
+                    }
+                    else if(formula[1] == '=')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::LessOrEqual, deep);
                         formula += 1;
