@@ -1460,6 +1460,14 @@ namespace BOSS
         return mOperandTop->result(Zero);
     }
 
+    void Solver::SetResultDirectly(const SolverValue& value)
+    {
+        mParsedFormula.Empty();
+        mOperandTop = SolverLiteral(value).clone();
+        mReliable = 1;
+        mResult = value;
+    }
+
     String Solver::ExecuteVariableName() const
     {
         switch(mOperandTop->type())

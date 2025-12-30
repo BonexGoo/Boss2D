@@ -190,6 +190,7 @@ namespace BOSS
         public: Solver& Parse(chars formula);
         public: void Execute(bool updateobservers = false);
         public: SolverValue ExecuteOnly() const;
+        public: void SetResultDirectly(const SolverValue& value);
         public: String ExecuteVariableName() const;
         public: Strings GetTargetlessVariables() const;
         public: inline void SetResultFilter(SolverValueCB cb) {mResultCB = cb;}
@@ -221,5 +222,5 @@ namespace BOSS
         private: uint64 mUpdatedFormulaMsec;
         private: uint64 mUpdatedResultMsec;
     };
-    typedef Array<Solver> Solvers;
+    typedef Map<Solver> Solvers;
 }
