@@ -950,6 +950,13 @@ namespace BOSS
         return SolverValue();
     }
 
+    int __SolverCreateCount = 0;
+    int __SolverReleaseCount = 0;
+    int __SolverParseCount = 0;
+    int __SolverExecuteCount = 0;
+    int __SolverParseNsec = 0;
+    int __SolverExecuteNsec = 0;
+
     Solver::Solver()
     {
         mLinkedChain = nullptr;
@@ -957,11 +964,15 @@ namespace BOSS
         mResult = SolverValue::MakeInteger(0);
         mUpdatedFormulaMsec = 0;
         mUpdatedResultMsec = 0;
+        //////////
+        __SolverCreateCount++;
     }
 
     Solver::~Solver()
     {
         Unlink();
+        //////////
+        __SolverReleaseCount++;
     }
 
     Solver& Solver::operator=(const Solver& rhs)
@@ -1106,6 +1117,10 @@ namespace BOSS
 
     Solver& Solver::Parse(chars formula)
     {
+        //////////
+        __SolverParseCount++;
+        auto __Begin = Platform::Clock::CreateAsCurrent();
+
         auto AddOperator = [](SolverOperandObject*& focus, SolverOperatorType type, sint32 deep)->void
         {
             BOSS_ASSERT("잘못된 시나리오입니다", focus);
@@ -1429,16 +1444,25 @@ namespace BOSS
         // 링크가 된 경우 새로 생긴 하위의 변수들에게 체인정보 전달
         if(mLinkedChain)
             mOperandTop->UpdateChain(this, mLinkedChain);
+
+        //////////
+        auto __End = Platform::Clock::CreateAsCurrent();
+        __SolverParseNsec += Platform::Clock::GetPeriodNsec(__Begin, __End);
+        Platform::Clock::Release(__Begin);
+        Platform::Clock::Release(__End);
         return *this;
     }
 
     void Solver::Execute(bool updateobservers)
     {
+        //////////
+        __SolverExecuteCount++;
+        auto __Begin = Platform::Clock::CreateAsCurrent();
+
         const float OldReliable = mReliable;
         const SolverValue OldResult = ToReference(mResult);
         const float NewReliable = mOperandTop->reliable();
-        static const SolverValue Zero = SolverValue::MakeInteger(0);
-        const SolverValue& NewResult = mOperandTop->result(Zero);
+        const SolverValue& NewResult = mOperandTop->result(SolverValue::MakeInteger(0));
 
         // 필터확인후 입력
         if(mResultCB == nullptr || mResultCB(mParsedFormula, NewResult, NewReliable))
@@ -1452,12 +1476,28 @@ namespace BOSS
                     (*mLinkedChain)(mLinkedVariable).ResetTarget(this, updateobservers);
             }
         }
+
+        //////////
+        auto __End = Platform::Clock::CreateAsCurrent();
+        __SolverExecuteNsec += Platform::Clock::GetPeriodNsec(__Begin, __End);
+        Platform::Clock::Release(__Begin);
+        Platform::Clock::Release(__End);
     }
 
     SolverValue Solver::ExecuteOnly() const
     {
-        static const SolverValue Zero = SolverValue::MakeInteger(0);
-        return mOperandTop->result(Zero);
+        //////////
+        __SolverExecuteCount++;
+        auto __Begin = Platform::Clock::CreateAsCurrent();
+
+        SolverValue Result = mOperandTop->result(SolverValue::MakeInteger(0));
+
+        //////////
+        auto __End = Platform::Clock::CreateAsCurrent();
+        __SolverExecuteNsec += Platform::Clock::GetPeriodNsec(__Begin, __End);
+        Platform::Clock::Release(__Begin);
+        Platform::Clock::Release(__End);
+        return Result;
     }
 
     void Solver::SetResultDirectly(const SolverValue& value)
@@ -1470,21 +1510,36 @@ namespace BOSS
 
     String Solver::ExecuteVariableName() const
     {
+        String Result;
         switch(mOperandTop->type())
         {
         case SolverOperandType::Literal:
-            return mOperandTop->result(SolverValue()).ToText();
+            {
+                //////////
+                __SolverExecuteCount++;
+                auto __Begin = Platform::Clock::CreateAsCurrent();
+
+                Result = mOperandTop->result(SolverValue()).ToText();
+
+                //////////
+                auto __End = Platform::Clock::CreateAsCurrent();
+                __SolverExecuteNsec += Platform::Clock::GetPeriodNsec(__Begin, __End);
+                Platform::Clock::Release(__Begin);
+                Platform::Clock::Release(__End);
+            }
+            break;
         case SolverOperandType::Variable:
             {
                 Strings GetName;
                 mOperandTop->PrintVariables(GetName, false);
-                return GetName[0];
+                Result = GetName[0];
             }
             break;
         case SolverOperandType::Formula:
-            return ExecuteOnly().ToText();
+            Result = ExecuteOnly().ToText();
+            break;
         }
-        return String();
+        return Result;
     }
 
     Strings Solver::GetTargetlessVariables() const

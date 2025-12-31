@@ -93,6 +93,7 @@ namespace BOSS
         Solver mUINameSolver;
         Solver mUILoopSolver;
         String mComment;
+        mutable Solvers mLocalSolvers;
     };
     typedef Object<ZayUIElement> ZayUI;
     typedef Array<ZayUI> ZayUIs;
@@ -861,8 +862,8 @@ namespace BOSS
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                mRSolvers.AccessByOrder(0)->Link(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
-                mRSolvers.AccessByOrder(0)->Execute();
+                mRSolvers.At(0).Link(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
+                mRSolvers.At(0).Execute();
             }
             else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
                 Transaction(nullptr);
@@ -877,7 +878,7 @@ namespace BOSS
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                mRSolvers.AccessByOrder(0)->Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName());
             }
             else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
             {
@@ -889,7 +890,7 @@ namespace BOSS
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                mRSolvers.AccessByOrder(0)->Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName());
                 // 변수때는 변수명에서도 캡쳐 목록화
                 const Strings Variables = mLSolver.GetTargetlessVariables();
                 for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
@@ -1208,12 +1209,11 @@ namespace BOSS
                     if(0 < mInputCodes.Count()) // 코드문
                     {
                         // 지역변수 수집
-                        Solvers LocalSolvers;
                         const Point ViewPos = panel.toview(0, 0);
-                        LocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
-                        LocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
-                        LocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
-                        LocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
 
                         sint32s CollectedCodes = ZayConditionElement::Collect(ViewName, mInputCodes,
                             nullptr, false, false, false, false, false, false, false, false, false);
@@ -1223,9 +1223,10 @@ namespace BOSS
                             String NewVariableName; // 코드문에서 처음 등장한 변수는 지역변수화
                             const String Formula = CurCompCode->Transaction(&NewVariableName);
                             if(0 < NewVariableName.Length())
-                                LocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
+                                mLocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
                         }
                         RenderChildren(mChildren, panel, nullptr, defaultname, logs);
+                        mLocalSolvers.SubtractionAll();
                     }
                     else if(!mUILoopSolver.is_blank()) // 반복문
                     {
@@ -1233,13 +1234,13 @@ namespace BOSS
                         for(sint32 i = 0; i < LoopCount; ++i)
                         {
                             // 지역변수 수집
-                            Solvers LocalSolvers;
                             if(0 < UIName.Length())
                             {
-                                LocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
-                                LocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(LoopCount));
+                                mLocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
+                                mLocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(LoopCount));
                             }
                             RenderChildren(mChildren, panel, nullptr, defaultname + String::Format("_%d", i), logs);
+                            mLocalSolvers.SubtractionAll();
                         }
                     }
                     else if(!mCompName.Compare("jump")) // 호출문
@@ -1304,16 +1305,15 @@ namespace BOSS
                         }
 
                         // 지역변수 수집
-                        Solvers LocalSolvers;
                         const Point ViewPos = panel.toview(0, 0);
-                        LocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
-                        LocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
-                        LocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
-                        LocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
                         if(1 < iend && 0 < UIName.Length())
                         {
-                            LocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
-                            LocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(iend));
+                            mLocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
+                            mLocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(iend));
                         }
 
                         // 파라미터 수집
@@ -1325,7 +1325,7 @@ namespace BOSS
                         if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
                         {
                             for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
-                                ParamCollector(CurCompValue->mParamSolvers.AccessByOrder(j)->ExecuteOnly());
+                                ParamCollector(CurCompValue->mParamSolvers[j].ExecuteOnly());
                         }
                         ZAY_EXTEND(ParamCollector >> panel)
                         {
@@ -1333,6 +1333,7 @@ namespace BOSS
                                 AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
                             RenderChildren(mChildren, panel, ComponentName, DefaultName, logs);
                         }
+                        mLocalSolvers.SubtractionAll();
                     }
                 }
             }
@@ -1387,18 +1388,17 @@ namespace BOSS
             if(0 < mLambdas[(sint32) id].mCodes.Count())
             {
                 // 사전 캡쳐된 변수를 지역변수화
-                Solvers LocalSolvers;
                 hook(mLambdas[(sint32) id].mCaptureValues(uiname))
                 for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
                 {
                     chararray GetVariable;
                     auto& Value = *fish.AccessByOrder(i, &GetVariable);
-                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &GetVariable[0]).SetResultDirectly(Value);
+                    mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &GetVariable[0]).SetResultDirectly(Value);
                 }
 
                 // 변수를 지역변수화
                 if(key && value)
-                    LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).SetResultDirectly(SolverValue::MakeText(value));
+                    mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).SetResultDirectly(SolverValue::MakeText(value));
 
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
@@ -1408,6 +1408,7 @@ namespace BOSS
                     auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
                     CurClickCode->Transaction(nullptr);
                 }
+                mLocalSolvers.SubtractionAll();
                 return true;
             }
             return false;
@@ -1465,10 +1466,10 @@ namespace BOSS
                     if(pv != -1)
                     {
                         const String PV = String::FromInteger(pv);
-                        Solvers LocalSolvers;
-                        LocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").SetResultDirectly(SolverValue::MakeInteger(pv));
+                        mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").SetResultDirectly(SolverValue::MakeInteger(pv));
                         RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
                             mInsidersDefaultName + ("." + CurInsider->mName + "." + PV), *mInsidersLogs);
+                        mLocalSolvers.SubtractionAll();
                     }
                     else RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
                         mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
@@ -1613,6 +1614,7 @@ namespace BOSS
         rhs.mUIElement = nullptr;
         mExtendMap = ToReference(rhs.mExtendMap);
         mJumpCalls = ToReference(rhs.mJumpCalls);
+        mLocalSolvers = ToReference(rhs.mLocalSolvers);
         mDebugLogger = ToReference(mDebugLogger);
         mDebugFocusedCompID = ToReference(rhs.mDebugFocusedCompID);
         return *this;
@@ -1822,30 +1824,30 @@ namespace BOSS
                 if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(GateName))
                 {
                     // 지역변수 수집
-                    Solvers LocalSolvers;
                     const Point ViewPos = panel.toview(0, 0);
-                    LocalSolvers.AtAdding().Link(mViewName, "pV").SetResultDirectly(SolverValue::MakeInteger(RunIndex));
+                    mLocalSolvers.AtAdding().Link(mViewName, "pV").SetResultDirectly(SolverValue::MakeInteger(RunIndex));
                     if(JumpParams.Count() == 7)
                     {
                         const float X = Parser::GetFloat(JumpParams[3]);
                         const float Y = Parser::GetFloat(JumpParams[4]);
                         const float W = Parser::GetFloat(JumpParams[5]);
                         const float H = Parser::GetFloat(JumpParams[6]);
-                        LocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(X));
-                        LocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(Y));
-                        LocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(W));
-                        LocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(H));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(X));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(Y));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(W));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(H));
                         ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
                             CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
                     }
                     else
                     {
-                        LocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
-                        LocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
-                        LocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
-                        LocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                        mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
                         CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
                     }
+                    mLocalSolvers.SubtractionAll();
                 }
                 // 점프콜 변경
                 String NextJumpCall = String::Format("%s,%d", (chars) GateName, RunIndex + 1);

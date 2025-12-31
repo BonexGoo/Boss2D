@@ -222,5 +222,5 @@ namespace BOSS
         private: uint64 mUpdatedFormulaMsec;
         private: uint64 mUpdatedResultMsec;
     };
-    typedef Map<Solver> Solvers;
+    typedef Array<Solver> Solvers;
 }

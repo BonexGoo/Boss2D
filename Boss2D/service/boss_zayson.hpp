@@ -143,6 +143,7 @@ namespace BOSS
         void* mUIElement;
         Map<ZayExtend> mExtendMap;
         Strings mJumpCalls;
+        Solvers mLocalSolvers;
 
     public:
         void SendCursor(CursorRole role) const;
