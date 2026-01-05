@@ -935,14 +935,18 @@ namespace BOSS
         case SolverValueType::Text:
             if(auto Rhs = rhs.ToInteger())
             {
-                const sint32 DotPos = Math::Log10(Rhs);
+                const bool ZeroTrim = (Rhs < 0)? false : true;
+                const sint32 DotPos = Math::Log10(Math::Abs(Rhs));
                 const sint32 Value = sint32(ToFloat() + 0.5);
                 const bool Minus = (Value < 0);
                 String ValueText = String::FromInteger((Minus)? -Value : Value); // 양수화
                 while(ValueText.Length() < DotPos + 1) ValueText = '0' + ValueText; // ValueText가 '12'이고 DotPos가 3이면 ValueText가 '0012'가 되어야 함
                 String Text = ValueText.Left(ValueText.Length() - DotPos) + '.' + ValueText.Right(DotPos);
-                while(Text[-2] == '0') Text.SubTail(1); // ValueText가 '1230'이고 DotPos가 2이면 '12.3'이 되어야 함
-                if(Text[-2] == '.') Text.SubTail(1); // ValueText가 '1200'이고 DotPos가 2이면 '12'가 되어야 함
+                if(ZeroTrim)
+                {
+                    while(Text[-2] == '0') Text.SubTail(1); // ValueText가 '1230'이고 DotPos가 2이면 '12.3'이 되어야 함
+                    if(Text[-2] == '.') Text.SubTail(1); // ValueText가 '1200'이고 DotPos가 2이면 '12'가 되어야 함
+                }
                 return (Minus)? MakeText('-' + Text) : MakeText(Text); // 부호화
             }
             else return MakeText("Truncate_Error");
