@@ -87,6 +87,7 @@ namespace BOSS
 
         // 함수
         public: SolverValueType GetType() const;
+        public: bool IsBlank() const;
         public: Integer ToInteger() const;
         public: Float ToFloat() const;
         public: Text ToText(bool need_quotes = false, bool need_rangecode = true) const;
