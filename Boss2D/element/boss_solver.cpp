@@ -485,7 +485,7 @@ namespace BOSS
     SolverValue SolverValue::MakeIntegerByRound(Float value)
     {
         SolverValue Result(SolverValueType::Integer);
-        Result.mInteger = SolverValue::Integer(value + 0.5);
+        Result.mInteger = Math::Round(value);
         return Result;
     }
 
@@ -945,7 +945,7 @@ namespace BOSS
             {
                 const bool ZeroTrim = (Rhs < 0)? false : true;
                 const sint32 DotPos = Math::Log10(Math::Abs(Rhs));
-                const sint32 Value = sint32(ToFloat() + 0.5);
+                const sint32 Value = Math::Round(ToFloat());
                 const bool Minus = (Value < 0);
                 String ValueText = String::FromInteger((Minus)? -Value : Value); // 양수화
                 while(ValueText.Length() < DotPos + 1) ValueText = '0' + ValueText; // ValueText가 '12'이고 DotPos가 3이면 ValueText가 '0012'가 되어야 함
