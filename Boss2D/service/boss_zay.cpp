@@ -1979,7 +1979,7 @@ namespace BOSS
         mGlueCB = cb;
     }
 
-    ZayExtend::Payload ZayExtend::MakePayload(Solver* lvalue, chars uiname, sint32 elementid, const Renderer* renderer) const
+    ZayExtend::Payload ZayExtend::MakePayload(chars uiname, Solver* lvalue, sint32 elementid, const Renderer* renderer) const
     {
         return Payload(this, uiname, elementid, lvalue, renderer);
     }

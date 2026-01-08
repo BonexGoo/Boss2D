@@ -55,6 +55,7 @@ typedef void (*UserEventCB)(payload data, chars param);
 typedef bool (*PassCB)(void* view, payload data);
 typedef void (*ThreadCB)(void* data);
 typedef uint32 (*ThreadExCB)(void* data);
+typedef void (*RequestEventCB)(payload data, chars text);
 typedef void (*PurchaseCB)(id_purchase purchase, bool success, chars comment);
 typedef sint32 (*SerialDecodeCB)(bytes data, sint32 length, uint08s& outdata, sint32* outtype);
 typedef void (*SerialEncodeCB)(bytes data, sint32 length, uint08s& outdata, sint32 type);
@@ -582,6 +583,12 @@ public:
         /// @brief 클립보드에서 스트링 받기
         /// @return 받은 스트링
         static String RecvFromTextClipboard();
+
+        /// @brief URL로 네트워크요청 보내기
+        /// @param url : REST-API식 url요청("https://a.b.com/ask?aa=0&bb=1")
+        /// @param cb : 응답이 도착할 콜백함수
+        /// @param data : 콜백함수에 전달할 데이터
+        static void SendRequest(chars url, RequestEventCB cb, payload data = nullptr);
 
         /// @brief 시스템폰트 생성
         /// @param data : TTF폰트 데이터

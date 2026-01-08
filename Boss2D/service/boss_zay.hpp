@@ -586,7 +586,7 @@ namespace BOSS
         bool HasGlue() const;
         void ResetForComponent(ComponentType type, ComponentCB cb);
         void ResetForGlue(GlueCB cb);
-        Payload MakePayload(Solver* lvalue, chars uiname = nullptr, sint32 elementid = -1, const Renderer* renderer = nullptr) const;
+        Payload MakePayload(chars uiname, Solver* lvalue, sint32 elementid = -1, const Renderer* renderer = nullptr) const;
 
     private:
         ComponentType mComponentType;

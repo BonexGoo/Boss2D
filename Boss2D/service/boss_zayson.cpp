@@ -866,11 +866,11 @@ namespace BOSS
                 mRSolvers.At(0).Execute();
             }
             else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
-                Transaction(nullptr);
+                Transaction("", nullptr);
             else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                Transaction(nullptr);
+                Transaction("", nullptr);
             }
         }
         void InitForInput()
@@ -912,7 +912,7 @@ namespace BOSS
                     collector(Variables[j]) = Variables[j];
             }
         }
-        const String Transaction(String* newvariable)
+        const String Transaction(chars uiname, String* newvariable)
         {
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
@@ -933,7 +933,7 @@ namespace BOSS
             {
                 if(mGlueFunction)
                 {
-                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(nullptr);
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, nullptr);
                     for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
                         ParamCollector(mRSolvers[i].ExecuteOnly());
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
@@ -945,7 +945,7 @@ namespace BOSS
                 {
                     mLSolver.Link(mRefRoot->ViewName());
                     Solver* FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
-                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(FindedSolver);
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, FindedSolver);
                     for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
                         ParamCollector(mRSolvers[i].ExecuteOnly());
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
@@ -1221,7 +1221,7 @@ namespace BOSS
                         {
                             auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
                             String NewVariableName; // 코드문에서 처음 등장한 변수는 지역변수화
-                            const String Formula = CurCompCode->Transaction(&NewVariableName);
+                            const String Formula = CurCompCode->Transaction(UIName, &NewVariableName);
                             if(0 < NewVariableName.Length())
                                 mLocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
                         }
@@ -1274,7 +1274,7 @@ namespace BOSS
                         mInsidersComponent = CurComponent;
                         mInsidersComponentName = ComponentName;
                         mInsidersDefaultName = defaultname;
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(nullptr, ComponentName, mID, this);
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, nullptr, mID, this);
                         ZAY_EXTEND(ParamCollector >> panel)
                         {
                             if(mCompID == mRefRoot->debugFocusedCompID())
@@ -1321,7 +1321,7 @@ namespace BOSS
                         mInsidersComponent = CurComponent;
                         mInsidersComponentName = ComponentName;
                         mInsidersDefaultName = DefaultName;
-                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(nullptr, ComponentName, mID, this);
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, nullptr, mID, this);
                         if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
                         {
                             for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
@@ -1406,7 +1406,7 @@ namespace BOSS
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
-                    CurClickCode->Transaction(nullptr);
+                    CurClickCode->Transaction(uiname, nullptr);
                 }
                 mLocalSolvers.SubtractionAll();
                 return true;

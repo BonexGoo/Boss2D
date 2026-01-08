@@ -49,6 +49,7 @@
 
 #if BOSS_WASM
     #include <stdio.h>
+    #include <string>
     #include <uuid/uuid.h>
     extern void WaitForWasmReady();
     extern void WaitForWasmFlush();

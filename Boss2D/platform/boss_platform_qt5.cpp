@@ -1477,6 +1477,11 @@
             return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
+        void Platform::Utility::SendRequest(chars url, RequestEventCB cb, payload data)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));

@@ -225,7 +225,7 @@ namespace BOSS
     {
         if(auto OneGlue = mZaySon.FindGlue(name))
         {
-            ZayExtend::Payload ParamCollector = OneGlue->MakePayload(nullptr);
+            ZayExtend::Payload ParamCollector = OneGlue->MakePayload("", nullptr);
             for(sint32 i = 0, iend = params.Count(); i < iend; ++i)
                 ParamCollector(params[i]);
             // ParamCollector가 소멸되면서 Glue함수가 호출됨

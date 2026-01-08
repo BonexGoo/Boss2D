@@ -850,6 +850,11 @@
             return String();
         }
 
+        void Platform::Utility::SendRequest(chars url, RequestEventCB cb, payload data)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             BOSS_ASSERT("Further development is needed.", false);

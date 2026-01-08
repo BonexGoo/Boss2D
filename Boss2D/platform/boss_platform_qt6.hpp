@@ -62,6 +62,10 @@
     #include <QSslKey>
     #include <QTcpServer>
     #include <QWebSocketServer>
+    #include <QUrl>
+    #include <QNetworkAccessManager>
+    #include <QNetworkRequest>
+    #include <QNetworkReply>
 
     #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
         #include <QCefContext.h>

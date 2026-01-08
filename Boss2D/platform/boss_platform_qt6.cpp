@@ -1166,6 +1166,20 @@
             return Clipboard->text(QClipboard::Clipboard).toUtf8().constData();
         }
 
+        void Platform::Utility::SendRequest(chars url, RequestEventCB cb, payload data)
+        {
+            static QNetworkAccessManager Manager;
+            QNetworkRequest NewRequest(QUrl(QString::fromUtf8(url)));
+            QNetworkReply* Reply = Manager.get(NewRequest);
+            QObject::connect(Reply, &QNetworkReply::finished,
+                [Reply, cb, data]()->void
+                {
+                    QByteArray NewBytes = Reply->readAll();
+                    if(cb) cb(data, NewBytes.constData());
+                    Reply->deleteLater();
+                });
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));
