@@ -1061,7 +1061,9 @@ public:
         /// @param y : 상단위치(px)
         /// @param w : 가로길이(px)
         /// @param h : 세로길이(px)
-        static void DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h);
+        /// @param degree : 이미지의 회전값(360˚기준)
+        /// @param opacity : 불투명도값
+        static void DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h, float degree = 0.0f, float opacity = 1.0f);
 
         /// @brief 지정한 FBO핸들로 폴리곤영역식 이미지 출력
         /// @param image : 출력할 이미지

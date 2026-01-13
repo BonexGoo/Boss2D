@@ -368,10 +368,10 @@ namespace BOSS
         void fillbezier(Points p, float curve = 0.2) const;
         void polyimage(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3]) const;
         bool polyimageNative(const Point (&ps)[3], const Image& image, Image::Build build, const Point (&ips)[3], const Color (&colors)[3]) const;
-        InsideBinder icon(const Image& image, UIAlign align, float degree = 0, bool visible = true);
-        InsideBinder icon(float x, float y, const Image& image, UIAlign align, float degree = 0, bool visible = true); // 중점식
-        InsideBinder iconNative(id_image_read image, UIAlign align, float degree = 0);
-        InsideBinder iconNative(float x, float y, id_image_read image, UIAlign align, float degree = 0); // 중점식
+        InsideBinder icon(const Image& image, UIAlign align, float degree = 0.0f, bool visible = true);
+        InsideBinder icon(float x, float y, const Image& image, UIAlign align, float degree = 0.0f, bool visible = true); // 중점식
+        InsideBinder iconNative(id_image_read image, UIAlign align, float degree = 0.0f);
+        InsideBinder iconNative(float x, float y, id_image_read image, UIAlign align, float degree = 0.0f); // 중점식
         InsideBinder stretch(const Image& image, Image::Build build, UIStretchForm form = UISF_Strong, bool visible = true);
         InsideBinder stretchNative(id_image_read image, UIStretchForm form = UISF_Strong) const;
         InsideBinder ninepatch(const Image& image, bool visible = true);

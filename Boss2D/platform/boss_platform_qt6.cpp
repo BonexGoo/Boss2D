@@ -1952,13 +1952,27 @@
             delete (ImageRoutine*) routine;
         }
 
-        void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h)
+        void Platform::Graphics::DrawImage(id_image_read image, float ix, float iy, float iw, float ih, float x, float y, float w, float h, float degree, float opacity)
         {
             BOSS_ASSERT("image파라미터가 nullptr입니다", image);
             if(image == nullptr) return;
 
+            if(degree != 0.0f)
+            {
+                QTransform NewTransform;
+                NewTransform.translate(x + w / 2, y + h / 2);
+                NewTransform.rotate(degree);
+                NewTransform.translate(-x - w / 2, -y - h / 2);
+                CanvasClass::get()->painter().setTransform(NewTransform);
+            }
+
+            CanvasClass::get()->painter().setOpacity(opacity);
             CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
             CanvasClass::get()->painter().drawPixmap(QRectF(x, y, w, h), *((const QPixmap*) image), QRectF(ix, iy, iw, ih));
+            CanvasClass::get()->painter().setOpacity(1.0f);
+
+            if(degree != 0.0f)
+                CanvasClass::get()->painter().resetTransform();
         }
 
         void Platform::Graphics::DrawPolyImageToFBO(id_image_read image, const Point (&ips)[3], float x, float y, const Point (&ps)[3], const Color (&colors)[3], uint32 fbo)

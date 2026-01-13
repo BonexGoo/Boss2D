@@ -595,22 +595,12 @@ namespace BOSS
             const auto& LastZoom = m_stack_zoom[-1];
             const sint32 ScaledWidth = image.GetImageWidth() * LastZoom.scale;
             const sint32 ScaledHeight = image.GetImageHeight() * LastZoom.scale;
-            if(degree != 0 && Platform::Graphics::BeginGL())
-            {
-                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor),
-                    image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
-                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
-                Platform::Graphics::EndGL();
-            }
-            else
-            {
-                auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
-                auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
-                auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
-                Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
-                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
-                    image.GetImageWidth(), image.GetImageHeight());
-            }
+            auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
+            auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
+            auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
+            Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
+                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                image.GetImageWidth(), image.GetImageHeight(), degree, Math::Min(LastColor.a, 128) / 128.0);
         }
 
         if(image.HasChild())
@@ -642,22 +632,12 @@ namespace BOSS
             const auto& LastZoom = m_stack_zoom[-1];
             const sint32 ScaledWidth = image.GetImageWidth() * LastZoom.scale;
             const sint32 ScaledHeight = image.GetImageHeight() * LastZoom.scale;
-            if(degree != 0 && Platform::Graphics::BeginGL())
-            {
-                Platform::Graphics::DrawRotatedImageToFBO(image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor),
-                    image.L() + image.GetWidth() / 2, image.T() + image.GetHeight() / 2, degree,
-                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T());
-                Platform::Graphics::EndGL();
-            }
-            else
-            {
-                auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
-                auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
-                auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
-                Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
-                    LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
-                    image.GetImageWidth(), image.GetImageHeight());
-            }
+            auto BuiltImage = image.GetBuildImage(ScaledWidth, ScaledHeight, LastColor);
+            auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
+            auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
+            Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
+                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                image.GetImageWidth(), image.GetImageHeight(), degree, Math::Min(LastColor.a, 128) / 128.0);
         }
 
         if(image.HasChild())
@@ -682,14 +662,9 @@ namespace BOSS
         const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
         const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
 
-        if(degree != 0 && Platform::Graphics::BeginGL())
-        {
-            Platform::Graphics::DrawRotatedImageToFBO(image, ImageWidth / 2, ImageHeight / 2, degree,
-                LastClip.l + DstX, LastClip.t + DstY);
-            Platform::Graphics::EndGL();
-        }
-        else Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
-            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
+        const Color& LastColor = m_stack_color[-1];
+        Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
+            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -703,14 +678,9 @@ namespace BOSS
         const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + ImageWidth / 2 - ImageWidth : x - ImageWidth));
         const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + ImageHeight / 2 - ImageHeight : y - ImageHeight));
 
-        if(degree != 0 && Platform::Graphics::BeginGL())
-        {
-            Platform::Graphics::DrawRotatedImageToFBO(image, ImageWidth / 2, ImageHeight / 2, degree,
-                LastClip.l + DstX, LastClip.t + DstY);
-            Platform::Graphics::EndGL();
-        }
-        else Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
-            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight);
+        const Color& LastColor = m_stack_color[-1];
+        Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
+            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
