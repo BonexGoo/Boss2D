@@ -27,10 +27,8 @@ enum UIStretchForm {UISF_Strong, UISF_Inner, UISF_Outer, UISF_Width, UISF_Height
 enum UIEditType {UIET_String, UIET_Int, UIET_Float};
 enum UITestOrder {UITO_ScissorOn, UITO_ScissorOff};
 enum UIStack {UIS_PushPop, UIS_Push, UIS_Current, UIS_Pop};
-enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn,
-    MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop,
-    MR_Xor, MR_Plus, MR_Multiply, MR_Screen, MR_Overlay, MR_Darken, MR_Lighten,
-    MR_ColorDodge, MR_ColorBurn, MR_HardLight, MR_SoftLight, MR_Difference, MR_Exclusion,
+enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn, MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Plus,
+    MR_Multiply, MR_Screen, MR_Overlay, MR_Darken, MR_Lighten, MR_ColorDodge, MR_ColorBurn, MR_HardLight, MR_SoftLight, MR_Difference, MR_Exclusion,
     MR_Default = MR_SrcOver};
 enum ShaderRole {SR_Normal, SR_Nv21, SR_BlurWeak, SR_BlurMedium, SR_BlurStrong, SR_Max};
 enum OrientationRole {OR_Normal, OR_CW90, OR_CW180, OR_CW270, OR_Max};
@@ -569,6 +567,12 @@ public:
         /// @param rect : 스크린영역(px)
         /// @return 스크린샷 이미지(nullptr은 실패)
         static id_image_read GetScreenshotImage(const rect128& rect);
+
+        /// @brief 윈도우에 그려진 이미지 얻기
+        /// @param rect : 스크린영역(px)
+        /// @param blur : 블러수준(필요없으면 0.0f)
+        /// @return 만든 이미지(nullptr은 실패)
+        static id_image_read GetWindowImage(const rect128& rect, float blur = 0.0f);
 
         /// @brief 이미지로부터 비트맵 얻기
         /// @param image : 이미지

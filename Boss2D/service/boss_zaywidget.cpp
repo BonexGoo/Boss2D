@@ -491,18 +491,19 @@ namespace BOSS
                 return panel._push_color_clear();
             });
 
-        interface.AddComponent(ZayExtend::ComponentType::Option, "shader",
+        interface.AddComponent(ZayExtend::ComponentType::Option, "mask",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
                 if(pay.ParamCount() != 1)
                     return panel._push_pass();
                 bool HasError = false;
-                auto Shader = pay.ParamToShader(0, HasError);
+                auto Mask = pay.ParamToMask(0, HasError);
                 if(!HasError)
-                    return panel._push_shader(Shader);
+                    return panel._push_mask(Mask);
                 return panel._push_pass();
             },
-            "[Shader:Normal|Nv21|BlurWeak|BlurMedium|BlurStrong]");
+            "[Mask:SrcOver|DstOver|Clear|Src|Dst|SrcIn|DstIn|SrcOut|DstOut|SrcAtop|DstAtop|Xor|Plus|"
+                "Multiply|Screen|Overlay|Darken|Lighten|ColorDodge|ColorBurn|HardLight|SoftLight|Difference|Exclusion]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "font",
             ZAY_DECLARE_COMPONENT(panel, pay)

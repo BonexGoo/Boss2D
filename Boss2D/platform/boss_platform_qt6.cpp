@@ -1141,6 +1141,33 @@
             return (id_image_read) &ScreenshotPixmap;
         }
 
+        id_image_read Platform::Utility::GetWindowImage(const rect128& rect, float blur)
+        {
+            QPixmap& WindowPixmap = *BOSS_STORAGE_SYS(QPixmap);
+            const sint32 BlurBorder = blur;
+            QPixmap GrabPixmap = g_window->grab(QRect(
+                rect.l - BlurBorder, rect.t - BlurBorder, rect.r - rect.l + BlurBorder * 2, rect.b - rect.t + BlurBorder * 2));
+            const sint32 GrabWidth = GrabPixmap.width();
+            const sint32 GrabHeight = GrabPixmap.height();
+            if(0.0f < blur)
+            {
+                QGraphicsScene Scene;
+                QGraphicsPixmapItem Item(GrabPixmap);
+                QGraphicsBlurEffect Blur;
+                Blur.setBlurRadius(blur);
+                Blur.setBlurHints(QGraphicsBlurEffect::QualityHint);
+                Item.setGraphicsEffect(&Blur);
+                Scene.addItem(&Item);
+                QImage NewImage(GrabWidth, GrabHeight, QImage::Format_ARGB32_Premultiplied);
+                NewImage.fill(Qt::transparent);
+                QPainter Painter(&NewImage);
+                Scene.render(&Painter, QRectF(0, 0, GrabWidth, GrabHeight), QRectF(0, 0, GrabWidth, GrabHeight));
+                WindowPixmap.convertFromImage(NewImage.copy(BlurBorder, BlurBorder, GrabWidth - BlurBorder * 2, GrabHeight - BlurBorder * 2));
+            }
+            else WindowPixmap = GrabPixmap;
+            return (id_image_read) &WindowPixmap;
+        }
+
         id_bitmap Platform::Utility::ImageToBitmap(id_image_read image, orientationtype ori)
         {
             if(!image) return nullptr;
@@ -1551,7 +1578,7 @@
             #else
                 const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
             #endif
-            CanvasClass::get()->SetFont(name, (sint32) (size * DeviceRatio));
+            CanvasClass::get()->SetFont(name, Math::Max(1, size * DeviceRatio));
         }
 
         void Platform::Graphics::SetFontForFreeType(chars nickname, sint32 height)

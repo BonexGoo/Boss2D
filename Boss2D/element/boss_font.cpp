@@ -7,7 +7,7 @@ namespace BOSS
     {
         is_freefont = false;
         system_name = "Arial";
-        system_size = 10;
+        system_size = 12;
         freefont_height = 0;
     }
 

@@ -556,7 +556,7 @@ namespace BOSS
             UIStretchForm ParamToUIStretchForm(sint32 i, bool& error) const;
             UIFontAlign ParamToUIFontAlign(sint32 i, bool& error) const;
             UIFontElide ParamToUIFontElide(sint32 i, bool& error) const;
-            ShaderRole ParamToShader(sint32 i, bool& error) const;
+            MaskRole ParamToMask(sint32 i, bool& error) const;
             OrientationRole ParamToOrientation(sint32 i, bool& error) const;
             bool CanReturn(SolverValue* out_lvalue = nullptr) const;
             void Return(const String& formula) const;

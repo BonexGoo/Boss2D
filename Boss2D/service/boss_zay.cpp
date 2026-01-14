@@ -1831,20 +1831,39 @@ namespace BOSS
         return UIFE_None;
     }
 
-    ShaderRole ZayExtend::Payload::ParamToShader(sint32 i, bool& error) const
+    MaskRole ZayExtend::Payload::ParamToMask(sint32 i, bool& error) const
     {
         String Result = mParams[i].ToText();
-        if(!String::CompareNoCase(Result, "SR_", 3))
+        if(!String::CompareNoCase(Result, "MR_", 3))
             Result = Result.Right(Result.Length() - 3);
 
         branch;
-        jump(!Result.CompareNoCase("Normal")) return SR_Normal;
-        jump(!Result.CompareNoCase("Nv21")) return SR_Nv21;
-        jump(!Result.CompareNoCase("BlurWeak")) return SR_BlurWeak;
-        jump(!Result.CompareNoCase("BlurMedium")) return SR_BlurMedium;
-        jump(!Result.CompareNoCase("BlurStrong")) return SR_BlurStrong;
+        jump(!Result.CompareNoCase("SrcOver")) return MR_SrcOver;
+        jump(!Result.CompareNoCase("DstOver")) return MR_DstOver;
+        jump(!Result.CompareNoCase("Clear")) return MR_Clear;
+        jump(!Result.CompareNoCase("Src")) return MR_Src;
+        jump(!Result.CompareNoCase("Dst")) return MR_Dst;
+        jump(!Result.CompareNoCase("SrcIn")) return MR_SrcIn;
+        jump(!Result.CompareNoCase("DstIn")) return MR_DstIn;
+        jump(!Result.CompareNoCase("SrcOut")) return MR_SrcOut;
+        jump(!Result.CompareNoCase("DstOut")) return MR_DstOut;
+        jump(!Result.CompareNoCase("SrcAtop")) return MR_SrcAtop;
+        jump(!Result.CompareNoCase("DstAtop")) return MR_DstAtop;
+        jump(!Result.CompareNoCase("Xor")) return MR_Xor;
+        jump(!Result.CompareNoCase("Plus")) return MR_Plus;
+        jump(!Result.CompareNoCase("Multiply")) return MR_Multiply;
+        jump(!Result.CompareNoCase("Screen")) return MR_Screen;
+        jump(!Result.CompareNoCase("Overlay")) return MR_Overlay;
+        jump(!Result.CompareNoCase("Darken")) return MR_Darken;
+        jump(!Result.CompareNoCase("Lighten")) return MR_Lighten;
+        jump(!Result.CompareNoCase("ColorDodge")) return MR_ColorDodge;
+        jump(!Result.CompareNoCase("ColorBurn")) return MR_ColorBurn;
+        jump(!Result.CompareNoCase("HardLight")) return MR_HardLight;
+        jump(!Result.CompareNoCase("SoftLight")) return MR_SoftLight;
+        jump(!Result.CompareNoCase("Difference")) return MR_Difference;
+        jump(!Result.CompareNoCase("Exclusion")) return MR_Exclusion;
         error = true;
-        return SR_Normal;
+        return MR_Default;
     }
 
     OrientationRole ZayExtend::Payload::ParamToOrientation(sint32 i, bool& error) const

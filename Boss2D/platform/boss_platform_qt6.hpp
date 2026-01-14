@@ -48,6 +48,9 @@
         #include <QSplashScreen>
         #include <QStackedLayout>
         #include <QGridLayout>
+        #include <QGraphicsScene>
+        #include <QGraphicsPixmapItem>
+        #include <QGraphicsBlurEffect>
     #endif
 
     #include <QLocalSocket>
@@ -151,6 +154,7 @@
         }
         inline void SetFont(chars name, sint32 size)
         {
+            BOSS_ASSERT("SetFont의 size는 0보다 커야 합니다", 0 < size);
             const String FamilyAndStyle(name);
             const sint32 DotPos = FamilyAndStyle.Find(0, ".");
             QFont CurFont;
