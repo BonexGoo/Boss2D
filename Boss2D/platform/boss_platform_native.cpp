@@ -1134,7 +1134,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Graphics::SetFont(chars name, float size)
+        void Platform::Graphics::SetFont(chars name, float height, float spacing)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
 

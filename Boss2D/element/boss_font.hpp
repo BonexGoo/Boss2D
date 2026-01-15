@@ -16,6 +16,7 @@ namespace BOSS
         bool is_freefont;
         String system_name;
         float system_size;
+        float system_space;
         String freefont_nickname;
         sint32 freefont_height;
     };

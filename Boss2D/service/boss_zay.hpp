@@ -448,7 +448,7 @@ namespace BOSS
         StackBinder _push_color_clear();
         StackBinder _push_mask(MaskRole role);
         StackBinder _push_shader(ShaderRole role);
-        StackBinder _push_sysfont(float size, chars name = nullptr);
+        StackBinder _push_sysfont(float size, chars name = nullptr, float space = 1.0);
         StackBinder _push_freefont(sint32 height, chars nickname = nullptr);
         StackBinder _push_zoom(float zoom, OrientationRole orientation = OR_Normal);
         StackBinder _push_zoom_clear();

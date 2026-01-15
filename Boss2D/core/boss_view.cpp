@@ -182,7 +182,7 @@ namespace BOSS
     {
         Platform::Graphics::SetScissor(0, 0, width, height);
         Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-        Platform::Graphics::SetFont("Arial", 10);
+        Platform::Graphics::SetFont("Arial", 12, 1.0);
         Platform::Graphics::SetZoom(1);
 
         Platform::Graphics::SetColor(0x00, 0x00, 0x00, 0x00);

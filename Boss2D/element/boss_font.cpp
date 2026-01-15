@@ -8,6 +8,7 @@ namespace BOSS
         is_freefont = false;
         system_name = "Arial";
         system_size = 12;
+        system_space = 1.0;
         freefont_height = 0;
     }
 
@@ -25,6 +26,7 @@ namespace BOSS
         is_freefont = rhs.is_freefont;
         system_name = rhs.system_name;
         system_size = rhs.system_size;
+        system_space = rhs.system_space;
         freefont_nickname = rhs.freefont_nickname;
         freefont_height = rhs.freefont_height;
         return *this;

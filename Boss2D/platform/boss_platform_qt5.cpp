@@ -1900,7 +1900,7 @@
             CanvasClass::get()->SetShader(role);
         }
 
-        void Platform::Graphics::SetFont(chars name, float size)
+        void Platform::Graphics::SetFont(chars name, float height, float spacing)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
             #if BOSS_MAC_OSX

@@ -152,16 +152,17 @@
             smooth() = s;
             antialiasing() = a;
         }
-        inline void SetFont(chars name, sint32 size)
+        inline void SetFont(chars name, sint32 height, sint32 spacing)
         {
-            BOSS_ASSERT("SetFont의 size는 0보다 커야 합니다", 0 < size);
+            BOSS_ASSERT("SetFont의 height는 0보다 커야 합니다", 0 < height);
             const String FamilyAndStyle(name);
             const sint32 DotPos = FamilyAndStyle.Find(0, ".");
             QFont CurFont;
             if(DotPos != -1) CurFont = QFontDatabase::font(
                 (chars) FamilyAndStyle.Left(DotPos), (chars) FamilyAndStyle.Offset(DotPos + 1), 12);
             else CurFont = QFontDatabase::font(name, "", 12);
-            CurFont.setPixelSize(size);
+            CurFont.setPixelSize(height);
+            CurFont.setLetterSpacing(QFont::PercentageSpacing, spacing);
             mPainter.setFont(CurFont);
         }
         inline void SetScissor(sint32 l, sint32 t, sint32 r, sint32 b)

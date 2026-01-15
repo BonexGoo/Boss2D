@@ -350,7 +350,7 @@ namespace BOSS
 
         Platform::Graphics::SetScissor(0, 0, m_width, m_height);
         Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-        Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size);
+        Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size, m_stack_font[-1].system_space);
         Platform::Graphics::SetZoom(1);
     }
 
@@ -418,7 +418,7 @@ namespace BOSS
 
             Platform::Graphics::SetScissor(0, 0, m_width, m_height);
             Platform::Graphics::SetColor(0xFF, 0xFF, 0xFF, 0xFF);
-            Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size);
+            Platform::Graphics::SetFont(m_stack_font[-1].system_name, m_stack_font[-1].system_size, m_stack_font[-1].system_space);
             Platform::Graphics::SetZoom(1);
         }
         else m_ref_surface = nullptr;
@@ -1273,17 +1273,18 @@ namespace BOSS
         return StackBinder(this, ST_Shader);
     }
 
-    ZayPanel::StackBinder ZayPanel::_push_sysfont(float size, chars name)
+    ZayPanel::StackBinder ZayPanel::_push_sysfont(float size, chars name, float space)
     {
         Font& NewFont = m_stack_font.AtAdding();
         const Font& LastFont = m_stack_font[-2];
         NewFont.is_freefont = false;
         NewFont.system_name = (name)? name : (chars) LastFont.system_name;
         NewFont.system_size = LastFont.system_size * size;
+        NewFont.system_space = LastFont.system_space * space;
         NewFont.freefont_nickname = LastFont.freefont_nickname;
         NewFont.freefont_height = LastFont.freefont_height;
 
-        Platform::Graphics::SetFont(NewFont.system_name, NewFont.system_size);
+        Platform::Graphics::SetFont(NewFont.system_name, NewFont.system_size, NewFont.system_space);
         return StackBinder(this, ST_Font);
     }
 
@@ -1301,6 +1302,7 @@ namespace BOSS
         NewFont.is_freefont = true;
         NewFont.system_name = LastFont.system_name;
         NewFont.system_size = LastFont.system_size;
+        NewFont.system_space = LastFont.system_space;
         NewFont.freefont_nickname = (nickname)? nickname : (chars) LastFont.freefont_nickname;
         NewFont.freefont_height = height;
 
@@ -1458,7 +1460,7 @@ namespace BOSS
         const Font& LastFont = m_stack_font[-1];
         if(LastFont.is_freefont)
             Platform::Graphics::SetFontForFreeType(LastFont.freefont_nickname, LastFont.freefont_height);
-        else Platform::Graphics::SetFont(LastFont.system_name, LastFont.system_size);
+        else Platform::Graphics::SetFont(LastFont.system_name, LastFont.system_size, LastFont.system_space);
     }
 
     void ZayPanel::_pop_zoom()

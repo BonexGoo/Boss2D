@@ -1156,7 +1156,7 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        void Platform::Graphics::SetFont(chars name, float size)
+        void Platform::Graphics::SetFont(chars name, float height, float spacing)
         {
             BOSS_ASSERT("Qt5플랫폼처럼 CurCanvas()로의 통합이 필요!!!", false);
 

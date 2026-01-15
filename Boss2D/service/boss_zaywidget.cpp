@@ -221,9 +221,9 @@ namespace BOSS
         return false;
     }
 
-    bool ZayWidget::GlueCall(chars name, const Strings params)
+    bool ZayWidget::GlueCall(chars gluename, const Strings params)
     {
-        if(auto OneGlue = mZaySon.FindGlue(name))
+        if(auto OneGlue = mZaySon.FindGlue(gluename))
         {
             ZayExtend::Payload ParamCollector = OneGlue->MakePayload("", nullptr);
             for(sint32 i = 0, iend = params.Count(); i < iend; ++i)
@@ -234,14 +234,14 @@ namespace BOSS
         return false;
     }
 
-    void ZayWidget::JumpCall(chars name, sint32 count)
+    void ZayWidget::JumpCall(chars gatename, chars uiname, sint32 count)
     {
-        mZaySon.JumpCall(name, count);
+        mZaySon.JumpCall(gatename, uiname, count);
     }
 
-    void ZayWidget::JumpCallDirectly(chars name, ZayPanel* panel)
+    void ZayWidget::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
     {
-        mZaySon.JumpCallDirectly(name, panel);
+        mZaySon.JumpCallDirectly(gatename, uiname, panel);
     }
 
     void ZayWidget::UpdateAtlas(chars json)
@@ -508,14 +508,16 @@ namespace BOSS
         interface.AddComponent(ZayExtend::ComponentType::Option, "font",
             ZAY_DECLARE_COMPONENT(panel, pay)
             {
-                if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
+                if(pay.ParamCount() != 1 && pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 auto Size = pay.Param(0).ToFloat();
                 chars Name = (pay.ParamCount() < 2)? nullptr : (chars) pay.Param(1).ToText();
-                return panel._push_sysfont(Size, Name);
+                auto Space = (pay.ParamCount() < 3)? 1.0f : pay.Param(2).ToFloat();
+                return panel._push_sysfont(Size, Name, Space);
             },
             "[SizeRate:1.0]#"
-            "[FontName]");
+            "[FontName]"
+            "[SpaceRate:1.0]");
 
         interface.AddComponent(ZayExtend::ComponentType::Option, "freefont",
             ZAY_DECLARE_COMPONENT(panel, pay)
@@ -1174,16 +1176,16 @@ namespace BOSS
                     const String GateName = pay.Param(0).ToText();
                     const sint32 RunCount = (1 < pay.ParamCount())? pay.Param(1).ToInteger() : 1;
                     if(RunCount == 0)
-                        RefZaySon->JumpCallDirectly(GateName, nullptr);
+                        RefZaySon->JumpCallDirectly(GateName, pay.UIName(), nullptr);
                     else if(pay.ParamCount() == 6)
                     {
                         const float X = pay.Param(2).ToFloat();
                         const float Y = pay.Param(3).ToFloat();
                         const float W = pay.Param(4).ToFloat();
                         const float H = pay.Param(5).ToFloat();
-                        RefZaySon->JumpCallWithArea(GateName, RunCount, X, Y, W, H);
+                        RefZaySon->JumpCallWithArea(GateName, pay.UIName(), RunCount, X, Y, W, H);
                     }
-                    else RefZaySon->JumpCall(GateName, RunCount);
+                    else RefZaySon->JumpCall(GateName, pay.UIName(), RunCount);
                 }
             });
 

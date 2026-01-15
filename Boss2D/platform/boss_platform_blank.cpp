@@ -1103,7 +1103,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Graphics::SetFont(chars name, float size)
+        void Platform::Graphics::SetFont(chars name, float height, float spacing)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
 

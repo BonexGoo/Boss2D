@@ -1203,7 +1203,8 @@ namespace BOSS
                 };
 
                 chars ViewName = mRefRoot->ViewName();
-                const String UIName((mUINameSolver.is_blank())? "" : (chars) mUINameSolver.ExecuteVariableName());
+                const String UIName((mUINameSolver.is_blank())?
+                    (chars) mRefRoot->DirectlyUIName() : (chars) mUINameSolver.ExecuteVariableName());
                 if(mCompValues.Count() == 0)
                 {
                     if(0 < mInputCodes.Count()) // 코드문
@@ -1615,6 +1616,7 @@ namespace BOSS
         mExtendMap = ToReference(rhs.mExtendMap);
         mJumpCalls = ToReference(rhs.mJumpCalls);
         mLocalSolvers = ToReference(rhs.mLocalSolvers);
+        mDirectlyUIName = ToReference(rhs.mDirectlyUIName);
         mDebugLogger = ToReference(mDebugLogger);
         mDebugFocusedCompID = ToReference(rhs.mDebugFocusedCompID);
         return *this;
@@ -1693,33 +1695,37 @@ namespace BOSS
         return *this;
     }
 
-    void ZaySon::JumpCall(chars gatename, sint32 runcount)
+    void ZaySon::JumpCall(chars gatename, chars uiname, sint32 runcount)
     {
-        mJumpCalls.AtAdding() = String::Format("%s,0,%d", gatename, runcount);
+        mJumpCalls.AtAdding() = String::Format("%s,%s,0,%d", gatename, uiname, runcount);
     }
 
-    void ZaySon::JumpCallDirectly(chars gatename, ZayPanel* panel)
+    void ZaySon::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
     {
         if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(gatename))
         {
-            if(panel)
+            auto OldUIName = SaveDirectUIName(uiname);
             {
-                DebugLogs LogCollector;
-                CurGate->RenderByCall(*panel, mViewName + ".jumpcall", LogCollector);
-                RenderLogs(*panel, LogCollector);
+                if(panel)
+                {
+                    DebugLogs LogCollector;
+                    CurGate->RenderByCall(*panel, mViewName + ".jumpcall", LogCollector);
+                    RenderLogs(*panel, LogCollector);
+                }
+                else
+                {
+                    ZayPanel NullPanel(nullptr, 0, 0);
+                    DebugLogs BlankCollector;
+                    CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", BlankCollector);
+                }
             }
-            else
-            {
-                ZayPanel NullPanel(nullptr, 0, 0);
-                DebugLogs BlankCollector;
-                CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", BlankCollector);
-            }
+            SaveDirectUIName(OldUIName);
         }
     }
 
-    void ZaySon::JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h)
+    void ZaySon::JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h)
     {
-        mJumpCalls.AtAdding() = String::Format("%s,0,%d,%f,%f,%f,%f", gatename, runcount, x, y, w, h);
+        mJumpCalls.AtAdding() = String::Format("%s,%s,0,%d,%f,%f,%f,%f", gatename, uiname, runcount, x, y, w, h);
     }
 
     void ZaySon::JumpClear()
@@ -1798,6 +1804,18 @@ namespace BOSS
         return Collector;
     }
 
+    const String ZaySon::SaveDirectUIName(chars uiname)
+    {
+        const String Result = mDirectlyUIName;
+        mDirectlyUIName = uiname;
+        return Result;
+    }
+
+    const String& ZaySon::DirectlyUIName() const
+    {
+        return mDirectlyUIName;
+    }
+
     bool ZaySon::Render(ZayPanel& panel)
     {
         if(!mUIElement) return false;
@@ -1816,8 +1834,9 @@ namespace BOSS
         {
             const Strings& JumpParams = String::Split(mJumpCalls[i]);
             const String GateName = JumpParams[0];
-            const sint32 RunIndex = Parser::GetInt(JumpParams[1]);
-            const sint32 RunCount = Parser::GetInt(JumpParams[2]);
+            const String UIName = JumpParams[1];
+            const sint32 RunIndex = Parser::GetInt(JumpParams[2]);
+            const sint32 RunCount = Parser::GetInt(JumpParams[3]);
             if(RunIndex < RunCount)
             {
                 HasJumpCall = true;
@@ -1825,33 +1844,37 @@ namespace BOSS
                 {
                     // 지역변수 수집
                     const Point ViewPos = panel.toview(0, 0);
-                    mLocalSolvers.AtAdding().Link(mViewName, "pV").SetResultDirectly(SolverValue::MakeInteger(RunIndex));
-                    if(JumpParams.Count() == 7)
+                    auto OldUIName = SaveDirectUIName(UIName);
                     {
-                        const float X = Parser::GetFloat(JumpParams[3]);
-                        const float Y = Parser::GetFloat(JumpParams[4]);
-                        const float W = Parser::GetFloat(JumpParams[5]);
-                        const float H = Parser::GetFloat(JumpParams[6]);
-                        mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(X));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(Y));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(W));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(H));
-                        ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
+                        mLocalSolvers.AtAdding().Link(mViewName, "pV").SetResultDirectly(SolverValue::MakeInteger(RunIndex));
+                        if(JumpParams.Count() == 8)
+                        {
+                            const float X = Parser::GetFloat(JumpParams[4]);
+                            const float Y = Parser::GetFloat(JumpParams[5]);
+                            const float W = Parser::GetFloat(JumpParams[6]);
+                            const float H = Parser::GetFloat(JumpParams[7]);
+                            mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(X));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(Y));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(W));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(H));
+                            ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
+                                CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                        else
+                        {
+                            mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
                             CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                        mLocalSolvers.SubtractionAll();
                     }
-                    else
-                    {
-                        mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
-                        mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
-                        CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
-                    }
-                    mLocalSolvers.SubtractionAll();
+                    SaveDirectUIName(OldUIName);
                 }
                 // 점프콜 변경
-                String NextJumpCall = String::Format("%s,%d", (chars) GateName, RunIndex + 1);
-                for(sint32 i = 2, iend = JumpParams.Count(); i < iend; ++i)
+                String NextJumpCall = String::Format("%s,%s,%d", (chars) GateName, (chars) UIName, RunIndex + 1);
+                for(sint32 i = 3, iend = JumpParams.Count(); i < iend; ++i)
                     NextJumpCall += ',' + JumpParams[i];
                 mJumpCalls.At(i) = NextJumpCall;
             }

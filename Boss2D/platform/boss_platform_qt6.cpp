@@ -1571,14 +1571,14 @@
             CanvasClass::get()->SetShader(role);
         }
 
-        void Platform::Graphics::SetFont(chars name, float size)
+        void Platform::Graphics::SetFont(chars name, float height, float spacing)
         {
             #if BOSS_MAC_OSX
                 const float DeviceRatio = 1.25 * Platform::Utility::GetReversedGuiRatio();
             #else
                 const float DeviceRatio = Platform::Utility::GetReversedGuiRatio();
             #endif
-            CanvasClass::get()->SetFont(name, Math::Max(1, size * DeviceRatio));
+            CanvasClass::get()->SetFont(name, Math::Max(1, height * DeviceRatio), 100 * spacing);
         }
 
         void Platform::Graphics::SetFontForFreeType(chars nickname, sint32 height)

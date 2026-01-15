@@ -72,9 +72,9 @@ namespace BOSS
             chars param_comments = nullptr, chars inside_samples = nullptr) = 0;
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) = 0;
-        virtual void JumpCall(chars gatename, sint32 runcount) = 0;
-        virtual void JumpCallDirectly(chars gatename, ZayPanel* panel) = 0;
-        virtual void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) = 0;
+        virtual void JumpCall(chars gatename, chars uiname, sint32 runcount) = 0;
+        virtual void JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel) = 0;
+        virtual void JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h) = 0;
         virtual void JumpClear() = 0;
     };
 
@@ -121,9 +121,9 @@ namespace BOSS
             chars param_comments = nullptr, chars inside_samples = nullptr) override;
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) override;
-        void JumpCall(chars gatename, sint32 runcount) override;
-        void JumpCallDirectly(chars gatename, ZayPanel* panel) override;
-        void JumpCallWithArea(chars gatename, sint32 runcount, float x, float y, float w, float h) override;
+        void JumpCall(chars gatename, chars uiname, sint32 runcount) override;
+        void JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel) override;
+        void JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h) override;
         void JumpClear() override;
         const ZayExtend* FindComponent(chars name) const;
         const ZayExtend* FindGlue(chars name) const;
@@ -131,6 +131,8 @@ namespace BOSS
         const Strings AllComponentNames() const;
         const Strings AllGlueNames() const;
         const Strings AllGateNames() const;
+        const String SaveDirectUIName(chars uiname);
+        const String& DirectlyUIName() const;
         bool Render(ZayPanel& panel);
         void RenderLogs(ZayPanel& panel, DebugLogs& logs);
 
@@ -144,6 +146,7 @@ namespace BOSS
         Map<ZayExtend> mExtendMap;
         Strings mJumpCalls;
         Solvers mLocalSolvers;
+        String mDirectlyUIName;
 
     public:
         void SendCursor(CursorRole role) const;

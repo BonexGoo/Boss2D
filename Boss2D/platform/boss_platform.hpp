@@ -877,8 +877,9 @@ public:
 
         /// @brief 폰트지정
         /// @param name : 폰트명
-        /// @param size : 사이즈값
-        static void SetFont(chars name, float size);
+        /// @param height : 폰트의 높이픽셀
+        /// @param spacing : 폰트의 너비비율(1.0)
+        static void SetFont(chars name, float height, float spacing);
 
         /// @brief 프리타입식 폰트지정(BOSS_NEED_ADDON_FREETYPE가 1일때 가능)
         /// @param nickname : 프리타입 Create시 작성한 nickname
