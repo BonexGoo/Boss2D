@@ -867,11 +867,11 @@ namespace BOSS
                 mRSolvers.At(0).Execute();
             }
             else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
-                Transaction("", nullptr, nullptr);
+                Transaction<false>("", nullptr, nullptr);
             else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
             {
                 mLSolver.Link(mRefRoot->ViewName());
-                Transaction("", nullptr, nullptr);
+                Transaction<false>("", nullptr, nullptr);
             }
         }
         void InitForInput()
@@ -913,26 +913,29 @@ namespace BOSS
                     collector(Variables[j]) = Variables[j];
             }
         }
+        template<bool UseStable>
         const String Transaction(chars uiname, String* newvariable, chars stablename)
         {
+            // Stable사전계산
+            if(UseStable && !mStabledRValues.Access(stablename))
+            {
+                hook(mStabledRValues(stablename))
+                for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                    fish.AtAdding() = mRSolvers[i].ExecuteOnly();
+            }
+
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
-                // Stable처리
-                if(stablename && !mStabledRValues.Access(stablename))
-                    mStabledRValues(stablename).AtWherever(0) = mRSolvers[0].ExecuteOnly();
-                const String ExecutedRValue = (stablename)?
-                    mStabledRValues(stablename)[0].ToText(true) : mRSolvers[0].ExecuteOnly().ToText(true);
-
                 const String CurVariableName = mLSolver.ExecuteVariableName();
                 if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), CurVariableName))
                 {
-                    FindedSolver->Parse(ExecutedRValue);
+                    FindedSolver->Parse((UseStable)? mStabledRValues(stablename)[0].ToText(true) : mRSolvers[0].ExecuteOnly().ToText(true));
                     FindedSolver->Execute();
                 }
                 else if(newvariable)
                 {
                     *newvariable = CurVariableName;
-                    return ExecutedRValue;
+                    return (UseStable)? mStabledRValues(stablename)[0].ToText(true) : mRSolvers[0].ExecuteOnly().ToText(true);
                 }
                 else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)", (chars) CurVariableName));
             }
@@ -942,7 +945,7 @@ namespace BOSS
                 {
                     ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, nullptr);
                     for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
-                        ParamCollector(mRSolvers[i].ExecuteOnly());
+                        ParamCollector((UseStable)? mStabledRValues(stablename)[i] : mRSolvers[i].ExecuteOnly());
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
                 }
             }
@@ -954,7 +957,7 @@ namespace BOSS
                     Solver* FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
                     ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, FindedSolver);
                     for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
-                        ParamCollector(mRSolvers[i].ExecuteOnly());
+                        ParamCollector((UseStable)? mStabledRValues(stablename)[i] : mRSolvers[i].ExecuteOnly());
                     // ParamCollector가 소멸되면서 Glue함수가 호출됨
                 }
             }
@@ -1234,8 +1237,8 @@ namespace BOSS
                         {
                             auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
                             String NewVariableName; // 코드문에서 처음 등장한 변수는 지역변수화
-                            const String Formula = CurCompCode->Transaction(UIName, &NewVariableName,
-                                (mStableMode)? (chars) String(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : "")) : nullptr);
+                            const String Formula = (!mStableMode)? CurCompCode->Transaction<false>(UIName, &NewVariableName, nullptr) :
+                                CurCompCode->Transaction<true>(UIName, &NewVariableName, String(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : "")));
                             if(0 < NewVariableName.Length())
                                 mLocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
                         }
@@ -1338,20 +1341,19 @@ namespace BOSS
                         ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, nullptr, mID, this);
                         if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
                         {
+                            // Stable사전계산
+                            if(mStableMode && !CurCompValue->mStabledParamValues.Access(DefaultName))
+                            {
+                                hook(CurCompValue->mStabledParamValues(DefaultName))
+                                for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
+                                    fish.AtAdding() = CurCompValue->mParamSolvers[j].ExecuteOnly();
+                            }
                             // Stable처리
                             if(mStableMode)
                             {
-                                if(auto CurValues = CurCompValue->mStabledParamValues.Access(DefaultName))
-                                {
-                                    for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
-                                        ParamCollector((*CurValues)[j]);
-                                }
-                                else
-                                {
-                                    hook(CurCompValue->mStabledParamValues(DefaultName))
-                                    for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
-                                        ParamCollector(fish.AtAdding() = CurCompValue->mParamSolvers[j].ExecuteOnly());
-                                }
+                                hook(CurCompValue->mStabledParamValues(DefaultName))
+                                for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
+                                    ParamCollector(fish.At(j));
                             }
                             else for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
                                 ParamCollector(CurCompValue->mParamSolvers[j].ExecuteOnly());
@@ -1435,7 +1437,7 @@ namespace BOSS
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
                     auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
-                    CurClickCode->Transaction(uiname, nullptr, nullptr);
+                    CurClickCode->Transaction<false>(uiname, nullptr, nullptr);
                 }
                 mLocalSolvers.SubtractionAll();
                 return true;
