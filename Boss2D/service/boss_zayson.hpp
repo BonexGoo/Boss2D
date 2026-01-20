@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <service/boss_zay.hpp>
 #include <functional>
+#include "boss_std_adapters.hpp"
 
 namespace BOSS
 {
@@ -108,7 +109,7 @@ namespace BOSS
             bool mFill;
             String mUIName;
         };
-        typedef Array<DebugLog> DebugLogs;
+        typedef StdArray<DebugLog> DebugLogs;
 
     public:
         void Load(chars viewname, chars domheader, const Context& context);
@@ -143,7 +144,7 @@ namespace BOSS
         String mViewName;
         String mDomHeader;
         void* mUIElement;
-        Map<ZayExtend> mExtendMap;
+        StdMap<ZayExtend> mExtendMap;
         Strings mJumpCalls;
         Solvers mLocalSolvers;
         String mDirectlyUIName;

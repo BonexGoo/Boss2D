@@ -1,4 +1,5 @@
 ﻿#include <boss.hpp>
+#include "boss_std_adapters.hpp"
 #include "boss_zayson.hpp"
 
 ZAY_DECLARE_VIEW("_unmatched_view_")
@@ -41,8 +42,8 @@ namespace BOSS
             static sint32 LastID = -1;
             return ++LastID;
         }
-        static Map<ZayUIElement*>& STMAP()
-        {static Map<ZayUIElement*> _; return _;}
+        static StdMap<ZayUIElement*>& STMAP()
+        {static StdMap<ZayUIElement*> _; return _;}
 
     public:
         static ZayUIElement* Get(sint32 id)
@@ -96,7 +97,7 @@ namespace BOSS
         mutable Solvers mLocalSolvers;
     };
     typedef Object<ZayUIElement> ZayUI;
-    typedef Array<ZayUI> ZayUIs;
+    typedef StdArray<ZayUI> ZayUIs;
 
     ////////////////////////////////////////////////////////////////////////////////
     // ZaySonDocument
@@ -606,7 +607,7 @@ namespace BOSS
         }
 
     public:
-        void CollectCapture(Map<String>& collector)
+        void CollectCapture(StdMap<String>& collector)
         {
             // 캡쳐가 필요한 변수의 목록화
             const Strings Variables = mConditionSolver.GetTargetlessVariables();
@@ -615,7 +616,7 @@ namespace BOSS
         }
 
     public:
-        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, Map<String>* collector = nullptr)
+        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, StdMap<String>* collector = nullptr)
         {
             if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
             {
@@ -800,7 +801,7 @@ namespace BOSS
 
     public:
         Solvers mParamSolvers;
-        mutable Map<SolverValues> mStabledParamValues;
+        mutable StdMap<SolverValues> mStabledParamValues;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -886,7 +887,7 @@ namespace BOSS
                 mLSolver.Link(mRefRoot->ViewName());
             }
         }
-        void InitForClick(Map<String>& collector)
+        void InitForClick(StdMap<String>& collector)
         {
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
@@ -968,7 +969,7 @@ namespace BOSS
         ZaySonInterface::RequestType mRequestType;
         Solver mLSolver;
         Solvers mRSolvers; // 변수, 함수파라미터들 겸용
-        mutable Map<SolverValues> mStabledRValues;
+        mutable StdMap<SolverValues> mStabledRValues;
         const ZayExtend* mGlueFunction;
     };
 
@@ -1060,8 +1061,8 @@ namespace BOSS
         {
             ZayUIs mCodes;
             Strings mCaptureKeys;
-            typedef Map<SolverValue> CaptureValue; // [CaptureKey]
-            mutable Map<CaptureValue> mCaptureValues; // [UIName][CaptureKey]
+            typedef StdMap<SolverValue> CaptureValue; // [CaptureKey]
+            mutable StdMap<CaptureValue> mCaptureValues; // [UIName][CaptureKey]
         };
 
     public:
@@ -1188,7 +1189,7 @@ namespace BOSS
     private:
         void LoadCode(const ZaySon& root, const Context& json, LambdaID id)
         {
-            Map<String> CaptureCollector;
+            StdMap<String> CaptureCollector;
             for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
             {
                 if(ZayConditionElement::Test(root, mLambdas[(sint32) id].mCodes, json[i], &CaptureCollector))
@@ -1597,7 +1598,7 @@ namespace BOSS
     public:
         ZayUIs mCreateCodes;
         ZayUIs mChildren;
-        Map<ZayUI> mGates;
+        StdMap<ZayUI> mGates;
     };
 
     ////////////////////////////////////////////////////////////////////////////////

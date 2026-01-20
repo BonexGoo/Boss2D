@@ -1,0 +1,2014 @@
+﻿#include <boss.hpp>
+#include "boss_zayson.hpp"
+
+ZAY_DECLARE_VIEW("_unmatched_view_")
+ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
+ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*) {}
+ZAY_VIEW_API OnGesture(GestureType, sint32, sint32) {}
+ZAY_VIEW_API OnRender(ZayPanel& panel)
+{
+    ZAY_RGB(panel, 0xFF, 0x90, 0x80) panel.fill();
+    ZAY_RGB(panel, 0x00, 0x00, 0x00) panel.text("<UNMATCHED VIEW>");
+}
+
+namespace BOSS
+{
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayUIElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayUIElement
+    {
+        BOSS_DECLARE_STANDARD_CLASS(ZayUIElement)
+    public:
+        enum class Type {Unknown, Condition, Param, Request, Inside, Gate, Component, View};
+        enum class LambdaID {OnSet, OnTouch, OnClick, Max};
+
+    public:
+        ZayUIElement(Type type = Type::Unknown) : mType(type)
+        {
+            mID = MakeID();
+            STMAP()[mID] = this;
+            mRefRoot = nullptr;
+        }
+        virtual ~ZayUIElement()
+        {
+            STMAP().Remove(mID);
+        }
+
+    private:
+        sint32 MakeID()
+        {
+            static sint32 LastID = -1;
+            return ++LastID;
+        }
+        static Map<ZayUIElement*>& STMAP()
+        {static Map<ZayUIElement*> _; return _;}
+
+    public:
+        static ZayUIElement* Get(sint32 id)
+        {
+            if(auto Result = STMAP().Access(id))
+                return *Result;
+            return nullptr;
+        }
+        static SolverValue GetResult(chars viewname, chars formula)
+        {
+            Solver NewSolver;
+            NewSolver.Link(viewname);
+            NewSolver.Parse(formula);
+            NewSolver.Execute();
+            return NewSolver.result();
+        }
+        static buffer Create(Type type);
+
+    public:
+        virtual void Load(const ZaySon& root, const Context& context)
+        {
+            mRefRoot = &root;
+            hook(context("uiname"))
+                mUINameSolver.Link(root.ViewName()).Parse(fish.GetText());
+            hook(context("uiloop"))
+                mUILoopSolver.Link(root.ViewName()).Parse(fish.GetText());
+            hook(context("comment"))
+                mComment = fish.GetText();
+        }
+
+    public:
+        virtual void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const {}
+        virtual void SetCursor(CursorRole role) {}
+        virtual bool OnLambda(chars uiname, LambdaID id,
+            chars key, chars value, bool doubleclicked, bool longpressed, bool repeatpressed,
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped,
+            bool outreleased, bool cancelreleased) {return false;}
+        virtual bool IsValidDoubleClick() const {return false;}
+        virtual bool IsValidLongPress() const {return false;}
+        virtual bool IsValidRepeatPress() const {return false;}
+        virtual bool IsValidSwipe() const {return false;}
+        virtual sint32 GetCompID() const {return -1;}
+
+    public:
+        Type mType;
+        sint32 mID;
+        const ZaySon* mRefRoot;
+        Solver mUINameSolver;
+        Solver mUILoopSolver;
+        String mComment;
+        mutable Solvers mLocalSolvers;
+    };
+    typedef Object<ZayUIElement> ZayUI;
+    typedef Array<ZayUI> ZayUIs;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZaySonDocument
+    ////////////////////////////////////////////////////////////////////////////////
+    ZaySonDocument::ZaySonDocument(chars chain) : mChain(chain)
+    {
+    }
+
+    ZaySonDocument::~ZaySonDocument()
+    {
+    }
+
+    ZaySonDocument::ZaySonDocument(ZaySonDocument&& rhs) : mChain(ToReference(rhs.mChain))
+    {
+        operator=(ToReference(rhs));
+    }
+
+    ZaySonDocument& ZaySonDocument::operator=(ZaySonDocument&& rhs)
+    {
+        mSolvers = ToReference(rhs.mSolvers);
+        return *this;
+    }
+
+    bool ZaySonDocument::ExistVariable(chars variable) const
+    {
+        return (Solver::Find(mChain, variable) != nullptr);
+    }
+
+    void ZaySonDocument::SetVariableFilter(chars variable, SolverValueCB cb)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.SetResultFilter(cb);
+    }
+
+    SolverValue ZaySonDocument::GetValue(chars variable) const
+    {
+        if(auto CurSolver = Solver::Find(mChain, variable))
+            return CurSolver->result();
+        return SolverValue();
+    }
+
+    void ZaySonDocument::SetValue(chars variable, chars formula)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.Parse(formula);
+        CurSolver.Execute(true);
+    }
+
+    String ZaySonDocument::GetComment(chars variable) const
+    {
+        if(auto CurSolver = Solver::Find(mChain, variable))
+        {
+            auto& CurComment = CurSolver->parsed_formula();
+            if(0 < CurComment.Length() && CurComment[0] == '?')
+                return CurComment.Offset(1);
+        }
+        return String();
+    }
+
+    void ZaySonDocument::SetComment(chars variable, chars text)
+    {
+        auto& CurSolver = LinkedSolver(variable);
+        CurSolver.Parse(String('?') + text);
+        CurSolver.Execute(true);
+    }
+
+    void ZaySonDocument::SetJson(const Context& json, const String nameheader)
+    {
+        if(auto Length = json.LengthOfNamable())
+        {
+            for(sint32 i = 0; i < Length; ++i)
+            {
+                chararray GetKey;
+                auto& ChildJson = json(i, &GetKey);
+                SetJson(ChildJson, nameheader + String::Format("%s.", &GetKey[0]));
+            }
+        }
+        else if(auto Length = json.LengthOfIndexable())
+        {
+            for(sint32 i = 0; i < Length; ++i)
+                SetJson(json[i], nameheader + String::Format("%d.", i));
+            // 수량정보
+            const String Key = nameheader + "count";
+            auto& CurSolver = LinkedSolver(Key);
+            CurSolver.Parse(String::FromInteger(Length));
+            CurSolver.Execute(true);
+        }
+        else
+        {
+            const String Key = nameheader.Left(nameheader.Length() - 1);
+            const String Value = json.GetText();
+            auto& CurSolver = LinkedSolver(Key);
+            sint32 IntOffset = 0;
+            Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);
+            if(IntOffset == Value.Length())
+                CurSolver.Parse(Value);
+            else
+            {
+                sint32 FloatOffset = 0;
+                Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
+                if(FloatOffset == Value.Length())
+                    CurSolver.Parse(Value);
+                else CurSolver.Parse(String::Format("\"%s\"", (chars) Value));
+            }
+            CurSolver.Execute(true);
+        }
+    }
+
+    void ZaySonDocument::GetJson(Context& json, const String nameheader)
+    {
+        Context* Json = &json;
+        Solver::FindVariables(mChain, [Json, nameheader](const String& variable, const SolverChainPair* pair)->void
+        {
+            if(pair)
+            if(!String::Compare(variable, nameheader, nameheader.Length()))
+            {
+                if(auto CurTarget = pair->target())
+                {
+                    const auto& CurValue = CurTarget->result().ToText(false, false);
+                    Json->At(variable.Offset(nameheader.Length())).Set(CurValue);
+                }
+            }
+        });
+    }
+
+    void ZaySonDocument::Remove(chars variable)
+    {
+        Solver::Remove(mChain, variable);
+    }
+
+    void ZaySonDocument::RemoveMatchedVariables(chars keyword, SolverVariableCB cb)
+    {
+        return Solver::RemoveMatchedVariables(mChain, keyword, cb);
+    }
+
+    void ZaySonDocument::CheckUpdatedSolvers(uint64 msec, UpdateCB cb)
+    {
+        for(sint32 i = 0, iend = mSolvers.Count(); i < iend; ++i)
+            if(msec < mSolvers[i].updated_msec())
+                cb(&mSolvers[i]);
+    }
+
+    Solver& ZaySonDocument::LinkedSolver(chars variable)
+    {
+        if(auto CurSolver = Solver::Find(mChain, variable))
+            return *CurSolver;
+        auto& NewSolver = mSolvers.AtAdding();
+        NewSolver.Link(mChain, variable);
+        return NewSolver;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZaySonElementCall
+    ////////////////////////////////////////////////////////////////////////////////
+    void ZaySonElementCall::SetCursor(sint32 elementid, CursorRole role)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            CurUIElement->SetCursor(role);
+    }
+
+    bool ZaySonElementCall::SetVariable(sint32 elementid, chars uiname, chars key, chars value)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnSet,
+                key, value, false, false, false, false, false, false, false, false, false);
+        return false;
+    }
+
+    bool ZaySonElementCall::SendPress(sint32 elementid, chars uiname)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnTouch,
+                nullptr, nullptr, false, false, false, false, false, false, false, false, false);
+        return false;
+    }
+
+    bool ZaySonElementCall::SendClick(sint32 elementid, chars uiname, bool doubleclicked, bool longpressed, bool repeatpressed,
+        bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->OnLambda(uiname, ZayUIElement::LambdaID::OnClick,
+                nullptr, nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidDoubleClick(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidDoubleClick();
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidLongPress(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidLongPress();
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidRepeatPress(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidRepeatPress();
+        return false;
+    }
+
+    bool ZaySonElementCall::IsValidSwipe(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->IsValidSwipe();
+        return false;
+    }
+
+    sint32 ZaySonElementCall::GetCompID(sint32 elementid)
+    {
+        if(auto CurUIElement = ZayUIElement::Get(elementid))
+            return CurUIElement->GetCompID();
+        return -1;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZaySonUtility
+    ////////////////////////////////////////////////////////////////////////////////
+    String ZaySonUtility::GetSafetyString(chars text)
+    {
+        String Collector;
+        for(sint32 c = 0, cold = 0; true; ++c)
+        {
+            if(text[c] == '\0')
+            {
+                Collector += String(text + cold, c - cold).Trim();
+                break;
+            }
+            else if(text[c] == ',')
+            {
+                Collector += String(text + cold, c - cold).Trim() + ", ";
+                cold = c + 1;
+            }
+            else if(text[c] == '\'' || text[c] == '\"')
+            {
+                Collector += String(text + cold, c - cold).Trim();
+                cold = c + 1;
+
+                const char EndCode = text[c];
+                while(text[++c] != '\0' && (text[c] != EndCode || text[c - 1] == '\\'));
+
+                String LiteralText(text + cold, c - cold); // 따옴표안쪽
+                LiteralText.Replace("\\\\", "([****])");
+                LiteralText.Replace("\\\'", "\'");
+                LiteralText.Replace("\\\"", "\"");
+                LiteralText.Replace("\\", "\\\\"); // 슬래시기호는 쌍슬래시로
+                LiteralText.Replace("([****])", "\\\\");
+                LiteralText.Replace("\'", "\\\'"); // 내부 따옴표는 쌍슬래시+따옴표로
+                LiteralText.Replace("\"", "\\\"");
+                Collector += '\'' + LiteralText + '\''; // 외부 따옴표는 단따옴표만 인정
+                cold = c + 1;
+
+                // 따옴표 마무리가 안된 경우
+                if(text[c] == '\0')
+                    break;
+            }
+        }
+        return Collector;
+    }
+
+    Strings ZaySonUtility::GetCommaStrings(chars text)
+    {
+        Strings SubStrings;
+        for(sint32 c = 0, cold = 0; true; ++c)
+        {
+            if(text[c] == '\0')
+            {
+                SubStrings.AtAdding() = String(text + cold, c - cold).Trim();
+                break;
+            }
+            else if(text[c] == ',')
+            {
+                SubStrings.AtAdding() = String(text + cold, c - cold).Trim();
+                cold = c + 1;
+            }
+            else if(text[c] == '\'' || text[c] == '\"')
+            {
+                const char EndCode = text[c];
+                while(text[++c] != '\0' && (text[c] != EndCode || text[c - 1] == '\\'));
+            }
+        }
+        return SubStrings;
+    }
+
+    bool ZaySonUtility::IsFunctionCall(chars text, sint32* prmbegin, sint32* prmend)
+    {
+        chars Focus = text;
+        // 공백스킵
+        while(*Focus == ' ') Focus++;
+        // 함수명의 탈락조건
+        if(boss_isalpha(*Focus) == 0)
+            return false; // 첫글자가 영문이 아닐 경우 탈락
+        while(*(++Focus) != '(' && *Focus != '\0')
+            if(boss_isalnum(*Focus) == 0 && *Focus != '_')
+                return false; // 영문, 숫자가 아닐 경우 함수탈락
+
+        // 파라미터 발라내기
+        if(*Focus == '(')
+        {
+            const sint32 ParamBeginPos = (Focus + 1) - text;
+            sint32 DeepLevel = 1;
+            while(*(++Focus) != '\0')
+            {
+                if(*Focus == '(') DeepLevel++;
+                else if(*Focus == ')')
+                {
+                    if(--DeepLevel == 0)
+                    {
+                        if(prmbegin) *prmbegin = ParamBeginPos;
+                        if(prmend) *prmend = Focus - text;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    ZaySonInterface::ConditionType ZaySonUtility::ToCondition(chars text, bool* withelse)
+    {
+        if(withelse) *withelse = false;
+        branch;
+        // if계열
+        jump(!String::Compare(text, "if(", 3))
+            return ZaySonInterface::ConditionType::If;
+        jump(!String::Compare(text, "iffocused(", 10))
+            return ZaySonInterface::ConditionType::IfFocused;
+        jump(!String::Compare(text, "ifhovered(", 10))
+            return ZaySonInterface::ConditionType::IfHovered;
+        jump(!String::Compare(text, "ifpressed(", 10))
+            return ZaySonInterface::ConditionType::IfPressed;
+        jump(!String::Compare(text, "ifdoubleclicked"))
+            return ZaySonInterface::ConditionType::IfDoubleClicked;
+        jump(!String::Compare(text, "ifndoubleclicked"))
+            return ZaySonInterface::ConditionType::IfNDoubleClicked;
+        jump(!String::Compare(text, "iflongpressed"))
+            return ZaySonInterface::ConditionType::IfLongPressed;
+        jump(!String::Compare(text, "ifnlongpressed"))
+            return ZaySonInterface::ConditionType::IfNLongPressed;
+        jump(!String::Compare(text, "ifrepeatpressed"))
+            return ZaySonInterface::ConditionType::IfRepeatPressed;
+        jump(!String::Compare(text, "ifnrepeatpressed"))
+            return ZaySonInterface::ConditionType::IfNRepeatPressed;
+        jump(!String::Compare(text, "ifupswiped"))
+            return ZaySonInterface::ConditionType::IfUpSwiped;
+        jump(!String::Compare(text, "ifnupswiped"))
+            return ZaySonInterface::ConditionType::IfNUpSwiped;
+        jump(!String::Compare(text, "ifdownswiped"))
+            return ZaySonInterface::ConditionType::IfDownSwiped;
+        jump(!String::Compare(text, "ifndownswiped"))
+            return ZaySonInterface::ConditionType::IfNDownSwiped;
+        jump(!String::Compare(text, "ifleftswiped"))
+            return ZaySonInterface::ConditionType::IfLeftSwiped;
+        jump(!String::Compare(text, "ifnleftswiped"))
+            return ZaySonInterface::ConditionType::IfNLeftSwiped;
+        jump(!String::Compare(text, "ifrightswiped"))
+            return ZaySonInterface::ConditionType::IfRightSwiped;
+        jump(!String::Compare(text, "ifnrightswiped"))
+            return ZaySonInterface::ConditionType::IfNRightSwiped;
+        jump(!String::Compare(text, "ifoutreleased"))
+            return ZaySonInterface::ConditionType::IfOutReleased;
+        jump(!String::Compare(text, "ifcancelreleased"))
+            return ZaySonInterface::ConditionType::IfCancelReleased;
+        // elif계열
+        jump(!String::Compare(text, "elif(", 5))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::If;
+        }
+        jump(!String::Compare(text, "eliffocused(", 12))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfFocused;
+        }
+        jump(!String::Compare(text, "elifhovered(", 12))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfHovered;
+        }
+        jump(!String::Compare(text, "elifpressed(", 12))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfPressed;
+        }
+        jump(!String::Compare(text, "elifdoubleclicked"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfDoubleClicked;
+        }
+        jump(!String::Compare(text, "elifndoubleclicked"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNDoubleClicked;
+        }
+        jump(!String::Compare(text, "eliflongpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfLongPressed;
+        }
+        jump(!String::Compare(text, "elifnlongpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNLongPressed;
+        }
+        jump(!String::Compare(text, "elifrepeatpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfRepeatPressed;
+        }
+        jump(!String::Compare(text, "elifnrepeatpressed"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNRepeatPressed;
+        }
+        jump(!String::Compare(text, "elifupswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfUpSwiped;
+        }
+        jump(!String::Compare(text, "elifnupswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNUpSwiped;
+        }
+        jump(!String::Compare(text, "elifdownswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfDownSwiped;
+        }
+        jump(!String::Compare(text, "elifndownswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNDownSwiped;
+        }
+        jump(!String::Compare(text, "elifleftswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfLeftSwiped;
+        }
+        jump(!String::Compare(text, "elifnleftswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNLeftSwiped;
+        }
+        jump(!String::Compare(text, "elifrightswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfRightSwiped;
+        }
+        jump(!String::Compare(text, "elifnrightswiped"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfNRightSwiped;
+        }
+        jump(!String::Compare(text, "elifoutreleased"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfOutReleased;
+        }
+        jump(!String::Compare(text, "elifcancelreleased"))
+        {
+            if(withelse) *withelse = true;
+            return ZaySonInterface::ConditionType::IfCancelReleased;
+        }
+        // 기타
+        jump(!String::Compare(text, "else"))
+            return ZaySonInterface::ConditionType::Else;
+        jump(!String::Compare(text, "endif"))
+            return ZaySonInterface::ConditionType::Endif;
+        return ZaySonInterface::ConditionType::Unknown;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayConditionElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayConditionElement : public ZayUIElement
+    {
+    public:
+        ZayConditionElement() : ZayUIElement(Type::Condition)
+        {
+            mConditionType = ZaySonInterface::ConditionType::Unknown;
+            mWithElse = false;
+        }
+        ~ZayConditionElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            const String ConditionText = context.GetText();
+            mConditionType = ZaySonUtility::ToCondition(ConditionText, &mWithElse);
+            if(mConditionType == ZaySonInterface::ConditionType::Unknown)
+                root.SendErrorLog("Script Parsing Failed", String::Format("Unknown conditional statement. (%s/Load)", (chars) ConditionText));
+
+            sint32 PosB, PosE;
+            if(ZaySonUtility::IsFunctionCall(ConditionText, &PosB, &PosE)) // ()사용여부와 파라미터 발라내기
+            {
+                mConditionSolver.Link(root.ViewName());
+                mConditionSolver.Parse(String(((chars) ConditionText) + PosB, PosE - PosB));
+            }
+        }
+
+    public:
+        void CollectCapture(Map<String>& collector)
+        {
+            // 캡쳐가 필요한 변수의 목록화
+            const Strings Variables = mConditionSolver.GetTargetlessVariables();
+            for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
+                collector(Variables[i]) = Variables[i];
+        }
+
+    public:
+        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, Map<String>* collector = nullptr)
+        {
+            if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
+            {
+                ZayUI NewUI(ZayUIElement::Create(Type::Condition));
+                NewUI->Load(root, src);
+                if(collector) ((ZayConditionElement*) NewUI.Ptr())->CollectCapture(*collector);
+                dest.AtAdding() = (id_share) NewUI;
+                return true;
+            }
+            else if(ZaySonUtility::ToCondition(src("compname").GetText()) != ZaySonInterface::ConditionType::Unknown) // compname의 경우
+            {
+                ZayUI NewUI(ZayUIElement::Create(Type::Condition));
+                NewUI->Load(root, src("compname"));
+                if(collector) ((ZayConditionElement*) NewUI.Ptr())->CollectCapture(*collector);
+                dest.AtAdding() = (id_share) NewUI;
+                return true;
+            }
+            return false;
+        };
+        static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel,
+            bool doubleclicked, bool longpressed, bool repeatpressed,
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
+        {
+            sint32s Collector;
+            // 조건문처리로 유효한 CompValue를 수집
+            for(sint32 i = 0, iend = uis.Count(); i < iend; ++i)
+            {
+                if(uis[i].ConstValue().mType == ZayUIElement::Type::Condition)
+                {
+                    // 조건의 성공여부
+                    bool IsTrue = false;
+                    auto CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
+                    if(CurCondition->mConditionType == ZaySonInterface::ConditionType::If)
+                        IsTrue = (CurCondition->mConditionSolver.ExecuteOnly().ToInteger() != 0);
+                    // 포커스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfFocused)
+                    {
+                        if(panel)
+                        {
+                            const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & (PS_Focused | PS_Dropping)) == PS_Focused);
+                        }
+                    }
+                    // 호버확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfHovered)
+                    {
+                        if(panel)
+                        {
+                            const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & PS_Hovered) == PS_Hovered);
+                        }
+                    }
+                    // 프레스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfPressed)
+                    {
+                        if(panel)
+                        {
+                            const String UIName = CurCondition->mConditionSolver.ExecuteOnly().ToText();
+                            IsTrue = ((panel->state(viewname + ('.' + UIName)) & PS_Dragging) == PS_Dragging);
+                        }
+                    }
+
+                    // 더블클릭확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfDoubleClicked)
+                        IsTrue = doubleclicked;
+                    // 더블클릭이 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNDoubleClicked)
+                        IsTrue = !doubleclicked;
+                    // 롱프레스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfLongPressed)
+                        IsTrue = longpressed;
+                    // 롱프레스가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNLongPressed)
+                        IsTrue = !longpressed;
+                    // 리피트프레스확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfRepeatPressed)
+                        IsTrue = repeatpressed;
+                    // 리피트프레스가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNRepeatPressed)
+                        IsTrue = !repeatpressed;
+
+                    // Up스와이프확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfUpSwiped)
+                        IsTrue = upswiped;
+                    // Up스와이프가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNUpSwiped)
+                        IsTrue = !upswiped;
+                    // Down스와이프확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfDownSwiped)
+                        IsTrue = downswiped;
+                    // Down스와이프가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNDownSwiped)
+                        IsTrue = !downswiped;
+                    // Left스와이프확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfLeftSwiped)
+                        IsTrue = leftswiped;
+                    // Left스와이프가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNLeftSwiped)
+                        IsTrue = !leftswiped;
+                    // Right스와이프확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfRightSwiped)
+                        IsTrue = rightswiped;
+                    // Right스와이프가 아님을 확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfNRightSwiped)
+                        IsTrue = !rightswiped;
+
+                    // 아웃릴리즈확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfOutReleased)
+                        IsTrue = outreleased;
+                    // 캔슬릴리즈확인
+                    else if(CurCondition->mConditionType == ZaySonInterface::ConditionType::IfCancelReleased)
+                        IsTrue = cancelreleased;
+                    else IsTrue = true;
+
+                    if(IsTrue)
+                    {
+                        while(i + 1 < iend && uis[i + 1].ConstValue().mType != ZayUIElement::Type::Condition)
+                            Collector.AtAdding() = ++i;
+                        // 선진입
+                        while(i + 1 < iend)
+                        {
+                            if(uis[++i].ConstValue().mType == ZayUIElement::Type::Condition)
+                            {
+                                CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
+                                if(CurCondition->mConditionType == ZaySonInterface::ConditionType::Endif) // endif는 조건그룹을 빠져나오게 하고
+                                    break;
+                                else if(!CurCondition->mWithElse && // 새로운 조건그룹을 만나면 수락
+                                    (CurCondition->mConditionType == ZaySonInterface::ConditionType::If ||
+                                    CurCondition->mConditionType == ZaySonInterface::ConditionType::IfFocused ||
+                                    CurCondition->mConditionType == ZaySonInterface::ConditionType::IfHovered ||
+                                    CurCondition->mConditionType == ZaySonInterface::ConditionType::IfPressed))
+                                {
+                                    i--;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else while(i + 1 < iend)
+                    {
+                        if(uis[++i].ConstValue().mType == ZayUIElement::Type::Condition)
+                        {
+                            CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
+                            if(CurCondition->mConditionType == ZaySonInterface::ConditionType::Endif) // endif는 조건그룹을 빠져나오게 하고
+                                break;
+                            else // 다른 모든 조건은 수락
+                            {
+                                i--;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else Collector.AtAdding() = i;
+            }
+            return Collector;
+        }
+
+    public:
+        ZaySonInterface::ConditionType mConditionType;
+        bool mWithElse;
+        Solver mConditionSolver;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayParamElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayParamElement : public ZayUIElement
+    {
+    public:
+        ZayParamElement() : ZayUIElement(Type::Param) {}
+        ~ZayParamElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            for(sint32 i = 0, iend = context.LengthOfIndexable(); i < iend; ++i)
+                mParamSolvers.AtAdding().Link(root.ViewName()).Parse(context[i].GetText());
+        }
+
+    public:
+        Solvers mParamSolvers;
+        mutable Map<SolverValues> mStabledParamValues;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayRequestElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayRequestElement : public ZayUIElement
+    {
+    public:
+        ZayRequestElement() : ZayUIElement(Type::Request)
+        {
+            mRequestType = ZaySonInterface::RequestType::Unknown;
+            mGlueFunction = nullptr;
+        }
+        ~ZayRequestElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+            auto TryFunctionLoad = [this](const ZaySon& root, const String& text, bool has_lvalue)->bool
+            {
+                sint32 PosB, PosE;
+                if(ZaySonUtility::IsFunctionCall(text, &PosB, &PosE)) // 함수호출
+                {
+                    mRequestType = (has_lvalue)? ZaySonInterface::RequestType::ReturnFunction : ZaySonInterface::RequestType::VoidFunction;
+                    mGlueFunction = root.FindGlue(text.Left(PosB - 1));
+                    if(!mGlueFunction)
+                        root.SendWarningLog("Binding Failed", String::Format("Glue function not found. (%s/Load)", (chars) text.Left(PosB - 1)));
+                    if(PosB < PosE)
+                    {
+                        auto Params = ZaySonUtility::GetCommaStrings(text.Middle(PosB, PosE - PosB));
+                        for(sint32 i = 0, iend = Params.Count(); i < iend; ++i)
+                            mRSolvers.AtAdding().Link(root.ViewName()).Parse(Params[i]); // 파라미터들
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            if(!TryFunctionLoad(root, context.GetText(), false)) // void형 함수인지 판단
+            {
+                chararray GetName;
+                const auto& GetValue = context(0, &GetName);
+                BOSS_ASSERT("함수콜이 아닌 Request는 좌우항으로 나누어져야 합니다", 0 < GetName.Count());
+                if(0 < GetName.Count())
+                {
+                    mLSolver.Parse(&GetName[0]); // 좌항
+                    if(!TryFunctionLoad(root, GetValue.GetText(), true)) // 리턴형 함수인지 판단
+                    {
+                        mRequestType = ZaySonInterface::RequestType::SetVariable; // 대입식으로 판단
+                        mRSolvers.AtAdding().Parse(GetValue.GetText()); // 우항
+                    }
+                }
+            }
+        }
+
+    public:
+        void InitForCreate()
+        {
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
+                mRSolvers.At(0).Execute();
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
+                Transaction<false>("", nullptr, nullptr);
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                Transaction<false>("", nullptr, nullptr);
+            }
+        }
+        void InitForInput()
+        {
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName());
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+            }
+        }
+        void InitForClick(Map<String>& collector)
+        {
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                mRSolvers.At(0).Link(mRefRoot->ViewName());
+                // 변수때는 변수명에서도 캡쳐 목록화
+                const Strings Variables = mLSolver.GetTargetlessVariables();
+                for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
+                    collector(Variables[i]) = Variables[i];
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                mLSolver.Link(mRefRoot->ViewName());
+                // 변수때는 변수명에서도 캡쳐 목록화
+                const Strings Variables = mLSolver.GetTargetlessVariables();
+                for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
+                    collector(Variables[i]) = Variables[i];
+            }
+            // 변수와 함수 모두 캡쳐가 필요한 변수의 목록화
+            for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+            {
+                const Strings Variables = mRSolvers[i].GetTargetlessVariables();
+                for(sint32 j = 0, jend = Variables.Count(); j < jend; ++j)
+                    collector(Variables[j]) = Variables[j];
+            }
+        }
+        template<bool UseStable>
+        const String Transaction(chars uiname, String* newvariable, chars stablename)
+        {
+            // Stable사전계산
+            if(UseStable && !mStabledRValues.Access(stablename))
+            {
+                hook(mStabledRValues(stablename))
+                for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                    fish.AtAdding() = mRSolvers[i].ExecuteOnly();
+            }
+
+            if(mRequestType == ZaySonInterface::RequestType::SetVariable)
+            {
+                const String CurVariableName = mLSolver.ExecuteVariableName();
+                if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), CurVariableName))
+                {
+                    FindedSolver->Parse((UseStable)? mStabledRValues(stablename)[0].ToText(true) : mRSolvers[0].ExecuteOnly().ToText(true));
+                    FindedSolver->Execute();
+                }
+                else if(newvariable)
+                {
+                    *newvariable = CurVariableName;
+                    return (UseStable)? mStabledRValues(stablename)[0].ToText(true) : mRSolvers[0].ExecuteOnly().ToText(true);
+                }
+                else mRefRoot->SendErrorLog("Update Failed", String::Format("Variable not found. (%s/Transaction)", (chars) CurVariableName));
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::VoidFunction)
+            {
+                if(mGlueFunction)
+                {
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, nullptr);
+                    for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                        ParamCollector((UseStable)? mStabledRValues(stablename)[i] : mRSolvers[i].ExecuteOnly());
+                    // ParamCollector가 소멸되면서 Glue함수가 호출됨
+                }
+            }
+            else if(mRequestType == ZaySonInterface::RequestType::ReturnFunction)
+            {
+                if(mGlueFunction)
+                {
+                    mLSolver.Link(mRefRoot->ViewName());
+                    Solver* FindedSolver = Solver::Find(mRefRoot->ViewName(), mLSolver.ExecuteVariableName());
+                    ZayExtend::Payload ParamCollector = mGlueFunction->MakePayload(uiname, FindedSolver);
+                    for(sint32 i = 0, iend = mRSolvers.Count(); i < iend; ++i)
+                        ParamCollector((UseStable)? mStabledRValues(stablename)[i] : mRSolvers[i].ExecuteOnly());
+                    // ParamCollector가 소멸되면서 Glue함수가 호출됨
+                }
+            }
+            return String();
+        }
+
+    public:
+        ZaySonInterface::RequestType mRequestType;
+        Solver mLSolver;
+        Solvers mRSolvers; // 변수, 함수파라미터들 겸용
+        mutable Map<SolverValues> mStabledRValues;
+        const ZayExtend* mGlueFunction;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayInsideElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayInsideElement : public ZayUIElement
+    {
+    public:
+        ZayInsideElement() : ZayUIElement(Type::Inside) {}
+        ~ZayInsideElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("name"))
+                mName = fish.GetText();
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+        }
+
+    public:
+        String mName;
+        ZayUIs mChildren;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayGateElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayGateElement : public ZayUIElement
+    {
+    public:
+        ZayGateElement() : ZayUIElement(Type::Gate) {}
+        ~ZayGateElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+        }
+
+    public:
+        void RenderByCall(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const
+        {
+            // 자식으로 재귀
+            if(0 < mChildren.Count())
+            {
+                sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren,
+                    &panel, false, false, false, false, false, false, false, false, false);
+                for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
+                {
+                    auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
+                    CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
+                }
+            }
+        }
+
+    public:
+        ZayUIs mChildren;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayComponentElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayComponentElement : public ZayUIElement, ZayExtend::Renderer
+    {
+    public:
+        struct Lambda
+        {
+            ZayUIs mCodes;
+            Strings mCaptureKeys;
+            typedef Map<SolverValue> CaptureValue; // [CaptureKey]
+            mutable Map<CaptureValue> mCaptureValues; // [UIName][CaptureKey]
+        };
+
+    public:
+        ZayComponentElement() : ZayUIElement(Type::Component)
+        {
+            mCompID = -2;
+            mStableMode = false;
+            mValidDoubleClicked = false;
+            mValidLongPressed = false;
+            mValidRepeatPressed = false;
+            mValidSwipe = false;
+        }
+        ~ZayComponentElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("compname"))
+                mCompName = fish.GetText();
+
+            hook(context("compid"))
+                mCompID = fish.GetInt(-2);
+
+            hook(context("stable"))
+                mStableMode = fish.GetInt(false);
+
+            hook(context("compvalues"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mCompValues, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Param));
+                NewUI->Load(root, fish[i]);
+                mCompValues.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("compinputs")) // 코드문
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mInputCodes, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, fish[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForInput();
+                mInputCodes.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("onset"))
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnSet);
+
+            hook(context("ontouch"))
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnTouch);
+
+            hook(context("onclick"))
+                LoadCode(root, fish, ZayUIElement::LambdaID::OnClick);
+
+            hook(context("clicktype"))
+            {
+                if(!fish.GetText().Compare("Click_DoubleClick"))
+                {
+                    mValidDoubleClicked = true;
+                    mValidLongPressed = false;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = false;
+                }
+                else if(!fish.GetText().Compare("Click_LongPress"))
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = true;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = false;
+                }
+                else if(!fish.GetText().Compare("Click_RepeatPress"))
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = false;
+                    mValidRepeatPressed = true;
+                    mValidSwipe = false;
+                }
+                else if(!fish.GetText().Compare("Click_Swipe"))
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = false;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = true;
+                }
+                else if(!fish.GetText().Compare("Click_DoubleClick_LongPress"))
+                {
+                    mValidDoubleClicked = true;
+                    mValidLongPressed = true;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = false;
+                }
+                else
+                {
+                    mValidDoubleClicked = false;
+                    mValidLongPressed = false;
+                    mValidRepeatPressed = false;
+                    mValidSwipe = false;
+                }
+            }
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("insiders"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                ZayUI NewUI(ZayUIElement::Create(Type::Inside));
+                NewUI->Load(root, fish[i]);
+                mInsiders.AtAdding() = (id_share) NewUI;
+            }
+        }
+
+    private:
+        void LoadCode(const ZaySon& root, const Context& json, LambdaID id)
+        {
+            Map<String> CaptureCollector;
+            for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mLambdas[(sint32) id].mCodes, json[i], &CaptureCollector))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, json[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForClick(CaptureCollector);
+                mLambdas[(sint32) id].mCodes.AtAdding() = (id_share) NewUI;
+            }
+            // 캡쳐목록 정리
+            for(sint32 i = 0, iend = CaptureCollector.Count(); i < iend; ++i)
+                mLambdas[(sint32) id].mCaptureKeys.AtAdding() = *CaptureCollector.AccessByOrder(i);
+        }
+
+    private:
+        void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
+        {
+            if(auto CurComponent = mRefRoot->FindComponent(mCompName))
+            {
+                // 디버깅 정보수집
+                auto AddDebugLog = [](ZaySon::DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
+                {
+                    auto& NewLog = logs.AtAdding();
+                    NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
+                    NewLog.mFill = fill;
+                    NewLog.mUIName = uiname;
+                };
+
+                chars ViewName = mRefRoot->ViewName();
+                const String UIName((mUINameSolver.is_blank())?
+                    (chars) mRefRoot->DirectlyUIName() : (chars) mUINameSolver.ExecuteVariableName());
+                if(mCompValues.Count() == 0)
+                {
+                    if(0 < mInputCodes.Count()) // 코드문
+                    {
+                        // 지역변수 수집
+                        const Point ViewPos = panel.toview(0, 0);
+                        mLocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+
+                        sint32s CollectedCodes = ZayConditionElement::Collect(ViewName, mInputCodes,
+                            nullptr, false, false, false, false, false, false, false, false, false);
+                        for(sint32 i = 0, iend = CollectedCodes.Count(); i < iend; ++i)
+                        {
+                            auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
+                            String NewVariableName; // 코드문에서 처음 등장한 변수는 지역변수화
+                            const String Formula = (!mStableMode)? CurCompCode->Transaction<false>(UIName, &NewVariableName, nullptr) :
+                                CurCompCode->Transaction<true>(UIName, &NewVariableName, String(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : "")));
+                            if(0 < NewVariableName.Length())
+                                mLocalSolvers.AtAdding().Link(ViewName, NewVariableName).Parse(Formula).Execute();
+                        }
+                        RenderChildren(mChildren, panel, nullptr, defaultname, logs);
+                        mLocalSolvers.SubtractionAll();
+                    }
+                    else if(!mUILoopSolver.is_blank()) // 반복문
+                    {
+                        const sint32 LoopCount = Math::Max(0, (sint32) mUILoopSolver.ExecuteOnly().ToInteger());
+                        for(sint32 i = 0; i < LoopCount; ++i)
+                        {
+                            // 지역변수 수집
+                            if(0 < UIName.Length())
+                            {
+                                mLocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
+                                mLocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(LoopCount));
+                            }
+                            RenderChildren(mChildren, panel, nullptr, defaultname + String::Format("_%d", i), logs);
+                            mLocalSolvers.SubtractionAll();
+                        }
+                    }
+                    else if(!mCompName.Compare("jump")) // 호출문
+                    {
+                        if(auto CurGate = (ZayGateElement*)(ZayUIElement*) mRefRoot->FindGate(UIName))
+                        {
+                            if(mCompID == mRefRoot->debugFocusedCompID())
+                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "jump to '" + UIName + "'");
+                            RenderChildren(CurGate->mChildren, panel, defaultname, defaultname, logs);
+                        }
+                        else if(mCompID == mRefRoot->debugFocusedCompID())
+                            AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "no gate called '" + UIName + "'");
+                    }
+                    else
+                    {
+                        String UINameTemp;
+                        chars ComponentName = nullptr;
+                        if(0 < UIName.Length())
+                            ComponentName = UINameTemp = ViewName + ('.' + UIName);
+                        else for(sint32 i = 0, iend = (sint32) LambdaID::Max; i < iend; ++i)
+                        {
+                            if(0 < mLambdas[i].mCodes.Count())
+                            {
+                                ComponentName = defaultname;
+                                break;
+                            }
+                        }
+
+                        // 파라미터 없음
+                        mInsidersLogs = &logs;
+                        mInsidersComponent = CurComponent;
+                        mInsidersComponentName = ComponentName;
+                        mInsidersDefaultName = defaultname;
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, nullptr, mID, this);
+                        ZAY_EXTEND(ParamCollector >> panel)
+                        {
+                            if(mCompID == mRefRoot->debugFocusedCompID())
+                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
+                            RenderChildren(mChildren, panel, ComponentName, defaultname, logs);
+                        }
+                    }
+                }
+                else // CompValue항목이 존재할 경우
+                {
+                    // 조건문에 의해 살아남은 유효한 CompValue를 모두 실행
+                    sint32s CollectedCompValues = ZayConditionElement::Collect(ViewName, mCompValues,
+                        &panel, false, false, false, false, false, false, false, false, false);
+                    for(sint32 i = 0, iend = CollectedCompValues.Count(); i < iend; ++i)
+                    {
+                        const String DefaultName(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : ""));
+                        String UINameTemp;
+                        chars ComponentName = nullptr;
+                        if(0 < UIName.Length())
+                            ComponentName = UINameTemp = ViewName + ('.' + UIName) + ((1 < iend)? (chars) String::FromInteger(i) : "");
+                        else for(sint32 j = 0, jend = (sint32) LambdaID::Max; j < jend; ++j)
+                        {
+                            if(0 < mLambdas[j].mCodes.Count())
+                            {
+                                ComponentName = DefaultName;
+                                break;
+                            }
+                        }
+
+                        // 지역변수 수집
+                        const Point ViewPos = panel.toview(0, 0);
+                        mLocalSolvers.AtAdding().Link(ViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                        mLocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+                        if(1 < iend && 0 < UIName.Length())
+                        {
+                            mLocalSolvers.AtAdding().Link(ViewName, UIName + "V").SetResultDirectly(SolverValue::MakeInteger(i));
+                            mLocalSolvers.AtAdding().Link(ViewName, UIName + "N").SetResultDirectly(SolverValue::MakeInteger(iend));
+                        }
+
+                        // 파라미터 수집
+                        mInsidersLogs = &logs;
+                        mInsidersComponent = CurComponent;
+                        mInsidersComponentName = ComponentName;
+                        mInsidersDefaultName = DefaultName;
+                        ZayExtend::Payload ParamCollector = CurComponent->MakePayload(ComponentName, nullptr, mID, this);
+                        if(auto CurCompValue = (const ZayParamElement*) mCompValues[CollectedCompValues[i]].ConstPtr())
+                        {
+                            // Stable사전계산
+                            if(mStableMode && !CurCompValue->mStabledParamValues.Access(DefaultName))
+                            {
+                                hook(CurCompValue->mStabledParamValues(DefaultName))
+                                for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
+                                    fish.AtAdding() = CurCompValue->mParamSolvers[j].ExecuteOnly();
+                            }
+                            // Stable처리
+                            if(mStableMode)
+                            {
+                                hook(CurCompValue->mStabledParamValues(DefaultName))
+                                for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
+                                    ParamCollector(fish.At(j));
+                            }
+                            else for(sint32 j = 0, jend = CurCompValue->mParamSolvers.Count(); j < jend; ++j)
+                                ParamCollector(CurCompValue->mParamSolvers[j].ExecuteOnly());
+                        }
+                        ZAY_EXTEND(ParamCollector >> panel)
+                        {
+                            if(mCompID == mRefRoot->debugFocusedCompID())
+                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), ComponentName);
+                            RenderChildren(mChildren, panel, ComponentName, DefaultName, logs);
+                        }
+                        mLocalSolvers.SubtractionAll();
+                    }
+                }
+            }
+            else mRefRoot->SendWarningLog("Rendering Failed", String::Format("Component not found. (%s/Render)", (chars) mCompName));
+        }
+        void RenderChildren(const ZayUIs& children, ZayPanel& panel, chars uiname, const String& defaultname, ZaySon::DebugLogs& logs) const
+        {
+            // 클릭코드를 위한 변수를 사전 캡쳐
+            for(sint32 i = 0, iend = (sint32) LambdaID::Max; i < iend; ++i)
+            {
+                if(uiname != nullptr && 0 < mLambdas[i].mCaptureKeys.Count())
+                {
+                    const Point ViewPos = panel.toview(0, 0);
+                    hook(mLambdas[i].mCaptureValues(uiname))
+                    for(sint32 j = 0, jend = mLambdas[i].mCaptureKeys.Count(); j < jend; ++j)
+                    {
+                        chars CurVariable = mLambdas[i].mCaptureKeys[j];
+                        branch;
+                        jump(!String::Compare(CurVariable, "pX")) fish(CurVariable) = SolverValue::MakeFloat(ViewPos.x);
+                        jump(!String::Compare(CurVariable, "pY")) fish(CurVariable) = SolverValue::MakeFloat(ViewPos.y);
+                        jump(!String::Compare(CurVariable, "pW")) fish(CurVariable) = SolverValue::MakeFloat(panel.w());
+                        jump(!String::Compare(CurVariable, "pH")) fish(CurVariable) = SolverValue::MakeFloat(panel.h());
+                        else
+                        {
+                            if(auto FindedSolver = Solver::Find(mRefRoot->ViewName(), CurVariable))
+                                fish(CurVariable) = FindedSolver->ExecuteOnly();
+                            else fish(CurVariable) = SolverValue::MakeText("");
+                        }
+                    }
+                }
+            }
+
+            // 자식으로 재귀
+            if(0 < children.Count())
+            {
+                sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), children,
+                        &panel, false, false, false, false, false, false, false, false, false);
+                for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
+                {
+                    auto CurChildren = (const ZayUIElement*) children[CollectedChildren[i]].ConstPtr();
+                    CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
+                }
+            }
+        }
+        void SetCursor(CursorRole role) override
+        {
+            mRefRoot->SendCursor(role);
+        }
+        bool OnLambda(chars uiname, LambdaID id, chars key, chars value, bool doubleclicked, bool longpressed, bool repeatpressed,
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased) override
+        {
+            if(0 < mLambdas[(sint32) id].mCodes.Count())
+            {
+                // 사전 캡쳐된 변수를 지역변수화
+                hook(mLambdas[(sint32) id].mCaptureValues(uiname))
+                for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
+                {
+                    chararray GetVariable;
+                    auto& Value = *fish.AccessByOrder(i, &GetVariable);
+                    mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &GetVariable[0]).SetResultDirectly(Value);
+                }
+
+                // 변수를 지역변수화
+                if(key && value)
+                    mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), key).SetResultDirectly(SolverValue::MakeText(value));
+
+                // 클릭코드의 실행
+                sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
+                    nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
+                for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
+                {
+                    auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
+                    CurClickCode->Transaction<false>(uiname, nullptr, nullptr);
+                }
+                mLocalSolvers.SubtractionAll();
+                return true;
+            }
+            return false;
+        }
+        bool IsValidDoubleClick() const override
+        {
+            return mValidDoubleClicked;
+        }
+        bool IsValidLongPress() const override
+        {
+            return mValidLongPressed;
+        }
+        bool IsValidRepeatPress() const override
+        {
+            return mValidRepeatPressed;
+        }
+        bool IsValidSwipe() const override
+        {
+            return mValidSwipe;
+        }
+        sint32 GetCompID() const override
+        {
+            return mCompID;
+        }
+
+    public: // ZayExtend::Renderer 구현부
+        bool HasInsider(chars uiname, chars rendername) const override
+        {
+            for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
+            {
+                auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
+                if(!CurInsider->mName.Compare(rendername))
+                    return true;
+            }
+            return false;
+        }
+        bool RenderInsider(chars uiname, chars rendername, ZayPanel& panel, sint32 pv) const override
+        {
+            // 디버깅 정보수집
+            auto AddDebugLog = [](ZaySon::DebugLogs& logs, ZayPanel& panel, bool fill, chars uiname)->void
+            {
+                auto& NewLog = logs.AtAdding();
+                NewLog.mRect = Rect(panel.toview(0, 0), panel.toview(panel.w(), panel.h())) * panel.zoom().scale;
+                NewLog.mFill = fill;
+                NewLog.mUIName = uiname;
+            };
+
+            for(sint32 i = 0, iend = mInsiders.Count(); i < iend; ++i)
+            {
+                auto CurInsider = (const ZayInsideElement*) mInsiders[i].ConstPtr();
+                if(!CurInsider->mName.Compare(rendername))
+                {
+                    if(mCompID == mRefRoot->debugFocusedCompID())
+                        AddDebugLog(*mInsidersLogs, panel, mInsidersComponent->HasContentComponent(), mInsidersComponentName);
+                    if(pv != -1)
+                    {
+                        const String PV = String::FromInteger(pv);
+                        mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), "pV").SetResultDirectly(SolverValue::MakeInteger(pv));
+                        RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
+                            mInsidersDefaultName + ("." + CurInsider->mName + "." + PV), *mInsidersLogs);
+                        mLocalSolvers.SubtractionAll();
+                    }
+                    else RenderChildren(CurInsider->mChildren, panel, mInsidersComponentName,
+                        mInsidersDefaultName + ("." + CurInsider->mName), *mInsidersLogs);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    public:
+        String mCompName;
+        sint32 mCompID;
+        bool mStableMode;
+        ZayUIs mCompValues;
+        mutable ZayUIs mInputCodes;
+        Lambda mLambdas[(sint32) LambdaID::Max];
+        bool mValidDoubleClicked;
+        bool mValidLongPressed;
+        bool mValidRepeatPressed;
+        bool mValidSwipe;
+        ZayUIs mChildren;
+
+    public:
+        ZayUIs mInsiders;
+        mutable ZaySon::DebugLogs* mInsidersLogs {nullptr};
+        mutable const ZayExtend* mInsidersComponent {nullptr};
+        mutable chars mInsidersComponentName {nullptr};
+        mutable chars mInsidersDefaultName {nullptr};
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayViewElement
+    ////////////////////////////////////////////////////////////////////////////////
+    class ZayViewElement : public ZayUIElement
+    {
+    public:
+        ZayViewElement() : ZayUIElement(Type::View) {}
+        ~ZayViewElement() override {}
+
+    public:
+        void Load(const ZaySon& root, const Context& context) override
+        {
+            ZayUIElement::Load(root, context);
+
+            hook(context("oncreate"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mCreateCodes, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Request));
+                NewUI->Load(root, fish[i]);
+                ((ZayRequestElement*) NewUI.Ptr())->InitForCreate();
+                mCreateCodes.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("ui"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(ZayConditionElement::Test(root, mChildren, fish[i]))
+                    continue;
+                ZayUI NewUI(ZayUIElement::Create(Type::Component));
+                NewUI->Load(root, fish[i]);
+                mChildren.AtAdding() = (id_share) NewUI;
+            }
+
+            hook(context("extends"))
+            for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
+            {
+                if(!fish[i]("compname").GetText().Compare("gate"))
+                {
+                    const String GateName = fish[i]("uiname").GetText();
+                    if(0 < GateName.Length())
+                    {
+                        ZayUI NewUI(ZayUIElement::Create(Type::Gate));
+                        NewUI->Load(root, fish[i]);
+                        mGates(GateName) = (id_share) NewUI;
+                    }
+                }
+            }
+        }
+
+    private:
+        void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
+        {
+            sint32s CollectedChildren = ZayConditionElement::Collect(mRefRoot->ViewName(), mChildren,
+                    &panel, false, false, false, false, false, false, false, false, false);
+            for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
+            {
+                auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
+                CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
+            }
+        }
+
+    public:
+        ZayUIs mCreateCodes;
+        ZayUIs mChildren;
+        Map<ZayUI> mGates;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZayUIElement::Create
+    ////////////////////////////////////////////////////////////////////////////////
+    buffer ZayUIElement::Create(Type type)
+    {
+        switch(type)
+        {
+        case Type::Condition: return Buffer::Alloc<ZayConditionElement>(BOSS_DBG 1);
+        case Type::Param: return Buffer::Alloc<ZayParamElement>(BOSS_DBG 1);
+        case Type::Request: return Buffer::Alloc<ZayRequestElement>(BOSS_DBG 1);
+        case Type::Inside: return Buffer::Alloc<ZayInsideElement>(BOSS_DBG 1);
+        case Type::Gate: return Buffer::Alloc<ZayGateElement>(BOSS_DBG 1);
+        case Type::Component: return Buffer::Alloc<ZayComponentElement>(BOSS_DBG 1);
+        case Type::View: return Buffer::Alloc<ZayViewElement>(BOSS_DBG 1);
+        }
+        return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ZaySon
+    ////////////////////////////////////////////////////////////////////////////////
+    ZaySon::ZaySon()
+    {
+        mUIElement = nullptr;
+        // 디버그정보
+        mDebugFocusedCompID = -1;
+    }
+
+    ZaySon::~ZaySon()
+    {
+        delete (ZayUIElement*) mUIElement;
+    }
+
+    ZaySon::ZaySon(ZaySon&& rhs)
+    {
+        operator=(ToReference(rhs));
+    }
+
+    ZaySon& ZaySon::operator=(ZaySon&& rhs)
+    {
+        mViewName = ToReference(rhs.mViewName);
+        delete (ZayUIElement*) mUIElement;
+        mUIElement = rhs.mUIElement;
+        rhs.mUIElement = nullptr;
+        mExtendMap = ToReference(rhs.mExtendMap);
+        mJumpCalls = ToReference(rhs.mJumpCalls);
+        mLocalSolvers = ToReference(rhs.mLocalSolvers);
+        mDirectlyUIName = ToReference(rhs.mDirectlyUIName);
+        mDebugLogger = ToReference(mDebugLogger);
+        mDebugFocusedCompID = ToReference(rhs.mDebugFocusedCompID);
+        return *this;
+    }
+
+    void ZaySon::Load(chars viewname, chars domheader, const Context& context)
+    {
+        SetViewAndDom(viewname, domheader);
+        Reload(context);
+    }
+
+    void ZaySon::Reload(const Context& context)
+    {
+        BOSS_ASSERT("Reload는 Load후 호출가능합니다", 0 < mViewName.Length());
+        Solvers GlobalSolvers;
+        SetGlobalSolvers(GlobalSolvers);
+        delete (ZayUIElement*) mUIElement;
+        auto NewView = new ZayViewElement();
+        NewView->Load(*this, context);
+        mUIElement = NewView;
+
+        SendInfoLog("ZaySon Loaded", String::Format("%s (Reload)", (chars) mViewName));
+        auto ComponentNames = AllComponentNames();
+        for(sint32 i = 0, iend = ComponentNames.Count(); i < iend; ++i)
+            SendInfoLog("Component Added", ComponentNames[i]);
+        auto GlueNames = AllGlueNames();
+        for(sint32 i = 0, iend = GlueNames.Count(); i < iend; ++i)
+            SendInfoLog("Glue Added", GlueNames[i]);
+        auto GateNames = AllGateNames();
+        for(sint32 i = 0, iend = GateNames.Count(); i < iend; ++i)
+            SendInfoLog("Gate Added", GateNames[i]);
+    }
+
+    void ZaySon::SetLogger(LoggerCB cb)
+    {
+        mDebugLogger = cb;
+    }
+
+    void ZaySon::SetViewAndDom(chars viewname, chars domheader)
+    {
+        mViewName = viewname;
+        mDomHeader = domheader;
+    }
+
+    const String& ZaySon::ViewName() const
+    {
+        return mViewName;
+    }
+
+    const String& ZaySon::DomHeader() const
+    {
+        return mDomHeader;
+    }
+
+    ZaySonInterface& ZaySon::AddComponent(ZayExtend::ComponentType type, chars name, ZayExtend::ComponentCB cb,
+        chars param_comments, chars inside_samples)
+    {
+        String OneName = name;
+        const sint32 Pos = OneName.Find(0, ' ');
+        if(Pos != -1) OneName = OneName.Left(Pos);
+
+        auto& NewFunction = mExtendMap(OneName);
+        NewFunction.ResetForComponent(type, cb);
+        return *this;
+    }
+
+    ZaySonInterface& ZaySon::AddGlue(chars name, ZayExtend::GlueCB cb,
+        chars param_comments, chars document)
+    {
+        String OneName = name;
+        const sint32 Pos = OneName.Find(0, ' ');
+        if(Pos != -1) OneName = OneName.Left(Pos);
+
+        auto& NewFunction = mExtendMap(OneName);
+        NewFunction.ResetForGlue(cb);
+        return *this;
+    }
+
+    void ZaySon::JumpCall(chars gatename, chars uiname, sint32 runcount)
+    {
+        mJumpCalls.AtAdding() = String::Format("%s,%s,0,%d", gatename, uiname, runcount);
+    }
+
+    void ZaySon::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
+    {
+        if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(gatename))
+        {
+            auto OldUIName = SaveDirectUIName(uiname);
+            {
+                if(panel)
+                {
+                    DebugLogs LogCollector;
+                    CurGate->RenderByCall(*panel, mViewName + ".jumpcall", LogCollector);
+                    RenderLogs(*panel, LogCollector);
+                }
+                else
+                {
+                    ZayPanel NullPanel(nullptr, 0, 0);
+                    DebugLogs BlankCollector;
+                    CurGate->RenderByCall(NullPanel, mViewName + ".jumpcall", BlankCollector);
+                }
+            }
+            SaveDirectUIName(OldUIName);
+        }
+    }
+
+    void ZaySon::JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h)
+    {
+        mJumpCalls.AtAdding() = String::Format("%s,%s,0,%d,%f,%f,%f,%f", gatename, uiname, runcount, x, y, w, h);
+    }
+
+    void ZaySon::JumpClear()
+    {
+        mJumpCalls.Clear();
+    }
+
+    const ZayExtend* ZaySon::FindComponent(chars name) const
+    {
+        if(auto FindedFunc = mExtendMap.Access(name))
+        {
+            const ZayExtend* Result = (FindedFunc->HasComponent())? FindedFunc : nullptr;
+            BOSS_ASSERT(String::Format("\"%s\"는 Component함수가 아닙니다", name), Result);
+            return Result;
+        }
+        BOSS_ASSERT(String::Format("\"%s\"으로 등록된 ZayExtend를 찾을 수 없습니다", name), false);
+        return nullptr;
+    }
+
+    const ZayExtend* ZaySon::FindGlue(chars name) const
+    {
+        if(auto FindedFunc = mExtendMap.Access(name))
+        {
+            const ZayExtend* Result = (FindedFunc->HasGlue())? FindedFunc : nullptr;
+            BOSS_ASSERT(String::Format("\"%s\"는 Glue함수가 아닙니다", name), Result);
+            return Result;
+        }
+        BOSS_ASSERT(String::Format("\"%s\"으로 등록된 ZayExtend를 찾을 수 없습니다", name), false);
+        return nullptr;
+    }
+
+    const void* ZaySon::FindGate(chars name) const
+    {
+        if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
+        if(auto GateElement = TopElement->mGates.Access(name))
+            return (*GateElement).ConstPtr();
+        return nullptr;
+    }
+
+    const Strings ZaySon::AllComponentNames() const
+    {
+        Strings Collector;
+        for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
+            if(FindedFunc->HasComponent())
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
+    }
+
+    const Strings ZaySon::AllGlueNames() const
+    {
+        Strings Collector;
+        for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
+            if(FindedFunc->HasGlue())
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
+    }
+
+    const Strings ZaySon::AllGateNames() const
+    {
+        Strings Collector;
+        if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
+        for(sint32 i = 0, iend = TopElement->mGates.Count(); i < iend; ++i)
+        {
+            chararray GetName;
+            if(auto FindedGate = TopElement->mGates.AccessByOrder(i, &GetName))
+                Collector.AtAdding() = &GetName[0];
+        }
+        return Collector;
+    }
+
+    const String ZaySon::SaveDirectUIName(chars uiname)
+    {
+        const String Result = mDirectlyUIName;
+        mDirectlyUIName = uiname;
+        return Result;
+    }
+
+    const String& ZaySon::DirectlyUIName() const
+    {
+        return mDirectlyUIName;
+    }
+
+    bool ZaySon::Render(ZayPanel& panel)
+    {
+        if(!mUIElement) return false;
+        if(0 < mDomHeader.Length())
+            Solver::SetReplacer("d.", mDomHeader + '.');
+
+        Solvers GlobalSolvers;
+        SetGlobalSolvers(GlobalSolvers);
+        DebugLogs LogCollector;
+        ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
+        Solver::ClearReplacer();
+
+        // 수집된 점프콜 처리
+        bool HasJumpCall = false;
+        for(sint32 i = 0, iend = mJumpCalls.Count(); i < iend; ++i)
+        {
+            const Strings& JumpParams = String::Split(mJumpCalls[i]);
+            const String GateName = JumpParams[0];
+            const String UIName = JumpParams[1];
+            const sint32 RunIndex = Parser::GetInt(JumpParams[2]);
+            const sint32 RunCount = Parser::GetInt(JumpParams[3]);
+            if(RunIndex < RunCount)
+            {
+                HasJumpCall = true;
+                if(auto CurGate = (ZayGateElement*)(ZayUIElement*) FindGate(GateName))
+                {
+                    // 지역변수 수집
+                    const Point ViewPos = panel.toview(0, 0);
+                    auto OldUIName = SaveDirectUIName(UIName);
+                    {
+                        mLocalSolvers.AtAdding().Link(mViewName, "pV").SetResultDirectly(SolverValue::MakeInteger(RunIndex));
+                        if(JumpParams.Count() == 8)
+                        {
+                            const float X = Parser::GetFloat(JumpParams[4]);
+                            const float Y = Parser::GetFloat(JumpParams[5]);
+                            const float W = Parser::GetFloat(JumpParams[6]);
+                            const float H = Parser::GetFloat(JumpParams[7]);
+                            mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(X));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(Y));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(W));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(H));
+                            ZAY_XYWH(panel, X - ViewPos.x, Y - ViewPos.y, W, H)
+                                CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                        else
+                        {
+                            mLocalSolvers.AtAdding().Link(mViewName, "pX").SetResultDirectly(SolverValue::MakeFloat(ViewPos.x));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pY").SetResultDirectly(SolverValue::MakeFloat(ViewPos.y));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pW").SetResultDirectly(SolverValue::MakeFloat(panel.w()));
+                            mLocalSolvers.AtAdding().Link(mViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
+                            CurGate->RenderByCall(panel, mViewName + String::Format(".jumpcall_%d", i), LogCollector);
+                        }
+                        mLocalSolvers.SubtractionAll();
+                    }
+                    SaveDirectUIName(OldUIName);
+                }
+                // 점프콜 변경
+                String NextJumpCall = String::Format("%s,%s,%d", (chars) GateName, (chars) UIName, RunIndex + 1);
+                for(sint32 i = 3, iend = JumpParams.Count(); i < iend; ++i)
+                    NextJumpCall += ',' + JumpParams[i];
+                mJumpCalls.At(i) = NextJumpCall;
+            }
+        }
+        if(HasJumpCall)
+            panel.repaint(2);
+        else mJumpCalls.Clear();
+
+        // 수집된 디버그로그(GUI툴에 의한 포커스표현)
+        RenderLogs(panel, LogCollector);
+        return true;
+    }
+
+    void ZaySon::RenderLogs(ZayPanel& panel, DebugLogs& logs)
+    {
+        const Point ViewPos = panel.toview(0, 0);
+        ZAY_ZOOM_CLEAR(panel)
+        ZAY_MOVE(panel, -ViewPos.x, -ViewPos.y)
+        for(sint32 i = 0, iend = logs.Count(); i < iend; ++i)
+        {
+            hook(logs[i])
+            ZAY_RECT(panel, fish.mRect)
+            ZAY_FONT(panel, Math::MaxF(0.8, (fish.mRect.r - fish.mRect.l) * 0.005))
+            {
+                // 영역표시
+                if(fish.mFill)
+                {
+                    ZAY_RGBA(panel, 255, 0, 0, 96)
+                        panel.fill();
+                }
+                else
+                {
+                    ZAY_RGBA(panel, 255, 0, 0, 96)
+                        panel.rect(5);
+                    ZAY_INNER(panel, 5)
+                    ZAY_RGBA(panel, 0, 255, 0, 64)
+                        panel.rect(5);
+                }
+
+                // UI명칭
+                if(0 < fish.mUIName.Length())
+                {
+                    ZAY_RGB(panel, 0, 0, 0)
+                    for(sint32 y = -1; y <= 1; ++y)
+                    for(sint32 x = -1; x <= 1; ++x)
+                        ZAY_MOVE(panel, x, y)
+                            panel.text(panel.w() / 2, panel.h() / 2, fish.mUIName);
+                    ZAY_RGB(panel, 255, 0, 0)
+                        panel.text(panel.w() / 2, panel.h() / 2, fish.mUIName);
+                }
+            }
+        }
+    }
+
+    void ZaySon::SetGlobalSolvers(Solvers& solvers) const
+    {
+        solvers.AtAdding().Link(mViewName, "gViewName").Parse("'" + mViewName + "'").Execute();
+        solvers.AtAdding().Link(mViewName, "gOSName").Parse(String::Format("'%s'", Platform::Utility::GetOSName())).Execute();
+        solvers.AtAdding().Link(mViewName, "gDeviceID").Parse(String::Format("'%s'", Platform::Utility::GetDeviceID())).Execute();
+        solvers.AtAdding().Link(mViewName, "gLogicalDpi").Parse(String::FromInteger(Platform::Utility::GetLogicalDpi())).Execute();
+        solvers.AtAdding().Link(mViewName, "gPhysicalDpi").Parse(String::FromInteger(Platform::Utility::GetPhysicalDpi())).Execute();
+    }
+
+    void ZaySon::SendCursor(CursorRole role) const
+    {
+        if(mDebugLogger != nullptr)
+            mDebugLogger(LogType::Option, "Cursor", String::FromInteger((sint32) role));
+    }
+
+    void ZaySon::SendAtlas(chars json) const
+    {
+        if(mDebugLogger != nullptr)
+            mDebugLogger(LogType::Option, "Atlas", json);
+    }
+
+    void ZaySon::SendInfoLog(chars title, chars detail) const
+    {
+        if(mDebugLogger == nullptr)
+            BOSS_TRACE("[ZaySonInfo] %s (%s)", title, detail);
+        else mDebugLogger(LogType::Info, title, detail);
+    }
+
+    void ZaySon::SendWarningLog(chars title, chars detail) const
+    {
+        if(mDebugLogger == nullptr)
+            BOSS_TRACE("[ZaySonWarning] %s (%s)", title, detail);
+        else mDebugLogger(LogType::Warning, title, detail);
+    }
+
+    void ZaySon::SendErrorLog(chars title, chars detail) const
+    {
+        if(mDebugLogger == nullptr)
+            BOSS_TRACE("[ZaySonError] %s (%s)", title, detail);
+        else mDebugLogger(LogType::Error, title, detail);
+    }
+
+    void ZaySon::SetFocusCompID(sint32 id)
+    {
+        mDebugFocusedCompID = id;
+    }
+
+    void ZaySon::ClearFocusCompID()
+    {
+        mDebugFocusedCompID = -1;
+    }
+}

@@ -1,4 +1,5 @@
 ﻿#include <boss.hpp>
+#include "boss_std_adapters.hpp"
 #include "boss_zaywidget.hpp"
 
 namespace BOSS
@@ -1077,7 +1078,7 @@ namespace BOSS
                     id_surface mSurface {nullptr};
                     Image mLastImage;
                 };
-                Map<BackBufferInfo>& BackBufferMap = *BOSS_STORAGE(Map<BackBufferInfo>);
+                StdMap<BackBufferInfo>& BackBufferMap = *BOSS_STORAGE(StdMap<BackBufferInfo>);
 
                 const String UIName = String::Format("back_buffer_%d", pay.ElementID());
                 hook(BackBufferMap(UIName))
@@ -1327,7 +1328,7 @@ namespace BOSS
     void ZayWidgetDOM::RemoveVariables(chars keyword)
     {
         auto& Self = ST();
-        Array<id_pipe> Pipes;
+        StdArray<id_pipe> Pipes;
         for(sint32 i = 0, iend = Self.mPipeMap.Count(); i < iend; ++i)
         {
             auto CurPipe = *Self.mPipeMap.AccessByOrder(i);
@@ -1336,7 +1337,7 @@ namespace BOSS
 
         if(0 < Pipes.Count())
         {
-            const Array<id_pipe>* PtrPipes = &Pipes;
+            const StdArray<id_pipe>* PtrPipes = &Pipes;
             Self.mDocument->RemoveMatchedVariables(keyword,
                 [PtrPipes](const String& variable, const SolverChainPair* pair)->void
                 {

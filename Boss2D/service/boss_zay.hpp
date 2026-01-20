@@ -11,6 +11,7 @@
 #include <element/boss_tween.hpp>
 #include <element/boss_vector.hpp>
 #include <functional>
+#include "boss_std_adapters.hpp"
 
 // 옵션스택 - 영역
 #define ZAY_LTRB(PANEL, L, T, R, B) \
@@ -486,8 +487,8 @@ namespace BOSS
         Clips m_stack_clip;
         Rects m_stack_scissor;
         Colors m_stack_color;
-        Array<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
-        Array<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
+        StdArray<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
+        StdArray<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
         Fonts m_stack_font;
         ZoomStates m_stack_zoom;
 
@@ -637,7 +638,7 @@ namespace BOSS
         }
 
     private:
-        Array<TYPE*, datatype_pod_canmemcpy> m_ref_datas;
+        StdArray<TYPE*, datatype_pod_canmemcpy> m_ref_datas;
         TYPE* m_ref_data_last;
         id_mutex m_mutex;
     };
@@ -725,7 +726,7 @@ namespace BOSS
             public:
                 sint32 m_updateid;
                 sint32 m_validlength;
-                Array<Element*> m_elements;
+                StdArray<Element*> m_elements;
             public:
                 Cell() {m_updateid = -1; m_validlength = 0;}
                 ~Cell() {}
@@ -737,7 +738,7 @@ namespace BOSS
                     return *this;
                 }
             };
-            typedef Array<Cell> CellRow;
+            typedef StdArray<Cell> CellRow;
 
         public:
             void ready(sint32 width, sint32 height);
@@ -813,8 +814,8 @@ namespace BOSS
             sint32 m_block_width;
             sint32 m_block_height;
             Element m_element;
-            Map<Element> m_map;
-            Array<CellRow> m_cell;
+            StdMap<Element> m_map;
+            StdArray<CellRow> m_cell;
             const Element* m_focus;
             const Element* m_press;
             const Element* m_moving;
@@ -823,7 +824,7 @@ namespace BOSS
             sint32 m_press_y;
             sint32 m_hover_x;
             sint32 m_hover_y;
-            Map<Scroll> m_scrollmap;
+            StdMap<Scroll> m_scrollmap;
             TouchType m_lasttouch;
         };
 
