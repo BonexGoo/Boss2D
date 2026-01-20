@@ -295,7 +295,7 @@ namespace BOSS
         operator=(rhs);
     }
 
-    Context::Context(Context&& rhs)
+    Context::Context(Context&& rhs) noexcept
     {
         m_valueNeedQuotation = false;
         m_valueOffset = nullptr;
@@ -350,7 +350,7 @@ namespace BOSS
         return *this;
     }
 
-    Context& Context::operator=(Context&& rhs)
+    Context& Context::operator=(Context&& rhs) noexcept
     {
         m_source = ToReference(rhs.m_source);
         m_namableChild = ToReference(rhs.m_namableChild);

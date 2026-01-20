@@ -184,7 +184,7 @@ namespace BOSS
 
         /// @brief 이동생성자
         /// @param rhs : 이동할 인스턴스
-        Context(Context&& rhs);
+        Context(Context&& rhs) noexcept;
 
         /// @brief 생성자(Bin바이너리를 로드)
         /// @param src : Bin바이너리
@@ -213,7 +213,7 @@ namespace BOSS
         /// @brief 이동
         /// @param rhs : 이동할 인스턴스
         /// @return 자기 객체
-        Context& operator=(Context&& rhs);
+        Context& operator=(Context&& rhs) noexcept;
 
         /// @brief bool형변환
         /// @return 자신의 유효여부

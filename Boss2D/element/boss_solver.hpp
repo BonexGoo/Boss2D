@@ -134,6 +134,7 @@ namespace BOSS
         private: Text mText;
         private: Range mRange;
     };
+    typedef Array<SolverValue> SolverValues;
     typedef std::function<bool(const String& formula, const SolverValue& value, float reliable)> SolverValueCB;
 
     // 피연산항
@@ -222,4 +223,5 @@ namespace BOSS
         private: uint64 mUpdatedFormulaMsec;
         private: uint64 mUpdatedResultMsec;
     };
+    typedef Array<Solver> Solvers;
 }
