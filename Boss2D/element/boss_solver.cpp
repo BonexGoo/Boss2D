@@ -982,7 +982,7 @@ namespace BOSS
         return *this;
     }
 
-    Solver& Solver::operator=(Solver&& rhs)
+    Solver& Solver::operator=(Solver&& rhs) noexcept
     {
         Unlink();
         mLinkedChain = rhs.mLinkedChain; rhs.mLinkedChain = nullptr;

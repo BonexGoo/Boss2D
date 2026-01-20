@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "boss_std_adapters.hpp"
 #include <service/boss_zay.hpp>
 #include <service/boss_zayson.hpp>
 
@@ -51,7 +50,7 @@ namespace BOSS
         uint64 mPipeModifyTime;
         Strings mPipeReservers;
     };
-    typedef StdArray<ZayWidget> ZayWidgets;
+    typedef ZayArray<ZayWidget> ZayWidgets;
 
     /// @brief 제이프로연동식 문서객체모델
     class ZayWidgetDOM
@@ -98,11 +97,11 @@ namespace BOSS
 
     private:
         ZayWidgetDocumentP* const mDocument;
-        StdMap<Pipe> mPipeMap;
+        ZayMap<Pipe> mPipeMap;
         bool mHasUpdate;
         bool mHasRemove;
         sint32 mHasFocusedCompID;
-        StdMap<bool> mRemoveVariables;
+        ZayMap<bool> mRemoveVariables;
         sint32 mUpdateProcedure;
     };
 
@@ -293,7 +292,7 @@ namespace BOSS
         sint32 mCapturedCursorAni {0};
         wchar_t mCapturedIMEChar;
         String mCapturedSavedText; // Esc를 위한 원본텍스트
-        StdMap<RenderInfo> mRenderInfoMap;
+        ZayMap<RenderInfo> mRenderInfoMap;
         // 복사정보
         sint32 mCopyAni {0};
         static const sint32 mCopyAniMax {20};

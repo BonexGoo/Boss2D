@@ -149,6 +149,8 @@ set(BOSS_SOURCES
     ../Boss2D/core/boss_queue.hpp
     ../Boss2D/core/boss_remote.hpp
     ../Boss2D/core/boss_share.hpp
+    ../Boss2D/core/boss_stdarray.hpp
+    ../Boss2D/core/boss_stdmap.hpp
     ../Boss2D/core/boss_storage.hpp
     ../Boss2D/core/boss_string.hpp
     ../Boss2D/core/boss_tasking.hpp

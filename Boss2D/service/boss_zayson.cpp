@@ -1,5 +1,4 @@
 ﻿#include <boss.hpp>
-#include "boss_std_adapters.hpp"
 #include "boss_zayson.hpp"
 
 ZAY_DECLARE_VIEW("_unmatched_view_")
@@ -42,8 +41,8 @@ namespace BOSS
             static sint32 LastID = -1;
             return ++LastID;
         }
-        static StdMap<ZayUIElement*>& STMAP()
-        {static StdMap<ZayUIElement*> _; return _;}
+        static ZayMap<ZayUIElement*>& STMAP()
+        {static ZayMap<ZayUIElement*> _; return _;}
 
     public:
         static ZayUIElement* Get(sint32 id)
@@ -94,10 +93,10 @@ namespace BOSS
         Solver mUINameSolver;
         Solver mUILoopSolver;
         String mComment;
-        mutable Solvers mLocalSolvers;
+        mutable ZaySolvers mLocalSolvers;
     };
     typedef Object<ZayUIElement> ZayUI;
-    typedef StdArray<ZayUI> ZayUIs;
+    typedef ZayArray<ZayUI> ZayUIs;
 
     ////////////////////////////////////////////////////////////////////////////////
     // ZaySonDocument
@@ -607,7 +606,7 @@ namespace BOSS
         }
 
     public:
-        void CollectCapture(StdMap<String>& collector)
+        void CollectCapture(ZayMap<String>& collector)
         {
             // 캡쳐가 필요한 변수의 목록화
             const Strings Variables = mConditionSolver.GetTargetlessVariables();
@@ -616,7 +615,7 @@ namespace BOSS
         }
 
     public:
-        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, StdMap<String>* collector = nullptr)
+        static bool Test(const ZaySon& root, ZayUIs& dest, const Context& src, ZayMap<String>* collector = nullptr)
         {
             if(ZaySonUtility::ToCondition(src.GetText()) != ZaySonInterface::ConditionType::Unknown) // oncreate, onclick, compvalues의 경우
             {
@@ -800,8 +799,8 @@ namespace BOSS
         }
 
     public:
-        Solvers mParamSolvers;
-        mutable StdMap<SolverValues> mStabledParamValues;
+        ZaySolvers mParamSolvers;
+        mutable ZayMap<ZaySolverValues> mStabledParamValues;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -887,7 +886,7 @@ namespace BOSS
                 mLSolver.Link(mRefRoot->ViewName());
             }
         }
-        void InitForClick(StdMap<String>& collector)
+        void InitForClick(ZayMap<String>& collector)
         {
             if(mRequestType == ZaySonInterface::RequestType::SetVariable)
             {
@@ -968,8 +967,8 @@ namespace BOSS
     public:
         ZaySonInterface::RequestType mRequestType;
         Solver mLSolver;
-        Solvers mRSolvers; // 변수, 함수파라미터들 겸용
-        mutable StdMap<SolverValues> mStabledRValues;
+        ZaySolvers mRSolvers; // 변수, 함수파라미터들 겸용
+        mutable ZayMap<ZaySolverValues> mStabledRValues;
         const ZayExtend* mGlueFunction;
     };
 
@@ -1061,8 +1060,8 @@ namespace BOSS
         {
             ZayUIs mCodes;
             Strings mCaptureKeys;
-            typedef StdMap<SolverValue> CaptureValue; // [CaptureKey]
-            mutable StdMap<CaptureValue> mCaptureValues; // [UIName][CaptureKey]
+            typedef ZayMap<SolverValue> CaptureValue; // [CaptureKey]
+            mutable ZayMap<CaptureValue> mCaptureValues; // [UIName][CaptureKey]
         };
 
     public:
@@ -1189,7 +1188,7 @@ namespace BOSS
     private:
         void LoadCode(const ZaySon& root, const Context& json, LambdaID id)
         {
-            StdMap<String> CaptureCollector;
+            ZayMap<String> CaptureCollector;
             for(sint32 i = 0, iend = json.LengthOfIndexable(); i < iend; ++i)
             {
                 if(ZayConditionElement::Test(root, mLambdas[(sint32) id].mCodes, json[i], &CaptureCollector))
@@ -1423,7 +1422,7 @@ namespace BOSS
                 hook(mLambdas[(sint32) id].mCaptureValues(uiname))
                 for(sint32 i = 0, iend = fish.Count(); i < iend; ++i)
                 {
-                    chararray GetVariable;
+                    zay_chararray GetVariable;
                     auto& Value = *fish.AccessByOrder(i, &GetVariable);
                     mLocalSolvers.AtAdding().Link(mRefRoot->ViewName(), &GetVariable[0]).SetResultDirectly(Value);
                 }
@@ -1598,7 +1597,7 @@ namespace BOSS
     public:
         ZayUIs mCreateCodes;
         ZayUIs mChildren;
-        StdMap<ZayUI> mGates;
+        ZayMap<ZayUI> mGates;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1663,7 +1662,7 @@ namespace BOSS
     void ZaySon::Reload(const Context& context)
     {
         BOSS_ASSERT("Reload는 Load후 호출가능합니다", 0 < mViewName.Length());
-        Solvers GlobalSolvers;
+        ZaySolvers GlobalSolvers;
         SetGlobalSolvers(GlobalSolvers);
         delete (ZayUIElement*) mUIElement;
         auto NewView = new ZayViewElement();
@@ -1802,7 +1801,7 @@ namespace BOSS
         Strings Collector;
         for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
         {
-            chararray GetName;
+            zay_chararray GetName;
             if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
             if(FindedFunc->HasComponent())
                 Collector.AtAdding() = &GetName[0];
@@ -1815,7 +1814,7 @@ namespace BOSS
         Strings Collector;
         for(sint32 i = 0, iend = mExtendMap.Count(); i < iend; ++i)
         {
-            chararray GetName;
+            zay_chararray GetName;
             if(auto FindedFunc = mExtendMap.AccessByOrder(i, &GetName))
             if(FindedFunc->HasGlue())
                 Collector.AtAdding() = &GetName[0];
@@ -1829,7 +1828,7 @@ namespace BOSS
         if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
         for(sint32 i = 0, iend = TopElement->mGates.Count(); i < iend; ++i)
         {
-            chararray GetName;
+            zay_chararray GetName;
             if(auto FindedGate = TopElement->mGates.AccessByOrder(i, &GetName))
                 Collector.AtAdding() = &GetName[0];
         }
@@ -1854,7 +1853,7 @@ namespace BOSS
         if(0 < mDomHeader.Length())
             Solver::SetReplacer("d.", mDomHeader + '.');
 
-        Solvers GlobalSolvers;
+        ZaySolvers GlobalSolvers;
         SetGlobalSolvers(GlobalSolvers);
         DebugLogs LogCollector;
         ((ZayUIElement*) mUIElement)->Render(panel, mViewName, LogCollector);
@@ -1961,7 +1960,7 @@ namespace BOSS
         }
     }
 
-    void ZaySon::SetGlobalSolvers(Solvers& solvers) const
+    void ZaySon::SetGlobalSolvers(ZaySolvers& solvers) const
     {
         solvers.AtAdding().Link(mViewName, "gViewName").Parse("'" + mViewName + "'").Execute();
         solvers.AtAdding().Link(mViewName, "gOSName").Parse(String::Format("'%s'", Platform::Utility::GetOSName())).Execute();

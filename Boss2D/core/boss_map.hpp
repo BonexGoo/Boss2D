@@ -348,7 +348,7 @@ namespace BOSS
 
         /// @brief 이동생성자
         /// @param rhs : 이동할 인스턴스
-        Map(Map&& rhs)
+        Map(Map&& rhs) noexcept
         {
             Table = nullptr;
             Info = nullptr;
@@ -375,7 +375,7 @@ namespace BOSS
         /// @brief 이동
         /// @param rhs : 이동할 인스턴스
         /// @return 자기 객체
-        Map& operator=(Map&& rhs)
+        Map& operator=(Map&& rhs) noexcept
         {
             delete Info;
             Info = nullptr;

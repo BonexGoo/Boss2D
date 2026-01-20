@@ -11,7 +11,13 @@
 #include <element/boss_tween.hpp>
 #include <element/boss_vector.hpp>
 #include <functional>
-#include "boss_std_adapters.hpp"
+
+#define ZayArray StdArray
+#define ZayMap StdMap
+#define ZayMapPath StdMapPath
+#define ZaySolvers StdArray<Solver>
+#define ZaySolverValues StdArray<SolverValue>
+#define zay_chararray std_chararray
 
 // 옵션스택 - 영역
 #define ZAY_LTRB(PANEL, L, T, R, B) \
@@ -484,13 +490,13 @@ namespace BOSS
         id_surface m_ref_surface;
         void* m_ref_touch;
         void* m_ref_touch_collector;
-        Clips m_stack_clip;
-        Rects m_stack_scissor;
-        Colors m_stack_color;
-        StdArray<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
-        StdArray<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
-        Fonts m_stack_font;
-        ZoomStates m_stack_zoom;
+        ZayArray<Clip, datatype_class_canmemcpy> m_stack_clip;
+        ZayArray<Rect, datatype_class_canmemcpy> m_stack_scissor;
+        ZayArray<Color, datatype_class_canmemcpy> m_stack_color;
+        ZayArray<MaskRole, datatype_pod_canmemcpy> m_stack_mask;
+        ZayArray<ShaderRole, datatype_pod_canmemcpy> m_stack_shader;
+        ZayArray<Font> m_stack_font;
+        ZayArray<ZoomState, datatype_pod_canmemcpy> m_stack_zoom;
 
     protected:
         float m_clipped_width;
@@ -570,7 +576,7 @@ namespace BOSS
             const ZayExtend* mOwner;
             chars mUIName;
             const sint32 mElementID;
-            SolverValues mParams;
+            ZaySolverValues mParams;
             Solver* const mRefLValue;
             const Renderer* const mRefRenderer;
         };
@@ -638,7 +644,7 @@ namespace BOSS
         }
 
     private:
-        StdArray<TYPE*, datatype_pod_canmemcpy> m_ref_datas;
+        ZayArray<TYPE*, datatype_pod_canmemcpy> m_ref_datas;
         TYPE* m_ref_data_last;
         id_mutex m_mutex;
     };
@@ -726,7 +732,7 @@ namespace BOSS
             public:
                 sint32 m_updateid;
                 sint32 m_validlength;
-                StdArray<Element*> m_elements;
+                ZayArray<Element*> m_elements;
             public:
                 Cell() {m_updateid = -1; m_validlength = 0;}
                 ~Cell() {}
@@ -738,7 +744,7 @@ namespace BOSS
                     return *this;
                 }
             };
-            typedef StdArray<Cell> CellRow;
+            typedef ZayArray<Cell> CellRow;
 
         public:
             void ready(sint32 width, sint32 height);
@@ -814,8 +820,8 @@ namespace BOSS
             sint32 m_block_width;
             sint32 m_block_height;
             Element m_element;
-            StdMap<Element> m_map;
-            StdArray<CellRow> m_cell;
+            ZayMap<Element> m_map;
+            ZayArray<CellRow> m_cell;
             const Element* m_focus;
             const Element* m_press;
             const Element* m_moving;
@@ -824,7 +830,7 @@ namespace BOSS
             sint32 m_press_y;
             sint32 m_hover_x;
             sint32 m_hover_y;
-            StdMap<Scroll> m_scrollmap;
+            ZayMap<Scroll> m_scrollmap;
             TouchType m_lasttouch;
         };
 

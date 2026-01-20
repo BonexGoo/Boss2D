@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <service/boss_zay.hpp>
 #include <functional>
-#include "boss_std_adapters.hpp"
 
 namespace BOSS
 {
@@ -36,7 +35,7 @@ namespace BOSS
 
     private:
         const String mChain;
-        Solvers mSolvers;
+        ZaySolvers mSolvers;
     };
 
     /// @brief 뷰스크립트 엘리먼트통신
@@ -109,7 +108,7 @@ namespace BOSS
             bool mFill;
             String mUIName;
         };
-        typedef StdArray<DebugLog> DebugLogs;
+        typedef ZayArray<DebugLog> DebugLogs;
 
     public:
         void Load(chars viewname, chars domheader, const Context& context);
@@ -138,15 +137,15 @@ namespace BOSS
         void RenderLogs(ZayPanel& panel, DebugLogs& logs);
 
     private:
-        void SetGlobalSolvers(Solvers& solvers) const;
+        void SetGlobalSolvers(ZaySolvers& solvers) const;
 
     private:
         String mViewName;
         String mDomHeader;
         void* mUIElement;
-        StdMap<ZayExtend> mExtendMap;
+        ZayMap<ZayExtend> mExtendMap;
         Strings mJumpCalls;
-        Solvers mLocalSolvers;
+        ZaySolvers mLocalSolvers;
         String mDirectlyUIName;
 
     public:

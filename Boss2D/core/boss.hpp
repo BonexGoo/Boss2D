@@ -208,12 +208,12 @@ inline void operator delete[](void*, sblock) {}
         NAME(data* gift) {mData = gift; mData->mRef++;} \
     public: \
         NAME() {alloc();} \
-        NAME(NAME&& rhs) {mData = rhs.mData; rhs.alloc();} \
+        NAME(NAME&& rhs) noexcept {mData = rhs.mData; rhs.alloc();} \
         NAME(const NAME& rhs) {mData = rhs.mData; mData->mRef++;} \
         NAME(id_share rhs) {mData = (data*) rhs; mData->mRef++;} \
         NAME(id_cloned_share rhs) {mData = (data*) rhs;} \
         ~NAME() {release();} \
-        NAME& operator=(NAME&& rhs) \
+        NAME& operator=(NAME&& rhs) noexcept \
         { \
             release(); \
             mData = rhs.mData; \
@@ -349,6 +349,8 @@ namespace BOSS
     #include <boss_queue.hpp>
     #include <boss_remote.hpp>
     #include <boss_share.hpp>
+    #include <boss_stdarray.hpp>
+    #include <boss_stdmap.hpp>
     #include <boss_storage.hpp>
     #include <boss_string.hpp>
     #include <boss_tasking.hpp>

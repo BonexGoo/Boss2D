@@ -1,5 +1,4 @@
 ﻿#include <boss.hpp>
-#include "boss_std_adapters.hpp"
 #include "boss_zaywidget.hpp"
 
 namespace BOSS
@@ -1078,7 +1077,7 @@ namespace BOSS
                     id_surface mSurface {nullptr};
                     Image mLastImage;
                 };
-                StdMap<BackBufferInfo>& BackBufferMap = *BOSS_STORAGE(StdMap<BackBufferInfo>);
+                ZayMap<BackBufferInfo>& BackBufferMap = *BOSS_STORAGE(ZayMap<BackBufferInfo>);
 
                 const String UIName = String::Format("back_buffer_%d", pay.ElementID());
                 hook(BackBufferMap(UIName))
@@ -1231,7 +1230,7 @@ namespace BOSS
                     id_pipe PipeID = CurPipe.mRefPipe;
                     for(sint32 j = 0, jend = Self->mRemoveVariables.Count(); j < jend; ++j)
                     {
-                        chararray CurVariable;
+                        zay_chararray CurVariable;
                         if(Self->mRemoveVariables.AccessByOrder(j, &CurVariable))
                             RemoveToPipe(PipeID, &CurVariable[0]);
                     }
@@ -1328,7 +1327,7 @@ namespace BOSS
     void ZayWidgetDOM::RemoveVariables(chars keyword)
     {
         auto& Self = ST();
-        StdArray<id_pipe> Pipes;
+        ZayArray<id_pipe> Pipes;
         for(sint32 i = 0, iend = Self.mPipeMap.Count(); i < iend; ++i)
         {
             auto CurPipe = *Self.mPipeMap.AccessByOrder(i);
@@ -1337,7 +1336,7 @@ namespace BOSS
 
         if(0 < Pipes.Count())
         {
-            const StdArray<id_pipe>* PtrPipes = &Pipes;
+            const ZayArray<id_pipe>* PtrPipes = &Pipes;
             Self.mDocument->RemoveMatchedVariables(keyword,
                 [PtrPipes](const String& variable, const SolverChainPair* pair)->void
                 {
@@ -2054,7 +2053,7 @@ namespace BOSS
             mCapturedIMEChar = L'\0';
             ZayWidgetDOM::SetComment(domname, mCapturedSavedText);
             if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + mCapturedSavedText + "'");
-            mRenderInfoMap.Remove((chars) uiname);
+            mRenderInfoMap.Remove(uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
         }

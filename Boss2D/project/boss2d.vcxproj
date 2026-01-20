@@ -210,6 +210,8 @@
     <ClInclude Include="..\core\boss_queue.hpp" />
     <ClInclude Include="..\core\boss_remote.hpp" />
     <ClInclude Include="..\core\boss_share.hpp" />
+    <ClInclude Include="..\core\boss_stdarray.hpp" />
+    <ClInclude Include="..\core\boss_stdmap.hpp" />
     <ClInclude Include="..\core\boss_storage.hpp" />
     <ClInclude Include="..\core\boss_string.hpp" />
     <ClInclude Include="..\core\boss_tasking.hpp" />

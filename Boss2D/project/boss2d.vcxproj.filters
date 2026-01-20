@@ -743,6 +743,12 @@
     <ClInclude Include="..\service\boss_whisper.hpp">
       <Filter>Boss2D\service</Filter>
     </ClInclude>
+    <ClInclude Include="..\core\boss_stdarray.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core\boss_stdmap.hpp">
+      <Filter>Boss2D\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="..\platform\boss_platform_qt5.hpp">

@@ -1,5 +1,4 @@
 ﻿#include <boss.hpp>
-#include "boss_std_adapters.hpp"
 #include "boss_zay.hpp"
 
 #include "boss_zayson.hpp"
@@ -60,7 +59,7 @@ namespace BOSS
         bool mHoverPass;
     };
     typedef Object<TouchRect> TouchRectObject;
-    typedef StdArray<TouchRectObject> TouchRectObjects;
+    typedef ZayArray<TouchRectObject> TouchRectObjects;
 
     class TouchCollector
     {
@@ -75,8 +74,8 @@ namespace BOSS
         ~TouchCollector() {}
 
     public:
-        static StdMap<TouchCollector>& STMAP()
-        {return *BOSS_STORAGE_SYS(StdMap<TouchCollector>);}
+        static ZayMap<TouchCollector>& STMAP()
+        {return *BOSS_STORAGE_SYS(ZayMap<TouchCollector>);}
         static TouchCollector* ST(chars name)
         {return &STMAP()(name);}
 
@@ -914,7 +913,7 @@ namespace BOSS
     {
         const Clip& LastClip = m_stack_clip[-1];
         struct LineText {wchars TextPtr; sint32 TextLength;};
-        StdArray<LineText, datatype_pod_canmemcpy> LineTexts;
+        ZayArray<LineText, datatype_pod_canmemcpy> LineTexts;
         WStrings MultiTextsW;
 
         // 라인텍스트 사전조사
@@ -2054,7 +2053,7 @@ namespace BOSS
     void ZayView::DirtyAllSurfaces()
     {
         TouchCollector::STMAP().AccessByCallback(
-            [](const MapPath*, TouchCollector* collector, payload param)->void
+            [](const ZayMapPath*, TouchCollector* collector, payload param)->void
             {
                 collector->mDirty = true;
             }, nullptr);
@@ -2392,7 +2391,7 @@ namespace BOSS
 
     ZayView::Function* ZayView::_accessfunc(chars viewclass, bool creatable)
     {
-        static StdMap<Function> AllFunctions;
+        static ZayMap<Function> AllFunctions;
         chars ViewName = (viewclass && *viewclass)? viewclass : "_default_view_";
         return (creatable)? &AllFunctions(ViewName) : AllFunctions.Access(ViewName);
     }
