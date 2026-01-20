@@ -159,16 +159,20 @@ namespace BOSS
         // Insert-or-access
         inline V& operator()(const char* key) { return get_or_add(StdKey(key)); }
         inline V& operator()(const void* key) { return get_or_add(StdKey(key)); }
+        inline V& operator()(const String& key) { return get_or_add(StdKey((chars) key)); }
         template<typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
         inline V& operator()(I key) { return get_or_add(StdKey(key)); }
         inline V& operator[](const char* key) { return get_or_add(StdKey(key)); }
         inline V& operator[](const void* key) { return get_or_add(StdKey(key)); }
+        inline V& operator[](const String& key) { return get_or_add(StdKey((chars) key)); }
         template<typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
         inline V& operator[](I key) { return get_or_add(StdKey(key)); }
 
         // Access (returns pointer to value or nullptr)
         inline V* Access(const char* key) { return access_ptr(StdKey(key)); }
         inline const V* Access(const char* key) const { return access_ptr(StdKey(key)); }
+        inline V* Access(const String& key) { return access_ptr(StdKey((chars) key)); }
+        inline const V* Access(const String& key) const { return access_ptr(StdKey((chars) key)); }
         inline V* Access(const void* key) { return access_ptr(StdKey(key)); }
         inline const V* Access(const void* key) const { return access_ptr(StdKey(key)); }
         template<typename I, typename = std::enable_if_t<std::is_integral_v<I>>>

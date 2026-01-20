@@ -2054,7 +2054,7 @@ namespace BOSS
             mCapturedIMEChar = L'\0';
             ZayWidgetDOM::SetComment(domname, mCapturedSavedText);
             if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + mCapturedSavedText + "'");
-            mRenderInfoMap.Remove(uiname);
+            mRenderInfoMap.Remove((chars) uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제
         }
