@@ -1145,10 +1145,12 @@
         {
             QPixmap& WindowPixmap = *BOSS_STORAGE_SYS(QPixmap);
             const sint32 BlurBorder = Math::Max(1, Math::Ceil(blur));
-            QPixmap GrabPixmap = g_window->grab(QRect(
-                rect.l - BlurBorder, rect.t - BlurBorder, (rect.r - rect.l) + BlurBorder * 2, (rect.b - rect.t) + BlurBorder * 2));
-            const sint32 GrabWidth = GrabPixmap.width();
-            const sint32 GrabHeight = GrabPixmap.height();
+            const sint32 LogicalWidth = rect.r - rect.l;
+            const sint32 LogicalHeight = rect.b - rect.t;
+            QPixmap GrabPixmap = g_window->grab(QRect(rect.l - BlurBorder, rect.t - BlurBorder,
+                LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2));
+            const sint32 PhysicalWidth = GrabPixmap.width();
+            const sint32 PhysicalHeight = GrabPixmap.height();
             if(0.0f < blur)
             {
                 QGraphicsScene Scene;
@@ -1158,11 +1160,11 @@
                 Blur->setBlurHints(QGraphicsBlurEffect::QualityHint);
                 Item->setGraphicsEffect(Blur);
                 Scene.addItem(Item);
-                QImage NewImage(GrabWidth, GrabHeight, QImage::Format_ARGB32_Premultiplied);
+                QImage NewImage(LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2, QImage::Format_ARGB32_Premultiplied);
                 NewImage.fill(Qt::transparent);
                 QPainter Painter(&NewImage);
-                Scene.render(&Painter, QRectF(0, 0, GrabWidth, GrabHeight), QRectF(0, 0, GrabWidth, GrabHeight));
-                WindowPixmap.convertFromImage(NewImage.copy(BlurBorder, BlurBorder, GrabWidth - BlurBorder * 2, GrabHeight - BlurBorder * 2));
+                Scene.render(&Painter, QRectF(0, 0, PhysicalWidth, PhysicalHeight), QRectF(0, 0, PhysicalWidth, PhysicalHeight));
+                WindowPixmap.convertFromImage(NewImage.copy(BlurBorder, BlurBorder, LogicalWidth, LogicalHeight));
             }
             else WindowPixmap = GrabPixmap;
             return (id_image_read) &WindowPixmap;
