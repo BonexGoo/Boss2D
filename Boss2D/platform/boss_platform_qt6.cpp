@@ -2529,9 +2529,7 @@
 
             #if BOSS_WINDOWS
                 return WString::FromChars(AbsoluteName);
-            #elif BOSS_MAC_OSX || BOSS_IPHONE
-                return WString::FromChars("Q:" + AbsoluteName);
-            #elif BOSS_ANDROID
+            #else
                 return WString::FromChars("Q:" + AbsoluteName);
             #endif
         }
