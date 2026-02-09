@@ -239,9 +239,9 @@ namespace BOSS
         mZaySon.JumpCall(gatename, uiname, count);
     }
 
-    void ZayWidget::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
+    bool ZayWidget::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
     {
-        mZaySon.JumpCallDirectly(gatename, uiname, panel);
+        return mZaySon.JumpCallDirectly(gatename, uiname, panel);
     }
 
     void ZayWidget::UpdateAtlas(chars json)

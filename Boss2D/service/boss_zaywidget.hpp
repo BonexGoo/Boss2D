@@ -25,7 +25,7 @@ namespace BOSS
         bool TickOnce();
         bool GlueCall(chars gluename, const Strings params);
         void JumpCall(chars gatename, chars uiname, sint32 count = 1);
-        void JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel = nullptr);
+        bool JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel = nullptr);
         void UpdateAtlas(chars json);
         void SendLog(chars text);
 
