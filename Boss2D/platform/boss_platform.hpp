@@ -641,6 +641,10 @@ public:
         /// @return OS명칭
         static chars GetOSName();
 
+        /// @brief OS배율 얻기
+        /// @return OS배율
+        static sint32 GetOSScale();
+
         /// @brief 현재 실행중인 프로그램들의 정보
         /// @param programs : 프로그램들의 정보를 받을 변수
         /// @param visible_only : 보여지는 프로그램만으로 제한

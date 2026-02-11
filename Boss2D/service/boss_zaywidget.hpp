@@ -27,6 +27,7 @@ namespace BOSS
         void JumpCall(chars gatename, chars uiname, sint32 count = 1);
         bool JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel = nullptr);
         void UpdateAtlas(chars json);
+        void LangTurn();
         void SendLog(chars text);
 
     public:
@@ -110,6 +111,12 @@ namespace BOSS
     {
     public:
         enum LanguageMode {LM_English, LM_Korean, LM_Max};
+        class CaptureInfo
+        {
+        public:
+            String mDomName;
+            bool mDualSave {false};
+        };
 
     private:
         static ZayControl& ST()
@@ -118,7 +125,8 @@ namespace BOSS
     public:
         static bool RenderEditBox(ZayPanel& panel, const String& uiname, const String& domname,
             sint32 border, bool enabled, bool password, bool dualsave, const ZayExtend::Renderer* renderer = nullptr);
-        static void KeyPressing(const String& domname, wchar_t code, bool dualsave);
+        static const CaptureInfo& GetCaptureInfo();
+        static void KeyPressing(const String& domname, bool dualsave, wchar_t code);
         static void KeyPressingBack(const String& domname, bool dualsave);
         static void KeyPressingEnter(const String& domname, bool dualsave, ZayObject* view);
         static void LangTurn(const String& domname, bool dualsave);
@@ -292,6 +300,7 @@ namespace BOSS
         sint32 mCapturedCursorAni {0};
         wchar_t mCapturedIMEChar;
         String mCapturedSavedText; // Esc를 위한 원본텍스트
+        CaptureInfo mCapturedInfo;
         ZayMap<RenderInfo> mRenderInfoMap;
         // 복사정보
         sint32 mCopyAni {0};

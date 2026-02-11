@@ -290,6 +290,7 @@ namespace BOSS
         void resizeForced(sint32 w = -1, sint32 h = -1);
         bool getResizingValue(sint32& w, sint32& h);
         // 캡쳐
+        bool isCapturing() const;
         void setCapture(chars uiname, ReleaseCaptureCB cb_once = nullptr, payload data = nullptr);
         void clearCapture();
         void eraseCapture(payload condition = nullptr);

@@ -857,6 +857,12 @@
             return PlatformImpl::Wrap::Utility_GetOSName();
         }
 
+        sint32 Platform::Utility::GetOSScale()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return 100;
+        }
+
         sint32 Platform::Utility::EnumPrograms(Context& programs, bool visible_only)
         {
             return PlatformImpl::Wrap::Utility_EnumPrograms(programs, visible_only);

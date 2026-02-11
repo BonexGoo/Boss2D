@@ -1298,6 +1298,11 @@
             return PlatformImpl::Wrap::Utility_GetOSName();
         }
 
+        sint32 Platform::Utility::GetOSScale()
+        {
+            return Math::Round(g_window->devicePixelRatioF() * 100);
+        }
+
         sint32 Platform::Utility::EnumPrograms(Context& programs, bool visible_only)
         {
             return PlatformImpl::Wrap::Utility_EnumPrograms(programs, visible_only);

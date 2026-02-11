@@ -249,6 +249,13 @@ namespace BOSS
         mZaySon.SendAtlas(json);
     }
 
+    void ZayWidget::LangTurn()
+    {
+        auto& CaptureInfo = ZayControl::GetCaptureInfo();
+        if(0 < CaptureInfo.mDomName.Length())
+            ZayControl::LangTurn(CaptureInfo.mDomName, CaptureInfo.mDualSave);
+    }
+
     void ZayWidget::SendLog(chars text)
     {
         mZaySon.SendInfoLog("Message", text);
@@ -1660,7 +1667,7 @@ namespace BOSS
                     if(t == GT_Pressed)
                     {
                         auto& Self = ST();
-                        // ReleaseCapture시 방식결정(에디터 → DOM)
+                        // SetCapture처리 및 ReleaseCapture시 방식결정(에디터 → DOM)
                         if(renderer && renderer->DomName(n))
                         {
                             auto NewInfo = (ReleaseCaptureInfo*) Buffer::Alloc<ReleaseCaptureInfo>(BOSS_DBG 1);
@@ -1676,6 +1683,9 @@ namespace BOSS
                                 v->setCapture(n, Self.OnReleaseCapture<true>, (id_cloned_share) domname);
                             else v->setCapture(n, Self.OnReleaseCapture<false>, (id_cloned_share) domname);
                         }
+                        // Capture정보 보관
+                        Self.mCapturedInfo.mDomName = domname;
+                        Self.mCapturedInfo.mDualSave = dualsave;
                         // 가능하다면 DOM업데이트
                         if(chars CurText = (renderer)? renderer->GetText(n) : nullptr)
                         {
@@ -1772,7 +1782,13 @@ namespace BOSS
         return RepaintOnce;
     }
 
-    void ZayControl::KeyPressing(const String& domname, wchar_t code, bool dualsave)
+    const ZayControl::CaptureInfo& ZayControl::GetCaptureInfo()
+    {
+        auto& Self = ST();
+        return Self.mCapturedInfo;
+    }
+
+    void ZayControl::KeyPressing(const String& domname, bool dualsave, wchar_t code)
     {
         auto& Self = ST();
         const String IMEResult = Self.AddCodeToIME(code);
@@ -2085,6 +2101,8 @@ namespace BOSS
         auto& Self = ST();
         if(olddata)
             Self.FlushSavedIME(String((id_cloned_share) olddata), DUALSAVE);
+        Self.mCapturedInfo.mDomName.Empty();
+        Self.mCapturedInfo.mDualSave = false;
     }
 
     template<bool DUALSAVE>
@@ -2099,5 +2117,7 @@ namespace BOSS
             OldInfo->mRenderer->SetText(OldInfo->mUIName, ZayWidgetDOM::GetComment(CurDomName));
             Buffer::Free((buffer) OldInfo);
         }
+        Self.mCapturedInfo.mDomName.Empty();
+        Self.mCapturedInfo.mDualSave = false;
     }
 }

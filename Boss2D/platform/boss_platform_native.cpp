@@ -885,6 +885,12 @@
             return PlatformImpl::Wrap::Utility_GetOSName();
         }
 
+        sint32 Platform::Utility::GetOSScale()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 100;
+        }
+
         sint32 Platform::Utility::EnumPrograms(Context& programs, bool visible_only)
         {
             return PlatformImpl::Wrap::Utility_EnumPrograms(programs, visible_only);

@@ -303,6 +303,13 @@ namespace BOSS
         return Result;
     }
 
+    bool ZayObject::isCapturing() const
+    {
+        if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
+            return (CurTouch->getcapture() != nullptr);
+        return false;
+    }
+
     void ZayObject::setCapture(chars uiname, ReleaseCaptureCB cb_once, payload data)
     {
         if(auto CurTouch = (ZayView::Touch*) ((ZayView*) m_finder_data)->m_touch)
