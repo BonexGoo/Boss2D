@@ -8,6 +8,8 @@ namespace BOSS
     class Image
     {
     public:
+        class Builder;
+        class Patcher;
         enum class Format {Null, Unknown, Bmp, Png, Jpg};
         enum class Build {Null, Force, Async, AsyncNotNull};
 
@@ -69,12 +71,10 @@ namespace BOSS
         inline sint32 PatchSrcYCount() const {return m_patch_calced_src_y.Count();}
         inline const sint32* PatchSrcXArray() const {return &m_patch_calced_src_x[0];}
         inline const sint32* PatchSrcYArray() const {return &m_patch_calced_src_y[0];}
-        inline const sint32* PatchDstXArray() const {return &m_patch_cached_dst_x[0];}
-        inline const sint32* PatchDstYArray() const {return &m_patch_cached_dst_y[0];}
 
     public:
         Rect CalcChildRect(const rect128& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const;
-        bool UpdatePatchBy(sint32 w, sint32 h) const;
+        const Patcher* UpdatePatchBy(sint32 w, sint32 h) const;
 
     private:
         void ResetBitmap();
@@ -84,7 +84,7 @@ namespace BOSS
         void RecalcData();
         id_image_read GetImageCore(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring) const;
 
-    private:
+    public:
         class Builder
         {
         public:
@@ -101,12 +101,37 @@ namespace BOSS
             id_bitmap_read m_RefBitmap;
             sint32 m_BitmapWidth;
             sint32 m_BitmapHeight;
-            size64 mRoutineResize;
-            Color mRoutineColor;
-            id_image_routine mRoutine;
-            id_image_routine mRoutineOld;
-            bool mIsRoutineFinished;
+            size64 m_RoutineResize;
+            Color m_RoutineColor;
+            id_image_routine m_Routine;
+            id_image_routine m_RoutineOld;
+            bool m_IsRoutineFinished;
         };
+
+    public:
+        class Patcher
+        {
+        public:
+            Patcher();
+            Patcher(Patcher&& rhs);
+            ~Patcher();
+            Patcher& operator=(Patcher&& rhs);
+        public:
+            void Clear();
+            inline bool Enabled() const {return (0 < m_x.Count() && 0 < m_y.Count());}
+            inline bool Disabled() const {return m_disabled;}
+            inline void SetDisable() {m_disabled = true; m_x.Clear(); m_y.Clear();}
+            inline sint32* SetXs(sint32 count) {return m_x.AtDumping(0, count);}
+            inline sint32* SetYs(sint32 count) {return m_y.AtDumping(0, count);}
+            inline const sint32* GetXs(sint32* count = nullptr) const {if(count) *count = m_x.Count(); return &m_x[0];}
+            inline const sint32* GetYs(sint32* count = nullptr) const {if(count) *count = m_y.Count(); return &m_y[0];}
+        private:
+            bool m_disabled;
+            sint32s m_x;
+            sint32s m_y;
+        };
+        typedef Map<Patcher> PatcherH;
+        typedef Map<PatcherH> PatcherWH;
 
     private:
         String m_filepath;
@@ -122,12 +147,7 @@ namespace BOSS
         sint32 m_patch_calced_sum_height;
         sint32s m_patch_calced_src_x;
         sint32s m_patch_calced_src_y;
-        mutable float m_patch_cached_dst_terms_w;
-        mutable float m_patch_cached_dst_terms_h;
-        mutable bool m_patch_cached_dst_visible_w;
-        mutable bool m_patch_cached_dst_visible_h;
-        mutable sint32s m_patch_cached_dst_x;
-        mutable sint32s m_patch_cached_dst_y;
+        mutable PatcherWH m_patcher;
     };
     typedef Array<Image> Images;
 }

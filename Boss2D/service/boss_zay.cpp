@@ -780,12 +780,13 @@ namespace BOSS
             return InsideBinder(nullptr); // 안쪽영역없음
 
         const Clip& LastClip = m_stack_clip[-1];
-        if(visible && image.UpdatePatchBy(LastClip.Width(), LastClip.Height()))
+        if(visible)
+        if(auto CurPatch = image.UpdatePatchBy(LastClip.Width(), LastClip.Height()))
         {
             const sint32* PatchSrcX = image.PatchSrcXArray();
             const sint32* PatchSrcY = image.PatchSrcYArray();
-            const sint32* PatchDstX = image.PatchDstXArray();
-            const sint32* PatchDstY = image.PatchDstYArray();
+            const sint32* PatchDstX = CurPatch->GetXs();
+            const sint32* PatchDstY = CurPatch->GetYs();
 
             const Color& LastColor = m_stack_color[-1];
             for(sint32 y = 0, yend = image.PatchSrcYCount() - 1; y < yend; ++y)

@@ -1175,7 +1175,7 @@
             if(!image) return nullptr;
             QImage CurImage = ((QPixmap*) image)->toImage();
             if(!CurImage.constBits()) return nullptr;
-            CurImage = CurImage.convertToFormat(QImage::Format_ARGB32);
+            CurImage = CurImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
             id_bitmap Result = Bmp::CloneFromBits(CurImage.constBits(),
                 CurImage.width(), CurImage.height(), CurImage.bitPlaneCount(), ori);
             return Result;

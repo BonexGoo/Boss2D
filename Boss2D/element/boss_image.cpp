@@ -71,12 +71,7 @@ namespace BOSS
         m_patch_calced_sum_height = rhs.m_patch_calced_sum_height;
         m_patch_calced_src_x = ToReference(rhs.m_patch_calced_src_x);
         m_patch_calced_src_y = ToReference(rhs.m_patch_calced_src_y);
-        m_patch_cached_dst_terms_w = rhs.m_patch_cached_dst_terms_w;
-        m_patch_cached_dst_terms_h = rhs.m_patch_cached_dst_terms_h;
-        m_patch_cached_dst_visible_w = rhs.m_patch_cached_dst_visible_w;
-        m_patch_cached_dst_visible_h = rhs.m_patch_cached_dst_visible_h;
-        m_patch_cached_dst_x = ToReference(rhs.m_patch_cached_dst_x);
-        m_patch_cached_dst_y = ToReference(rhs.m_patch_cached_dst_y);
+        m_patcher = ToReference(rhs.m_patcher);
         return *this;
     }
 
@@ -662,67 +657,59 @@ namespace BOSS
         BOSS_ASSERT("xcount는 1이상의 값이어야 합니다", 1 <= xcount);
         BOSS_ASSERT("ycount는 1이상의 값이어야 합니다", 1 <= ycount);
 
-        UpdatePatchBy(guide.r - guide.l, guide.b - guide.t);
-        const sint32 x1 = Math::Min(Math::Max(0, ix), m_child_ixzone.Count() - 1);
-        const sint32 y1 = Math::Min(Math::Max(0, iy), m_child_iyzone.Count() - 1);
-        const sint32 x2 = Math::Min(Math::Max(0, ix + xcount - 1), m_child_ixzone.Count() - 1);
-        const sint32 y2 = Math::Min(Math::Max(0, iy + ycount - 1), m_child_iyzone.Count() - 1);
+        if(auto CurPatch = UpdatePatchBy(guide.r - guide.l, guide.b - guide.t))
+        {
+            sint32 XCount, YCount;
+            auto Xs = CurPatch->GetXs(&XCount);
+            auto Ys = CurPatch->GetYs(&YCount);
+            const sint32 x1 = Math::Min(Math::Max(0, ix), m_child_ixzone.Count() - 1);
+            const sint32 y1 = Math::Min(Math::Max(0, iy), m_child_iyzone.Count() - 1);
+            const sint32 x2 = Math::Min(Math::Max(0, ix + xcount - 1), m_child_ixzone.Count() - 1);
+            const sint32 y2 = Math::Min(Math::Max(0, iy + ycount - 1), m_child_iyzone.Count() - 1);
 
-        const float L = [this](const sint32 x1)->float
-        {
-            const sint32 i = m_child_ixzone[x1].i, x = m_child_ixzone[x1].x;
-            if(i < 0) return m_patch_cached_dst_x[0] + x;
-            else if(m_patch_cached_dst_x.Count() - 1 <= i) return m_patch_cached_dst_x[-1] + x;
-            return m_patch_cached_dst_x[i] + (m_patch_cached_dst_x[i + 1] - m_patch_cached_dst_x[i]) * x / 0x1000;
-        }(x1);
-        const float T = [this](const sint32 y1)->float
-        {
-            const sint32 i = m_child_iyzone[y1].i, y = m_child_iyzone[y1].y;
-            if(i < 0) return m_patch_cached_dst_y[0] + y;
-            else if(m_patch_cached_dst_y.Count() - 1 <= i) return m_patch_cached_dst_y[-1] + y;
-            return m_patch_cached_dst_y[i] + (m_patch_cached_dst_y[i + 1] - m_patch_cached_dst_y[i]) * y / 0x1000;
-        }(y1);
-        const float R = [this](const sint32 x2)->float
-        {
-            const sint32 i = m_child_ixzone[x2].iend, x = m_child_ixzone[x2].xend;
-            if(i < 0) return m_patch_cached_dst_x[0] + x;
-            else if(m_patch_cached_dst_x.Count() - 1 <= i) return m_patch_cached_dst_x[-1] + x;
-            return m_patch_cached_dst_x[i] + (m_patch_cached_dst_x[i + 1] - m_patch_cached_dst_x[i]) * x / 0x1000;
-        }(x2);
-        const float B = [this](const sint32 y2)->float
-        {
-            const sint32 i = m_child_iyzone[y2].iend, y = m_child_iyzone[y2].yend;
-            if(i < 0) return m_patch_cached_dst_y[0] + y;
-            else if(m_patch_cached_dst_y.Count() - 1 <= i) return m_patch_cached_dst_y[-1] + y;
-            return m_patch_cached_dst_y[i] + (m_patch_cached_dst_y[i + 1] - m_patch_cached_dst_y[i]) * y / 0x1000;
-        }(y2);
-        return Rect(guide.l + L, guide.t + T, guide.l + R, guide.t + B);
+            float L, T, R, B;
+            {
+                const sint32 i = m_child_ixzone[x1].i, x = m_child_ixzone[x1].x;
+                if(i < 0) L = Xs[0] + x;
+                else if(XCount - 1 <= i) L = Xs[XCount - 1] + x;
+                else L = Xs[i] + (Xs[i + 1] - Xs[i]) * x / 0x1000;
+            }
+            {
+                const sint32 i = m_child_iyzone[y1].i, y = m_child_iyzone[y1].y;
+                if(i < 0) T = Ys[0] + y;
+                else if(YCount - 1 <= i) T = Ys[YCount - 1] + y;
+                else T = Ys[i] + (Ys[i + 1] - Ys[i]) * y / 0x1000;
+            }
+            {
+                const sint32 i = m_child_ixzone[x2].iend, x = m_child_ixzone[x2].xend;
+                if(i < 0) R = Xs[0] + x;
+                else if(XCount - 1 <= i) R = Xs[XCount - 1] + x;
+                else R = Xs[i] + (Xs[i + 1] - Xs[i]) * x / 0x1000;
+            }
+            {
+                const sint32 i = m_child_iyzone[y2].iend, y = m_child_iyzone[y2].yend;
+                if(i < 0) B = Ys[0] + y;
+                else if(YCount - 1 <= i) B = Ys[YCount - 1] + y;
+                else B = Ys[i] + (Ys[i + 1] - Ys[i]) * y / 0x1000;
+            }
+            return Rect(guide.l + L, guide.t + T, guide.l + R, guide.t + B);
+        }
+        return Rect(guide.l, guide.t, guide.r, guide.b);
     }
 
-    bool Image::UpdatePatchBy(sint32 w, sint32 h) const
+    const Image::Patcher* Image::UpdatePatchBy(sint32 w, sint32 h) const
     {
-        BOSS_ASSERT("m_patch_cached_dst_x이 할당되어 있지 않습니다", 0 < m_patch_cached_dst_x.Count());
-        BOSS_ASSERT("m_patch_cached_dst_y이 할당되어 있지 않습니다", 0 < m_patch_cached_dst_y.Count());
+        auto& CurPatcher = m_patcher[w][h];
+        if(CurPatcher.Enabled()) return &CurPatcher;
+        if(CurPatcher.Disabled()) return nullptr;
 
-        sint32* DstX = nullptr;
-        sint32* DstY = nullptr;
-        if(m_patch_cached_dst_terms_w != w)
-        {
-            m_patch_cached_dst_terms_w = w;
-            m_patch_cached_dst_visible_w = false;
-            DstX = &m_patch_cached_dst_x.At(0);
-        }
-        if(m_patch_cached_dst_terms_h != h)
-        {
-            m_patch_cached_dst_terms_h = h;
-            m_patch_cached_dst_visible_h = false;
-            DstY = &m_patch_cached_dst_y.At(0);
-        }
-
+        sint32* DstX = CurPatcher.SetXs(PatchSrcXCount());
+        sint32* DstY = CurPatcher.SetYs(PatchSrcYCount());
         sint32 DstSizeW = 0, DstSizeH = 0;
         sint32 DstBeginW, DstBeginH;
         sint32 DstEndW, DstEndH;
         sint32 SrcFixationSizeW, SrcFixationSizeH;
+        bool VisibleW = false, VisibleH = false;
         float UnityFixationRate = 1;
         if(DstX)
         {
@@ -734,7 +721,7 @@ namespace BOSS
             DstSizeW = DstEndW - DstBeginW;
             if(0 < DstSizeW)
             {
-                m_patch_cached_dst_visible_w = true;
+                VisibleW = true;
                 const float FixationRate = Math::MinF(1, DstSizeW / (float) SrcFixationSizeW);
                 UnityFixationRate = Math::MinF(UnityFixationRate, FixationRate);
             }
@@ -749,7 +736,7 @@ namespace BOSS
             DstSizeH = DstEndH - DstBeginH;
             if(0 < DstSizeH)
             {
-                m_patch_cached_dst_visible_h = true;
+                VisibleH = true;
                 const float FixationRate = Math::MinF(1, DstSizeH / (float) SrcFixationSizeH);
                 UnityFixationRate = Math::MinF(UnityFixationRate, FixationRate);
             }
@@ -787,7 +774,12 @@ namespace BOSS
                 *(DstY++) = (sint32) (DstPos += (PatchYEnd(-1) - PatchY(-1)) * PatchRate);
             *(DstY++) = DstEndH;
         }
-        return (m_patch_cached_dst_visible_w && m_patch_cached_dst_visible_h);
+        if(!VisibleW || !VisibleH)
+        {
+            CurPatcher.SetDisable();
+            return nullptr;
+        }
+        return &CurPatcher;
     }
 
     void Image::ResetBitmap()
@@ -816,12 +808,7 @@ namespace BOSS
         m_patch_calced_sum_height = 0;
         m_patch_calced_src_x.Clear();
         m_patch_calced_src_y.Clear();
-        m_patch_cached_dst_terms_w = -0xFFFF;
-        m_patch_cached_dst_terms_h = -0xFFFF;
-        m_patch_cached_dst_visible_w = false;
-        m_patch_cached_dst_visible_h = false;
-        m_patch_cached_dst_x.Clear();
-        m_patch_cached_dst_y.Clear();
+        m_patcher.Reset();
     }
 
     void Image::MakeData(sint32 l, sint32 t, sint32 r, sint32 b)
@@ -860,8 +847,6 @@ namespace BOSS
         }
         if(PatchR() < GetImageWidth())
             m_patch_calced_src_x.AtAdding() = GetImageWidth();
-        BOSS_ASSERT("m_patch_cached_dst_x이 초기화되어 있지 않습니다", m_patch_cached_dst_x.Count() == 0);
-        m_patch_cached_dst_x.AtWherever(m_patch_calced_src_x.Count() - 1);
 
         BOSS_ASSERT("m_patch_yzone이 없습니다", 0 < m_patch_yzone.Count());
         if(0 < PatchT())
@@ -873,8 +858,6 @@ namespace BOSS
         }
         if(PatchB() < GetImageHeight())
             m_patch_calced_src_y.AtAdding() = GetImageHeight();
-        BOSS_ASSERT("m_patch_cached_dst_x이 초기화되어 있지 않습니다", m_patch_cached_dst_y.Count() == 0);
-        m_patch_cached_dst_y.AtWherever(m_patch_calced_src_y.Count() - 1);
     }
 
     id_image_read Image::GetImageCore(Build build, sint32 resizing_width, sint32 resizing_height, const Color& coloring) const
@@ -898,17 +881,17 @@ namespace BOSS
 
     Image::Builder::Builder()
     {
-        mRoutine = nullptr;
-        mRoutineOld = nullptr;
-        mIsRoutineFinished = true;
+        m_Routine = nullptr;
+        m_RoutineOld = nullptr;
+        m_IsRoutineFinished = true;
         Clear();
     }
 
     Image::Builder::Builder(Builder&& rhs)
     {
-        mRoutine = nullptr;
-        mRoutineOld = nullptr;
-        mIsRoutineFinished = true;
+        m_Routine = nullptr;
+        m_RoutineOld = nullptr;
+        m_IsRoutineFinished = true;
         operator=(ToReference(rhs));
     }
 
@@ -919,19 +902,19 @@ namespace BOSS
 
     Image::Builder& Image::Builder::operator=(Builder&& rhs)
     {
-        Platform::Graphics::RemoveImageRoutine(mRoutine);
-        Platform::Graphics::RemoveImageRoutine(mRoutineOld);
+        Platform::Graphics::RemoveImageRoutine(m_Routine);
+        Platform::Graphics::RemoveImageRoutine(m_RoutineOld);
         m_RefBitmap = rhs.m_RefBitmap;
         m_BitmapWidth = rhs.m_BitmapWidth;
         m_BitmapHeight = rhs.m_BitmapHeight;
-        mRoutineResize = rhs.mRoutineResize;
-        mRoutineColor = rhs.mRoutineColor;
-        mRoutine = rhs.mRoutine;
-        mRoutineOld = rhs.mRoutineOld;
-        mIsRoutineFinished = rhs.mIsRoutineFinished;
-        rhs.mRoutine = nullptr;
-        rhs.mRoutineOld = nullptr;
-        rhs.mIsRoutineFinished = true;
+        m_RoutineResize = rhs.m_RoutineResize;
+        m_RoutineColor = rhs.m_RoutineColor;
+        m_Routine = rhs.m_Routine;
+        m_RoutineOld = rhs.m_RoutineOld;
+        m_IsRoutineFinished = rhs.m_IsRoutineFinished;
+        rhs.m_Routine = nullptr;
+        rhs.m_RoutineOld = nullptr;
+        rhs.m_IsRoutineFinished = true;
         return *this;
     }
 
@@ -940,18 +923,18 @@ namespace BOSS
         m_RefBitmap = nullptr;
         m_BitmapWidth = 0;
         m_BitmapHeight = 0;
-        mRoutineResize.w = mRoutineResize.h = -1;
-        mRoutineColor.argb = Color::ColoringDefault;
-        Platform::Graphics::RemoveImageRoutine(mRoutine);
-        Platform::Graphics::RemoveImageRoutine(mRoutineOld);
-        mRoutine = nullptr;
-        mRoutineOld = nullptr;
-        mIsRoutineFinished = true;
+        m_RoutineResize.w = m_RoutineResize.h = -1;
+        m_RoutineColor.argb = Color::ColoringDefault;
+        Platform::Graphics::RemoveImageRoutine(m_Routine);
+        Platform::Graphics::RemoveImageRoutine(m_RoutineOld);
+        m_Routine = nullptr;
+        m_RoutineOld = nullptr;
+        m_IsRoutineFinished = true;
     }
 
     bool Image::Builder::Finished() const
     {
-        return mIsRoutineFinished;
+        return m_IsRoutineFinished;
     }
 
     void Image::Builder::ValidBitmap(id_bitmap_read bitmap)
@@ -972,56 +955,85 @@ namespace BOSS
         if(resizing_height == -1) resizing_height = m_BitmapHeight;
 
         // 색상변화용 이미지루틴 재구성
-        if(mRoutineColor.argb != coloring.argb)
+        if(m_RoutineColor.argb != coloring.argb)
         {
-            mRoutineResize.w = resizing_width;
-            mRoutineResize.h = resizing_height;
-            mRoutineColor = coloring;
+            m_RoutineResize.w = resizing_width;
+            m_RoutineResize.h = resizing_height;
+            m_RoutineColor = coloring;
 
-            Platform::Graphics::RemoveImageRoutine(mRoutine);
-            Platform::Graphics::RemoveImageRoutine(mRoutineOld);
-            mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, mRoutineResize.w, mRoutineResize.h, mRoutineColor);
-            mRoutineOld = nullptr;
+            Platform::Graphics::RemoveImageRoutine(m_Routine);
+            Platform::Graphics::RemoveImageRoutine(m_RoutineOld);
+            m_Routine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, m_RoutineResize.w, m_RoutineResize.h, m_RoutineColor);
+            m_RoutineOld = nullptr;
 
-            auto Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, build == Build::Async);
-            mIsRoutineFinished = (Result != nullptr);
+            auto Result = Platform::Graphics::BuildImageRoutineOnce(m_Routine, build == Build::Async);
+            m_IsRoutineFinished = (Result != nullptr);
             return Result;
         }
 
         // 크기변화용 이미지루틴 재구성
-        else if(mRoutineResize.w != resizing_width || mRoutineResize.h != resizing_height)
+        else if(m_RoutineResize.w != resizing_width || m_RoutineResize.h != resizing_height)
         {
-            mRoutineResize.w = resizing_width;
-            mRoutineResize.h = resizing_height;
-            mRoutineColor = coloring;
+            m_RoutineResize.w = resizing_width;
+            m_RoutineResize.h = resizing_height;
+            m_RoutineColor = coloring;
 
             // 이전 루틴의 처리
-            if(mRoutine && mIsRoutineFinished)
+            if(m_Routine && m_IsRoutineFinished)
             {
-                Platform::Graphics::RemoveImageRoutine(mRoutineOld);
-                mRoutineOld = mRoutine;
+                Platform::Graphics::RemoveImageRoutine(m_RoutineOld);
+                m_RoutineOld = m_Routine;
             }
-            else Platform::Graphics::RemoveImageRoutine(mRoutine);
+            else Platform::Graphics::RemoveImageRoutine(m_Routine);
 
             // 새 루틴을 생성
-            mRoutine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, mRoutineResize.w, mRoutineResize.h, mRoutineColor);
-            const bool NeedForce = (build == Build::Force || (build != Build::Async && !mRoutineOld));
-            auto Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, !NeedForce);
-            mIsRoutineFinished = (Result != nullptr);
+            m_Routine = Platform::Graphics::CreateImageRoutine(m_RefBitmap, m_RoutineResize.w, m_RoutineResize.h, m_RoutineColor);
+            const bool NeedForce = (build == Build::Force || (build != Build::Async && !m_RoutineOld));
+            auto Result = Platform::Graphics::BuildImageRoutineOnce(m_Routine, !NeedForce);
+            m_IsRoutineFinished = (Result != nullptr);
             if(Result) return Result;
         }
 
         // 이미지루틴 1회실시
-        else if(id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(mRoutine, true))
+        else if(id_image_read Result = Platform::Graphics::BuildImageRoutineOnce(m_Routine, true))
         {
-            Platform::Graphics::RemoveImageRoutine(mRoutineOld);
-            mRoutineOld = nullptr;
-            mIsRoutineFinished = true;
+            Platform::Graphics::RemoveImageRoutine(m_RoutineOld);
+            m_RoutineOld = nullptr;
+            m_IsRoutineFinished = true;
             return Result;
         }
 
-        if(mRoutineOld)
-            return Platform::Graphics::BuildImageRoutineOnce(mRoutineOld, false);
+        if(m_RoutineOld)
+            return Platform::Graphics::BuildImageRoutineOnce(m_RoutineOld, false);
         return nullptr;
+    }
+
+    Image::Patcher::Patcher()
+    {
+        m_disabled = false;
+    }
+
+    Image::Patcher::Patcher(Patcher&& rhs)
+    {
+        operator=(ToReference(rhs));
+    }
+
+    Image::Patcher::~Patcher()
+    {
+    }
+
+    Image::Patcher& Image::Patcher::operator=(Patcher&& rhs)
+    {
+        m_disabled = rhs.m_disabled; rhs.m_disabled = false;
+        m_x = ToReference(rhs.m_x);
+        m_y = ToReference(rhs.m_y);
+        return *this;
+    }
+
+    void Image::Patcher::Clear()
+    {
+        m_disabled = false;
+        m_x.Clear();
+        m_y.Clear();
     }
 }
