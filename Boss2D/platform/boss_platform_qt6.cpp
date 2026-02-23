@@ -1144,14 +1144,15 @@
         id_image_read Platform::Utility::GetWindowImage(const rect128& rect, float blur)
         {
             QPixmap& WindowPixmap = *BOSS_STORAGE_SYS(QPixmap);
-            const sint32 BlurBorder = Math::Max(1, Math::Ceil(blur));
+            const bool HasBlur = (0.0f < blur);
+            const sint32 BlurBorder = (HasBlur)? Math::Ceil(blur) : 0;
             const sint32 LogicalWidth = rect.r - rect.l;
             const sint32 LogicalHeight = rect.b - rect.t;
             QPixmap GrabPixmap = g_window->grab(QRect(rect.l - BlurBorder, rect.t - BlurBorder,
                 LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2));
             const sint32 PhysicalWidth = GrabPixmap.width();
             const sint32 PhysicalHeight = GrabPixmap.height();
-            if(0.0f < blur)
+            if(HasBlur)
             {
                 QGraphicsScene Scene;
                 auto Item = new QGraphicsPixmapItem(GrabPixmap);
@@ -1207,6 +1208,39 @@
                     if(cb) cb(data, NewBytes.constData());
                     Reply->deleteLater();
                 });
+        }
+
+        void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data)
+        {
+            if(const QPixmap* CurPixmap = (const QPixmap*) image)
+            if(!CurPixmap->isNull())
+            {
+                QByteArray ImageBytes;
+                QBuffer NewBuffer(&ImageBytes);
+                NewBuffer.open(QIODevice::WriteOnly);
+                CurPixmap->save(&NewBuffer, "PNG");
+                NewBuffer.close();
+
+                QHttpPart FilePart;
+                FilePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\"; filename=\"image.png\""));
+                FilePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/png"));
+                FilePart.setBody(ImageBytes);
+                QHttpMultiPart* MultiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+                MultiPart->append(FilePart);
+
+                static QNetworkAccessManager Manager;
+                QNetworkRequest NewRequest(QUrl(QString::fromUtf8(url)));
+                NewRequest.setRawHeader("Accept", "application/json");
+                QNetworkReply* Reply = Manager.post(NewRequest, MultiPart);
+                MultiPart->setParent(Reply);
+                QObject::connect(Reply, &QNetworkReply::finished,
+                    [Reply, cb, data]() -> void
+                    {
+                        QByteArray NewBytes = Reply->readAll();
+                        if(cb) cb(data, NewBytes.constData());
+                        Reply->deleteLater();
+                    });
+            }
         }
 
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)

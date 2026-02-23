@@ -56,6 +56,7 @@
     #include <QLocalSocket>
     #include <QLocalServer>
     #include <QSharedMemory>
+    #include <QBuffer>
     #include <QHostInfo>
     #include <QTcpSocket>
     #include <QUdpSocket>
@@ -65,6 +66,8 @@
     #include <QSslKey>
     #include <QTcpServer>
     #include <QWebSocketServer>
+    #include <QHttpMultiPart>
+    #include <QHttpPart>
     #include <QUrl>
     #include <QNetworkAccessManager>
     #include <QNetworkRequest>
