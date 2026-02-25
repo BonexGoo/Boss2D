@@ -72,7 +72,7 @@ namespace BOSS
             chars param_comments = nullptr, chars inside_samples = nullptr) = 0;
         virtual ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) = 0;
-        virtual void JumpCall(chars gatename, chars uiname, sint32 runcount) = 0;
+        virtual void JumpCall(chars gatename, chars uiname, sint32 runcount, sint32 intervalms) = 0;
         virtual bool JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel) = 0;
         virtual void JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h) = 0;
         virtual void JumpClear() = 0;
@@ -121,7 +121,7 @@ namespace BOSS
             chars param_comments = nullptr, chars inside_samples = nullptr) override;
         ZaySonInterface& AddGlue(chars name, ZayExtend::GlueCB cb,
             chars param_comments = nullptr, chars document = nullptr) override;
-        void JumpCall(chars gatename, chars uiname, sint32 runcount) override;
+        void JumpCall(chars gatename, chars uiname, sint32 runcount, sint32 intervalms) override;
         bool JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel) override;
         void JumpCallWithArea(chars gatename, chars uiname, sint32 runcount, float x, float y, float w, float h) override;
         void JumpClear() override;

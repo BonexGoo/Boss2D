@@ -234,9 +234,9 @@ namespace BOSS
         return false;
     }
 
-    void ZayWidget::JumpCall(chars gatename, chars uiname, sint32 count)
+    void ZayWidget::JumpCall(chars gatename, chars uiname, sint32 runcount, sint32 intervalms)
     {
-        mZaySon.JumpCall(gatename, uiname, count);
+        mZaySon.JumpCall(gatename, uiname, runcount, intervalms);
     }
 
     bool ZayWidget::JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel)
@@ -1192,7 +1192,11 @@ namespace BOSS
                         const float H = pay.Param(5).ToFloat();
                         RefZaySon->JumpCallWithArea(GateName, pay.UIName(), RunCount, X, Y, W, H);
                     }
-                    else RefZaySon->JumpCall(GateName, pay.UIName(), RunCount);
+                    else
+                    {
+                        const sint32 IntervalMsec = (2 < pay.ParamCount())? int(pay.Param(2).ToFloat() * 1000) : 0;
+                        RefZaySon->JumpCall(GateName, pay.UIName(), RunCount, IntervalMsec);
+                    }
                 }
             });
 
@@ -1454,7 +1458,8 @@ namespace BOSS
                 const String FieldText = ZayWidgetDOM::GetComment(domname);
                 const String VisualText = Self.SecretFilter(password, FieldText);
                 sint32 iCursor = 0;
-                Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0, renderer);
+                if(!renderer || !renderer->RenderInsider(uiname, (0 < VisualText.Length())? "content" : "default", panel))
+                    Self.RenderText(panel, uiname, VisualText, iCursor, border + ScrollPos, 0, renderer);
             }
         }
 
