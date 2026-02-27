@@ -1487,6 +1487,11 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Utility::SendCsvRequest(chars url, chars csv, RequestEventCB cb, payload data)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));

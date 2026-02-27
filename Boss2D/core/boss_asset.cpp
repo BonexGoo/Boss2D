@@ -594,36 +594,34 @@ namespace BOSS
                 // 페이로드 구성
                 struct Payload
                 {
-                    const Context* mFiles;
-                    const sint32s* mPartCounts;
+                    const Context& mFiles;
+                    const sint32s& mPartCounts;
                     String* mGenText;
-                    sint32 mIndex;
+                    sint32 mFocus;
                     sint32 mCount;
                 };
-                Payload OnePayload {&info("files"), &PartCounts, &GenText, 0, FileCount};
+                Payload OnePayload {info("files"), PartCounts, &GenText, 0, FileCount};
 
                 // 정렬된 순서대로 기록
                 Sortor.AccessByCallback([](const MapPath* path, sint32* data, payload param)->void
                     {
-                        // 파일정보
+                        const String CurPath = &path->GetPath()[0];
+                        const sint32 CurIndex = *data;
                         auto& CurPayload = *((Payload*) param);
-                        auto& CurFile = (*CurPayload.mFiles)[*data];
+                        // 파일정보
+                        auto& CurFile = CurPayload.mFiles[CurIndex];
                         uint64 CurSize = 0, CurCTime = 0, CurATime = 0, CurMTime = 0;
                         Platform::File::GetAttributes(WString::FromChars(CurFile("path").GetText()),
                             &CurSize, &CurCTime, &CurATime, &CurMTime);
-
                         // 파트정보
-                        auto CurPartCount = (*CurPayload.mPartCounts)[CurPayload.mIndex];
+                        auto CurPartCount = CurPayload.mPartCounts[CurIndex];
                         String PageList = String::Format("ASSETS_%s", (chars) CurFile("id").GetText());
                         for(sint32 i = 0; i < CurPartCount; ++i)
                             PageList += String::Format(", ASSETS_%s_PART%d", (chars) CurFile("id").GetText(), i + 1);
-
                         // 구조체구성
-                        *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, new bytes[%d] {%s},\n",
-                            &path->GetPath()[0], CurPartCount + 1, (chars) PageList);
+                        *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, new bytes[%d] {%s},\n", (chars) CurPath, CurPartCount + 1, (chars) PageList);
                         *CurPayload.mGenText += String::Format("        Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
-                            CurSize, CurCTime, CurATime, CurMTime, (CurPayload.mIndex < CurPayload.mCount - 1)? "," : "");
-                        CurPayload.mIndex++;
+                            CurSize, CurCTime, CurATime, CurMTime, (++CurPayload.mFocus < CurPayload.mCount)? "," : "");
                     }, (payload) &OnePayload);
             }
             GenText += "};\n";

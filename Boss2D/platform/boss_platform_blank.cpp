@@ -802,6 +802,11 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
+        void Platform::Utility::SendCsvRequest(chars url, chars csv, RequestEventCB cb, payload data)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

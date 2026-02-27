@@ -601,6 +601,13 @@ public:
         /// @param data : 콜백함수에 전달할 데이터
         static void SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data = nullptr);
 
+        /// @brief URL로 CSV를 포함하여 네트워크요청 보내기
+        /// @param url : REST-API식 url요청("https://a.b.com/ask?aa=0&bb=1")
+        /// @param csv : 콤마와 줄바꿈으로 구성된 테이블데이터
+        /// @param cb : 응답이 도착할 콜백함수
+        /// @param data : 콜백함수에 전달할 데이터
+        static void SendCsvRequest(chars url, chars csv, RequestEventCB cb, payload data = nullptr);
+
         /// @brief 시스템폰트 생성
         /// @param data : TTF폰트 데이터
         /// @param size : 데이터의 길이(byte)

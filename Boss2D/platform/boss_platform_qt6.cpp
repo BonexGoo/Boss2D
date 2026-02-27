@@ -1243,6 +1243,31 @@
             }
         }
 
+        void Platform::Utility::SendCsvRequest(chars url, chars csv, RequestEventCB cb, payload data)
+        {
+            QByteArray CsvBytes = QString::fromUtf8(csv).toUtf8();
+
+            QHttpPart FilePart;
+            FilePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\"; filename=\"data.csv\""));
+            FilePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/csv; charset=utf-8"));
+            FilePart.setBody(CsvBytes);
+            QHttpMultiPart* MultiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+            MultiPart->append(FilePart);
+
+            static QNetworkAccessManager Manager;
+            QNetworkRequest NewRequest(QUrl(QString::fromUtf8(url)));
+            NewRequest.setRawHeader("Accept", "application/json");
+            QNetworkReply* Reply = Manager.post(NewRequest, MultiPart);
+            MultiPart->setParent(Reply);
+            QObject::connect(Reply, &QNetworkReply::finished,
+                [Reply, cb, data]() -> void
+                {
+                    QByteArray NewBytes = Reply->readAll();
+                    if(cb) cb(data, NewBytes.constData());
+                    Reply->deleteLater();
+                });
+        }
+
         Strings Platform::Utility::CreateSystemFont(bytes data, const sint32 size)
         {
             const sint32 NewFontID = QFontDatabase::addApplicationFontFromData(QByteArray((chars) data, size));

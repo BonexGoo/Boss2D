@@ -59,6 +59,7 @@ namespace BOSS
         uint32 BitmapRow = 0;
         uint08* BitmapBits = nullptr;
         uint08* DataPtr = nullptr;
+        if(pngsource[0] == 0x89 && pngsource[1] == 'P' && pngsource[2] == 'N' && pngsource[3] == 'G')
         {
             bytes PNGNext = pngsource + 4;
             uint32 ChunkName = 0;
@@ -177,6 +178,11 @@ namespace BOSS
             _Buf = DataPtr;
             if(!IsMultiData)
                 DataPtr = nullptr;
+        }
+        else
+        {
+            BOSS_ASSERT("PNG가 아닙니다", false);
+            return nullptr;
         }
 
         // 디코딩된 픽셀정보 임시저장소

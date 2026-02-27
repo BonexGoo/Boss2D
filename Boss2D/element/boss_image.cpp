@@ -200,6 +200,8 @@ namespace BOSS
             Asset::Close(ImageAsset);
             m_bitmap = Bmp::Clone((id_bitmap) BmpBuffer);
             Buffer::Free(BmpBuffer);
+            if(!m_bitmap) return false;
+            else RestoreFromMagentaAlpha();
         }
         else if(FileFormat == Format::Png)
         {
@@ -208,6 +210,7 @@ namespace BOSS
             Asset::Close(ImageAsset);
             m_bitmap = Png().ToBmp((bytes) PngBuffer, true);
             Buffer::Free(PngBuffer);
+            if(!m_bitmap) return false;
         }
         else if(FileFormat == Format::Jpg)
         {
@@ -216,10 +219,8 @@ namespace BOSS
             Asset::Close(ImageAsset);
             m_bitmap = AddOn::Jpg::ToBmp((bytes) JpgBuffer, ImageAssetFilesize);
             Buffer::Free(JpgBuffer);
+            if(!m_bitmap) return false;
         }
-        RestoreFromMagentaAlpha();
-        const sint32 Width = Bmp::GetWidth(m_bitmap);
-        const sint32 Height = Bmp::GetHeight(m_bitmap);
 
         // 데이터화
         if(JsonAsset)
@@ -276,7 +277,12 @@ namespace BOSS
                 BOSS_ASSERT("patch_yzone이 잘못되었습니다", m_patch_yzone.At(-1).y < m_patch_yzone.At(-1).yend);
             }
         }
-        else MakeData(0, 0, Width, Height);
+        else
+        {
+            const sint32 Width = Bmp::GetWidth(m_bitmap);
+            const sint32 Height = Bmp::GetHeight(m_bitmap);
+            MakeData(0, 0, Width, Height);
+        }
         RecalcData();
         return true;
     }
