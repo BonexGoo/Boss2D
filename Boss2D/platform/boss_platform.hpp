@@ -1610,6 +1610,10 @@ public:
         /// @brief 도큐먼트 경로얻기
         /// @return 경로
         static const String RootForDocuments();
+
+        /// @brief USB메모리 경로얻기
+        /// @return 경로
+        static const String RootForUsb();
     };
 
     ////////////////////////////////////////////////////////////////////////////////

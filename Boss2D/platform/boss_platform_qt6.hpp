@@ -27,6 +27,7 @@
     #include <QFontDatabase>
     #include <QMessageBox>
     #include <QSettings>
+    #include <QStorageInfo>
     #if !BOSS_WASM
         #include <QException>
     #endif

@@ -2024,6 +2024,13 @@
             return Result;
         }
 
+        const String Platform::File::RootForUsb()
+        {
+            String Result = "";
+            BOSS_ASSERT("Further development is needed.", false);
+            return Result;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////

@@ -3084,6 +3084,30 @@
             return NewPath;
         }
 
+        const String Platform::File::RootForUsb()
+        {
+            foreach(const QStorageInfo &storage, QStorageInfo::mountedVolumes())
+            {
+                if(!storage.isValid() || !storage.isReady())
+                    continue;
+                const QString root = storage.rootPath();
+                #if BOSS_WINDOWS
+                    UINT type = GetDriveTypeW((LPCWSTR) root.utf16());
+                    if(type == DRIVE_REMOVABLE)
+                        return root.toUtf8().constData();
+                #elif BOSS_LINUX
+                    if(root.startsWith("/media") || root.startsWith("/run/media") || root.startsWith("/mnt"))
+                        return root.toUtf8().constData();
+                #elif BOSS_ANDROID
+                    if(root.startsWith("/storage/") && !root.startsWith("/storage/emulated/"))
+                        return root.toUtf8().constData();
+                    if(root.startsWith("/mnt/media_rw/"))
+                        return root.toUtf8().constData();
+                #endif
+            }
+            return "";
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
