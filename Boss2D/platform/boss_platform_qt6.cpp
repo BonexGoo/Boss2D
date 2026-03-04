@@ -3106,7 +3106,7 @@
         {
             QString best;
             qint64 bestBytes = -1;
-            foreach(const QStorageInfo &storage, QStorageInfo::mountedVolumes())
+            foreach(const QStorageInfo& storage, QStorageInfo::mountedVolumes())
             {
                 if(!storage.isValid() || !storage.isReady())
                     continue;
@@ -3118,10 +3118,10 @@
                 #elif BOSS_LINUX
                     if(root.isEmpty() || _IsSystemMount(root))
                         continue;
-                    const QByteArray fs = s.fileSystemType();
+                    const QByteArray fs = storage.fileSystemType();
                     if(fs.isEmpty() || _IsVirtualFs(fs))
                         continue;
-                    const qint64 bytes = s.bytesTotal();
+                    const qint64 bytes = storage.bytesTotal();
                     if(bytes <= 0)
                         continue;
                     if(bytes > bestBytes)
