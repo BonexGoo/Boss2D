@@ -3084,8 +3084,28 @@
             return NewPath;
         }
 
+        #if BOSS_LINUX
+            static bool _IsSystemMount(const QString& root)
+            {
+                static const QSet<QString> bad = {"/", "/boot", "/boot/firmware", "/proc", "/sys", "/dev", "/run"};
+                if(bad.contains(root)) return true;
+                if(root.startsWith("/proc/") || root.startsWith("/sys/") || root.startsWith("/dev/") || root.startsWith("/run/"))
+                    return true;
+                return false;
+            }
+            static bool _IsVirtualFs(const QByteArray& fs)
+            {
+                static const QSet<QByteArray> vfs = {
+                    "tmpfs","proc","sysfs","devtmpfs","overlay","squashfs","cgroup","cgroup2","pstore",
+                    "securityfs","debugfs","tracefs","fusectl","mqueue","rpc_pipefs","configfs","autofs"};
+                return vfs.contains(fs);
+            }
+        #endif
+
         const String Platform::File::RootForUsb()
         {
+            QString best;
+            qint64 bestBytes = -1;
             foreach(const QStorageInfo &storage, QStorageInfo::mountedVolumes())
             {
                 if(!storage.isValid() || !storage.isReady())
@@ -3096,16 +3116,27 @@
                     if(type == DRIVE_REMOVABLE)
                         return root.toUtf8().constData();
                 #elif BOSS_LINUX
-                    if(root.startsWith("/media") || root.startsWith("/run/media") || root.startsWith("/mnt"))
-                        return root.toUtf8().constData();
+                    if(root.isEmpty() || _IsSystemMount(root))
+                        continue;
+                    const QByteArray fs = s.fileSystemType();
+                    if(fs.isEmpty() || _IsVirtualFs(fs))
+                        continue;
+                    const qint64 bytes = s.bytesTotal();
+                    if(bytes <= 0)
+                        continue;
+                    if(bytes > bestBytes)
+                    {
+                        bestBytes = bytes;
+                        best = root + ((!root.endsWith('/'))? "/" : "");
+                    }
                 #elif BOSS_ANDROID
                     if(root.startsWith("/storage/") && !root.startsWith("/storage/emulated/"))
-                        return root.toUtf8().constData();
+                        return (root + ((!root.endsWith('/'))? "/" : "")).toUtf8().constData();
                     if(root.startsWith("/mnt/media_rw/"))
-                        return root.toUtf8().constData();
+                        return (root + ((!root.endsWith('/'))? "/" : "")).toUtf8().constData();
                 #endif
             }
-            return "";
+            return best.toUtf8().constData();
         }
 
         ////////////////////////////////////////////////////////////////////////////////
