@@ -1738,6 +1738,11 @@
         ////////////////////////////////////////////////////////////////////////////////
         // FILE
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::File::EnumStorage()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         bool Platform::File::Exist(chars filename)
         {
             if(!filename || filename[0] == '\0') return false;
@@ -2186,13 +2191,6 @@
         }
 
         const String Platform::File::RootForDocuments()
-        {
-            String Result = "";
-            BOSS_ASSERT("Further development is needed.", false);
-            return Result;
-        }
-
-        const String Platform::File::RootForUsb()
         {
             String Result = "";
             BOSS_ASSERT("Further development is needed.", false);

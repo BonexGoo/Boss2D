@@ -1596,6 +1596,11 @@
         ////////////////////////////////////////////////////////////////////////////////
         // FILE
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::File::EnumStorage()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         bool Platform::File::Exist(chars filename)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
@@ -1946,13 +1951,6 @@
         }
 
         const String Platform::File::RootForDocuments()
-        {
-            String Result = "";
-            BOSS_ASSERT("Further development is needed.", false);
-            return Result;
-        }
-
-        const String Platform::File::RootForUsb()
         {
             String Result = "";
             BOSS_ASSERT("Further development is needed.", false);

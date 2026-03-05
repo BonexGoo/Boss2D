@@ -2114,13 +2114,6 @@ namespace BOSS
         m_viewfunc.m_unlock();
     }
 
-    void ZayView::OnDeviceArrival(bool connected)
-    {
-        m_viewfunc.m_lock(m_data);
-        m_viewfunc.m_command(CT_DeviceArrival, boolo(connected), nullptr);
-        m_viewfunc.m_unlock();
-    }
-
     void ZayView::OnSize(sint32 w, sint32 h)
     {
         sint32s WH;
@@ -2147,6 +2140,27 @@ namespace BOSS
             m_touchin = TouchIn;
             m_data->invalidate();
         }
+    }
+
+    void ZayView::OnDeviceArrival(bool connected)
+    {
+        m_viewfunc.m_lock(m_data);
+        m_viewfunc.m_command(CT_DeviceArrival, boolo(connected), nullptr);
+        m_viewfunc.m_unlock();
+    }
+
+    void ZayView::OnStorageMounted(chars path)
+    {
+        m_viewfunc.m_lock(m_data);
+        m_viewfunc.m_command(CT_StorageMounted, String(path), nullptr);
+        m_viewfunc.m_unlock();
+    }
+
+    void ZayView::OnStorageUnmounted(chars path)
+    {
+        m_viewfunc.m_lock(m_data);
+        m_viewfunc.m_command(CT_StorageUnmounted, String(path), nullptr);
+        m_viewfunc.m_unlock();
     }
 
     void ZayView::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)

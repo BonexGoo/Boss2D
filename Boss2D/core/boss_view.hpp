@@ -52,9 +52,11 @@ namespace BOSS
         virtual bool OnCanQuit();
         virtual void OnDestroy();
         virtual void OnActivate(bool actived);
-        virtual void OnDeviceArrival(bool connected);
         virtual void OnSize(sint32 w, sint32 h);
         virtual void OnTick();
+        virtual void OnDeviceArrival(bool connected);
+        virtual void OnStorageMounted(chars path);
+        virtual void OnStorageUnmounted(chars path);
         virtual void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out);
         virtual void OnRender(sint32 width, sint32 height, float l, float t, float r, float b);
         virtual void OnTouch(TouchType type, sint32 id, sint32 x, sint32 y);

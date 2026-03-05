@@ -1344,6 +1344,9 @@ public:
     public:
         typedef void (*SearchCB)(chars itemname, payload data);
 
+        /// @brief 현재 이동저장장치를 CT_StorageMounted로 알려줌
+        static void EnumStorage();
+
         /// @brief 파일존재여부 얻기
         /// @param filename : 파일명
         /// @return 파일존재여부
@@ -1610,10 +1613,6 @@ public:
         /// @brief 도큐먼트 경로얻기
         /// @return 경로
         static const String RootForDocuments();
-
-        /// @brief USB메모리 경로얻기
-        /// @return 경로
-        static const String RootForUsb();
     };
 
     ////////////////////////////////////////////////////////////////////////////////

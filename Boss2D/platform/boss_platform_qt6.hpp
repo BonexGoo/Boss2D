@@ -286,15 +286,25 @@
             if(mViewManager)
                 mViewManager->OnActivate(actived);
         }
+        void SendSizeWhenValid()
+        {
+            if(mViewManager && 0 < mWidth && 0 < mHeight)
+                mViewManager->OnSize(mWidth, mHeight);
+        }
         void SendDeviceArrival(bool connected)
         {
             if(mViewManager)
                 mViewManager->OnDeviceArrival(connected);
         }
-        void SendSizeWhenValid()
+        void SendStorageMounted(chars path)
         {
-            if(mViewManager && 0 < mWidth && 0 < mHeight)
-                mViewManager->OnSize(mWidth, mHeight);
+            if(mViewManager)
+                mViewManager->OnStorageMounted(path);
+        }
+        void SendStorageUnmounted(chars path)
+        {
+            if(mViewManager)
+                mViewManager->OnStorageUnmounted(path);
         }
         void Update(sint32 count, chars arg)
         {
@@ -342,6 +352,14 @@
         void OnDeviceArrivalEvent(bool connected)
         {
             SendDeviceArrival(connected);
+        }
+        void OnStorageMountedEvent(chars path, sint64 freespace, sint64 totalspace)
+        {
+            SendStorageMounted(String::Format("%s|%lld|%lld", path, freespace, totalspace));
+        }
+        void OnStorageUnmountedEvent(chars path)
+        {
+            SendStorageUnmounted(path);
         }
         void OnCloseEvent(QCloseEvent* event)
         {
@@ -904,6 +922,322 @@
         ActivatorCB mActivatorCB;
     };
 
+    class UsbStorageWatcher : public QObject
+    {
+        Q_OBJECT
+    public:
+        explicit UsbStorageWatcher(QWidget* parent) : QObject(parent) {}
+
+        void Start()
+        {
+            #if BOSS_LINUX
+                StartLinux();
+            #elif BOSS_WINDOWS
+                SnapshotWindowsMounted();
+            #endif
+        }
+
+        void Stop()
+        {
+            #if BOSS_LINUX
+                StopLinux();
+            #endif
+        }
+
+        void Enum()
+        {
+            for(const QStorageInfo& v : QStorageInfo::mountedVolumes())
+            {
+                if(!v.isValid() || !v.isReady()) continue;
+                if(IsLikelyUsbStorage(v))
+                {
+                    const QString mountPath = v.rootPath();
+                    const QString devNode = QString::fromUtf8(v.device()); // Linux에서 의미 있음
+                    emit UsbStorageChanged(true, mountPath, devNode);
+                }
+            }
+        }
+
+        // Windows: call from nativeEvent(WM_DEVICECHANGE)
+        bool OnWindowsDeviceChange()
+        {
+            bool IsDeviceStorage = false;
+            #if BOSS_WINDOWS
+                const QSet<QString> Cur = CurrentMountedRootsWindows();
+                for(const auto& Root : Cur)
+                    if(!mWinMounted.contains(Root))
+                    {
+                        IsDeviceStorage = true;
+                        emit UsbStorageChanged(true, Root, QString());
+                    }
+                for(const auto& Root : mWinMounted)
+                    if(!Cur.contains(Root))
+                    {
+                        IsDeviceStorage = true;
+                        emit UsbStorageChanged(false, Root, QString());
+                    }
+                mWinMounted = Cur;
+            #endif
+            return IsDeviceStorage;
+        }
+
+    signals:
+        // mounted=true: mountPath valid (may be empty if path resolution failed)
+        void UsbStorageChanged(bool mounted, const QString& mountPath, const QString& devNode);
+
+    private:
+        static bool IsLikelyUsbStorage(const QStorageInfo& v)
+        {
+            if(!v.isValid() || !v.isReady())
+                return false;
+            const QString root = v.rootPath();
+            if(root.isEmpty())
+                return false;
+
+            #if BOSS_WINDOWS
+                if(GetDriveTypeW((LPCWSTR) root.utf16()) == DRIVE_REMOVABLE)
+                    return true;
+            #elif BOSS_LINUX
+                const QByteArray dev = v.device();  // "/dev/sda1"
+                const QString devStr = QString::fromUtf8(dev);
+
+                if(devStr.startsWith("/dev/sd") ||
+                   devStr.startsWith("/dev/mmc") ||
+                   devStr.startsWith("/dev/nvme"))
+                {
+                    // mount 위치도 같이 확인
+                    if(root.startsWith("/media") ||
+                       root.startsWith("/run/media") ||
+                       root.startsWith("/mnt"))
+                        return true;
+                }
+            #endif
+            return false;
+        }
+
+    private:
+        // ---------------- Windows helpers ----------------
+        #if BOSS_WINDOWS
+            QSet<QString> mWinMounted;
+
+            void SnapshotWindowsMounted()
+            {
+                mWinMounted = CurrentMountedRootsWindows();
+            }
+
+            static QSet<QString> CurrentMountedRootsWindows()
+            {
+                QSet<QString> Out;
+                const auto Vols = QStorageInfo::mountedVolumes();
+                for(const QStorageInfo& V : Vols)
+                {
+                    if(!V.isValid() || !V.isReady())
+                        continue;
+                    const QString Root = V.rootPath(); // ex) "E:/"
+                    if(!Root.isEmpty())
+                        Out.insert(Root);
+                }
+                return Out;
+            }
+        #endif
+
+        // ---------------- Linux udev(block/partition) ----------------
+        #if BOSS_LINUX
+            udev* mUdev = nullptr;
+            udev_monitor* mMon = nullptr;
+            QSocketNotifier* mNotifier = nullptr;
+            QHash<QString, QString> mDevNodeToMountPath;
+
+            void StartLinux()
+            {
+                if(mUdev) return;
+                if(!(mUdev = udev_new())) return;
+                if(!(mMon = udev_monitor_new_from_netlink(mUdev, "udev"))) return;
+
+                // Mass storage appears under "block" subsystem (partitions: /dev/sdX1)
+                udev_monitor_filter_add_match_subsystem_devtype(mMon, "block", nullptr);
+                if(udev_monitor_enable_receiving(mMon) < 0) return;
+
+                const int FD = udev_monitor_get_fd(mMon);
+                mNotifier = new QSocketNotifier(FD, QSocketNotifier::Read, this);
+                connect(mNotifier, &QSocketNotifier::activated, this, &UsbStorageWatcher::OnUsbStorageActivated);
+            }
+
+            void StopLinux()
+            {
+                if(mNotifier)
+                {
+                    mNotifier->setEnabled(false);
+                    mNotifier->deleteLater();
+                    mNotifier = nullptr;
+                }
+                if(mMon)
+                {
+                    udev_monitor_unref(mMon);
+                    mMon = nullptr;
+                }
+                if(mUdev)
+                {
+                    udev_unref(mUdev);
+                    mUdev = nullptr;
+                }
+            }
+
+        private slots:
+            void OnUsbStorageActivated(int fd)
+            {
+                while(true)
+                {
+                    udev_device* Dev = udev_monitor_receive_device(mMon);
+                    if(!Dev) break;
+
+                    const char* ActionC = udev_device_get_action(Dev);
+                    const QString Action = ActionC ? QString::fromUtf8(ActionC) : QString();
+
+                    if(!IsInterestingPartition(Dev))
+                    {
+                        udev_device_unref(Dev);
+                        continue;
+                    }
+
+                    const QString DevNode = DevNodeOf(Dev); // "/dev/sda1"
+
+                    if(Action == "add" || Action == "change")
+                    {
+                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
+                        // auto-mount may lag slightly
+                        for(int i = 0; MountPath.isEmpty() && i < 8; ++i)
+                        {
+                            QThread::msleep(150);
+                            MountPath = FindMountPathForDeviceLinux(DevNode);
+                        }
+                        if(MountPath.isEmpty())
+                        {
+                            EnsureMountedByUdisks(DevNode);
+                            for(int i = 0; MountPath.isEmpty() && i < 16; ++i)
+                            {
+                                QThread::msleep(150);
+                                MountPath = FindMountPathForDeviceLinux(DevNode);
+                            }
+                        }
+                        // MountPath수집
+                        if(!MountPath.isEmpty() && !DevNode.isEmpty())
+                            mDevNodeToMountPath[DevNode] = MountPath;
+                        emit UsbStorageChanged(true, MountPath, DevNode);
+                    }
+                    else if(Action == "remove")
+                    {
+                        // MountPath확인
+                        QString OldMountPath;
+                        if(!DevNode.isEmpty())
+                        {
+                            auto it = mDevNodeToMountPath.find(DevNode);
+                            if(it != mDevNodeToMountPath.end())
+                            {
+                                OldMountPath = it.value();
+                                mDevNodeToMountPath.erase(it);
+                            }
+                        }
+                        if(!DevNode.isEmpty())
+                            TryUnmountByUdisks(DevNode);
+                        emit UsbStorageChanged(false, OldMountPath, DevNode);
+                    }
+
+                    udev_device_unref(Dev);
+                }
+            }
+
+        private:
+            static QString DevNodeOf(udev_device* dev)
+            {
+                const char* Node = udev_device_get_devnode(dev);
+                return Node ? QString::fromUtf8(Node) : QString();
+            }
+
+            static bool IsUsbBus(udev_device* dev)
+            {
+                if(const char* Bus = udev_device_get_property_value(dev, "ID_BUS"))
+                    if(QString::fromUtf8(Bus) == "usb")
+                        return true;
+
+                // fallback: walk parents to find usb subsystem
+                udev_device* P = udev_device_get_parent(dev);
+                while(P)
+                {
+                    const char* Sub = udev_device_get_subsystem(P);
+                    if(Sub && QString::fromUtf8(Sub) == "usb")
+                        return true;
+                    P = udev_device_get_parent(P);
+                }
+                return false;
+            }
+
+            static bool IsInterestingPartition(udev_device* dev)
+            {
+                const char* DevType = udev_device_get_devtype(dev);
+                if(!DevType || QString::fromUtf8(DevType) != "partition")
+                    return false;
+
+                if(!IsUsbBus(dev))
+                    return false;
+
+                const char* FsUsage = udev_device_get_property_value(dev, "ID_FS_USAGE");
+                if(!FsUsage || QString::fromUtf8(FsUsage) != "filesystem")
+                    return false;
+
+                const char* FsType = udev_device_get_property_value(dev, "ID_FS_TYPE");
+                if(!FsType) return false;
+
+                const QString Node = DevNodeOf(dev);
+                return !Node.isEmpty();
+            }
+
+            static QString FindMountPathForDeviceLinux(const QString& devNode)
+            {
+                if(devNode.isEmpty()) return QString();
+
+                QFileInfo fi(devNode);
+                const QString Target = fi.exists() ? fi.canonicalFilePath() : devNode;
+
+                const auto Vols = QStorageInfo::mountedVolumes();
+                for(const QStorageInfo& V : Vols)
+                {
+                    if(!V.isValid() || !V.isReady())
+                        continue;
+
+                    const QString VDev = QString::fromUtf8(V.device());
+                    if(VDev.isEmpty())
+                        continue;
+
+                    QFileInfo vfi(VDev);
+                    const QString Canon = vfi.exists() ? vfi.canonicalFilePath() : VDev;
+
+                    if(Canon == Target)
+                        return V.rootPath();
+                }
+                return QString();
+            }
+
+            static bool EnsureMountedByUdisks(const QString& devNode)
+            {
+                if(devNode.isEmpty()) return false;
+                QProcess P;
+                P.start("udisksctl", {"mount", "-b", devNode});
+                if(!P.waitForFinished(8000)) return false;
+                return (P.exitStatus() == QProcess::NormalExit);
+            }
+
+            static bool TryUnmountByUdisks(const QString& devNode)
+            {
+                if(devNode.isEmpty()) return false;
+                QProcess P;
+                P.start("udisksctl", {"unmount", "-b", devNode});
+                if(!P.waitForFinished(8000)) return false;
+                return (P.exitStatus() == QProcess::NormalExit);
+            }
+        #endif
+    };
+
     class MainWindow : public GroupingWindow
     {
         Q_OBJECT
@@ -923,10 +1257,16 @@
                     {
                         int UdevMonFD = udev_monitor_get_fd(mUsbUdevMon);
                         mUsbNotifier = new QSocketNotifier(UdevMonFD, QSocketNotifier::Read, this);
-                        connect(mUsbNotifier, &QSocketNotifier::activated, this, &MainWindow::onUdevActivated);
+                        connect(mUsbNotifier, &QSocketNotifier::activated, this, &MainWindow::onUsbDeviceActivated);
                     }
                 }
             #endif
+
+            // USB Mass-Storage watcher (USB memory sticks, etc.)
+            mUsbStorageWatcher = new UsbStorageWatcher(this);
+            connect(mUsbStorageWatcher, &UsbStorageWatcher::UsbStorageChanged,
+                this, &MainWindow::onUsbStorageChanged);
+            mUsbStorageWatcher->Start();
         }
         ~MainWindow()
         {
@@ -939,6 +1279,13 @@
                 delete mWebContext;
             #endif
 
+            if(mUsbStorageWatcher)
+            {
+                mUsbStorageWatcher->Stop();
+                delete mUsbStorageWatcher;
+                mUsbStorageWatcher = nullptr;
+            }
+
             #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
                 if(mUsbNotifier) mUsbNotifier->deleteLater();
                 if(mUsbUdevMon) udev_monitor_unref(mUsbUdevMon);
@@ -947,10 +1294,11 @@
         }
 
     public:
-        void SetInitedPlatform() {mInited = true;}
-        bool InitedPlatform() const {return mInited;}
-        void SetFirstVisible(bool visible) {mNeedVisible = visible;}
-        bool FirstVisible() const {return mNeedVisible;}
+        inline void SetInitedPlatform() {mInited = true;}
+        inline bool InitedPlatform() const {return mInited;}
+        inline void SetFirstVisible(bool visible) {mNeedVisible = visible;}
+        inline bool FirstVisible() const {return mNeedVisible;}
+        inline MainView* View() {return mView;}
 
     public:
         void InitForWidget(bool frameless, bool topmost, QWidget* bgwidget, chars bgweb)
@@ -1017,9 +1365,9 @@
                 #endif
             }
         }
-        inline MainView* View()
+        void EnumStorage()
         {
-            return mView;
+            mUsbStorageWatcher->Enum();
         }
         void SetWindowWebUrl(chars bgweb)
         {
@@ -1144,32 +1492,68 @@
                 else if(msg->message == WM_DEVICECHANGE)
                 {
                     if(msg->wParam == DBT_DEVICEARRIVAL)
-                        mView->OnDeviceArrivalEvent(true);
+                    {
+                        if(!mUsbStorageWatcher->OnWindowsDeviceChange())
+                        {
+                            BOSS_TRACE("USB장치를 연결하였습니다");
+                            mView->OnDeviceArrivalEvent(true);
+                        }
+                    }
                     else if(msg->wParam == DBT_DEVICEREMOVECOMPLETE)
-                        mView->OnDeviceArrivalEvent(false);
+                    {
+                        if(!mUsbStorageWatcher->OnWindowsDeviceChange())
+                        {
+                            BOSS_TRACE("USB장치를 해제하였습니다");
+                            mView->OnDeviceArrivalEvent(false);
+                        }
+                    }
                 }
             #endif
             return QMainWindow::nativeEvent(eventType, message, result);
         }
-        #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
-            private slots:
-            void onUdevActivated(int fd)
+
+    private slots:
+		void onUsbStorageChanged(bool mounted, const QString& mountPath, const QString& devNode)
+		{
+		    if(mounted)
             {
-                while(true)
-                {
-                    udev_device* CurDev = udev_monitor_receive_device(mUsbUdevMon);
-                    if(!CurDev) break;
-                    if(const char* CurAction = udev_device_get_action(CurDev))
-                    {
-                        if(!String::Compare(CurAction, "add"))
-                            mView->OnDeviceArrivalEvent(true);
-                        else if(!String::Compare(CurAction, "remove"))
-                            mView->OnDeviceArrivalEvent(false);
-                    }
-                    udev_device_unref(CurDev);
-                }
+                QStorageInfo Storage(mountPath);
+                Storage.refresh();
+                const qint64 FreeSpace = Storage.bytesAvailable();
+                const qint64 TotalSpace = Storage.bytesTotal();
+                BOSS_TRACE("USB저장장치를 연결하였습니다(%s)", mountPath.toUtf8().constData());
+                if(mView) mView->OnStorageMountedEvent(mountPath.toUtf8().constData(), FreeSpace, TotalSpace);
             }
-        #endif
+		    else if(!mounted)
+            {
+                BOSS_TRACE("USB저장장치를 해제하였습니다(%s)", mountPath.toUtf8().constData());
+                if(mView) mView->OnStorageUnmountedEvent(mountPath.toUtf8().constData());
+            }
+		}
+        #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
+		    void onUsbDeviceActivated(int fd)
+		    {
+		        while(true)
+		        {
+		            udev_device* CurDev = udev_monitor_receive_device(mUsbUdevMon);
+		            if(!CurDev) break;
+		            if(const char* CurAction = udev_device_get_action(CurDev))
+		            {
+		                if(!String::Compare(CurAction, "add"))
+                        {
+                            BOSS_TRACE("USB장치를 연결하였습니다");
+		                    mView->OnDeviceArrivalEvent(true);
+                        }
+		                else if(!String::Compare(CurAction, "remove"))
+                        {
+                            BOSS_TRACE("USB장치를 해제하였습니다");
+                            mView->OnDeviceArrivalEvent(false);
+                        }
+		            }
+		            udev_device_unref(CurDev);
+		        }
+		    }
+	    #endif
 
     private:
         GroupingWindow* NewGroupingWindow(QWidget* widget, QRect rect, bool transparency)
@@ -1219,6 +1603,7 @@
             struct udev_monitor* mUsbUdevMon {nullptr};
             QSocketNotifier* mUsbNotifier {nullptr};
         #endif
+        UsbStorageWatcher* mUsbStorageWatcher {nullptr};
     };
 
     class ThreadClass : public QThread

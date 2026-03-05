@@ -3370,6 +3370,11 @@
         ////////////////////////////////////////////////////////////////////////////////
         // FILE
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::File::EnumStorage()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
         bool Platform::File::Exist(chars filename)
         {
             const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
@@ -4052,13 +4057,6 @@
             NewPath = PlatformImpl::Core::NormalPath(NewPath + '/', false);
             _CreateMiddleDir(NewPath);
             return NewPath;
-        }
-
-        const String Platform::File::RootForUsb()
-        {
-            String Result = "";
-            BOSS_ASSERT("Further development is needed.", false);
-            return Result;
         }
 
         ////////////////////////////////////////////////////////////////////////////////

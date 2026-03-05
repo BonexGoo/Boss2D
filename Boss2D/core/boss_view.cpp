@@ -162,15 +162,23 @@ namespace BOSS
     {
     }
 
-    void View::OnDeviceArrival(bool connected)
-    {
-    }
-
     void View::OnSize(sint32 w, sint32 h)
     {
     }
 
     void View::OnTick()
+    {
+    }
+
+    void View::OnDeviceArrival(bool connected)
+    {
+    }
+
+    void View::OnStorageMounted(chars path)
+    {
+    }
+
+    void View::OnStorageUnmounted(chars path)
     {
     }
 
