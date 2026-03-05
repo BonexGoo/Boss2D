@@ -1115,21 +1115,24 @@
                     if(!DevNode.isEmpty())
                     {
                         // already mounted?
-                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
+                        const QString MountDevNode = NormalizeToPartitionDevNodeLinux(DevNode);
+                        QString MountPath = FindMountPathForDeviceLinux(MountDevNode);
 
                         // auto-mount may be missing in CLI → try mounting
                         if(MountPath.isEmpty())
                         {
-                            EnsureMountedByUdisks(DevNode);
+                            EnsureMountedByUdisks(MountDevNode);
                             for(int i = 0; MountPath.isEmpty() && i < 12; ++i)
                             {
                                 QThread::msleep(120);
-                                MountPath = FindMountPathForDeviceLinux(DevNode);
+                                MountPath = FindMountPathForDeviceLinux(MountDevNode);
                             }
                         }
 
                         if(!MountPath.isEmpty())
                             mDevNodeToMountPath[DevNode] = MountPath;
+                        if(!MountDevNode.isEmpty())
+                            mDevNodeToMountPath[MountDevNode] = MountPath;
 
                         emit UsbStorageChanged(true, MountPath, DevNode);
                     }
@@ -1161,7 +1164,8 @@
 
                     if(Action == "add" || Action == "change")
                     {
-                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
+                        const QString MountDevNode = NormalizeToPartitionDevNodeLinux(DevNode);
+                        QString MountPath = FindMountPathForDeviceLinux(MountDevNode);
                         // auto-mount may lag slightly
                         for(int i = 0; MountPath.isEmpty() && i < 8; ++i)
                         {
@@ -1170,20 +1174,24 @@
                         }
                         if(MountPath.isEmpty())
                         {
-                            EnsureMountedByUdisks(DevNode);
+                            EnsureMountedByUdisks(MountDevNode);
                             for(int i = 0; MountPath.isEmpty() && i < 16; ++i)
                             {
                                 QThread::msleep(150);
-                                MountPath = FindMountPathForDeviceLinux(DevNode);
+                                MountPath = FindMountPathForDeviceLinux(MountDevNode);
                             }
                         }
                         // MountPath수집
                         if(!MountPath.isEmpty() && !DevNode.isEmpty())
                             mDevNodeToMountPath[DevNode] = MountPath;
+                        if(!MountDevNode.isEmpty())
+                            mDevNodeToMountPath[MountDevNode] = MountPath;
                         emit UsbStorageChanged(true, MountPath, DevNode);
                     }
                     else if(Action == "remove")
                     {
+                        const QString MountDevNode = NormalizeToPartitionDevNodeLinux(DevNode);
+
                         // MountPath확인
                         QString OldMountPath;
                         if(!DevNode.isEmpty())
@@ -1195,8 +1203,20 @@
                                 mDevNodeToMountPath.erase(it);
                             }
                         }
-                        if(!DevNode.isEmpty())
-                            TryUnmountByUdisks(DevNode, OldMountPath);
+                        if(OldMountPath.isEmpty() && !MountDevNode.isEmpty())
+                        {
+                            auto it2 = mDevNodeToMountPath.find(MountDevNode);
+                            if(it2 != mDevNodeToMountPath.end())
+                            {
+                                OldMountPath = it2.value();
+                                mDevNodeToMountPath.erase(it2);
+                            }
+                        }
+
+                        const QString UnmountNode = !MountDevNode.isEmpty() ? MountDevNode : DevNode;
+                        if(!UnmountNode.isEmpty())
+                            TryUnmountByUdisks(UnmountNode, OldMountPath);
+
                         emit UsbStorageChanged(false, OldMountPath, DevNode);
                     }
 
@@ -1249,6 +1269,53 @@
                 return !Node.isEmpty();
             }
 
+            
+            // If udev gives a "disk" node (e.g. /dev/sda) but the OS mounts a partition (e.g. /dev/sda1),
+            // normalize to a mountable partition device node.
+            static QString NormalizeToPartitionDevNodeLinux(const QString& devNode)
+            {
+                if(devNode.isEmpty()) return QString();
+
+                // lsblk returns the node itself plus children. Example:
+                // /dev/sda disk
+                // /dev/sda1 part
+                QProcess P;
+                P.start("lsblk", {"-nrpo", "NAME,TYPE", devNode});
+                if(!P.waitForFinished(1500) || P.exitStatus() != QProcess::NormalExit)
+                    return devNode;
+
+                const QString out = QString::fromUtf8(P.readAllStandardOutput());
+                const QStringList lines = out.split('\n', Qt::SkipEmptyParts);
+                if(lines.isEmpty()) return devNode;
+
+                // First line is the queried node; if it's already a partition, just use it.
+                {
+                    const QStringList cols = lines.first().simplified().split(' ');
+                    if(cols.size() >= 2 && cols.at(1) == "part")
+                        return cols.at(0);
+                }
+
+                // Otherwise pick the first partition child.
+                for(const QString& line : lines)
+                {
+                    const QStringList cols = line.simplified().split(' ');
+                    if(cols.size() >= 2 && cols.at(1) == "part")
+                        return cols.at(0);
+                }
+                return devNode;
+            }
+
+            static QString UnescapeMountFieldLinux(QString s)
+            {
+                // /proc/mounts uses octal escapes: \040 for space, \011 for tab, \012 for newline, \134 for backslash.
+                // This decoder is minimal but sufficient for typical mountpoints.
+                s.replace("\\040", " ");
+                s.replace("\\011", "\t");
+                s.replace("\\012", "\n");
+                s.replace("\\134", "\\");
+                return s;
+            }
+
             static QString FindMountPathForDeviceLinux(const QString& devNode)
             {
                 if(devNode.isEmpty()) return QString();
@@ -1256,6 +1323,29 @@
                 QFileInfo fi(devNode);
                 const QString Target = fi.exists() ? fi.canonicalFilePath() : devNode;
 
+                auto MatchDevice = [&](const QString& mountedDev)->bool
+                {
+                    if(mountedDev.isEmpty()) return false;
+
+                    QFileInfo mfi(mountedDev);
+                    const QString Canon = mfi.exists() ? mfi.canonicalFilePath() : mountedDev;
+
+                    if(Canon == Target)
+                        return true;
+
+                    // If we got a "disk" node but the mount is on a partition node:
+                    //   Target=/dev/sda  , Canon=/dev/sda1
+                    if(Canon.startsWith(Target))
+                        return true;
+
+                    // Or vice versa (rare but harmless):
+                    if(Target.startsWith(Canon))
+                        return true;
+
+                    return false;
+                };
+
+                // 1) Fast path: Qt's mountedVolumes
                 const auto Vols = QStorageInfo::mountedVolumes();
                 for(const QStorageInfo& V : Vols)
                 {
@@ -1263,15 +1353,63 @@
                         continue;
 
                     const QString VDev = QString::fromUtf8(V.device());
-                    if(VDev.isEmpty())
-                        continue;
-
-                    QFileInfo vfi(VDev);
-                    const QString Canon = vfi.exists() ? vfi.canonicalFilePath() : VDev;
-
-                    if(Canon == Target)
+                    if(MatchDevice(VDev))
                         return V.rootPath();
                 }
+
+                // 2) Fallback: parse /proc/self/mounts (works even when QStorageInfo lags)
+                {
+                    QFile F("/proc/self/mounts");
+                    if(!F.exists()) F.setFileName("/proc/mounts");
+                    if(F.open(QIODevice::ReadOnly | QIODevice::Text))
+                    {
+                        QTextStream TS(&F);
+                        while(!TS.atEnd())
+                        {
+                            const QString line = TS.readLine();
+                            if(line.isEmpty()) continue;
+
+                            // device mountpoint fstype options ...
+                            const QStringList cols = line.split(' ', Qt::SkipEmptyParts);
+                            if(cols.size() < 2) continue;
+
+                            const QString mdev = UnescapeMountFieldLinux(cols.at(0));
+                            const QString mnt  = UnescapeMountFieldLinux(cols.at(1));
+
+                            if(MatchDevice(mdev))
+                                return mnt;
+                        }
+                    }
+                }
+
+                // 3) Fallback: ask lsblk (useful on minimal systems)
+                {
+                    QProcess P;
+                    P.start("lsblk", {"-nrpo", "NAME,MOUNTPOINT", devNode});
+                    if(P.waitForFinished(1500) && P.exitStatus() == QProcess::NormalExit)
+                    {
+                        const QString out = QString::fromUtf8(P.readAllStandardOutput());
+                        const QStringList lines = out.split('\n', Qt::SkipEmptyParts);
+                        for(const QString& line : lines)
+                        {
+                            // NAME<space(s)>MOUNTPOINT
+                            const QString trimmed = line.trimmed();
+                            if(trimmed.isEmpty()) continue;
+
+                            // Split on first whitespace
+                            int sp = trimmed.indexOf(QRegularExpression("\\s+"));
+                            if(sp <= 0) continue;
+
+                            const QString name = trimmed.left(sp).trimmed();
+                            const QString mnt  = trimmed.mid(sp).trimmed();
+                            if(mnt.isEmpty()) continue;
+
+                            if(MatchDevice(name))
+                                return mnt;
+                        }
+                    }
+                }
+
                 return QString();
             }
 
@@ -1331,26 +1469,28 @@
             {
                 if(devNode.isEmpty()) return false;
 
+                const QString TargetNode = NormalizeToPartitionDevNodeLinux(devNode);
+
                 // 1) Try desktop-style automount (works in user session with udisks2)
                 {
                     QProcess P;
-                    P.start("udisksctl", {"mount", "-b", devNode});
-                    if(P.waitForFinished(3000) && P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0)
+                    P.start("udisksctl", {"mount", "-b", TargetNode});
+                    if(P.waitForFinished(4000) && P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0)
                         return true;
                 }
 
                 // 2) Fallback: classic mount (requires sufficient privileges, e.g., root/system service)
-                const QString mountPoint = ChooseMountPointLinux(devNode);
+                const QString mountPoint = ChooseMountPointLinux(TargetNode);
 
                 {
                     QProcess Mk;
                     Mk.start("mkdir", {"-p", mountPoint});
-                    Mk.waitForFinished(1500);
+                    Mk.waitForFinished(2000);
                 }
 
                 QProcess M;
-                M.start("mount", {devNode, mountPoint});
-                if(!M.waitForFinished(4000)) return false;
+                M.start("mount", {TargetNode, mountPoint});
+                if(!M.waitForFinished(6000)) return false;
                 return (M.exitStatus() == QProcess::NormalExit && M.exitCode() == 0);
             }
 
@@ -1663,11 +1803,11 @@
 
                 String DirPath = mountPath.toUtf8().constData();
                 DirPath = boss_normalpath(DirPath, nullptr);
-                if(DirPath.Right(1) != '/')
-                    DirPath += '/';
                 #if !BOSS_WINDOWS
                     DirPath = "Q:/" + DirPath;
                 #endif
+                if(DirPath.Right(1) != '/')
+                    DirPath += '/';
                 const qint64 FreeSpace = Storage.bytesAvailable();
                 const qint64 TotalSpace = Storage.bytesTotal();
 
