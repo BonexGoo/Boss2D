@@ -54,6 +54,7 @@
         #include <QGraphicsBlurEffect>
     #endif
 
+    #include <QProcess>
     #include <QLocalSocket>
     #include <QLocalServer>
     #include <QSharedMemory>
