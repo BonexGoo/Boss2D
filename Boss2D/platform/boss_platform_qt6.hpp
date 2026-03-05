@@ -1660,10 +1660,19 @@
             {
                 QStorageInfo Storage(mountPath);
                 Storage.refresh();
+
+                String DirPath = mountPath.toUtf8().constData();
+                DirPath = boss_normalpath(DirPath, nullptr);
+                if(DirPath.Right(1) != '/')
+                    DirPath += '/';
+                #if !BOSS_WINDOWS
+                    DirPath = "Q:/" + DirPath;
+                #endif
                 const qint64 FreeSpace = Storage.bytesAvailable();
                 const qint64 TotalSpace = Storage.bytesTotal();
-                BOSS_TRACE("USB저장장치를 연결하였습니다(%s)", mountPath.toUtf8().constData());
-                if(mView) mView->OnStorageMountedEvent(mountPath.toUtf8().constData(), FreeSpace, TotalSpace);
+
+                BOSS_TRACE("USB저장장치를 연결하였습니다(%s)", (chars) DirPath);
+                if(mView) mView->OnStorageMountedEvent(DirPath, FreeSpace, TotalSpace);
             }
 		    else if(!mounted)
             {
