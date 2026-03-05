@@ -1062,6 +1062,8 @@
                 const int FD = udev_monitor_get_fd(mMon);
                 mNotifier = new QSocketNotifier(FD, QSocketNotifier::Read, this);
                 connect(mNotifier, &QSocketNotifier::activated, this, &UsbStorageWatcher::OnUsbStorageActivated);
+                // udev does not replay already-attached devices → enumerate once
+                QTimer::singleShot(0, this, [this](){ EnumLinuxExisting(); });
             }
 
             void StopLinux()
@@ -1082,6 +1084,60 @@
                     udev_unref(mUdev);
                     mUdev = nullptr;
                 }
+            }
+
+            void EnumLinuxExisting()
+            {
+                if(!mUdev) return;
+
+                udev_enumerate* En = udev_enumerate_new(mUdev);
+                if(!En) return;
+
+                udev_enumerate_add_match_subsystem(En, "block");
+                udev_enumerate_scan_devices(En);
+
+                udev_list_entry* Devices = udev_enumerate_get_list_entry(En);
+                for(udev_list_entry* Entry = Devices; Entry; Entry = udev_list_entry_get_next(Entry))
+                {
+                    const char* SyspathC = udev_list_entry_get_name(Entry);
+                    if(!SyspathC) continue;
+
+                    udev_device* Dev = udev_device_new_from_syspath(mUdev, SyspathC);
+                    if(!Dev) continue;
+
+                    if(!IsInterestingPartition(Dev))
+                    {
+                        udev_device_unref(Dev);
+                        continue;
+                    }
+
+                    const QString DevNode = DevNodeOf(Dev); // "/dev/sda1"
+                    if(!DevNode.isEmpty())
+                    {
+                        // already mounted?
+                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
+
+                        // auto-mount may be missing in CLI → try mounting
+                        if(MountPath.isEmpty())
+                        {
+                            EnsureMountedByUdisks(DevNode);
+                            for(int i = 0; MountPath.isEmpty() && i < 12; ++i)
+                            {
+                                QThread::msleep(120);
+                                MountPath = FindMountPathForDeviceLinux(DevNode);
+                            }
+                        }
+
+                        if(!MountPath.isEmpty())
+                            mDevNodeToMountPath[DevNode] = MountPath;
+
+                        emit UsbStorageChanged(true, MountPath, DevNode);
+                    }
+
+                    udev_device_unref(Dev);
+                }
+
+                udev_enumerate_unref(En);
             }
 
         private slots:
@@ -1140,7 +1196,7 @@
                             }
                         }
                         if(!DevNode.isEmpty())
-                            TryUnmountByUdisks(DevNode);
+                            TryUnmountByUdisks(DevNode, OldMountPath);
                         emit UsbStorageChanged(false, OldMountPath, DevNode);
                     }
 
@@ -1219,22 +1275,106 @@
                 return QString();
             }
 
+            static QString SanitizeMountName(QString s)
+            {
+                if(s.isEmpty()) return s;
+                // allow [A-Za-z0-9._-], replace others with '_'
+                for(int i = 0; i < s.length(); ++i)
+                {
+                    const QChar c = s.at(i);
+                    const bool ok =
+                        (c >= 'a' && c <= 'z') ||
+                        (c >= 'A' && c <= 'Z') ||
+                        (c >= '0' && c <= '9') ||
+                        c == '.' || c == '_' || c == '-';
+                    if(!ok) s[i] = '_';
+                }
+                // prevent empty/awkward names
+                s = s.trimmed();
+                if(s.isEmpty()) s = "usb";
+                return s;
+            }
+
+            static QString BlkidValue(const QString& devNode, const QString& key)
+            {
+                if(devNode.isEmpty()) return QString();
+                QProcess P;
+                P.start("blkid", {"-o", "value", "-s", key, devNode});
+                if(!P.waitForFinished(1500)) return QString();
+                if(P.exitStatus() != QProcess::NormalExit) return QString();
+                return QString::fromUtf8(P.readAllStandardOutput()).trimmed();
+            }
+
+            static QString ChooseMountPointLinux(const QString& devNode)
+            {
+                // Prefer LABEL, then UUID suffix
+                QString label = SanitizeMountName(BlkidValue(devNode, "LABEL"));
+                if(label.isEmpty()) label = "usb";
+
+                QString base = "/mnt";
+                QString name = "usb_" + label;
+                QString path = base + "/" + name;
+
+                // Avoid collisions (multi-USB)
+                for(int i = 0; i < 32; ++i)
+                {
+                    const QString candidate = (i == 0) ? path : (path + "_" + QString::number(i + 1));
+                    QFileInfo fi(candidate);
+                    if(!fi.exists() || fi.isDir())
+                        return candidate;
+                }
+                // fallback
+                return "/mnt/usb";
+            }
+
             static bool EnsureMountedByUdisks(const QString& devNode)
             {
                 if(devNode.isEmpty()) return false;
-                QProcess P;
-                P.start("udisksctl", {"mount", "-b", devNode});
-                if(!P.waitForFinished(8000)) return false;
-                return (P.exitStatus() == QProcess::NormalExit);
+
+                // 1) Try desktop-style automount (works in user session with udisks2)
+                {
+                    QProcess P;
+                    P.start("udisksctl", {"mount", "-b", devNode});
+                    if(P.waitForFinished(3000) && P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0)
+                        return true;
+                }
+
+                // 2) Fallback: classic mount (requires sufficient privileges, e.g., root/system service)
+                const QString mountPoint = ChooseMountPointLinux(devNode);
+
+                {
+                    QProcess Mk;
+                    Mk.start("mkdir", {"-p", mountPoint});
+                    Mk.waitForFinished(1500);
+                }
+
+                QProcess M;
+                M.start("mount", {devNode, mountPoint});
+                if(!M.waitForFinished(4000)) return false;
+                return (M.exitStatus() == QProcess::NormalExit && M.exitCode() == 0);
             }
 
-            static bool TryUnmountByUdisks(const QString& devNode)
+            static bool TryUnmountByUdisks(const QString& devNode, const QString& mountPathHint)
             {
-                if(devNode.isEmpty()) return false;
-                QProcess P;
-                P.start("udisksctl", {"unmount", "-b", devNode});
-                if(!P.waitForFinished(8000)) return false;
-                return (P.exitStatus() == QProcess::NormalExit);
+                if(devNode.isEmpty() && mountPathHint.isEmpty()) return false;
+
+                // 1) Try udisksctl first
+                if(!devNode.isEmpty())
+                {
+                    QProcess P;
+                    P.start("udisksctl", {"unmount", "-b", devNode});
+                    if(P.waitForFinished(3000) && P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0)
+                        return true;
+                }
+
+                // 2) Fallback: umount by mount path or dev node
+                QString target = !mountPathHint.isEmpty() ? mountPathHint : devNode;
+                if(target.isEmpty()) return false;
+
+                QProcess U;
+                U.start("umount", {target});
+                if(!U.waitForFinished(4000)) return false;
+                return (U.exitStatus() == QProcess::NormalExit && U.exitCode() == 0);
             }
         #endif
     };
