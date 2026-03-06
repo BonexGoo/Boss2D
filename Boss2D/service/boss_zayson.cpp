@@ -199,7 +199,14 @@ namespace BOSS
                 Parser::GetFloat<double>((chars) Value, Value.Length(), &FloatOffset);
                 if(FloatOffset == Value.Length())
                     CurSolver.Parse(Value);
-                else CurSolver.Parse(String::Format("\"%s\"", (chars) Value));
+                else
+                {
+                    sint32 HexOffset = 0;
+                    Parser::GetHex32<uint64>((chars) Value, Value.Length(), &HexOffset);
+                    if(HexOffset == Value.Length())
+                        CurSolver.Parse(Value);
+                    else CurSolver.Parse(String::Format("\"%s\"", (chars) Value));
+                }
             }
             CurSolver.Execute(true);
         }
