@@ -705,7 +705,9 @@ namespace BOSS
 
     const Image::Patcher* Image::UpdatePatchBy(sint32 w, sint32 h) const
     {
-        auto& CurPatcher = m_patcher[w][h];
+        const sint32 Width = Math::Max(0, w);
+        const sint32 Height = Math::Max(0, h);
+        auto& CurPatcher = m_patcher[Width][Height];
         if(CurPatcher.Enabled()) return &CurPatcher;
         if(CurPatcher.Disabled()) return nullptr;
 
@@ -723,7 +725,7 @@ namespace BOSS
             const sint32 SrcEnd = Math::Max(PatchR(), GetImageWidth());
             SrcFixationSizeW = SrcEnd - SrcBegin - PatchSumWidth();
             DstBeginW = SrcBegin - L();
-            DstEndW = w + SrcEnd - R();
+            DstEndW = Width + SrcEnd - R();
             DstSizeW = DstEndW - DstBeginW;
             if(0 < DstSizeW)
             {
@@ -738,7 +740,7 @@ namespace BOSS
             const sint32 SrcEnd = Math::Max(PatchB(), GetImageHeight());
             SrcFixationSizeH = SrcEnd - SrcBegin - PatchSumHeight();
             DstBeginH = SrcBegin - T();
-            DstEndH = h + SrcEnd - B();
+            DstEndH = Height + SrcEnd - B();
             DstSizeH = DstEndH - DstBeginH;
             if(0 < DstSizeH)
             {

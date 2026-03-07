@@ -1138,15 +1138,26 @@
             return (id_image_read) &ScreenshotPixmap;
         }
 
-        id_image_read Platform::Utility::GetWindowImage(const rect128& rect, float blur)
+        id_image_read Platform::Utility::GetWindowImage(const rect128& rect, float blur, bool use_repaint)
         {
             QPixmap& WindowPixmap = *BOSS_STORAGE_SYS(QPixmap);
             const bool HasBlur = (0.0f < blur);
             const sint32 BlurBorder = (HasBlur)? Math::Ceil(blur) : 0;
             const sint32 LogicalWidth = rect.r - rect.l;
             const sint32 LogicalHeight = rect.b - rect.t;
-            QPixmap GrabPixmap = g_window->grab(QRect(rect.l - BlurBorder, rect.t - BlurBorder,
-                LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2));
+
+            QPixmap GrabPixmap;
+            if(use_repaint)
+                GrabPixmap = g_window->grab(QRect(rect.l - BlurBorder, rect.t - BlurBorder,
+                    LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2));
+            else if(QScreen* Screen = g_window->windowHandle()->screen())
+            {
+                const QRect ScreenGeo = Screen->geometry();
+                const QPoint GlobalPos = g_window->mapToGlobal(QPoint(rect.l - BlurBorder, rect.t - BlurBorder));            
+                GrabPixmap = Screen->grabWindow(0, GlobalPos.x() - ScreenGeo.x(), GlobalPos.y() - ScreenGeo.y(),
+                    LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2);
+            }
+
             const sint32 PhysicalWidth = GrabPixmap.width();
             const sint32 PhysicalHeight = GrabPixmap.height();
             if(HasBlur)

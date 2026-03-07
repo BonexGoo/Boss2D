@@ -571,8 +571,9 @@ public:
         /// @brief 윈도우에 그려진 이미지 얻기
         /// @param rect : 스크린영역(px)
         /// @param blur : 블러수준(필요없으면 0.0f)
+        /// @param use_repaint : 재출력방식 사용여부
         /// @return 만든 이미지(nullptr은 실패)
-        static id_image_read GetWindowImage(const rect128& rect, float blur = 0.0f);
+        static id_image_read GetWindowImage(const rect128& rect, float blur = 0.0f, bool use_repaint = true);
 
         /// @brief 이미지로부터 비트맵 얻기
         /// @param image : 이미지

@@ -775,6 +775,12 @@
             return nullptr;
         }
 
+        id_image_read Platform::Utility::GetWindowImage(const rect128& rect, float blur, bool use_repaint)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
         id_bitmap Platform::Utility::ImageToBitmap(id_image_read image, orientationtype ori)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

@@ -395,7 +395,7 @@
         }
         void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
-            // for assert dialog's recursive call
+            // Assert등에서 재귀가 일어난 경우
             if(CanvasClass::enabled()) return;
             CanvasClass Canvas(this);
             if(mViewManager)
