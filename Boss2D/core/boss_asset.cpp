@@ -112,233 +112,236 @@ public:
     }
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// AssetEmbeddedFileClass
-class AssetEmbeddedFileClass : public AssetClass
-{
-public:
-    AssetEmbeddedFileClass() {m_embedded_file = nullptr; m_pos = 0;}
-    ~AssetEmbeddedFileClass() override {}
+#define BOSS_COMPILER_DATA_LENGTH_MAX 40000
+#if BOSS_NEED_EMBEDDED_ASSET
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetEmbeddedFileClass
+    class AssetEmbeddedFileClass : public AssetClass
+    {
+    public:
+        AssetEmbeddedFileClass() {m_embedded_file = nullptr; m_pos = 0;}
+        ~AssetEmbeddedFileClass() override {}
 
-public:
-    sint32 Size() override
-    {
-        return m_embedded_file->mSize;
-    }
-    sint32 Skip(const sint32 size) override
-    {
-        m_pos = Math::Clamp(m_pos + size, 0, m_embedded_file->mSize);
-        return m_pos;
-    }
-    static void SearchAsset(chars pathname, Platform::File::SearchCB cb, payload data)
-    {
-        const sint32 PathLen = boss_strlen(pathname);
-        for(sint32 i = 0; i < BOSS_EMBEDDED_ASSET_COUNT; ++i)
+    public:
+        sint32 Size() override
         {
-            const String& CurPath = gSortedEmbeddedFiles[i].mPath;
-            if(!String::CompareNoCase(CurPath, pathname, PathLen))
+            return m_embedded_file->mSize;
+        }
+        sint32 Skip(const sint32 size) override
+        {
+            m_pos = Math::Clamp(m_pos + size, 0, m_embedded_file->mSize);
+            return m_pos;
+        }
+        static void SearchAsset(chars pathname, Platform::File::SearchCB cb, payload data)
+        {
+            const sint32 PathLen = boss_strlen(pathname);
+            for(sint32 i = 0; i < BOSS_EMBEDDED_ASSET_COUNT; ++i)
             {
-                const String& FileName = CurPath.Offset(PathLen);
-                if(FileName.Find(0, "/") == -1)
-                    cb(FileName, data);
+                const String& CurPath = gSortedEmbeddedFiles[i].mPath;
+                if(!String::CompareNoCase(CurPath, pathname, PathLen))
+                {
+                    const String& FileName = CurPath.Offset(PathLen);
+                    if(FileName.Find(0, "/") == -1)
+                        cb(FileName, data);
+                }
             }
         }
-    }
-    static void SearchCache(chars pathname, Platform::File::SearchCB cb, payload data)
-    {
-        struct Payload
+        static void SearchCache(chars pathname, Platform::File::SearchCB cb, payload data)
         {
-            chars mPathName;
-            const boss_size_t mPathLen;
-            Platform::File::SearchCB mCB;
-            payload mData;
-        };
-        Payload OnePayload {pathname, boss_strlen(pathname), cb, data};
-
-        gEmbeddedCaches.AccessByCallback(
-            [](const MapPath* path, EmbeddedFile* file, payload data)->void
+            struct Payload
             {
-                auto& CurPayload = *((Payload*) data);
-                const String& CurPath = file->mPath;
-                if(!String::CompareNoCase(CurPath, CurPayload.mPathName, CurPayload.mPathLen))
+                chars mPathName;
+                const boss_size_t mPathLen;
+                Platform::File::SearchCB mCB;
+                payload mData;
+            };
+            Payload OnePayload {pathname, boss_strlen(pathname), cb, data};
+
+            gEmbeddedCaches.AccessByCallback(
+                [](const MapPath* path, EmbeddedFile* file, payload data)->void
                 {
-                    const String& FileName = CurPath.Offset(CurPayload.mPathLen);
-                    if(FileName.Find(0, "/") == -1)
-                        CurPayload.mCB(FileName, CurPayload.mData);
-                }
-            }, &OnePayload);
-    }
-
-protected:
-    static EmbeddedFile* MatchAsset(chars pathname)
-    {
-        // 이진탐색
-        const String PathName = String(pathname).Lower();
-        sint32 iLow = 0, iHigh = BOSS_EMBEDDED_ASSET_COUNT - 1;
-        while(iLow <= iHigh)
-        {
-            const sint32 i = (iLow + iHigh) / 2;
-            const sint32 Result = PathName.Compare(gSortedEmbeddedFiles[i].mPath);
-            if(Result == 0)
-                return &gSortedEmbeddedFiles[i];
-            else if(Result < 0)
-                iHigh = i - 1;
-            else iLow = i + 1;
+                    auto& CurPayload = *((Payload*) data);
+                    const String& CurPath = file->mPath;
+                    if(!String::CompareNoCase(CurPath, CurPayload.mPathName, CurPayload.mPathLen))
+                    {
+                        const String& FileName = CurPath.Offset(CurPayload.mPathLen);
+                        if(FileName.Find(0, "/") == -1)
+                            CurPayload.mCB(FileName, CurPayload.mData);
+                    }
+                }, &OnePayload);
         }
-        return nullptr;
-    }
-    static EmbeddedFile* MatchCache(chars pathname, bool forced)
-    {
-        const String PathName = String(pathname).Lower();
-        if(auto FindedCache = gEmbeddedCaches.Access(PathName))
-            return FindedCache;
 
-        // 캐시생성
-        if(forced)
+    protected:
+        static EmbeddedFile* MatchAsset(chars pathname)
         {
-            auto& NewCache = gEmbeddedCaches(PathName);
-            NewCache.mPath = (chars) PathName;
-            NewCache.mBuffer = Buffer::Alloc(BOSS_DBG 256);
-            NewCache.mPages = new bytes[1] {(bytes) NewCache.mBuffer};
-            NewCache.mSize = 0;
-            NewCache.mCTime = 0;
-            NewCache.mATime = 0;
-            NewCache.mMTime = 0;
-            return &NewCache;
+            // 이진탐색
+            const String PathName = String(pathname).Lower();
+            sint32 iLow = 0, iHigh = BOSS_EMBEDDED_ASSET_COUNT - 1;
+            while(iLow <= iHigh)
+            {
+                const sint32 i = (iLow + iHigh) / 2;
+                const sint32 Result = PathName.Compare(gSortedEmbeddedFiles[i].mPath);
+                if(Result == 0)
+                    return &gSortedEmbeddedFiles[i];
+                else if(Result < 0)
+                    iHigh = i - 1;
+                else iLow = i + 1;
+            }
+            return nullptr;
         }
-        return nullptr;
-    }
-
-protected:
-    EmbeddedFile* m_embedded_file;
-    sint32 m_pos;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// AssetEmbeddedReadFileClass
-class AssetEmbeddedReadFileClass : public AssetEmbeddedFileClass
-{
-public:
-    static AssetClass* CreateForAsset(chars pathname)
-    {
-        if(auto OneFile = MatchAsset(pathname))
+        static EmbeddedFile* MatchCache(chars pathname, bool forced)
         {
-            auto Result = new AssetEmbeddedReadFileClass();
-            Result->m_embedded_file = OneFile;
+            const String PathName = String(pathname).Lower();
+            if(auto FindedCache = gEmbeddedCaches.Access(PathName))
+                return FindedCache;
+
+            // 캐시생성
+            if(forced)
+            {
+                auto& NewCache = gEmbeddedCaches(PathName);
+                NewCache.mPath = (chars) PathName;
+                NewCache.mBuffer = Buffer::Alloc(BOSS_DBG 256);
+                NewCache.mPages = new bytes[1] {(bytes) NewCache.mBuffer};
+                NewCache.mSize = 0;
+                NewCache.mCTime = 0;
+                NewCache.mATime = 0;
+                NewCache.mMTime = 0;
+                return &NewCache;
+            }
+            return nullptr;
+        }
+
+    protected:
+        EmbeddedFile* m_embedded_file;
+        sint32 m_pos;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetEmbeddedReadFileClass
+    class AssetEmbeddedReadFileClass : public AssetEmbeddedFileClass
+    {
+    public:
+        static AssetClass* CreateForAsset(chars pathname)
+        {
+            if(auto OneFile = MatchAsset(pathname))
+            {
+                auto Result = new AssetEmbeddedReadFileClass();
+                Result->m_embedded_file = OneFile;
+                return Result;
+            }
+            return nullptr;
+        }
+        static AssetClass* CreateForCache(chars pathname)
+        {
+            if(auto OneFile = MatchCache(pathname, false))
+            {
+                auto Result = new AssetEmbeddedReadFileClass();
+                Result->m_embedded_file = OneFile;
+                return Result;
+            }
+            return nullptr;
+        }
+        static bool ExistForAsset(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+        {
+            if(auto OneFile = MatchAsset(pathname))
+            {
+                if(size) *size = OneFile->mSize;
+                if(ctime) *ctime = OneFile->mCTime;
+                if(atime) *atime = OneFile->mATime;
+                if(mtime) *mtime = OneFile->mMTime;
+                return true;
+            }
+            return false;
+        }
+        static bool ExistForCache(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+        {
+            if(auto OneFile = MatchCache(pathname, false))
+            {
+                if(size) *size = OneFile->mSize;
+                if(ctime) *ctime = OneFile->mCTime;
+                if(atime) *atime = OneFile->mATime;
+                if(mtime) *mtime = OneFile->mMTime;
+                return true;
+            }
+            return false;
+        }
+
+    public:
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            // 포커스정보 갱신
+            sint32 ReadSize = Math::Min(size, m_embedded_file->mSize - m_pos);
+            sint32 PageIndex = m_pos / BOSS_COMPILER_DATA_LENGTH_MAX;
+            sint32 PageOffset = m_pos % BOSS_COMPILER_DATA_LENGTH_MAX;
+            const sint32 Result = ReadSize;
+
+            // 페이지를 돌며 버퍼읽기
+            while(0 < ReadSize)
+            {
+                const sint32 CopySize = Math::Min(ReadSize, BOSS_COMPILER_DATA_LENGTH_MAX - PageOffset);
+                Memory::Copy(data, m_embedded_file->mPages[PageIndex] + PageOffset, CopySize);
+                data += CopySize;
+                ReadSize -= CopySize;
+                PageIndex++;
+                PageOffset = 0;
+            }
+            m_pos += Result;
             return Result;
         }
-        return nullptr;
-    }
-    static AssetClass* CreateForCache(chars pathname)
-    {
-        if(auto OneFile = MatchCache(pathname, false))
+        sint32 Write(bytes data, const sint32 size) override
         {
-            auto Result = new AssetEmbeddedReadFileClass();
-            Result->m_embedded_file = OneFile;
-            return Result;
+            return 0;
         }
-        return nullptr;
-    }
-    static bool ExistForAsset(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
-    {
-        if(auto OneFile = MatchAsset(pathname))
-        {
-            if(size) *size = OneFile->mSize;
-            if(ctime) *ctime = OneFile->mCTime;
-            if(atime) *atime = OneFile->mATime;
-            if(mtime) *mtime = OneFile->mMTime;
-            return true;
-        }
-        return false;
-    }
-    static bool ExistForCache(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
-    {
-        if(auto OneFile = MatchCache(pathname, false))
-        {
-            if(size) *size = OneFile->mSize;
-            if(ctime) *ctime = OneFile->mCTime;
-            if(atime) *atime = OneFile->mATime;
-            if(mtime) *mtime = OneFile->mMTime;
-            return true;
-        }
-        return false;
-    }
+    };
 
-public:
-    sint32 Read(uint08* data, const sint32 size) override
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetEmbeddedWriteFileClass
+    class AssetEmbeddedWriteFileClass : public AssetEmbeddedFileClass
     {
-        // 포커스정보 갱신
-        sint32 ReadSize = Math::Min(size, m_embedded_file->mSize - m_pos);
-        sint32 PageIndex = m_pos / BOSS_EMBEDDED_ASSET_PAGE;
-        sint32 PageOffset = m_pos % BOSS_EMBEDDED_ASSET_PAGE;
-        const sint32 Result = ReadSize;
-
-        // 페이지를 돌며 버퍼읽기
-        while(0 < ReadSize)
+    public:
+        static AssetClass* Create(chars pathname)
         {
-            const sint32 CopySize = Math::Min(ReadSize, BOSS_EMBEDDED_ASSET_PAGE - PageOffset);
-            Memory::Copy(data, m_embedded_file->mPages[PageIndex] + PageOffset, CopySize);
-            data += CopySize;
-            ReadSize -= CopySize;
-            PageIndex++;
-            PageOffset = 0;
+            if(auto OneFile = MatchCache(pathname, true))
+            {
+                auto Result = new AssetEmbeddedWriteFileClass();
+                Result->m_embedded_file = OneFile;
+                return Result;
+            }
+            return nullptr;
         }
-        m_pos += Result;
-        return Result;
-    }
-    sint32 Write(bytes data, const sint32 size) override
-    {
-        return 0;
-    }
-};
 
-////////////////////////////////////////////////////////////////////////////////
-// AssetEmbeddedWriteFileClass
-class AssetEmbeddedWriteFileClass : public AssetEmbeddedFileClass
-{
-public:
-    static AssetClass* Create(chars pathname)
-    {
-        if(auto OneFile = MatchCache(pathname, true))
+    public:
+        sint32 Read(uint08* data, const sint32 size) override
         {
-            auto Result = new AssetEmbeddedWriteFileClass();
-            Result->m_embedded_file = OneFile;
-            return Result;
+            return 0;
         }
-        return nullptr;
-    }
-
-public:
-    sint32 Read(uint08* data, const sint32 size) override
-    {
-        return 0;
-    }
-    sint32 Write(bytes data, const sint32 size) override
-    {
-        // 버퍼확장
-        const sint32 NewBufferSize = m_embedded_file->mSize + size;
-        sint32 CurBufferSize = Buffer::CountOf(m_embedded_file->mBuffer);
-        if(CurBufferSize < NewBufferSize)
+        sint32 Write(bytes data, const sint32 size) override
         {
-            // 버퍼 재구성
-            do {CurBufferSize *= 2;}
-            while(CurBufferSize < NewBufferSize);
-            m_embedded_file->mBuffer =
-                Buffer::Realloc(BOSS_DBG m_embedded_file->mBuffer, CurBufferSize);
-            // 페이지 재구성
-            delete[] m_embedded_file->mPages;
-            const sint32 NumPages = (CurBufferSize + BOSS_EMBEDDED_ASSET_PAGE - 1) / BOSS_EMBEDDED_ASSET_PAGE;
-            m_embedded_file->mPages = new bytes[NumPages];
-            for(sint32 i = 0; i < NumPages; ++i)
-                m_embedded_file->mPages[i] = ((bytes) m_embedded_file->mBuffer) + BOSS_EMBEDDED_ASSET_PAGE * i;
+            // 버퍼확장
+            const sint32 NewBufferSize = m_embedded_file->mSize + size;
+            sint32 CurBufferSize = Buffer::CountOf(m_embedded_file->mBuffer);
+            if(CurBufferSize < NewBufferSize)
+            {
+                // 버퍼 재구성
+                do {CurBufferSize *= 2;}
+                while(CurBufferSize < NewBufferSize);
+                m_embedded_file->mBuffer =
+                    Buffer::Realloc(BOSS_DBG m_embedded_file->mBuffer, CurBufferSize);
+                // 페이지 재구성
+                delete[] m_embedded_file->mPages;
+                const sint32 NumPages = (CurBufferSize + BOSS_COMPILER_DATA_LENGTH_MAX - 1) / BOSS_COMPILER_DATA_LENGTH_MAX;
+                m_embedded_file->mPages = new bytes[NumPages];
+                for(sint32 i = 0; i < NumPages; ++i)
+                    m_embedded_file->mPages[i] = ((bytes) m_embedded_file->mBuffer) + BOSS_COMPILER_DATA_LENGTH_MAX * i;
+            }
+            // 버퍼쓰기
+            Memory::Copy(((uint08*) m_embedded_file->mBuffer)
+                + m_embedded_file->mSize, data, size);
+            m_embedded_file->mSize += size;
+            return size;
         }
-        // 버퍼쓰기
-        Memory::Copy(((uint08*) m_embedded_file->mBuffer)
-            + m_embedded_file->mSize, data, size);
-        m_embedded_file->mSize += size;
-        return size;
-    }
-};
+    };
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetPathClass
@@ -477,10 +480,10 @@ namespace BOSS
             String GenText;
             GenText += "#include <boss.hpp>\n";
             GenText += "\n";
-            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_COUNT Signed64(%lld)\n", info("data")("count").GetInt());
-            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_SIZE  Signed64(%lld)\n", info("data")("size").GetInt());
-            GenText += String::Format("#define BOSS_EMBEDDED_ASSET_TIME  Signed64(%lld)\n", info("data")("time").GetInt());
-            GenText += "#define BOSS_EMBEDDED_ASSET_PAGE  40000\n";
+            GenText += "#if BOSS_NEED_EMBEDDED_ASSET\n";
+            GenText += String::Format("    #define BOSS_EMBEDDED_ASSET_COUNT Signed64(%lld)\n", info("data")("count").GetInt());
+            GenText += String::Format("    #define BOSS_EMBEDDED_ASSET_SIZE  Signed64(%lld)\n", info("data")("size").GetInt());
+            GenText += String::Format("    #define BOSS_EMBEDDED_ASSET_TIME  Signed64(%lld)\n", info("data")("time").GetInt());
             GenText += "\n";
             // 스트링비우기
             Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
@@ -491,7 +494,7 @@ namespace BOSS
             for(sint32 i = 0, iend = info("files").LengthOfIndexable(); i < iend; ++i)
             {
                 auto& CurFile = info("files")[i];
-                GenText += String::Format("static bytes ASSETS_%s = (bytes) // %s (%lldbytes, modified at %lld)",
+                GenText += String::Format("    static bytes ASSETS_%s = (bytes) // %s (%lldbytes, modified at %lld)",
                     (chars) CurFile("id").GetText(), (chars) CurFile("path").GetText(),
                     CurFile("size").GetInt(), CurFile("time").GetInt());
 
@@ -500,7 +503,7 @@ namespace BOSS
                 if(auto BinFile = Platform::File::OpenForRead(CurFile("path").GetText()))
                 {
                     if(Platform::File::Size(BinFile) == 0)
-                        GenText += "\n    \"\"";
+                        GenText += "\n        \"\"";
                     else
                     {
                         // 데이터 쓰기도구
@@ -519,7 +522,7 @@ namespace BOSS
                         while(sint32 DataSize = Platform::File::Read(BinFile, Data, LineSize))
                         {
                             // 빠른 16진수 쓰기
-                            GenText += "\n    \"";
+                            GenText += "\n        \"";
                             for(sint32 j = 0; j < DataSize; ++j)
                             {
                                 const uint08& CurData = Data[j];
@@ -533,7 +536,7 @@ namespace BOSS
                             GenText += "\"";
 
                             // 컴파일러의 스트링길이 한계에 따른 스트링상수의 파트분리
-                            if(BOSS_EMBEDDED_ASSET_PAGE < (WrittenSize += DataSize) + LineSize)
+                            if(BOSS_COMPILER_DATA_LENGTH_MAX < (WrittenSize += DataSize) + LineSize)
                             {
                                 CurPartCount++;
                                 WrittenSize = 0;
@@ -559,25 +562,25 @@ namespace BOSS
             }
 
             // 파일인스턴스
-            GenText += "struct EmbeddedFile {\n";
-            GenText += "    String mPath;\n";
-            GenText += "    buffer mBuffer;\n";
-            GenText += "    bytes* mPages;\n";
-            GenText += "    uint64 mSize;\n";
-            GenText += "    uint64 mCTime;\n";
-            GenText += "    uint64 mATime;\n";
-            GenText += "    uint64 mMTime;\n";
-            GenText += "    ~EmbeddedFile() {\n";
-            GenText += "        Buffer::Free(mBuffer);\n";
-            GenText += "        delete[] mPages;\n";
-            GenText += "    }\n";
-            GenText += "};\n";
+            GenText += "    struct EmbeddedFile {\n";
+            GenText += "        String mPath;\n";
+            GenText += "        buffer mBuffer;\n";
+            GenText += "        bytes* mPages;\n";
+            GenText += "        uint64 mSize;\n";
+            GenText += "        uint64 mCTime;\n";
+            GenText += "        uint64 mATime;\n";
+            GenText += "        uint64 mMTime;\n";
+            GenText += "        ~EmbeddedFile() {\n";
+            GenText += "            Buffer::Free(mBuffer);\n";
+            GenText += "            delete[] mPages;\n";
+            GenText += "        }\n";
+            GenText += "    };\n";
             GenText += "\n";
 
-            GenText += "static Map<EmbeddedFile> gEmbeddedCaches;\n";
-            GenText += "static EmbeddedFile gSortedEmbeddedFiles[] = {\n";
+            GenText += "    static Map<EmbeddedFile> gEmbeddedCaches;\n";
+            GenText += "    static EmbeddedFile gSortedEmbeddedFiles[] = {\n";
             if(info("files").LengthOfIndexable() == 0)
-                GenText += "    {\"\", nullptr, nullptr, 0, 0, 0, 0}\n";
+                GenText += "        {\"\", nullptr, nullptr, 0, 0, 0, 0}\n";
             else
             {
                 // 파일정렬
@@ -619,12 +622,13 @@ namespace BOSS
                         for(sint32 i = 0; i < CurPartCount; ++i)
                             PageList += String::Format(", ASSETS_%s_PART%d", (chars) CurFile("id").GetText(), i + 1);
                         // 구조체구성
-                        *CurPayload.mGenText += String::Format("    {\"%s\", nullptr, new bytes[%d] {%s},\n", (chars) CurPath, CurPartCount + 1, (chars) PageList);
-                        *CurPayload.mGenText += String::Format("        Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
+                        *CurPayload.mGenText += String::Format("        {\"%s\", nullptr, new bytes[%d] {%s},\n", (chars) CurPath, CurPartCount + 1, (chars) PageList);
+                        *CurPayload.mGenText += String::Format("            Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu), Unsigned64(%llu)}%s\n",
                             CurSize, CurCTime, CurATime, CurMTime, (++CurPayload.mFocus < CurPayload.mCount)? "," : "");
                     }, (payload) &OnePayload);
             }
-            GenText += "};\n";
+            GenText += "    };\n";
+            GenText += "#endif\n";
 
             // 남은 스트링쓰기
             Platform::File::Write(GenFile, (bytes)(chars) GenText, GenText.Length());
