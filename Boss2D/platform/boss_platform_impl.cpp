@@ -1316,4 +1316,46 @@ namespace BOSS
             }
         }
     }
+
+    sint32 Calc::XAlignCode(UIAlign align)
+    {
+        sint32 XAlignCode = 0;
+        switch(align)
+        {
+        case UIA_LeftTop:    XAlignCode = 0; break; case UIA_CenterTop:    XAlignCode = 1; break; case UIA_RightTop:    XAlignCode = 2; break;
+        case UIA_LeftMiddle: XAlignCode = 0; break; case UIA_CenterMiddle: XAlignCode = 1; break; case UIA_RightMiddle: XAlignCode = 2; break;
+        case UIA_LeftBottom: XAlignCode = 0; break; case UIA_CenterBottom: XAlignCode = 1; break; case UIA_RightBottom: XAlignCode = 2; break;
+        }
+        return XAlignCode;
+    }
+
+    sint32 Calc::YAlignCode(UIAlign align)
+    {
+        sint32 YAlignCode = 0;
+        switch(align)
+        {
+        case UIA_LeftTop:    YAlignCode = 0; break; case UIA_CenterTop:    YAlignCode = 0; break; case UIA_RightTop:    YAlignCode = 0; break;
+        case UIA_LeftMiddle: YAlignCode = 1; break; case UIA_CenterMiddle: YAlignCode = 1; break; case UIA_RightMiddle: YAlignCode = 1; break;
+        case UIA_LeftBottom: YAlignCode = 2; break; case UIA_CenterBottom: YAlignCode = 2; break; case UIA_RightBottom: YAlignCode = 2; break;
+        }
+        return YAlignCode;
+    }
+
+    Point Calc::AlignedPoint(UIAlign align, float w, float h, float dx, float dy)
+    {
+        const sint32 XCode = XAlignCode(align);
+        const sint32 YCode = YAlignCode(align);
+        const float X = ((XCode == 0)? dx : ((XCode == 1)? dx + w / 2 - w : dx - w));
+        const float Y = ((YCode == 0)? dy : ((YCode == 1)? dy + h / 2 - h : dy - h));
+        return Point(X, Y);
+    }
+
+    Rect Calc::AlignedRect(UIAlign align, float w, float h, float dw, float dh)
+    {
+        const sint32 XCode = XAlignCode(align);
+        const sint32 YCode = YAlignCode(align);
+        const float X = ((XCode == 0)? 0 : ((XCode == 1)? (dw - w) / 2 : dw - w));
+        const float Y = ((YCode == 0)? 0 : ((YCode == 1)? (dh - h) / 2 : dh - h));
+        return Rect(X, Y, X + w, Y + h);
+    }
 }

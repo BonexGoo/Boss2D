@@ -2,6 +2,7 @@
 #include <boss.hpp>
 #include <element/boss_color.hpp>
 #include <element/boss_point.hpp>
+#include <element/boss_rect.hpp>
 #include <element/boss_vector.hpp>
 
 namespace BOSS
@@ -2360,6 +2361,15 @@ public:
         /// @see TryNextSound
         static const float* GetSoundData(id_microphone microphone, sint32* count = nullptr, sint32* channel = nullptr, uint64* timems = nullptr);
     };
+};
+
+class Calc
+{
+public:
+    static sint32 XAlignCode(UIAlign align);
+    static sint32 YAlignCode(UIAlign align);
+    static Point AlignedPoint(UIAlign align, float w, float h, float dx, float dy);
+    static Rect AlignedRect(UIAlign align, float w, float h, float dw, float dh);
 };
 
 }

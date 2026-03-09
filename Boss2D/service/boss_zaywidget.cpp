@@ -385,23 +385,8 @@ namespace BOSS
                 auto H = pay.Param(1).ToInteger();
                 auto Align = pay.ParamToUIAlign(2, HasError);
                 auto Scissor = (pay.ParamCount() < 4)? false : pay.ParamToBool(3, HasError);
-                sint32 XAlignCode = 0;
-                switch(Align)
-                {
-                case UIA_LeftTop:    XAlignCode = 0; break; case UIA_CenterTop:    XAlignCode = 1; break; case UIA_RightTop:    XAlignCode = 2; break;
-                case UIA_LeftMiddle: XAlignCode = 0; break; case UIA_CenterMiddle: XAlignCode = 1; break; case UIA_RightMiddle: XAlignCode = 2; break;
-                case UIA_LeftBottom: XAlignCode = 0; break; case UIA_CenterBottom: XAlignCode = 1; break; case UIA_RightBottom: XAlignCode = 2; break;
-                }
-                sint32 YAlignCode = 0;
-                switch(Align)
-                {
-                case UIA_LeftTop:    YAlignCode = 0; break; case UIA_CenterTop:    YAlignCode = 0; break; case UIA_RightTop:    YAlignCode = 0; break;
-                case UIA_LeftMiddle: YAlignCode = 1; break; case UIA_CenterMiddle: YAlignCode = 1; break; case UIA_RightMiddle: YAlignCode = 1; break;
-                case UIA_LeftBottom: YAlignCode = 2; break; case UIA_CenterBottom: YAlignCode = 2; break; case UIA_RightBottom: YAlignCode = 2; break;
-                }
-                const sint32 X = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (panel.w() - W) / 2 : panel.w() - W));
-                const sint32 Y = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (panel.h() - H) / 2 : panel.h() - H));
-                return panel._push_clip_ui(X, Y, X + W, Y + H, Scissor, pay.UIName(), pay.MakeGesture());
+                return panel._push_clip_ui_by_rect(Calc::AlignedRect(Align, W, H, panel.w(), panel.h()),
+                    Scissor, pay.UIName(), pay.MakeGesture());
             },
             "[W:0]"
             "[H:0]"

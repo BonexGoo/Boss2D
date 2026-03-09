@@ -561,40 +561,12 @@ namespace BOSS
         return false;
     }
 
-    static inline sint32 GetXAlignCode(UIAlign align)
-    {
-        sint32 XAlignCode = 0;
-        switch(align)
-        {
-        case UIA_LeftTop:    XAlignCode = 0; break; case UIA_CenterTop:    XAlignCode = 1; break; case UIA_RightTop:    XAlignCode = 2; break;
-        case UIA_LeftMiddle: XAlignCode = 0; break; case UIA_CenterMiddle: XAlignCode = 1; break; case UIA_RightMiddle: XAlignCode = 2; break;
-        case UIA_LeftBottom: XAlignCode = 0; break; case UIA_CenterBottom: XAlignCode = 1; break; case UIA_RightBottom: XAlignCode = 2; break;
-        }
-        return XAlignCode;
-    }
-
-    static inline sint32 GetYAlignCode(UIAlign align)
-    {
-        sint32 YAlignCode = 0;
-        switch(align)
-        {
-        case UIA_LeftTop:    YAlignCode = 0; break; case UIA_CenterTop:    YAlignCode = 0; break; case UIA_RightTop:    YAlignCode = 0; break;
-        case UIA_LeftMiddle: YAlignCode = 1; break; case UIA_CenterMiddle: YAlignCode = 1; break; case UIA_RightMiddle: YAlignCode = 1; break;
-        case UIA_LeftBottom: YAlignCode = 2; break; case UIA_CenterBottom: YAlignCode = 2; break; case UIA_RightBottom: YAlignCode = 2; break;
-        }
-        return YAlignCode;
-    }
-
     ZayPanel::InsideBinder ZayPanel::icon(const Image& image, UIAlign align, float degree, bool visible)
     {
         if(!image.HasBitmap())
             return InsideBinder(nullptr); // 안쪽영역없음
-
         const Clip& LastClip = m_stack_clip[-1];
-        const sint32 XAlignCode = GetXAlignCode(align);
-        const sint32 YAlignCode = GetYAlignCode(align);
-        const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - image.GetWidth()) / 2 : LastClip.Width() - image.GetWidth()));
-        const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - image.GetHeight()) / 2 : LastClip.Height() - image.GetHeight()));
+        const Rect AlignedRect = Calc::AlignedRect(align, image.GetWidth(), image.GetHeight(), LastClip.Width(), LastClip.Height());
 
         if(visible)
         {
@@ -606,15 +578,15 @@ namespace BOSS
             auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
             auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
             Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
-                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                LastClip.l + AlignedRect.l - image.L(), LastClip.t + AlignedRect.t - image.T(),
                 image.GetImageWidth(), image.GetImageHeight(), degree, Math::Min(LastColor.a, 128) / 128.0);
         }
 
         if(image.HasChild())
         {
             rect128 NewRect;
-            NewRect.l = LastClip.l + DstX;
-            NewRect.t = LastClip.t + DstY;
+            NewRect.l = LastClip.l + AlignedRect.l;
+            NewRect.t = LastClip.t + AlignedRect.t;
             NewRect.r = NewRect.l + image.GetWidth();
             NewRect.b = NewRect.t + image.GetHeight();
             return InsideBinder(&image, NewRect);
@@ -626,12 +598,8 @@ namespace BOSS
     {
         if(!image.HasBitmap())
             return InsideBinder(nullptr); // 안쪽영역없음
-
         const Clip& LastClip = m_stack_clip[-1];
-        const sint32 XAlignCode = GetXAlignCode(align);
-        const sint32 YAlignCode = GetYAlignCode(align);
-        const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + image.GetWidth() / 2 - image.GetWidth() : x - image.GetWidth()));
-        const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + image.GetHeight() / 2 - image.GetHeight() : y - image.GetHeight()));
+        const Point AlignedPoint = Calc::AlignedPoint(align, image.GetWidth(), image.GetHeight(), x, y);
 
         if(visible)
         {
@@ -643,15 +611,15 @@ namespace BOSS
             auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
             auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
             Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
-                LastClip.l + DstX - image.L(), LastClip.t + DstY - image.T(),
+                LastClip.l + AlignedPoint.x - image.L(), LastClip.t + AlignedPoint.y - image.T(),
                 image.GetImageWidth(), image.GetImageHeight(), degree, Math::Min(LastColor.a, 128) / 128.0);
         }
 
         if(image.HasChild())
         {
             rect128 NewRect;
-            NewRect.l = LastClip.l + DstX;
-            NewRect.t = LastClip.t + DstY;
+            NewRect.l = LastClip.l + AlignedPoint.x;
+            NewRect.t = LastClip.t + AlignedPoint.y;
             NewRect.r = NewRect.l + image.GetWidth();
             NewRect.b = NewRect.t + image.GetHeight();
             return InsideBinder(&image, NewRect);
@@ -662,32 +630,26 @@ namespace BOSS
     ZayPanel::InsideBinder ZayPanel::iconNative(id_image_read image, UIAlign align, float degree)
     {
         const Clip& LastClip = m_stack_clip[-1];
-        const sint32 XAlignCode = GetXAlignCode(align);
-        const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const sint32 DstX = ((XAlignCode == 0)? 0 : ((XAlignCode == 1)? (LastClip.Width() - ImageWidth) / 2 : LastClip.Width() - ImageWidth));
-        const sint32 DstY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - ImageHeight) / 2 : LastClip.Height() - ImageHeight));
+        const Rect AlignedRect = Calc::AlignedRect(align, ImageWidth, ImageHeight, LastClip.Width(), LastClip.Height());
 
         const Color& LastColor = m_stack_color[-1];
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
-            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
+            LastClip.l + AlignedRect.l, LastClip.t + AlignedRect.t, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
     ZayPanel::InsideBinder ZayPanel::iconNative(float x, float y, id_image_read image, UIAlign align, float degree)
     {
         const Clip& LastClip = m_stack_clip[-1];
-        const sint32 XAlignCode = GetXAlignCode(align);
-        const sint32 YAlignCode = GetYAlignCode(align);
         const sint32 ImageWidth = Platform::Graphics::GetImageWidth(image);
         const sint32 ImageHeight = Platform::Graphics::GetImageHeight(image);
-        const sint32 DstX = ((XAlignCode == 0)? x : ((XAlignCode == 1)? x + ImageWidth / 2 - ImageWidth : x - ImageWidth));
-        const sint32 DstY = ((YAlignCode == 0)? y : ((YAlignCode == 1)? y + ImageHeight / 2 - ImageHeight : y - ImageHeight));
+        const Point AlignedPoint = Calc::AlignedPoint(align, ImageWidth, ImageHeight, x, y);
 
         const Color& LastColor = m_stack_color[-1];
         Platform::Graphics::DrawImage(image, 0, 0, ImageWidth, ImageHeight,
-            LastClip.l + DstX, LastClip.t + DstY, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
+            LastClip.l + AlignedPoint.x, LastClip.t + AlignedPoint.y, ImageWidth, ImageHeight, degree, Math::Min(LastColor.a, 128) / 128.0);
         return InsideBinder(nullptr); // 안쪽영역없음
     }
 
@@ -805,26 +767,13 @@ namespace BOSS
     {
         if(!image.HasBitmap()) return;
 
-        sint32 XAlignCode = 0;
-        switch(align)
-        {
-        case UIA_LeftTop:    XAlignCode = 0; break; case UIA_CenterTop:    XAlignCode = 1; break; case UIA_RightTop:    XAlignCode = 2; break;
-        case UIA_LeftMiddle: XAlignCode = 0; break; case UIA_CenterMiddle: XAlignCode = 1; break; case UIA_RightMiddle: XAlignCode = 2; break;
-        case UIA_LeftBottom: XAlignCode = 0; break; case UIA_CenterBottom: XAlignCode = 1; break; case UIA_RightBottom: XAlignCode = 2; break;
-        }
-        sint32 YAlignCode = 0;
-        switch(align)
-        {
-        case UIA_LeftTop:    YAlignCode = 0; break; case UIA_CenterTop:    YAlignCode = 0; break; case UIA_RightTop:    YAlignCode = 0; break;
-        case UIA_LeftMiddle: YAlignCode = 1; break; case UIA_CenterMiddle: YAlignCode = 1; break; case UIA_RightMiddle: YAlignCode = 1; break;
-        case UIA_LeftBottom: YAlignCode = 2; break; case UIA_CenterBottom: YAlignCode = 2; break; case UIA_RightBottom: YAlignCode = 2; break;
-        }
-
+        const sint32 XCode = Calc::XAlignCode(align);
+        const sint32 YCode = Calc::YAlignCode(align);
         const Clip& LastClip = m_stack_clip[-1];
-        const float DstXAdd = (XAlignCode == 0)? 0 : ((XAlignCode == 1)?
+        const float DstXAdd = (XCode == 0)? 0 : ((XCode == 1)?
             Math::Mod((LastClip.Width() + image.GetWidth()) * 0.5f, image.GetWidth()) - image.GetWidth() :
             Math::Mod(LastClip.Width(), image.GetWidth()) - image.GetWidth());
-        const float DstYAdd = (YAlignCode == 0)? 0 : ((YAlignCode == 1)?
+        const float DstYAdd = (YCode == 0)? 0 : ((YCode == 1)?
             Math::Mod((LastClip.Height() + image.GetHeight()) * 0.5f, image.GetHeight()) - image.GetHeight() :
             Math::Mod(LastClip.Height(), image.GetHeight()) - image.GetHeight());
         const sint32 XCount = (sint32) ((LastClip.Width() + image.GetWidth() - DstXAdd) / image.GetWidth());
@@ -950,12 +899,12 @@ namespace BOSS
         bool UsedElide = false;
         if(0 < LineTexts.Count())
         {
+            const sint32 XCode = Calc::XAlignCode(align);
+            const sint32 YCode = Calc::YAlignCode(align);
             const sint32 TextHeight = Platform::Graphics::GetStringHeight();
             const sint32 SumTextHeight = (TextHeight + linegap) * LineTexts.Count() - linegap;
-            const sint32 XAlignCode = GetXAlignCode(align);
-            const sint32 YAlignCode = GetYAlignCode(align);
-            const UIFontAlign AlignX = ((XAlignCode == 0)? UIFA_LeftTop : ((XAlignCode == 1)? UIFA_CenterTop : UIFA_RightTop));
-            sint32 AddY = ((YAlignCode == 0)? 0 : ((YAlignCode == 1)? (LastClip.Height() - SumTextHeight) / 2 : LastClip.Height() - SumTextHeight));
+            const UIFontAlign AlignX = ((XCode == 0)? UIFA_LeftTop : ((XCode == 1)? UIFA_CenterTop : UIFA_RightTop));
+            sint32 AddY = ((YCode == 0)? 0 : ((YCode == 1)? (LastClip.Height() - SumTextHeight) / 2 : LastClip.Height() - SumTextHeight));
             for(sint32 i = 0, iend = LineTexts.Count(); i < iend; ++i)
             {
                 auto& CurLineText = LineTexts[i];
