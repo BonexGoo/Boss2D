@@ -1622,6 +1622,14 @@ public:
     class Sound
     {
     public:
+        /// @brief 버퍼방식 사운드열기
+        /// @param data : 읽어올 데이터
+        /// @param size : 데이터의 길이
+        /// @param loop : 루프방식여부
+        /// @return 사운드ID
+        /// @see Close
+        static id_sound OpenForData(bytes data, sint32 size, bool loop = false);
+
         /// @brief 파일방식 사운드열기
         /// @param filename : 파일명
         /// @param loop : 루프방식여부

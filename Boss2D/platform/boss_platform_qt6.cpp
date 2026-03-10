@@ -3101,75 +3101,123 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* NewSound = new SoundClass(data, size, loop);
+                return (id_sound) NewSound;
+            #else
+                return nullptr;
+            #endif
+        }
+
         id_sound Platform::Sound::OpenForFile(chars filename, bool loop)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            #ifdef QT_HAVE_MULTIMEDIA
+                BOSS_ASSERT("해당 사운드파일이 존재하지 않습니다", Platform::File::Exist(filename));
+                SoundClass* NewSound = new SoundClass(filename, loop, false);
+                return (id_sound) NewSound;
+            #else
+                return nullptr;
+            #endif
         }
 
         id_sound Platform::Sound::OpenForUrl(chars url, bool loop)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* NewSound = new SoundClass(url, loop, true);
+                return (id_sound) NewSound;
+            #else
+                return nullptr;
+            #endif
         }
 
         id_sound Platform::Sound::OpenForStream(sint32 channel, sint32 sample_rate, sint32 sample_size)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return nullptr;
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* NewSound = new SoundClass(channel, sample_rate, sample_size);
+                return (id_sound) NewSound;
+            #else
+                return nullptr;
+            #endif
         }
 
         void Platform::Sound::Close(id_sound sound)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* OldSound = (SoundClass*) sound;
+                delete OldSound;
+            #endif
         }
 
         void Platform::Sound::SetVolume(id_sound sound, float volume, sint32 apply_msec)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return;
+                CurSound->SetVolume(volume, apply_msec);
+            #endif
         }
 
         bool Platform::Sound::ApplyVolumeOnce(id_sound sound)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return false;
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return false;
+                return CurSound->ApplyVolumeOnce();
+            #else
+                return false;
+            #endif
         }
 
         void Platform::Sound::Play(id_sound sound)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return;
+                CurSound->Play();
+            #endif
         }
 
         void Platform::Sound::Stop(id_sound sound)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return;
+                CurSound->Stop();
+            #endif
         }
 
         bool Platform::Sound::NowPlaying(id_sound sound)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(CurSound)
+                    return CurSound->NowPlaying();
+            #endif
             return false;
         }
 
         sint32 Platform::Sound::AddStreamForPlay(id_sound sound, bytes raw, sint32 size, sint32 timeout)
         {
-            BOSS_ASSERT("Further development is needed.", false);
-            return -1;
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(CurSound)
+                    return CurSound->AddStreamForPlay(raw, size, timeout);
+            #endif
+            return false;
         }
 
         void Platform::Sound::StopAll()
         {
-            BOSS_ASSERT("Further development is needed.", false);
         }
 
         void Platform::Sound::PauseAll()
         {
-            BOSS_ASSERT("Further development is needed.", false);
         }
 
         void Platform::Sound::ResumeAll()
         {
-            BOSS_ASSERT("Further development is needed.", false);
         }
 
         ////////////////////////////////////////////////////////////////////////////////

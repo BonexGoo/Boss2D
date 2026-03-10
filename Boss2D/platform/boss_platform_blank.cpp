@@ -1966,6 +1966,12 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
         id_sound Platform::Sound::OpenForFile(chars filename, bool loop)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

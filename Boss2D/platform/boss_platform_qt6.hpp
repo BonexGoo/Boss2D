@@ -94,6 +94,15 @@
         #endif
     #endif
 
+    #ifdef QT_HAVE_MULTIMEDIA
+        #include <QMediaPlayer>
+        #include <QAudioOutput>
+        #include <QAudioSink>
+        #include <QAudioFormat>
+        #include <QMediaDevices>
+        #include <QIODevice>
+    #endif
+
     #if BOSS_WINDOWS
         #include <Windows.h>
         #include <Dbt.h>
@@ -1987,6 +1996,225 @@
         ClockClass* m_next;
         sint64 m_laptime;
     };
+
+    #ifdef QT_HAVE_MULTIMEDIA
+        class SoundClass
+        {
+        public:
+            SoundClass(bytes data, sint32 size, bool loop)
+            {
+                m_player = new QMediaPlayer();
+                m_player_output = new QAudioOutput();
+                m_player->setAudioOutput(m_player_output);
+                auto NewData = new QBuffer(m_player);
+                NewData->setData((const char*) data, size);
+                NewData->open(QIODevice::ReadOnly);
+                m_player->setSourceDevice(NewData);
+                m_player->setLoops((loop)? QMediaPlayer::Infinite : 1);
+            }
+            SoundClass(chars path, bool loop, bool url_or_file)
+            {
+                m_player = new QMediaPlayer();
+                m_player_output = new QAudioOutput();
+                m_player->setAudioOutput(m_player_output);
+                const QUrl SourceUrl = (url_or_file)?
+                    QUrl(QString::fromUtf8(path)) : QUrl::fromLocalFile(QString::fromUtf8(path));
+                m_player->setSource(SourceUrl);
+                m_player->setLoops((loop)? QMediaPlayer::Infinite : 1);
+                ApplyVolumeToBackend(m_volume_pos);
+            }
+            SoundClass(sint32 channel, sint32 sample_rate, sint32 sample_size)
+            {
+                QAudioFormat format;
+                format.setChannelCount(channel);
+                format.setSampleRate(sample_rate);
+                format.setSampleFormat(ToSampleFormat(sample_size));
+                m_sink = new QAudioSink(format);
+                const int bytesPerSample = SampleBytes(format.sampleFormat());
+                const int bufferBytes = Math::Max(1, sample_rate * channel * bytesPerSample / 10);
+                m_sink->setBufferSize(bufferBytes);
+                m_outputmutex = Mutex::Open();
+                ApplyVolumeToBackend(m_volume_pos);
+            }
+            ~SoundClass()
+            {
+                Stop();
+                delete m_player;
+                delete m_player_output;
+                delete m_sink;
+                if(m_outputmutex)
+                    Mutex::Close(m_outputmutex);
+            }
+
+        public:
+            void SetVolume(float volume, sint32 apply_msec)
+            {
+                const sint32 NewVolume = Math::Clamp(100 * volume, 0, 100);
+                if(apply_msec <= 0 || m_volume_pos == NewVolume)
+                {
+                    m_volume_pos = NewVolume;
+                    m_volume_target = NewVolume;
+                    m_volume_pos_msec = 0;
+                    m_volume_target_msec = 0;
+                    ApplyVolumeToBackend(m_volume_pos);
+                }
+                else
+                {
+                    m_volume_target = NewVolume;
+                    m_volume_pos_msec = Platform::Utility::CurrentTimeMsec();
+                    m_volume_target_msec = m_volume_pos_msec + apply_msec;
+                }
+            }
+            sint32 CalcedVolume() const
+            {
+                if(m_volume_target_msec == 0)
+                    return m_volume_pos;
+                const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+                const float Rate = Math::ClampF((CurMsec - m_volume_pos_msec) / float(m_volume_target_msec - m_volume_pos_msec), 0, 1);
+                return m_volume_pos * (1 - Rate) + m_volume_target * Rate;
+            }
+            bool ApplyVolumeOnce()
+            {
+                if(m_volume_target_msec == 0)
+                    return false;
+                const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+                if(m_volume_target_msec <= CurMsec)
+                {
+                    m_volume_pos = m_volume_target;
+                    m_volume_pos_msec = 0;
+                    m_volume_target_msec = 0;
+                    ApplyVolumeToBackend(m_volume_pos);
+                    return false;
+                }
+                ApplyVolumeToBackend(CalcedVolume());
+                return true;
+            }
+            void Play()
+            {
+                branch;
+                jump(m_player)
+                {
+                    ApplyVolumeToBackend(CalcedVolume());
+                    m_player->play();
+                }
+                jump(m_sink)
+                {
+                    if(!m_outputdevice)
+                    {
+                        Mutex::Lock(m_outputmutex);
+                        m_outputdevice = m_sink->start();
+                        Mutex::Unlock(m_outputmutex);
+                    }
+                }
+            }
+            void Stop()
+            {
+                branch;
+                jump(m_player) m_player->stop();
+                jump(m_sink)
+                {
+                    if(m_outputdevice)
+                    {
+                        Mutex::Lock(m_outputmutex);
+                        m_sink->stop();
+                        m_outputdevice = nullptr;
+                        Mutex::Unlock(m_outputmutex);
+                    }
+                }
+            }
+            bool NowPlaying()
+            {
+                branch;
+                jump(m_player)
+                {
+                    if(m_player->playbackState() == QMediaPlayer::PlayingState)
+                        return true;
+                }
+                jump(m_sink)
+                {
+                    if(m_outputdevice && m_sink->state() == QtAudio::ActiveState)
+                        return true;
+                }
+                return false;
+            }
+            sint32 AddStreamForPlay(bytes raw, sint32 size, sint32 timeout)
+            {
+                Mutex::Lock(m_outputmutex);
+                qint64 WrittenBytes = -1;
+                if(m_outputdevice)
+                    WrittenBytes = m_outputdevice->write((const char*) raw, size);
+                Mutex::Unlock(m_outputmutex);
+
+                if(WrittenBytes < 0)
+                    return -1;
+                while(WrittenBytes < size)
+                {
+                    const uint64 BeginMsec = Platform::Utility::CurrentTimeMsec();
+                    while(Platform::Utility::CurrentTimeMsec() < BeginMsec + (uint64) timeout)
+                    {
+                        Platform::Utility::Sleep(1, false, false, true);
+                        raw += WrittenBytes;
+                        size -= (sint32) WrittenBytes;
+
+                        Mutex::Lock(m_outputmutex);
+                        WrittenBytes = -1;
+                        if(m_outputdevice)
+                            WrittenBytes = m_outputdevice->write((const char*) raw, size);
+                        Mutex::Unlock(m_outputmutex);
+
+                        if(WrittenBytes < 0)
+                            return -1;
+                        if(WrittenBytes == size)
+                            return CalcedVolume();
+                    }
+                    return -1; // Timeout
+                }
+                return CalcedVolume();
+            }
+
+        private:
+            static QAudioFormat::SampleFormat ToSampleFormat(sint32 sample_size)
+            {
+                switch(sample_size)
+                {
+                case 8:  return QAudioFormat::UInt8; // Qt6에는 Int8 직접 enum 없음
+                case 16: return QAudioFormat::Int16;
+                case 32: return QAudioFormat::Int32;
+                }
+                return QAudioFormat::Unknown;
+            }
+            static sint32 SampleBytes(QAudioFormat::SampleFormat fmt)
+            {
+                switch(fmt)
+                {
+                case QAudioFormat::UInt8: return 1;
+                case QAudioFormat::Int16: return 2;
+                case QAudioFormat::Int32: return 4;
+                case QAudioFormat::Float: return 4;
+                }
+                return 2;
+            }
+            void ApplyVolumeToBackend(sint32 volume_0_100)
+            {
+                const qreal QtVolume = Math::ClampF(volume_0_100 / 100.0f, 0.0f, 1.0f);
+                if(m_player_output)
+                    m_player_output->setVolume(QtVolume);
+                if(m_sink)
+                    m_sink->setVolume(QtVolume);
+            }
+
+        private:
+            sint32 m_volume_pos {100};
+            sint32 m_volume_target {100};
+            uint64 m_volume_pos_msec {0};
+            uint64 m_volume_target_msec {0};
+            QMediaPlayer* m_player {nullptr};
+            QAudioOutput* m_player_output {nullptr};
+            QAudioSink* m_sink {nullptr};
+            QIODevice* m_outputdevice {nullptr};
+            id_mutex m_outputmutex {nullptr};
+        };
+    #endif
 
     #if !BOSS_WASM
         typedef QSharedMemory SharedMemoryClass;

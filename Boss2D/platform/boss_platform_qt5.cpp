@@ -4068,6 +4068,12 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
         id_sound Platform::Sound::OpenForFile(chars filename, bool loop)
         {
             #ifdef QT_HAVE_MULTIMEDIA
