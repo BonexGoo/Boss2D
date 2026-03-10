@@ -95,11 +95,13 @@
     #endif
 
     #ifdef QT_HAVE_MULTIMEDIA
+        #include <QtMultimedia>
         #include <QMediaPlayer>
+        #include <QMediaDevices>
         #include <QAudioOutput>
         #include <QAudioSink>
         #include <QAudioFormat>
-        #include <QMediaDevices>
+        #include <QAudioDevice>
         #include <QIODevice>
     #endif
 
@@ -2132,7 +2134,7 @@
                 }
                 jump(m_sink)
                 {
-                    if(m_outputdevice && m_sink->state() == QtAudio::ActiveState)
+                    if(m_outputdevice && m_sink->state() == QAudio::ActiveState)
                         return true;
                 }
                 return false;
