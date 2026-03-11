@@ -1966,6 +1966,12 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        Strings Platform::Sound::GetAllNames(String* spec)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return Strings();
+        }
+
         id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
@@ -1991,6 +1997,11 @@
         }
 
         void Platform::Sound::Close(id_sound sound)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
+        void Platform::Sound::SetDevice(id_sound sound, sint32 deviceindex)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }

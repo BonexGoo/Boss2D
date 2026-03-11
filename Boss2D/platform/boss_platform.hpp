@@ -1622,6 +1622,11 @@ public:
     class Sound
     {
     public:
+        /// @brief 사운드장치 리스팅
+        /// @param spec : json형태로 사운드장치들의 스펙을 받음(선택사항)
+        /// @return 존재하는 모든 사운드장치이름
+        static Strings GetAllNames(String* spec = nullptr);
+
         /// @brief 버퍼방식 사운드열기
         /// @param data : 읽어올 데이터
         /// @param size : 데이터의 길이
@@ -1657,7 +1662,12 @@ public:
         /// @see Open
         static void Close(id_sound sound);
 
-        /// @brief 전체볼륨지정
+        /// @brief 장치지정
+        /// @param sound : 사운드ID
+        /// @param deviceindex : 장치인덱스
+        static void SetDevice(id_sound sound, sint32 deviceindex);
+
+        /// @brief 볼륨지정
         /// @param sound : 사운드ID
         /// @param volume : 볼륨크기(0.0f~1.0f)
         /// @param apply_msec : 적용시간(밀리초)

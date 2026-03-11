@@ -3101,6 +3101,14 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        Strings Platform::Sound::GetAllNames(String* spec)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                return SoundClass::EnumDevice(spec);
+            #endif
+            return Strings();
+        }
+
         id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
         {
             #ifdef QT_HAVE_MULTIMEDIA
@@ -3147,6 +3155,15 @@
             #ifdef QT_HAVE_MULTIMEDIA
                 SoundClass* OldSound = (SoundClass*) sound;
                 delete OldSound;
+            #endif
+        }        
+
+        void Platform::Sound::SetDevice(id_sound sound, sint32 deviceindex)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                SoundClass* CurSound = (SoundClass*) sound;
+                if(!CurSound) return;
+                CurSound->SetDevice(deviceindex);
             #endif
         }
 

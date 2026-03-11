@@ -2038,6 +2038,12 @@
         ////////////////////////////////////////////////////////////////////////////////
         // SOUND
         ////////////////////////////////////////////////////////////////////////////////
+        Strings Platform::Sound::GetAllNames(String* spec)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return Strings();
+        }
+
         id_sound Platform::Sound::OpenForData(bytes data, sint32 size, bool loop)
         {
             BOSS_ASSERT("Further development is needed.", false);
@@ -2063,6 +2069,11 @@
         }
 
         void Platform::Sound::Close(id_sound sound)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        void Platform::Sound::SetDevice(id_sound sound, sint32 deviceindex)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

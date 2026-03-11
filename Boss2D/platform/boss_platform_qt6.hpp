@@ -2003,6 +2003,33 @@
         class SoundClass
         {
         public:
+            static Strings EnumDevice(String* spec)
+            {
+                Strings Result;
+                Context SpecCollector;
+                const QList<QAudioDevice>& AllDevices = QMediaDevices::audioOutputs();
+                foreach(const auto& CurDevice, AllDevices)
+                {
+                    Result.AtAdding() = CurDevice.description().toUtf8().constData();
+                    if(spec)
+                    {
+                        Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
+                        NewChild.At("description").Set(CurDevice.description().toUtf8().constData());
+                        NewChild.At("is_default").Set((CurDevice.isDefault())? "1" : "0");
+                        if(CurDevice.mode() == QAudioDevice::Input) NewChild.At("mode").Set("input");
+                        else if(CurDevice.mode() == QAudioDevice::Output) NewChild.At("mode").Set("output");
+                        NewChild.At("min_samplerate").Set(String::FromInteger(CurDevice.minimumSampleRate()));
+                        NewChild.At("max_samplerate").Set(String::FromInteger(CurDevice.maximumSampleRate()));
+                        NewChild.At("min_channelcount").Set(String::FromInteger(CurDevice.minimumChannelCount()));
+                        NewChild.At("max_channelcount").Set(String::FromInteger(CurDevice.maximumChannelCount()));
+                    }
+                }
+                if(spec)
+                    *spec = SpecCollector.SaveJson(*spec);
+                return Result;
+            }
+
+        public:
             SoundClass(bytes data, sint32 size, bool loop)
             {
                 m_player = new QMediaPlayer();
@@ -2049,6 +2076,18 @@
             }
 
         public:
+            void SetDevice(sint32 deviceindex)
+            {
+                const QList<QAudioDevice>& AllDevices = QMediaDevices::audioOutputs();
+                foreach(const auto& CurDevice, AllDevices)
+                {
+                    if(0 == deviceindex--)
+                    {
+                        m_player_output->setDevice(CurDevice);
+                        break;
+                    }
+                }
+            }
             void SetVolume(float volume, sint32 apply_msec)
             {
                 const sint32 NewVolume = Math::Clamp(100 * volume, 0, 100);
