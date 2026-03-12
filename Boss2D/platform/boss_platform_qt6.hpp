@@ -2044,9 +2044,17 @@
                 m_player = new QMediaPlayer();
                 m_player_output = new QAudioOutput();
                 m_player->setAudioOutput(m_player_output);
-                const QUrl SourceUrl = (url_or_file)?
-                    QUrl(QString::fromUtf8(path)) : QUrl::fromLocalFile(QString::fromUtf8(path));
-                m_player->setSource(SourceUrl);
+                if(url_or_file)
+                {
+                    const QUrl UrlPath = QUrl(QString::fromUtf8(path));
+                    m_player->setSource(UrlPath);
+                }
+                else
+                {
+                    const String PathUTF8 = PlatformImpl::Core::NormalPath(path);
+                    const QUrl FilePath = QUrl(QString::fromUtf8((chars) PathUTF8));
+                    m_player->setSource(FilePath);
+                }
                 m_player->setLoops((loop)? QMediaPlayer::Infinite : 1);
                 ApplyVolumeToBackend(m_volume_pos);
             }
