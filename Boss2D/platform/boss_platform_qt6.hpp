@@ -2016,8 +2016,6 @@
                         Context& NewChild = SpecCollector.At(SpecCollector.LengthOfIndexable());
                         NewChild.At("description").Set(CurDevice.description().toUtf8().constData());
                         NewChild.At("is_default").Set((CurDevice.isDefault())? "1" : "0");
-                        if(CurDevice.mode() == QAudioDevice::Input) NewChild.At("mode").Set("input");
-                        else if(CurDevice.mode() == QAudioDevice::Output) NewChild.At("mode").Set("output");
                         NewChild.At("min_samplerate").Set(String::FromInteger(CurDevice.minimumSampleRate()));
                         NewChild.At("max_samplerate").Set(String::FromInteger(CurDevice.maximumSampleRate()));
                         NewChild.At("min_channelcount").Set(String::FromInteger(CurDevice.minimumChannelCount()));
