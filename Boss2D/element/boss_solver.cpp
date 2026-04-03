@@ -1193,163 +1193,164 @@ namespace BOSS
         mOperandTop = SolverOperandObject();
         SolverOperandObject* OperandFocus = nullptr;
         bool OperatorTurn = false;
-        for(sint32 deep = 0; *formula; ++formula)
+        chars CurCode = formula;
+        for(sint32 deep = 0; *CurCode; ++CurCode)
         {
             // 공백과 괄호
             branch;
-            jump(*formula == ' ');
-            jump(*formula == '\t');
-            jump(*formula == '\r');
-            jump(*formula == '\n');
-            jump(*formula == '(') deep++;
-            jump(*formula == ')') deep--;
+            jump(*CurCode == ' ');
+            jump(*CurCode == '\t');
+            jump(*CurCode == '\r');
+            jump(*CurCode == '\n');
+            jump(*CurCode == '(') deep++;
+            jump(*CurCode == ')') deep--;
             jump(OperatorTurn) // 연산기호턴
             {
                 // 연산항 밀어넣기
                 branch;
-                jump(*formula == '+') AddOperator(OperandFocus, SolverOperatorType::Addition, deep);
-                jump(*formula == '-') AddOperator(OperandFocus, SolverOperatorType::Subtract, deep);
-                jump(*formula == '*') AddOperator(OperandFocus, SolverOperatorType::Multiply, deep);
-                jump(*formula == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
-                jump(*formula == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
-                jump(*formula == '&') AddOperator(OperandFocus, SolverOperatorType::BitAnd, deep);
-                jump(*formula == '|') AddOperator(OperandFocus, SolverOperatorType::BitOr, deep);
-                jump(*formula == '^') AddOperator(OperandFocus, SolverOperatorType::BitXor, deep);
-                jump(*formula == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
-                jump(*formula == '?') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
-                jump(*formula == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
-                jump(*formula == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
-                jump(*formula == '<')
+                jump(*CurCode == '+') AddOperator(OperandFocus, SolverOperatorType::Addition, deep);
+                jump(*CurCode == '-') AddOperator(OperandFocus, SolverOperatorType::Subtract, deep);
+                jump(*CurCode == '*') AddOperator(OperandFocus, SolverOperatorType::Multiply, deep);
+                jump(*CurCode == '/') AddOperator(OperandFocus, SolverOperatorType::Divide, deep);
+                jump(*CurCode == '%') AddOperator(OperandFocus, SolverOperatorType::Remainder, deep);
+                jump(*CurCode == '&') AddOperator(OperandFocus, SolverOperatorType::BitAnd, deep);
+                jump(*CurCode == '|') AddOperator(OperandFocus, SolverOperatorType::BitOr, deep);
+                jump(*CurCode == '^') AddOperator(OperandFocus, SolverOperatorType::BitXor, deep);
+                jump(*CurCode == '@') AddOperator(OperandFocus, SolverOperatorType::Variabler, deep);
+                jump(*CurCode == '?') AddOperator(OperandFocus, SolverOperatorType::Commenter, deep);
+                jump(*CurCode == '~') AddOperator(OperandFocus, SolverOperatorType::RangeTarget, deep);
+                jump(*CurCode == ':') AddOperator(OperandFocus, SolverOperatorType::RangeTimer, deep);
+                jump(*CurCode == '<')
                 {
-                    if(formula[1] == '<')
+                    if(CurCode[1] == '<')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::BitShiftL, deep);
-                        formula += 1;
+                        CurCode += 1;
                     }
-                    else if(formula[1] == '=')
+                    else if(CurCode[1] == '=')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::GreaterOrEqual, deep);
-                        formula += 1;
+                        CurCode += 1;
                     }
                     else AddOperator(OperandFocus, SolverOperatorType::Greater, deep);
                 }
-                jump(*formula == '>')
+                jump(*CurCode == '>')
                 {
-                    if(formula[1] == '>')
+                    if(CurCode[1] == '>')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::BitShiftR, deep);
-                        formula += 1;
+                        CurCode += 1;
                     }
-                    else if(formula[1] == '=')
+                    else if(CurCode[1] == '=')
                     {
                         AddOperator(OperandFocus, SolverOperatorType::LessOrEqual, deep);
-                        formula += 1;
+                        CurCode += 1;
                     }
                     else AddOperator(OperandFocus, SolverOperatorType::Less, deep);
                 }
-                jump(formula[0] == '=' && formula[1] == '=')
+                jump(CurCode[0] == '=' && CurCode[1] == '=')
                 {
                     AddOperator(OperandFocus, SolverOperatorType::Equal, deep);
-                    formula += 1;
+                    CurCode += 1;
                 }
-                jump(formula[0] == '!' && formula[1] == '=')
+                jump(CurCode[0] == '!' && CurCode[1] == '=')
                 {
                     AddOperator(OperandFocus, SolverOperatorType::Different, deep);
-                    formula += 1;
+                    CurCode += 1;
                 }
-                jump(*formula == '[')
+                jump(*CurCode == '[')
                 {
                     branch;
-                    jump(!String::Compare("[min]", formula, 5))
+                    jump(!String::Compare("[min]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Min, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[max]", formula, 5))
+                    jump(!String::Compare("[max]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Max, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[abs]", formula, 5))
+                    jump(!String::Compare("[abs]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Abs, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[pow]", formula, 5))
+                    jump(!String::Compare("[pow]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Pow, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[cos]", formula, 5))
+                    jump(!String::Compare("[cos]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Cos, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[sin]", formula, 5))
+                    jump(!String::Compare("[sin]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Sin, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[tan]", formula, 5))
+                    jump(!String::Compare("[tan]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Tan, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[atan]", formula, 6))
+                    jump(!String::Compare("[atan]", CurCode, 6))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Atan, deep);
-                        formula += 6 - 1;
+                        CurCode += 6 - 1;
                     }
-                    jump(!String::Compare("[and]", formula, 5))
+                    jump(!String::Compare("[and]", CurCode, 5))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_And, deep);
-                        formula += 5 - 1;
+                        CurCode += 5 - 1;
                     }
-                    jump(!String::Compare("[or]", formula, 4))
+                    jump(!String::Compare("[or]", CurCode, 4))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Or, deep);
-                        formula += 4 - 1;
+                        CurCode += 4 - 1;
                     }
-                    jump(!String::Compare("[multiply]", formula, 10))
+                    jump(!String::Compare("[multiply]", CurCode, 10))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Multiply, deep);
-                        formula += 10 - 1;
+                        CurCode += 10 - 1;
                     }
-                    jump(!String::Compare("[divide]", formula, 8))
+                    jump(!String::Compare("[divide]", CurCode, 8))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Divide, deep);
-                        formula += 8 - 1;
+                        CurCode += 8 - 1;
                     }
-                    jump(!String::Compare("[find]", formula, 6))
+                    jump(!String::Compare("[find]", CurCode, 6))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Find, deep);
-                        formula += 6 - 1;
+                        CurCode += 6 - 1;
                     }
-                    jump(!String::Compare("[truncate]", formula, 10))
+                    jump(!String::Compare("[truncate]", CurCode, 10))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Truncate, deep);
-                        formula += 10 - 1;
+                        CurCode += 10 - 1;
                     }
                     else
                     {
-                        BOSS_ASSERT(String::Format("알 수 없는 함수기호입니다([%c%c...)", formula[1], formula[2]), false);
+                        BOSS_ASSERT(String::Format("알 수 없는 함수기호입니다([%c%c...)", CurCode[1], CurCode[2]), false);
                         continue;
                     }
                 }
                 else
                 {
-                    BOSS_ASSERT(String::Format("알 수 없는 연산기호입니다(%c)", *formula), false);
+                    BOSS_ASSERT(String::Format("알 수 없는 연산기호입니다(%c)", *CurCode), false);
                     continue;
                 }
 
                 // 주석처리
-                if(*formula == '?')
+                if(*CurCode == '?')
                 {
-                    chars End = formula;
+                    chars End = CurCode;
                     while(*(++End));
                     ((SolverFormula*) OperandFocus->Ptr())->mOperandR =
-                        SolverComment(String(formula + 1, End - (formula + 1))).clone();
-                    formula = End - 1;
+                        SolverComment(String(CurCode + 1, End - (CurCode + 1))).clone();
+                    CurCode = End - 1;
                 }
                 else OperatorTurn = false;
             }
@@ -1358,50 +1359,50 @@ namespace BOSS
                 buffer NewOperand = nullptr;
                 // 상수
                 branch;
-                jump(('0' <= *formula && *formula <= '9') || *formula == '+' || *formula == '-')
+                jump(('0' <= *CurCode && *CurCode <= '9') || *CurCode == '+' || *CurCode == '-')
                 {
                     sint32 IntegerSize = 0, FloatSize = 0, HexSize = 0;
-                    auto IntegerValue = Parser::GetInt<SolverValue::Integer>(formula, -1, &IntegerSize);
-                    auto FloatValue = Parser::GetFloat<SolverValue::Float>(formula, -1, &FloatSize);
-                    auto HexValue = Parser::GetHex32<uint64>(formula, -1, &HexSize);
+                    auto IntegerValue = Parser::GetInt<SolverValue::Integer>(CurCode, -1, &IntegerSize);
+                    auto FloatValue = Parser::GetFloat<SolverValue::Float>(CurCode, -1, &FloatSize);
+                    auto HexValue = Parser::GetHex32<uint64>(CurCode, -1, &HexSize);
                     if(IntegerSize < HexSize && FloatSize < HexSize)
                     {
                         NewOperand = SolverLiteral(SolverValue::MakeInteger(HexValue)).clone();
-                        formula += HexSize - 1;
+                        CurCode += HexSize - 1;
                     }
                     else if(IntegerSize < FloatSize)
                     {
                         NewOperand = SolverLiteral(SolverValue::MakeFloat(FloatValue)).clone();
-                        formula += FloatSize - 1;
+                        CurCode += FloatSize - 1;
                     }
                     else
                     {
                         NewOperand = SolverLiteral(SolverValue::MakeInteger(IntegerValue)).clone();
-                        formula += IntegerSize - 1;
+                        CurCode += IntegerSize - 1;
                     }
                 }
-                jump(*formula == '\'' || *formula == '\"')
+                jump(*CurCode == '\'' || *CurCode == '\"')
                 {
-                    chars End = formula;
+                    chars End = CurCode;
                     while(*(++End))
                     {
                         if(End[0] == '\\' && End[1] != '\0') End++;
-                        else if(*End == *formula) break;
+                        else if(*End == *CurCode) break;
                     }
-                    NewOperand = SolverLiteral(SolverValue::MakeText(String(formula + 1, End - formula - 1))).clone();
-                    formula += (End - formula - 1 + 2) - 1;
+                    NewOperand = SolverLiteral(SolverValue::MakeText(String(CurCode + 1, End - CurCode - 1))).clone();
+                    CurCode += (End - CurCode - 1 + 2) - 1;
                 }
-                jump(formula[0] == '$' && formula[1] == 'R' && formula[2] == ':')
+                jump(CurCode[0] == '$' && CurCode[1] == 'R' && CurCode[2] == ':')
                 {
-                    chars End = formula;
-                    while(*(++End)) if(*End == *formula) break;
-                    NewOperand = SolverLiteral(SolverValue::MakeRangeTime(String(formula, End - formula + 1))).clone();
-                    formula += (End - formula - 1 + 2) - 1;
+                    chars End = CurCode;
+                    while(*(++End)) if(*End == *CurCode) break;
+                    NewOperand = SolverLiteral(SolverValue::MakeRangeTime(String(CurCode, End - CurCode + 1))).clone();
+                    CurCode += (End - CurCode - 1 + 2) - 1;
                 }
                 // 변수
                 else
                 {
-                    chars End = formula - 1;
+                    chars End = CurCode - 1;
                     while(*(++End))
                     {
                         switch(*End)
@@ -1413,10 +1414,10 @@ namespace BOSS
                         }
                         break;
                     }
-                    if(0 < End - formula)
-                        NewOperand = SolverVariable(String(formula, End - formula)).clone();
+                    if(0 < End - CurCode)
+                        NewOperand = SolverVariable(String(CurCode, End - CurCode)).clone();
                     else NewOperand = SolverLiteral().clone();
-                    formula += (End - formula) - 1;
+                    CurCode += (End - CurCode) - 1;
                 }
 
                 // 피연산항 밀어넣기

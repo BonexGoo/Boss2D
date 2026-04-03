@@ -1812,10 +1812,15 @@ public:
         /// @return servent구조체
         static void* GetServByName(chars name, chars proto);
 
-        /// @brief 자신의 IP주소 얻기
+        /// @brief 자신의 내부IP주소 얻기
         /// @param ip6 : IP6주소
         /// @return IP4주소
         static ip4address GetLocalAddress(ip6address* ip6 = nullptr);
+
+        /// @brief 자신의 외부IP주소 얻기
+        /// @param ipservice : IP를 알려주는 사이트
+        /// @return IP4주소
+        static ip4address GetPublicAddress(chars ipservice = "https://api.ipify.org");
     };
 
     ////////////////////////////////////////////////////////////////////////////////

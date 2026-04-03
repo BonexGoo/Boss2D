@@ -2455,6 +2455,12 @@
             return {};
         }
 
+        ip4address Platform::Socket::GetPublicAddress(chars ipservice)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return {};
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////

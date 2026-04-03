@@ -3698,6 +3698,61 @@
             return Result;
         }
 
+        ip4address Platform::Socket::GetPublicAddress(chars ipservice)
+        {
+            ip4address Result;
+            Result.ip[0] = 127;
+            Result.ip[1] = 0;
+            Result.ip[2] = 0;
+            Result.ip[3] = 1;
+            #if !BOSS_WASM
+                QNetworkAccessManager Manager;
+                QEventLoop Loop;
+                QTimer Timer;
+                QNetworkRequest Request {QUrl(ipservice)};
+                QNetworkReply* Reply = Manager.get(Request);
+
+                Timer.setSingleShot(true);
+                QObject::connect(&Timer, &QTimer::timeout, [&]()
+                {
+                    if(Reply && Reply->isRunning())
+                        Reply->abort();
+                    Loop.quit();
+                });
+                QObject::connect(Reply, &QNetworkReply::finished, &Loop, &QEventLoop::quit);
+                Timer.start(5000);
+                Loop.exec();
+
+                if(Reply->error() == QNetworkReply::NoError)
+                {
+                    const QString Text = QString::fromUtf8(Reply->readAll()).trimmed();
+                    const QStringList Parts = Text.split('.');
+
+                    if(Parts.count() == 4)
+                    {
+                        bool Ok0 = false, Ok1 = false, Ok2 = false, Ok3 = false;
+                        const int A = Parts[0].toInt(&Ok0);
+                        const int B = Parts[1].toInt(&Ok1);
+                        const int C = Parts[2].toInt(&Ok2);
+                        const int D = Parts[3].toInt(&Ok3);
+                        if(Ok0 && Ok1 && Ok2 && Ok3 &&
+                            0 <= A && A <= 255 &&
+                            0 <= B && B <= 255 &&
+                            0 <= C && C <= 255 &&
+                            0 <= D && D <= 255)
+                        {
+                            Result.ip[0] = (uint08) A;
+                            Result.ip[1] = (uint08) B;
+                            Result.ip[2] = (uint08) C;
+                            Result.ip[3] = (uint08) D;
+                        }
+                    }
+                }
+                Reply->deleteLater();
+            #endif
+            return Result;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////
