@@ -3686,6 +3686,8 @@
                             Result.ip[1] = (IPv4Address >> 16) & 0xFF;
                             Result.ip[2] = (IPv4Address >>  8) & 0xFF;
                             Result.ip[3] = (IPv4Address >>  0) & 0xFF;
+                            if(Result.ip[0] == 192 && Result.ip[1] == 168 && Result.ip[2] == 0) // 우선처리
+                                break;
                         }
                         else if(ip6 && CurAddress.protocol() == QAbstractSocket::IPv6Protocol)
                         {
