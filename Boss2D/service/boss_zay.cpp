@@ -709,7 +709,7 @@ namespace BOSS
                     auto BuiltWidth = Platform::Graphics::GetImageWidth(BuiltImage);
                     auto BuiltHeight = Platform::Graphics::GetImageHeight(BuiltImage);
                     Platform::Graphics::DrawImage(BuiltImage, 0, 0, BuiltWidth, BuiltHeight,
-                        LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight);
+                        LastClip.l + DstX, LastClip.t + DstY, DstWidth, DstHeight, 0, Math::Min(LastColor.a, 128) / 128.0);
                 }
                 if(m_updater && !image.IsBuildFinished())
                     m_updater->Repaint(1);
@@ -755,7 +755,8 @@ namespace BOSS
             for(sint32 x = 0, xend = image.PatchSrcXCount() - 1; x < xend; ++x)
                 Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                     PatchSrcX[x], PatchSrcY[y], PatchSrcX[x + 1] - PatchSrcX[x], PatchSrcY[y + 1] - PatchSrcY[y],
-                    LastClip.l + PatchDstX[x], LastClip.t + PatchDstY[y], PatchDstX[x + 1] - PatchDstX[x], PatchDstY[y + 1] - PatchDstY[y]);
+                    LastClip.l + PatchDstX[x], LastClip.t + PatchDstY[y], PatchDstX[x + 1] - PatchDstX[x], PatchDstY[y + 1] - PatchDstY[y],
+                    0, Math::Min(LastColor.a, 128) / 128.0);
         }
 
         if(image.HasChild())
@@ -792,8 +793,8 @@ namespace BOSS
             {
                 Platform::Graphics::DrawImage(image.GetBuildImage(LastColor),
                     0, 0, image.GetImageWidth(), image.GetImageHeight(),
-                    LastClip.l + DstX, LastClip.t + DstY,
-                    image.GetImageWidth(), image.GetImageHeight());
+                    LastClip.l + DstX, LastClip.t + DstY, image.GetImageWidth(), image.GetImageHeight(),
+                    0, Math::Min(LastColor.a, 128) / 128.0);
                 DstX += XStep;
             }
             DstY += YStep;
