@@ -112,8 +112,15 @@
 
     #define USER_FRAMECOUNT (60)
     extern h_view g_view;
-    extern bool g_isCursorInWindow;
     extern QPoint g_CursorPos;
+    enum class CursorState
+    {
+        Unknown,
+        MouseHover,
+        MousePressed,
+        TouchPressed
+    };
+    extern CursorState g_CursorState;
 
     class FTFontClass
     {
@@ -237,8 +244,8 @@
             #endif
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
+            setAttribute(Qt::WA_Hover);
             setMouseTracking(true);
-            setAttribute(Qt::WA_Hover, true);
             setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
 
@@ -401,6 +408,16 @@
         }
 
     protected:
+        bool event(QEvent* event) Q_DECL_OVERRIDE
+        {
+            switch(event->type())
+            {
+            case QEvent::TouchBegin: return touchPressEvent(static_cast<QTouchEvent*>(event));
+            case QEvent::TouchUpdate: return touchDragEvent(static_cast<QTouchEvent*>(event));
+            case QEvent::TouchEnd: return touchReleaseEvent(static_cast<QTouchEvent*>(event));
+            }
+            return QWidget::event(event);
+        }
         void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE
         {
             mWidth = event->size().width();
@@ -435,18 +452,58 @@
         }
         void enterEvent(QEnterEvent* event) Q_DECL_OVERRIDE
         {
-            g_isCursorInWindow = true;
             g_CursorPos = event->position().toPoint();
+            if(g_CursorState == CursorState::Unknown)
+                g_CursorState = CursorState::MouseHover;
         }
         void leaveEvent(QEvent* event) Q_DECL_OVERRIDE
         {
-            g_isCursorInWindow = false;
+            if(g_CursorState == CursorState::MouseHover)
+                g_CursorState = CursorState::Unknown;
+        }
+        bool touchPressEvent(QTouchEvent* event)
+        {
+            const auto points = event->points();
+            if(points.isEmpty()) return false;
+            cursorPressEvent(Qt::LeftButton, points[0].position().toPoint(), true);
+            return true;
+        }
+        bool touchDragEvent(QTouchEvent* event)
+        {
+            const auto points = event->points();
+            if(points.isEmpty()) return false;
+            cursorMoveEvent(Qt::LeftButton, points[0].position().toPoint(), true);
+            return true;
+        }
+        bool touchReleaseEvent(QTouchEvent* event)
+        {
+            const auto points = event->points();
+            if(points.isEmpty()) return false;
+            cursorReleaseEvent(Qt::LeftButton, points[0].position().toPoint(), true);
+            return true;
         }
         void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
-            g_CursorPos = event->position().toPoint();
+            cursorPressEvent(event->button(), event->position().toPoint(), false);
+        }
+        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE
+        {
+            cursorPressEvent(event->button(), event->position().toPoint(), false);
+        }
+        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE
+        {
+            cursorMoveEvent(event->buttons(), event->position().toPoint(), false);
+        }
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE
+        {
+            cursorReleaseEvent(event->button(), event->position().toPoint(), false);
+        }
+        void cursorPressEvent(Qt::MouseButton button, QPoint pos, bool touch)
+        {
             if(!mViewManager) return;
-            if(event->button() == Qt::LeftButton)
+            g_CursorPos = pos;
+            g_CursorState = (touch)? CursorState::TouchPressed : CursorState::MousePressed;
+            if(button == Qt::LeftButton)
             {
                 mViewManager->OnTouch(TT_Press, 0, g_CursorPos.x(), g_CursorPos.y());
                 mLongpressTimer.start(500);
@@ -454,55 +511,54 @@
                 mLongpressY = g_CursorPos.y();
                 mRepeatpressTimer.start(300);
             }
-            else if(event->button() == Qt::RightButton)
+            else if(button == Qt::RightButton)
                 mViewManager->OnTouch(TT_ExtendPress, 0, g_CursorPos.x(), g_CursorPos.y());
-            else if(event->button() == Qt::MiddleButton)
+            else if(button == Qt::MiddleButton)
                 mViewManager->OnTouch(TT_WheelPress, 0, g_CursorPos.x(), g_CursorPos.y());
             mTooltipTimer.stop();
         }
-        void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE
+        void cursorMoveEvent(Qt::MouseButtons buttons, QPoint pos, bool touch)
         {
-            mousePressEvent(event);
-        }
-        void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE
-        {
-            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
-            if(event->buttons() == Qt::NoButton)
+            g_CursorPos = pos;
+            if(buttons == Qt::NoButton)
             {
+                g_CursorState = CursorState::MouseHover;
                 mViewManager->OnTouch(TT_Moving, 0, g_CursorPos.x(), g_CursorPos.y());
                 mTooltipTimer.start(300);
                 Platform::Popup::HideToolTip();
             }
             else
             {
-                if(event->buttons() & Qt::LeftButton)
+                g_CursorState = (touch)? CursorState::TouchPressed : CursorState::MousePressed;
+                if(buttons & Qt::LeftButton)
                     mViewManager->OnTouch(TT_Dragging, 0, g_CursorPos.x(), g_CursorPos.y());
-                if(event->buttons() & Qt::RightButton)
+                if(buttons & Qt::RightButton)
                     mViewManager->OnTouch(TT_ExtendDragging, 0, g_CursorPos.x(), g_CursorPos.y());
-                if(event->buttons() & Qt::MiddleButton)
+                if(buttons & Qt::MiddleButton)
                     mViewManager->OnTouch(TT_WheelDragging, 0, g_CursorPos.x(), g_CursorPos.y());
             }
             if(5 < Math::Distance(mLongpressX, mLongpressY, g_CursorPos.x(), g_CursorPos.y()))
                 mLongpressTimer.stop();
         }
-        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE
+        void cursorReleaseEvent(Qt::MouseButton button, QPoint pos, bool touch)
         {
-            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
-            if(event->button() == Qt::LeftButton)
+            g_CursorPos = pos;
+            g_CursorState = (touch)? CursorState::Unknown : CursorState::MouseHover;
+            if(button == Qt::LeftButton)
                 mViewManager->OnTouch(TT_Release, 0, g_CursorPos.x(), g_CursorPos.y());
-            else if(event->button() == Qt::RightButton)
+            else if(button == Qt::RightButton)
                 mViewManager->OnTouch(TT_ExtendRelease, 0, g_CursorPos.x(), g_CursorPos.y());
-            else if(event->button() == Qt::MiddleButton)
+            else if(button == Qt::MiddleButton)
                 mViewManager->OnTouch(TT_WheelRelease, 0, g_CursorPos.x(), g_CursorPos.y());
             mLongpressTimer.stop();
             mRepeatpressTimer.stop();
         }
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE
         {
-            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
+            g_CursorPos = event->position().toPoint();
             float WheelValue = event->angleDelta().y() / 120.0f;
             while (0 < WheelValue)
             {
