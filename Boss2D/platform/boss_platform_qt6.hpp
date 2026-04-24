@@ -580,7 +580,8 @@
         {
             mRepeatpressTimer.start(100);
             point64 CursorPos;
-            if(Platform::Utility::GetCursorPosInWindow(CursorPos))
+            //if(Platform::Utility::GetCursorPosInWindow(CursorPos))
+            Platform::Utility::GetCursorPosInWindow(CursorPos);
                 mViewManager->OnTouch(TT_RepeatPress, 0, CursorPos.x, CursorPos.y);
         }
 
