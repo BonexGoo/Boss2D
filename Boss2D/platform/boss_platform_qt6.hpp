@@ -112,6 +112,8 @@
 
     #define USER_FRAMECOUNT (60)
     extern h_view g_view;
+    extern bool g_isCursorInWindow;
+    extern QPoint g_CursorPos;
 
     class FTFontClass
     {
@@ -236,6 +238,7 @@
             setAttribute(Qt::WA_NoSystemBackground);
             setAttribute(Qt::WA_AcceptTouchEvents);
             setMouseTracking(true);
+            setAttribute(Qt::WA_Hover, true);
             setFocusPolicy(Qt::StrongFocus);
             setAutoFillBackground(false);
 
@@ -430,21 +433,31 @@
             }
             else event->ignore();
         }
+        void enterEvent(QEnterEvent* event) Q_DECL_OVERRIDE
+        {
+            g_isCursorInWindow = true;
+            g_CursorPos = event->position().toPoint();
+        }
+        void leaveEvent(QEvent* event) Q_DECL_OVERRIDE
+        {
+            g_isCursorInWindow = false;
+        }
         void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
             {
-                mViewManager->OnTouch(TT_Press, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_Press, 0, g_CursorPos.x(), g_CursorPos.y());
                 mLongpressTimer.start(500);
-                mLongpressX = event->position().x();
-                mLongpressY = event->position().y();
+                mLongpressX = g_CursorPos.x();
+                mLongpressY = g_CursorPos.y();
                 mRepeatpressTimer.start(300);
             }
             else if(event->button() == Qt::RightButton)
-                mViewManager->OnTouch(TT_ExtendPress, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_ExtendPress, 0, g_CursorPos.x(), g_CursorPos.y());
             else if(event->button() == Qt::MiddleButton)
-                mViewManager->OnTouch(TT_WheelPress, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_WheelPress, 0, g_CursorPos.x(), g_CursorPos.y());
             mTooltipTimer.stop();
         }
         void mouseDoubleClickEvent(QMouseEvent* event) Q_DECL_OVERRIDE
@@ -453,50 +466,53 @@
         }
         void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
             if(event->buttons() == Qt::NoButton)
             {
-                mViewManager->OnTouch(TT_Moving, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_Moving, 0, g_CursorPos.x(), g_CursorPos.y());
                 mTooltipTimer.start(300);
                 Platform::Popup::HideToolTip();
             }
             else
             {
                 if(event->buttons() & Qt::LeftButton)
-                    mViewManager->OnTouch(TT_Dragging, 0, event->position().x(), event->position().y());
+                    mViewManager->OnTouch(TT_Dragging, 0, g_CursorPos.x(), g_CursorPos.y());
                 if(event->buttons() & Qt::RightButton)
-                    mViewManager->OnTouch(TT_ExtendDragging, 0, event->position().x(), event->position().y());
+                    mViewManager->OnTouch(TT_ExtendDragging, 0, g_CursorPos.x(), g_CursorPos.y());
                 if(event->buttons() & Qt::MiddleButton)
-                    mViewManager->OnTouch(TT_WheelDragging, 0, event->position().x(), event->position().y());
+                    mViewManager->OnTouch(TT_WheelDragging, 0, g_CursorPos.x(), g_CursorPos.y());
             }
-            if(5 < Math::Distance(mLongpressX, mLongpressY, event->position().x(), event->position().y()))
+            if(5 < Math::Distance(mLongpressX, mLongpressY, g_CursorPos.x(), g_CursorPos.y()))
                 mLongpressTimer.stop();
         }
         void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE
         {
+            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
             if(event->button() == Qt::LeftButton)
-                mViewManager->OnTouch(TT_Release, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_Release, 0, g_CursorPos.x(), g_CursorPos.y());
             else if(event->button() == Qt::RightButton)
-                mViewManager->OnTouch(TT_ExtendRelease, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_ExtendRelease, 0, g_CursorPos.x(), g_CursorPos.y());
             else if(event->button() == Qt::MiddleButton)
-                mViewManager->OnTouch(TT_WheelRelease, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_WheelRelease, 0, g_CursorPos.x(), g_CursorPos.y());
             mLongpressTimer.stop();
             mRepeatpressTimer.stop();
         }
         void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE
         {
+            g_CursorPos = event->position().toPoint();
             if(!mViewManager) return;
             float WheelValue = event->angleDelta().y() / 120.0f;
             while (0 < WheelValue)
             {
                 WheelValue = Math::MaxF(0, WheelValue - 1);
-                mViewManager->OnTouch(TT_WheelUp, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_WheelUp, 0, g_CursorPos.x(), g_CursorPos.y());
             }
             while (WheelValue < 0)
             {
                 WheelValue = Math::MinF(WheelValue + 1, 0);
-                mViewManager->OnTouch(TT_WheelDown, 0, event->position().x(), event->position().y());
+                mViewManager->OnTouch(TT_WheelDown, 0, g_CursorPos.x(), g_CursorPos.y());
             }
         }
         void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE
@@ -580,8 +596,7 @@
         {
             mRepeatpressTimer.start(100);
             point64 CursorPos;
-            //if(Platform::Utility::GetCursorPosInWindow(CursorPos))
-            Platform::Utility::GetCursorPosInWindow(CursorPos);
+            if(Platform::Utility::GetCursorPosInWindow(CursorPos))
                 mViewManager->OnTouch(TT_RepeatPress, 0, CursorPos.x, CursorPos.y);
         }
 

@@ -85,6 +85,8 @@
     #endif
 
     h_view g_view;
+    bool g_isCursorInWindow = false;
+    QPoint g_CursorPos;
     MainWindow* g_window = nullptr;
     sint32 g_argc = 0;
     char** g_argv = nullptr;
@@ -1324,9 +1326,18 @@
 
         void Platform::Utility::GetCursorPos(point64& pos)
         {
-            const QPoint CursorPos = QCursor::pos();
-            pos.x = CursorPos.x();
-            pos.y = CursorPos.y();
+            if(g_isCursorInWindow)
+            {
+                const QRect ClientRect = g_window->GetWindowRect();
+                pos.x = ClientRect.left() + g_CursorPos.x();
+                pos.y = ClientRect.top() + g_CursorPos.y();
+            }
+            else
+            {
+                const QPoint CursorPos = QCursor::pos();
+                pos.x = CursorPos.x();
+                pos.y = CursorPos.y();
+            }
         }
 
         void Platform::Utility::SetCursorPos(point64 pos)
@@ -1337,12 +1348,17 @@
         bool Platform::Utility::GetCursorPosInWindow(point64& pos)
         {
             if(!g_window) return false;
+            if(g_isCursorInWindow)
+            {
+                pos.x = g_CursorPos.x();
+                pos.y = g_CursorPos.y();
+                return true;
+            }
             const QPoint CursorPos = QCursor::pos();
             const QRect ClientRect = g_window->GetWindowRect();
             pos.x = CursorPos.x() - ClientRect.left();
             pos.y = CursorPos.y() - ClientRect.top();
-            return !(CursorPos.x() < ClientRect.left() || CursorPos.y() < ClientRect.top()
-                || ClientRect.right() <= CursorPos.x() || ClientRect.bottom() <= CursorPos.y());
+            return !(pos.x < 0 || pos.y < 0 || ClientRect.width() <= pos.x || ClientRect.height() <= pos.y);
         }
 
         sint32 Platform::Utility::GetLogicalDpi()
