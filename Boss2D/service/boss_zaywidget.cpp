@@ -1522,6 +1522,7 @@ namespace BOSS
                         sint32 NewCursorIndex = 0;
                         if(auto CurRenderInfo = Self.mRenderInfoMap.Access(n))
                         {
+                            CurRenderInfo->SetFocusByPos(x); // 커서포커싱
                             NewCursorIndex = CurRenderInfo->GetIndex(FieldText);
                             CurRenderInfo->FlushScrollWheel(); // 스크롤휠 무효화
                         }
