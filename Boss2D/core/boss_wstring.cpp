@@ -356,6 +356,11 @@ namespace BOSS
         return &m_words[0];
     }
 
+    WString::operator bool() const
+    {
+        return (0 < Length());
+    }
+
     WString::operator id_share() const
     {
         return m_words;

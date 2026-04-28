@@ -184,10 +184,9 @@ namespace BOSS
             CurSolver.Parse(String::FromInteger(Length));
             CurSolver.Execute(true);
         }
-        else
+        else if(auto Value = json.GetText())
         {
             const String Key = nameheader.Left(nameheader.Length() - 1);
-            const String Value = json.GetText();
             auto& CurSolver = LinkedSolver(Key);
             sint32 IntOffset = 0;
             Parser::GetInt<sint64>((chars) Value, Value.Length(), &IntOffset);

@@ -123,6 +123,9 @@ namespace BOSS
         /// @brief 형변환(wchars)
         operator wchars() const;
 
+        /// @brief 형변환(bool)
+        explicit operator bool() const;
+
         /// @brief 형변환(id_share)
         operator id_share() const;
 

@@ -192,6 +192,11 @@ namespace BOSS
         return &m_words[0];
     }
 
+    String::operator bool() const
+    {
+        return (0 < Length());
+    }
+
     String::operator id_share() const
     {
         return m_words;

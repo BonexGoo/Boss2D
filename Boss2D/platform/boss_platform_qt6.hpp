@@ -1117,14 +1117,16 @@
             static QSet<QString> CurrentMountedRootsWindows()
             {
                 QSet<QString> Out;
-                const auto Vols = QStorageInfo::mountedVolumes();
-                for(const QStorageInfo& V : Vols)
+                const DWORD Mask = GetLogicalDrives();
+                for(sint32 i = 0; i < 26; ++i)
                 {
-                    if(!V.isValid() || !V.isReady())
-                        continue;
-                    const QString Root = V.rootPath(); // ex) "E:/"
-                    if(!Root.isEmpty())
-                        Out.insert(Root);
+                    if(!(Mask & (1 << i))) continue;
+                    wchar_t RootW[4] = {0, 0, 0, 0};
+                    RootW[0] = wchar_t(L'A' + i);
+                    RootW[1] = L':';
+                    RootW[2] = wchar_t(0x5C);
+                    if(GetDriveTypeW(RootW) == DRIVE_REMOVABLE)
+                        Out.insert(QString(QChar(wchar_t(L'A' + i))) + ":/");
                 }
                 return Out;
             }
@@ -1136,6 +1138,7 @@
             udev_monitor* mMon = nullptr;
             QSocketNotifier* mNotifier = nullptr;
             QHash<QString, QString> mDevNodeToMountPath;
+            QHash<QString, sint32> mDevNodeToMountCount;
 
             void StartLinux()
             {
@@ -1172,6 +1175,7 @@
                     udev_unref(mUdev);
                     mUdev = nullptr;
                 }
+                mDevNodeToMountCount.clear();
             }
 
             void EnumLinuxExisting()
@@ -1203,23 +1207,7 @@
                     if(!DevNode.isEmpty())
                     {
                         // already mounted?
-                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
-
-                        // auto-mount may be missing in CLI → try mounting
-                        if(MountPath.isEmpty())
-                        {
-                            EnsureMountedByUdisks(DevNode);
-                            for(int i = 0; MountPath.isEmpty() && i < 12; ++i)
-                            {
-                                QThread::msleep(120);
-                                MountPath = FindMountPathForDeviceLinux(DevNode);
-                            }
-                        }
-
-                        if(!MountPath.isEmpty())
-                            mDevNodeToMountPath[DevNode] = MountPath;
-
-                        emit UsbStorageChanged(true, MountPath, DevNode);
+                        BeginMountCheckLinux(DevNode, 12, false);
                     }
 
                     udev_device_unref(Dev);
@@ -1249,26 +1237,8 @@
 
                     if(Action == "add" || Action == "change")
                     {
-                        QString MountPath = FindMountPathForDeviceLinux(DevNode);
                         // auto-mount may lag slightly
-                        for(int i = 0; MountPath.isEmpty() && i < 8; ++i)
-                        {
-                            QThread::msleep(150);
-                            MountPath = FindMountPathForDeviceLinux(DevNode);
-                        }
-                        if(MountPath.isEmpty())
-                        {
-                            EnsureMountedByUdisks(DevNode);
-                            for(int i = 0; MountPath.isEmpty() && i < 16; ++i)
-                            {
-                                QThread::msleep(150);
-                                MountPath = FindMountPathForDeviceLinux(DevNode);
-                            }
-                        }
-                        // MountPath수집
-                        if(!MountPath.isEmpty() && !DevNode.isEmpty())
-                            mDevNodeToMountPath[DevNode] = MountPath;
-                        emit UsbStorageChanged(true, MountPath, DevNode);
+                        BeginMountCheckLinux(DevNode, 8, false);
                     }
                     else if(Action == "remove")
                     {
@@ -1276,6 +1246,7 @@
                         QString OldMountPath;
                         if(!DevNode.isEmpty())
                         {
+                            mDevNodeToMountCount[DevNode]++;
                             auto it = mDevNodeToMountPath.find(DevNode);
                             if(it != mDevNodeToMountPath.end())
                             {
@@ -1370,25 +1341,7 @@
 			    QFileInfo fi(devNode);
 			    const QString Target = fi.exists() ? fi.canonicalFilePath() : devNode;
 
-			    // 1) Qt view (fast when it works)
-			    const auto Vols = QStorageInfo::mountedVolumes();
-			    for(const QStorageInfo& V : Vols)
-			    {
-			        if(!V.isValid() || !V.isReady())
-			            continue;
-
-			        const QString VDev = QString::fromUtf8(V.device());
-			        if(VDev.isEmpty())
-			            continue;
-
-			        QFileInfo vfi(VDev);
-			        const QString Canon = vfi.exists() ? vfi.canonicalFilePath() : VDev;
-
-			        if(DevNodeMatchesLinux(Canon, Target))
-			            return V.rootPath();
-			    }
-
-			    // 2) /proc/self/mounts (more reliable on headless systems)
+			    // /proc/self/mounts (non-blocking path for udev event thread)
 			    {
 			        QFile F("/proc/self/mounts");
 			        if(F.open(QIODevice::ReadOnly))
@@ -1414,33 +1367,100 @@
 			        }
 			    }
 
-			    // 3) lsblk fallback
-			    {
-			        QProcess P;
-			        P.start("lsblk", QStringList() << "-nrpo" << "NAME,MOUNTPOINT");
-			        if(P.waitForFinished(1500) && P.exitStatus() == QProcess::NormalExit)
-			        {
-			            const QString out = QString::fromUtf8(P.readAllStandardOutput());
-			            const QStringList lines = out.split('\n', Qt::SkipEmptyParts);
-			            for(const QString& ln : lines)
-			            {
-			                const QStringList cols = ln.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
-			                if(cols.size() < 2) continue;
-
-			                const QString name = cols[0];
-			                const QString mnt  = cols[1];
-
-			                QFileInfo nfi(name);
-			                const QString ncanon = nfi.exists() ? nfi.canonicalFilePath() : name;
-
-			                if(DevNodeMatchesLinux(ncanon, Target))
-			                    return mnt;
-			            }
-			        }
-			    }
-
 			    return QString();
 			}
+
+            void BeginMountCheckLinux(const QString& DevNode, sint32 RetryCount, bool MountRequested)
+            {
+                if(DevNode.isEmpty()) return;
+
+                const sint32 CurCount = mDevNodeToMountCount.value(DevNode, 0);
+                QString MountPath = FindMountPathForDeviceLinux(DevNode);
+                if(!MountPath.isEmpty())
+                {
+                    mDevNodeToMountPath[DevNode] = MountPath;
+                    emit UsbStorageChanged(true, MountPath, DevNode);
+                    return;
+                }
+
+                if(0 < RetryCount)
+                {
+                    QTimer::singleShot(150, this, [this, DevNode, RetryCount, MountRequested, CurCount]()
+                    {
+                        if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+                        BeginMountCheckLinux(DevNode, RetryCount - 1, MountRequested);
+                    });
+                    return;
+                }
+
+                if(!MountRequested)
+                {
+                    EnsureMountedByUdisksAsync(DevNode);
+                    return;
+                }
+
+                emit UsbStorageChanged(true, MountPath, DevNode);
+            }
+
+            void EnsureMountedByUdisksAsync(const QString& DevNode)
+            {
+                if(DevNode.isEmpty()) return;
+
+                sint32& Count = mDevNodeToMountCount[DevNode];
+                Count++;
+                const sint32 CurCount = Count;
+
+                QProcess* P = new QProcess(this);
+                connect(P, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                    this, [this, P, DevNode, CurCount](int exitCode, QProcess::ExitStatus exitStatus)
+                {
+                    P->deleteLater();
+                    if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+
+                    if(exitStatus == QProcess::NormalExit && exitCode == 0)
+                    {
+                        QTimer::singleShot(150, this, [this, DevNode, CurCount]()
+                        {
+                            if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+                            BeginMountCheckLinux(DevNode, 16, true);
+                        });
+                        return;
+                    }
+
+                    EnsureMountedByMountAsync(DevNode, CurCount);
+                });
+                P->start("udisksctl", {"mount", "-b", DevNode, "--no-user-interaction"});
+            }
+
+            void EnsureMountedByMountAsync(const QString& DevNode, sint32 CurCount)
+            {
+                if(DevNode.isEmpty()) return;
+                if(geteuid() != 0)
+                {
+                    BeginMountCheckLinux(DevNode, 16, true);
+                    return;
+                }
+
+                const QString mountPoint = ChooseMountPointLinux(DevNode);
+                QProcess* Mk = new QProcess(this);
+                connect(Mk, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                    this, [this, Mk, DevNode, mountPoint, CurCount](int, QProcess::ExitStatus)
+                {
+                    Mk->deleteLater();
+                    if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+
+                    QProcess* M = new QProcess(this);
+                    connect(M, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                        this, [this, M, DevNode, CurCount](int, QProcess::ExitStatus)
+                    {
+                        M->deleteLater();
+                        if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+                        BeginMountCheckLinux(DevNode, 16, true);
+                    });
+                    M->start("mount", {DevNode, mountPoint});
+                });
+                Mk->start("mkdir", {"-p", mountPoint});
+            }
 
             static QString SanitizeMountName(QString s)
             {
@@ -1828,18 +1848,34 @@
 		{
 		    if(mounted)
             {
-                QStorageInfo Storage(mountPath);
-                Storage.refresh();
+                if(mountPath.isEmpty()) return;
 
                 String DirPath = mountPath.toUtf8().constData();
                 DirPath = boss_normalpath(DirPath, nullptr);
                 #if !BOSS_WINDOWS
+                    QStorageInfo Storage(mountPath);
+                    Storage.refresh();
                     DirPath = "Q:/" + DirPath;
+                    const qint64 FreeSpace = Storage.bytesAvailable();
+                    const qint64 TotalSpace = Storage.bytesTotal();
+                #else
+                    qint64 FreeSpace = 0;
+                    qint64 TotalSpace = 0;
+                    ULARGE_INTEGER FreeBytesAvailable;
+                    ULARGE_INTEGER TotalNumberOfBytes;
+                    ULARGE_INTEGER TotalNumberOfFreeBytes;
+                    memset(&FreeBytesAvailable, 0, sizeof(FreeBytesAvailable));
+                    memset(&TotalNumberOfBytes, 0, sizeof(TotalNumberOfBytes));
+                    memset(&TotalNumberOfFreeBytes, 0, sizeof(TotalNumberOfFreeBytes));
+                    const QString RootPath = mountPath.endsWith('/')? mountPath : mountPath + "/";
+                    if(GetDiskFreeSpaceExW((LPCWSTR) RootPath.utf16(), &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes))
+                    {
+                        FreeSpace = sint64(FreeBytesAvailable.QuadPart);
+                        TotalSpace = sint64(TotalNumberOfBytes.QuadPart);
+                    }
                 #endif
                 if(DirPath.Right(1) != '/')
                     DirPath += '/';
-                const qint64 FreeSpace = Storage.bytesAvailable();
-                const qint64 TotalSpace = Storage.bytesTotal();
 
                 BOSS_TRACE("USB저장장치를 연결하였습니다(%s)", (chars) DirPath);
                 if(mView) mView->OnStorageMountedEvent(DirPath, FreeSpace, TotalSpace);
