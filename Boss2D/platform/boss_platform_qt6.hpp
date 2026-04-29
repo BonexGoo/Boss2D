@@ -1451,32 +1451,91 @@
             void EnsureMountedByMountAsync(const QString& DevNode, sint32 CurCount)
             {
                 if(DevNode.isEmpty()) return;
-                if(geteuid() != 0)
-                {
-                    BOSS_TRACE("mount fallback skipped dev=%s - process is not root", DevNode.toUtf8().constData());
-                    BeginMountCheckLinux(DevNode, 16, true);
-                    return;
-                }
 
-                const QString mountPoint = ChooseMountPointLinux(DevNode);
+                const QString MountPoint = ChooseMountPointLinux(DevNode);
+                const bool IsRoot = (geteuid() == 0);
+
                 QProcess* Mk = new QProcess(this);
                 connect(Mk, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                    this, [this, Mk, DevNode, mountPoint, CurCount](int, QProcess::ExitStatus)
+                    this, [this, Mk, DevNode, MountPoint, CurCount, IsRoot](int mkExitCode, QProcess::ExitStatus mkExitStatus)
                 {
+                    const QString MkOut = QString::fromUtf8(Mk->readAllStandardOutput()).trimmed();
+                    const QString MkErr = QString::fromUtf8(Mk->readAllStandardError()).trimmed();
                     Mk->deleteLater();
+
                     if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+
+                    BOSS_TRACE("mount mkdir result dev=%s point=%s sudo=%d exit=%d status=%d out=%s err=%s",
+                        DevNode.toUtf8().constData(), MountPoint.toUtf8().constData(), IsRoot ? 0 : 1,
+                        mkExitCode, (int) mkExitStatus,
+                        MkOut.toUtf8().constData(), MkErr.toUtf8().constData());
+
+                    if(mkExitStatus != QProcess::NormalExit || mkExitCode != 0)
+                    {
+                        BOSS_TRACE("USB storage mount failed (%s) - mkdir failed", DevNode.toUtf8().constData());
+                        return;
+                    }
 
                     QProcess* M = new QProcess(this);
                     connect(M, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                        this, [this, M, DevNode, CurCount](int, QProcess::ExitStatus)
+                        this, [this, M, DevNode, MountPoint, CurCount, IsRoot](int mountExitCode, QProcess::ExitStatus mountExitStatus)
                     {
+                        const QString MountOut = QString::fromUtf8(M->readAllStandardOutput()).trimmed();
+                        const QString MountErr = QString::fromUtf8(M->readAllStandardError()).trimmed();
                         M->deleteLater();
+
                         if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+
+                        BOSS_TRACE("mount fallback result dev=%s point=%s sudo=%d exit=%d status=%d out=%s err=%s",
+                            DevNode.toUtf8().constData(), MountPoint.toUtf8().constData(), IsRoot ? 0 : 1,
+                            mountExitCode, (int) mountExitStatus,
+                            MountOut.toUtf8().constData(), MountErr.toUtf8().constData());
+
+                        if(mountExitStatus == QProcess::NormalExit && mountExitCode == 0)
+                        {
+                            QDir Dir(MountPoint);
+                            if(Dir.exists())
+                            {
+                                mDevNodeToMountPath[DevNode] = MountPoint;
+                                BOSS_TRACE("USB storage mounted by fallback dev=%s point=%s",
+                                    DevNode.toUtf8().constData(), MountPoint.toUtf8().constData());
+
+                                emit UsbStorageChanged(true, MountPoint, DevNode);
+                                return;
+                            }
+
+                            BOSS_TRACE("USB storage mount failed (%s) - mount point does not exist (%s)",
+                                DevNode.toUtf8().constData(), MountPoint.toUtf8().constData());
+                            return;
+                        }
+
                         BeginMountCheckLinux(DevNode, 16, true);
                     });
-                    M->start("mount", {DevNode, mountPoint});
+
+                    if(IsRoot)
+                        M->start("mount", {DevNode, MountPoint});
+                    else
+                        M->start("sudo", {"-n", "mount", DevNode, MountPoint});
+
+                    if(!M->waitForStarted(1000))
+                    {
+                        BOSS_TRACE("mount fallback start failed dev=%s point=%s sudo=%d",
+                            DevNode.toUtf8().constData(), MountPoint.toUtf8().constData(), IsRoot ? 0 : 1);
+                        M->deleteLater();
+                    }
                 });
-                Mk->start("mkdir", {"-p", mountPoint});
+
+                if(IsRoot)
+                    Mk->start("mkdir", {"-p", MountPoint});
+                else
+                    Mk->start("sudo", {"-n", "mkdir", "-p", MountPoint});
+
+                if(!Mk->waitForStarted(1000))
+                {
+                    BOSS_TRACE("mount mkdir start failed dev=%s point=%s sudo=%d",
+                        DevNode.toUtf8().constData(), MountPoint.toUtf8().constData(), IsRoot ? 0 : 1);
+                    Mk->deleteLater();
+                }
             }
 
             static QString SanitizeMountName(QString s)
