@@ -1395,11 +1395,15 @@
 
                 if(!MountRequested)
                 {
+                    BOSS_TRACE("USB storage mount requested (%s)", DevNode.toUtf8().constData());
                     EnsureMountedByUdisksAsync(DevNode);
                     return;
                 }
 
-                emit UsbStorageChanged(true, MountPath, DevNode);
+                // MountPath가 비어있는 상태에서 mounted=true를 보내면
+                // onUsbStorageChanged()에서 조용히 return되어
+                // "USB저장장치를 연결하였습니다" 로그가 출력되지 않는다.
+                BOSS_TRACE("USB storage mount failed (%s) - mountPath is empty", DevNode.toUtf8().constData());
             }
 
             void EnsureMountedByUdisksAsync(const QString& DevNode)
@@ -1414,8 +1418,14 @@
                 connect(P, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                     this, [this, P, DevNode, CurCount](int exitCode, QProcess::ExitStatus exitStatus)
                 {
+                    const QString StdOut = QString::fromUtf8(P->readAllStandardOutput()).trimmed();
+                    const QString StdErr = QString::fromUtf8(P->readAllStandardError()).trimmed();
                     P->deleteLater();
                     if(mDevNodeToMountCount.value(DevNode, 0) != CurCount) return;
+
+                    BOSS_TRACE("udisksctl mount result dev=%s exit=%d status=%d out=%s err=%s",
+                        DevNode.toUtf8().constData(), exitCode, (int) exitStatus,
+                        StdOut.toUtf8().constData(), StdErr.toUtf8().constData());
 
                     if(exitStatus == QProcess::NormalExit && exitCode == 0)
                     {
@@ -1430,6 +1440,12 @@
                     EnsureMountedByMountAsync(DevNode, CurCount);
                 });
                 P->start("udisksctl", {"mount", "-b", DevNode, "--no-user-interaction"});
+                if(!P->waitForStarted(1000))
+                {
+                    BOSS_TRACE("udisksctl mount start failed dev=%s", DevNode.toUtf8().constData());
+                    P->deleteLater();
+                    EnsureMountedByMountAsync(DevNode, CurCount);
+                }
             }
 
             void EnsureMountedByMountAsync(const QString& DevNode, sint32 CurCount)
@@ -1437,6 +1453,7 @@
                 if(DevNode.isEmpty()) return;
                 if(geteuid() != 0)
                 {
+                    BOSS_TRACE("mount fallback skipped dev=%s - process is not root", DevNode.toUtf8().constData());
                     BeginMountCheckLinux(DevNode, 16, true);
                     return;
                 }
@@ -1826,7 +1843,7 @@
                     {
                         if(!mUsbStorageWatcher->OnWindowsDeviceChange())
                         {
-                            BOSS_TRACE("USB장치를 연결하였습니다");
+                            BOSS_TRACE("USB device connected");
                             mView->OnDeviceArrivalEvent(true);
                         }
                     }
@@ -1834,7 +1851,7 @@
                     {
                         if(!mUsbStorageWatcher->OnWindowsDeviceChange())
                         {
-                            BOSS_TRACE("USB장치를 해제하였습니다");
+                            BOSS_TRACE("USB device disconnected");
                             mView->OnDeviceArrivalEvent(false);
                         }
                     }
@@ -1877,12 +1894,12 @@
                 if(DirPath.Right(1) != '/')
                     DirPath += '/';
 
-                BOSS_TRACE("USB저장장치를 연결하였습니다(%s)", (chars) DirPath);
+                BOSS_TRACE("USB storage connected (%s)", (chars) DirPath);
                 if(mView) mView->OnStorageMountedEvent(DirPath, FreeSpace, TotalSpace);
             }
 		    else if(!mounted)
             {
-                BOSS_TRACE("USB저장장치를 해제하였습니다(%s)", mountPath.toUtf8().constData());
+                BOSS_TRACE("USB storage disconnected (%s)", mountPath.toUtf8().constData());
                 if(mView) mView->OnStorageUnmountedEvent(mountPath.toUtf8().constData());
             }
 		}
@@ -1897,12 +1914,12 @@
 		            {
 		                if(!String::Compare(CurAction, "add"))
                         {
-                            BOSS_TRACE("USB장치를 연결하였습니다");
+                            BOSS_TRACE("USB device connected");
 		                    mView->OnDeviceArrivalEvent(true);
                         }
 		                else if(!String::Compare(CurAction, "remove"))
                         {
-                            BOSS_TRACE("USB장치를 해제하였습니다");
+                            BOSS_TRACE("USB device disconnected");
                             mView->OnDeviceArrivalEvent(false);
                         }
 		            }
@@ -3639,7 +3656,7 @@
             void OnErrorOccurred(QSerialPort::SerialPortError error)
             {
                 const String ErrorText = String::Format(":%s at %s", errorString().toUtf8().constData(), portName().toUtf8().constData());
-                BOSS_TRACE("시리얼통신에서 에러가 발생하였습니다(%s)", (chars) ErrorText);
+                BOSS_TRACE("Serial communication error occurred (%s)", (chars) ErrorText);
                 Platform::BroadcastNotify("error", mPort + ErrorText, NT_Serial);
             }
             void OnRead()
