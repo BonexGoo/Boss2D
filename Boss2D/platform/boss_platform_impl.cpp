@@ -1011,6 +1011,26 @@ namespace BOSS
 
                     if(getpid)
                         *getpid = (ublock) ExecuteInfo.hProcess;
+                #elif BOSS_LINUX
+                    pid_t pid = fork();
+                    if(pid == 0)
+                    {
+                        if(dirpath && dirpath[0])
+                            chdir(dirpath);
+
+                        String Command;
+                        if(args && args[0])
+                            Command = String::Format("\"%s\" %s", exepath, args);
+                        else Command = String::Format("\"%s\"", exepath);
+
+                        execl("/bin/sh", "sh", "-c", (chars) Command, (chars) nullptr);
+                        _exit(127);
+                    }
+                    else if(pid > 0)
+                    {
+                        if(getpid)
+                            *getpid = (ublock) pid;
+                    }
                 #endif
             }
 
