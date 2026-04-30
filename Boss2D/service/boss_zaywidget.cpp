@@ -43,8 +43,11 @@ namespace BOSS
     void ZayWidgetDocumentP::RemoveCB(chars itemname, payload data)
     {
         if(Platform::File::ExistForDir(itemname))
+        {
             Platform::File::Search(itemname, RemoveCB, nullptr, true);
-        Platform::File::Remove(WString::FromChars(itemname), true);
+            Platform::File::RemoveDir(WString::FromChars(itemname), true);
+        }
+        else Platform::File::Remove(WString::FromChars(itemname));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
