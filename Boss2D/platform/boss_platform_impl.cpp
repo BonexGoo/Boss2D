@@ -1015,8 +1015,22 @@ namespace BOSS
                     pid_t pid = fork();
                     if(pid == 0)
                     {
+                        setsid();
                         if(dirpath && dirpath[0])
                             chdir(dirpath);
+
+                        int fd = open("/dev/null", O_RDWR);
+                        if(0 <= fd)
+                        {
+                            dup2(fd, STDIN_FILENO);
+                            if(hide)
+                            {
+                                dup2(fd, STDOUT_FILENO);
+                                dup2(fd, STDERR_FILENO);
+                            }
+                            if(2 < fd)
+                                close(fd);
+                        }
 
                         String Command;
                         if(args && args[0])
