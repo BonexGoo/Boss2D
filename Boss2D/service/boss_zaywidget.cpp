@@ -1236,7 +1236,7 @@ namespace BOSS
                 const bool IsPassword = (3 < pay.ParamCount())? (pay.Param(3).ToInteger() != 0) : false;
                 if(Platform::Popup::TextDialog(Text, Title, Topic, IsPassword))
                 if(pay.CanReturn())
-                    pay.Return("'" + Text + "'");
+                    pay.Return('\'' + Text + '\'');
             });
     }
 
@@ -1836,7 +1836,7 @@ namespace BOSS
             const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - Self.mCapturedCursorIndex));
             const String MergedText = FrontText + RearText;
             ZayWidgetDOM::SetComment(domname, MergedText);
-            if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+            if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + MergedText + '\'');
             Self.mCapturedCursorIndex -= LetterSize;
         }
     }
@@ -1984,7 +1984,7 @@ namespace BOSS
         const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
         const String MergedText = FrontText + added + RearText;
         ZayWidgetDOM::SetComment(domname, MergedText);
-        if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+        if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + MergedText + '\'');
         const sint32 AddedLength = added.Length();
         mCapturedCursorIndex += AddedLength;
     }
@@ -2052,7 +2052,7 @@ namespace BOSS
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
                 const String MergedText = FrontText + PastedText + RearText;
                 ZayWidgetDOM::SetComment(domname, MergedText);
-                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + MergedText + '\'');
                 mCapturedCursorIndex += PastedText.Length();
             }
         }
@@ -2072,7 +2072,7 @@ namespace BOSS
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex));
                 const String MergedText = FrontText + RearText;
                 ZayWidgetDOM::SetComment(domname, MergedText);
-                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + MergedText + '\'');
                 mCapturedCursorIndex -= LetterSize;
             }
         }
@@ -2087,7 +2087,7 @@ namespace BOSS
                 const String RearText = FieldText.Right(Math::Max(0, FieldText.Length() - mCapturedCursorIndex - LetterSize));
                 const String MergedText = FrontText + RearText;
                 ZayWidgetDOM::SetComment(domname, MergedText);
-                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + MergedText + "'");
+                if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + MergedText + '\'');
             }
         }
         jump(key == 27 || code == 16777216) // Esc
@@ -2095,7 +2095,7 @@ namespace BOSS
             if(view) view->clearCapture();
             mCapturedIMEChar = L'\0';
             ZayWidgetDOM::SetComment(domname, mCapturedSavedText);
-            if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", "'" + mCapturedSavedText + "'");
+            if(dualsave) ZayWidgetDOM::SetValue(domname + ".text", '\'' + mCapturedSavedText + '\'');
             mRenderInfoMap.Remove(uiname);
             mCopyAni = 0; // 복사애니중단
             mLastPressCode = 0; // 키해제

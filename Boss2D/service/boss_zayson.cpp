@@ -1271,11 +1271,11 @@ namespace BOSS
                         if(auto CurGate = (ZayGateElement*)(ZayUIElement*) mRefRoot->FindGate(UIName))
                         {
                             if(mCompID == mRefRoot->debugFocusedCompID())
-                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "jump to '" + UIName + "'");
+                                AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "jump to '" + UIName + '\'');
                             RenderChildren(CurGate->mChildren, panel, defaultname, defaultname, logs);
                         }
                         else if(mCompID == mRefRoot->debugFocusedCompID())
-                            AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "no gate called '" + UIName + "'");
+                            AddDebugLog(logs, panel, CurComponent->HasContentComponent(), "no gate called '" + UIName + '\'');
                     }
                     else
                     {
@@ -1981,7 +1981,7 @@ namespace BOSS
 
     void ZaySon::SetGlobalSolvers(ZaySolvers& solvers) const
     {
-        solvers.AtAdding().Link(mViewName, "gViewName").Parse("'" + mViewName + "'").Execute();
+        solvers.AtAdding().Link(mViewName, "gViewName").Parse('\'' + mViewName + '\'').Execute();
         solvers.AtAdding().Link(mViewName, "gOSName").Parse(String::Format("'%s'", Platform::Utility::GetOSName())).Execute();
         solvers.AtAdding().Link(mViewName, "gDeviceID").Parse(String::Format("'%s'", Platform::Utility::GetDeviceID())).Execute();
         solvers.AtAdding().Link(mViewName, "gLogicalDpi").Parse(String::FromInteger(Platform::Utility::GetLogicalDpi())).Execute();
