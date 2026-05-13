@@ -1707,7 +1707,7 @@
         {
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
             CanvasClass::get()->painter().setCompositionMode(QPainter::CompositionMode_Clear);
-            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, CanvasClass::get()->antialiasing());
             CanvasClass::get()->painter().eraseRect(QRectF(x, y, w, h));
             CanvasClass::get()->painter().setCompositionMode(OldCompositionMode);
         }
@@ -1730,7 +1730,7 @@
 
         void Platform::Graphics::FillRect(float x, float y, float w, float h)
         {
-            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, CanvasClass::get()->antialiasing());
             CanvasClass::get()->painter().fillRect(QRectF(x, y, w, h), CanvasClass::get()->color());
         }
 
@@ -1796,7 +1796,7 @@
             NewPen.setJoinStyle(Qt::MiterJoin);
             CanvasClass::get()->painter().setPen(NewPen);
             CanvasClass::get()->painter().setBrush(Qt::NoBrush);
-            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, false);
+            CanvasClass::get()->painter().setRenderHint(QPainter::Antialiasing, CanvasClass::get()->antialiasing());
             CanvasClass::get()->painter().drawRect(QRectF(x - thick / 2, y - thick / 2, w + thick, h + thick));
         }
 

@@ -314,10 +314,10 @@ namespace BOSS
                 if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto L = pay.Param(0).ToInteger();
-                auto T = pay.Param(1).ToInteger();
-                auto R = pay.Param(2).ToInteger();
-                auto B = pay.Param(3).ToInteger();
+                auto L = pay.Param(0).ToFloat();
+                auto T = pay.Param(1).ToFloat();
+                auto R = pay.Param(2).ToFloat();
+                auto B = pay.Param(3).ToFloat();
                 auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
                 return panel._push_clip_ui(L, T, R, B, Scissor, pay.UIName(), pay.MakeGesture());
             },
@@ -333,10 +333,10 @@ namespace BOSS
                 if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = pay.Param(0).ToInteger();
-                auto Y = pay.Param(1).ToInteger();
-                auto W = pay.Param(2).ToInteger();
-                auto H = pay.Param(3).ToInteger();
+                auto X = pay.Param(0).ToFloat();
+                auto Y = pay.Param(1).ToFloat();
+                auto W = pay.Param(2).ToFloat();
+                auto H = pay.Param(3).ToFloat();
                 auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
                 return panel._push_clip_ui(X, Y, X + W, Y + H, Scissor, pay.UIName(), pay.MakeGesture());
             },
@@ -352,10 +352,10 @@ namespace BOSS
                 if(pay.ParamCount() != 4 && pay.ParamCount() != 5)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = pay.Param(0).ToInteger();
-                auto Y = pay.Param(1).ToInteger();
-                auto RX = pay.Param(2).ToInteger();
-                auto RY = pay.Param(3).ToInteger();
+                auto X = pay.Param(0).ToFloat();
+                auto Y = pay.Param(1).ToFloat();
+                auto RX = pay.Param(2).ToFloat();
+                auto RY = pay.Param(3).ToFloat();
                 auto Scissor = (pay.ParamCount() < 5)? false : pay.ParamToBool(4, HasError);
                 return panel._push_clip_ui(X - RX, Y - RY, X + RX, Y + RY, Scissor, pay.UIName(), pay.MakeGesture());
             },
@@ -371,7 +371,7 @@ namespace BOSS
                 if(pay.ParamCount() != 1 && pay.ParamCount() != 2)
                     return panel._push_pass();
                 bool HasError = false;
-                auto V = pay.Param(0).ToInteger();
+                auto V = pay.Param(0).ToFloat();
                 auto Scissor = (pay.ParamCount() < 2)? false : pay.ParamToBool(1, HasError);
                 return panel._push_clip_ui(V, V, panel.w() - V, panel.h() - V, Scissor, pay.UIName(), pay.MakeGesture());
             },
@@ -384,8 +384,8 @@ namespace BOSS
                 if(pay.ParamCount() != 3 && pay.ParamCount() != 4)
                     return panel._push_pass();
                 bool HasError = false;
-                auto W = pay.Param(0).ToInteger();
-                auto H = pay.Param(1).ToInteger();
+                auto W = pay.Param(0).ToFloat();
+                auto H = pay.Param(1).ToFloat();
                 auto Align = pay.ParamToUIAlign(2, HasError);
                 auto Scissor = (pay.ParamCount() < 4)? false : pay.ParamToBool(3, HasError);
                 return panel._push_clip_ui_by_rect(Calc::AlignedRect(Align, W, H, panel.w(), panel.h()),
@@ -402,8 +402,8 @@ namespace BOSS
                 if(pay.ParamCount() != 2 && pay.ParamCount() != 3)
                     return panel._push_pass();
                 bool HasError = false;
-                auto X = pay.Param(0).ToInteger();
-                auto Y = pay.Param(1).ToInteger();
+                auto X = pay.Param(0).ToFloat();
+                auto Y = pay.Param(1).ToFloat();
                 auto Scissor = (pay.ParamCount() < 3)? false : pay.ParamToBool(2, HasError);
                 return panel._push_clip_ui(X, Y, panel.w() + X, panel.h() + Y, Scissor, pay.UIName(), pay.MakeGesture());
             },

@@ -9,19 +9,19 @@ namespace BOSS
     public:
         Clip();
         Clip(const Clip& rhs);
-        Clip(sint32 l, sint32 t, sint32 r, sint32 b, bool doScissor);
+        Clip(float l, float t, float r, float b, bool doScissor);
         ~Clip();
 
         Clip& operator=(const Clip& rhs);
 
-        inline const sint32 Width() const {return r - l;}
-        inline const sint32 Height() const {return b - t;}
+        inline const float Width() const {return r - l;}
+        inline const float Height() const {return b - t;}
 
     public:
-        sint32 l;
-        sint32 t;
-        sint32 r;
-        sint32 b;
+        float l;
+        float t;
+        float r;
+        float b;
         bool didscissor;
     };
     typedef Array<Clip, datatype_class_canmemcpy> Clips;

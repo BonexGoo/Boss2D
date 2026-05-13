@@ -658,7 +658,7 @@ namespace BOSS
         return Bmp::GetHeight(m_bitmap);
     }
 
-    Rect Image::CalcChildRect(const rect128& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
+    Rect Image::CalcChildRect(const Rect& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const
     {
         BOSS_ASSERT("xcount는 1이상의 값이어야 합니다", 1 <= xcount);
         BOSS_ASSERT("ycount는 1이상의 값이어야 합니다", 1 <= ycount);

@@ -73,7 +73,7 @@ namespace BOSS
         inline const sint32* PatchSrcYArray() const {return &m_patch_calced_src_y[0];}
 
     public:
-        Rect CalcChildRect(const rect128& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const;
+        Rect CalcChildRect(const Rect& guide, sint32 ix, sint32 iy, sint32 xcount, sint32 ycount) const;
         const Patcher* UpdatePatchBy(sint32 w, sint32 h) const;
 
     private:

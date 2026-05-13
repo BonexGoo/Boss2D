@@ -1269,7 +1269,7 @@ namespace BOSS
     }
 
     template<typename TYPE>
-    static void ChangeOrientation(TYPE& l, TYPE& t, TYPE& r, TYPE& b, const sint32 w, const sint32 h, const OrientationRole oldrole, const OrientationRole newrole)
+    static void ChangeOrientation(TYPE& l, TYPE& t, TYPE& r, TYPE& b, const double w, const double h, const OrientationRole oldrole, const OrientationRole newrole)
     {
         if(oldrole == newrole) return;
         TYPE RealL, RealT, RealR, RealB;
@@ -1317,7 +1317,7 @@ namespace BOSS
         const Clip& LastClip = m_stack_clip[-2];
         NewClip = Clip(LastClip.l / zoom, LastClip.t / zoom, LastClip.r / zoom, LastClip.b / zoom, true);
         ChangeOrientation(NewClip.l, NewClip.t, NewClip.r, NewClip.b,
-            m_width / LastZoom.scale + 0.5, m_height / LastZoom.scale + 0.5, LastZoom.orientation, NewZoom.orientation);
+            m_width / LastZoom.scale, m_height / LastZoom.scale, LastZoom.orientation, NewZoom.orientation);
         m_clipped_width = NewClip.Width();
         m_clipped_height = NewClip.Height();
 
@@ -1325,7 +1325,7 @@ namespace BOSS
         const Rect& LastScissor = m_stack_scissor[-2];
         NewScissor = Rect(LastScissor.l / zoom, LastScissor.t / zoom, LastScissor.r / zoom, LastScissor.b / zoom);
         ChangeOrientation(NewScissor.l, NewScissor.t, NewScissor.r, NewScissor.b,
-            m_width / LastZoom.scale + 0.5, m_height / LastZoom.scale + 0.5, LastZoom.orientation, NewZoom.orientation);
+            m_width / LastZoom.scale, m_height / LastZoom.scale, LastZoom.orientation, NewZoom.orientation);
         Platform::Graphics::SetScissor(NewScissor.l, NewScissor.t, NewScissor.Width(), NewScissor.Height());
         return StackBinder(this, ST_Zoom);
     }

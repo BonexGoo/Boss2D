@@ -345,8 +345,8 @@ namespace BOSS
             BOSS_DECLARE_NONCOPYABLE_INITIALIZED_CLASS(InsideBinder, mRefImage(rhs.mRefImage), mGuideRect(rhs.mGuideRect))
             friend class ZayPanel;
         private:
-            InsideBinder(rect128 rect) : mRefImage((const Image*) 1), mGuideRect(rect) {}
-            InsideBinder(const Image* image, rect128 rect = {0, 0, 0, 0}) : mRefImage(image), mGuideRect(rect) {}
+            InsideBinder(Rect rect) : mRefImage((const Image*) 1), mGuideRect(rect) {}
+            InsideBinder(const Image* image, Rect rect = {0, 0, 0, 0}) : mRefImage(image), mGuideRect(rect) {}
         public:
             ~InsideBinder() {}
         public:
@@ -367,7 +367,7 @@ namespace BOSS
             }
         private:
             const Image* mRefImage;
-            rect128 mGuideRect;
+            Rect mGuideRect;
         };
 
     public:
