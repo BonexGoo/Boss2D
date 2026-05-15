@@ -756,10 +756,24 @@ namespace BOSS
         return String(Result, ResultLength);
     }
 
+    String String::FromInteger(const uint32 value)
+    {
+        char Result[1024];
+        const sint32 ResultLength = boss_snprintf(Result, 1024, "%u", value);
+        return String(Result, ResultLength);
+    }
+
     String String::FromInteger(const sint64 value)
     {
         char Result[1024];
         const sint32 ResultLength = boss_snprintf(Result, 1024, "%lld", value);
+        return String(Result, ResultLength);
+    }
+
+    String String::FromInteger(const uint64 value)
+    {
+        char Result[1024];
+        const sint32 ResultLength = boss_snprintf(Result, 1024, "%llu", value);
         return String(Result, ResultLength);
     }
 

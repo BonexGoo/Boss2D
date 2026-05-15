@@ -300,10 +300,20 @@ namespace BOSS
         /// @return 객체
         static String FromInteger(const sint32 value);
 
+        /// @brief 정수식 객체생성(uint32)
+        /// @param value : 컨버팅할 정수
+        /// @return 객체
+        static String FromInteger(const uint32 value);
+
         /// @brief 정수식 객체생성(sint64)
         /// @param value : 컨버팅할 정수
         /// @return 객체
         static String FromInteger(const sint64 value);
+
+        /// @brief 정수식 객체생성(uint64)
+        /// @param value : 컨버팅할 정수
+        /// @return 객체
+        static String FromInteger(const uint64 value);
 
         /// @brief 실수식 객체생성(float)
         /// @param value : 컨버팅할 실수
