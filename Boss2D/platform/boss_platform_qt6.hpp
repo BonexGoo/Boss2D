@@ -1771,17 +1771,54 @@
             #elif BOSS_LINUX
                 if(ssid.isEmpty()) return false;
 
-                QProcess P;
-                if(password.isEmpty())
-                    P.start("nmcli", {"dev", "wifi", "connect", ssid});
-                else P.start("nmcli", {"dev", "wifi", "connect", ssid, "password", password});
+                const QString Ssid = ssid;
+                const QString Password = password;
+                QThread* Thread = QThread::create([this, Ssid, Password]()
+                {
+                    auto RunNmcli = [](const QStringList& args)->bool
+                    {
+                        QProcess P;
+                        P.start("nmcli", args);
+                        if(!P.waitForFinished(15000))
+                        {
+                            qDebug() << "[WIFI] timeout =" << args;
+                            P.kill();
+                            P.waitForFinished();
+                            return false;
+                        }
 
-                if(!P.waitForFinished(15000))
-                    return false;
+                        const QString StdOut = QString::fromUtf8(P.readAllStandardOutput());
+                        const QString StdErr = QString::fromUtf8(P.readAllStandardError());
+                        qDebug() << "[WIFI] args =" << args;
+                        qDebug() << "[WIFI] stdout =" << StdOut;
+                        qDebug() << "[WIFI] stderr =" << StdErr;
+                        qDebug() << "[WIFI] exitCode =" << P.exitCode();
 
-                const bool Result = (P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0);
-                Enum();
-                return Result;
+                        return (P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0);
+                    };
+
+                    RunNmcli({"connection", "delete", Ssid});
+
+                    bool Result = RunNmcli({"connection", "add",
+                        "type", "wifi",
+                        "ifname", "wlan0",
+                        "con-name", Ssid,
+                        "ssid", Ssid});
+
+                    if(Result && !Password.isEmpty())
+                        Result = RunNmcli({"connection", "modify", Ssid,
+                            "wifi-sec.key-mgmt", "wpa-psk",
+                            "wifi-sec.psk", Password});
+
+                    if(Result)
+                        Result = RunNmcli({"connection", "up", Ssid});
+
+                    qDebug() << "[WIFI] connectResult =" << Result;
+                    QMetaObject::invokeMethod(this, &NetworkWatcher::Enum, Qt::QueuedConnection);
+                });
+                connect(Thread, &QThread::finished, Thread, &QObject::deleteLater);
+                Thread->start();
+                return true;
             #else
                 (void) ssid;
                 (void) password;
@@ -1815,28 +1852,48 @@
                 Enum();
                 return Result;
             #elif BOSS_LINUX
-                QProcess P;
-                P.start("nmcli", {"-t", "-f", "DEVICE,TYPE,STATE", "dev", "status"});
-                if(!P.waitForFinished(3000) || P.exitStatus() != QProcess::NormalExit)
-                    return false;
-
-                bool Result = false;
-                const QString Out = QString::fromUtf8(P.readAllStandardOutput());
-                const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
-                for(const QString& Line : Lines)
+                QThread* Thread = QThread::create([this]()
                 {
-                    const QStringList Cols = Line.split(':');
-                    if(3 <= Cols.size() && Cols[1] == "wifi" && Cols[2] == "connected")
+                    auto RunNmcli = [](const QStringList& args, int timeout)->QString
                     {
-                        QProcess D;
-                        D.start("nmcli", {"dev", "disconnect", Cols[0]});
-                        if(D.waitForFinished(8000) && D.exitStatus() == QProcess::NormalExit && D.exitCode() == 0)
-                            Result = true;
-                    }
-                }
+                        QProcess P;
+                        P.start("nmcli", args);
+                        if(!P.waitForFinished(timeout))
+                        {
+                            qDebug() << "[WIFI] timeout =" << args;
+                            P.kill();
+                            P.waitForFinished();
+                            return QString();
+                        }
 
-                Enum();
-                return Result;
+                        const QString StdOut = QString::fromUtf8(P.readAllStandardOutput());
+                        const QString StdErr = QString::fromUtf8(P.readAllStandardError());
+                        qDebug() << "[WIFI] args =" << args;
+                        qDebug() << "[WIFI] stdout =" << StdOut;
+                        qDebug() << "[WIFI] stderr =" << StdErr;
+                        qDebug() << "[WIFI] exitCode =" << P.exitCode();
+                        return (P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0)? StdOut : QString();
+                    };
+
+                    bool Result = false;
+                    const QString Out = RunNmcli({"-t", "-f", "DEVICE,TYPE,STATE", "dev", "status"}, 3000);
+                    const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
+                    for(const QString& Line : Lines)
+                    {
+                        const QStringList Cols = Line.split(':');
+                        if(3 <= Cols.size() && Cols[1] == "wifi" && Cols[2] == "connected")
+                        {
+                            const QString Ret = RunNmcli({"dev", "disconnect", Cols[0]}, 8000);
+                            if(!Ret.isEmpty()) Result = true;
+                        }
+                    }
+
+                    qDebug() << "[WIFI] disconnectResult =" << Result;
+                    QMetaObject::invokeMethod(this, &NetworkWatcher::Enum, Qt::QueuedConnection);
+                });
+                connect(Thread, &QThread::finished, Thread, &QObject::deleteLater);
+                Thread->start();
+                return true;
             #else
                 return false;
             #endif
