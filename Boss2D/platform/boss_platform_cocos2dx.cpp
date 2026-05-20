@@ -2461,6 +2461,18 @@
             return {};
         }
 
+        bool Platform::Socket::ConnectWifi(chars ssid, chars password)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
+        bool Platform::Socket::DisconnectWifi()
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////

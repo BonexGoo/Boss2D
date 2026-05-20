@@ -2221,6 +2221,18 @@
             return {};
         }
 
+        bool Platform::Socket::ConnectWifi(chars ssid, chars password)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
+        bool Platform::Socket::DisconnectWifi()
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////

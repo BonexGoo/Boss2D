@@ -212,7 +212,8 @@
 
 namespace BOSS
 {
-    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Touch, CT_Tick, CT_DeviceArrival, CT_StorageMounted, CT_StorageUnmounted};
+    enum CommandType {CT_Create, CT_CanQuit, CT_Destroy, CT_Activate, CT_Size, CT_Touch, CT_Tick,
+        CT_DeviceArrival, CT_StorageMounted, CT_StorageUnmounted, CT_NetworkChanged};
     enum GestureType {GT_Null,
         GT_Moving, GT_MovingIdle, GT_MovingLosed, // 마우스전용
         GT_Pressed, GT_InReleased, GT_OutReleased, GT_CancelReleased, // 터치
@@ -893,6 +894,7 @@ namespace BOSS
         void OnDeviceArrival(bool connected) override;
         void OnStorageMounted(chars path) override;
         void OnStorageUnmounted(chars path) override;
+        void OnNetworkChanged(chars state) override;
         void OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out) override;
         void OnRender(sint32 width, sint32 height, float l, float t, float r, float b) override;
         void OnTouch(TouchType type, sint32 id, sint32 x, sint32 y) override;

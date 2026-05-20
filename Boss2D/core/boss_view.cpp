@@ -182,6 +182,10 @@ namespace BOSS
     {
     }
 
+    void View::OnNetworkChanged(chars state)
+    {
+    }
+
     void View::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
     {
     }

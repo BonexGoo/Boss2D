@@ -3773,6 +3773,20 @@
             return Result;
         }
 
+        bool Platform::Socket::ConnectWifi(chars ssid, chars password)
+        {
+            if(g_window)
+                return g_window->ConnectWifi(ssid, password);
+            return false;
+        }
+
+        bool Platform::Socket::DisconnectWifi()
+        {
+            if(g_window)
+                return g_window->DisconnectWifi();
+            return false;
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // SERVER
         ////////////////////////////////////////////////////////////////////////////////

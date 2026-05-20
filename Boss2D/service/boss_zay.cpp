@@ -2113,6 +2113,13 @@ namespace BOSS
         m_viewfunc.m_unlock();
     }
 
+    void ZayView::OnNetworkChanged(chars state)
+    {
+        m_viewfunc.m_lock(m_data);
+        m_viewfunc.m_command(CT_NetworkChanged, String(state), nullptr);
+        m_viewfunc.m_unlock();
+    }
+
     void ZayView::OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share* out)
     {
         m_viewfunc.m_lock(m_data);

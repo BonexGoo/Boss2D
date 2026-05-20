@@ -1821,6 +1821,16 @@ public:
         /// @param ipservice : IP를 알려주는 사이트
         /// @return IP4주소
         static ip4address GetPublicAddress(chars ipservice = "https://api.ipify.org");
+
+        /// @brief 해당 Wifi에 연결하기
+        /// @param ssid : Wifi의 ID
+        /// @param password : 보안 Wifi의 경우 비밀번호
+        /// @return 연결 수행여부
+        static bool ConnectWifi(chars ssid, chars password = nullptr);
+
+        /// @brief Wifi를 연결해제하기
+        /// @return 연결해제 수행여부
+        static bool DisconnectWifi();
     };
 
     ////////////////////////////////////////////////////////////////////////////////

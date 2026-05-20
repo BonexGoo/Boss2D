@@ -108,6 +108,8 @@
     #if BOSS_WINDOWS
         #include <Windows.h>
         #include <Dbt.h>
+        #include <wlanapi.h>
+        #pragma comment(lib, "wlanapi.lib")
     #endif
 
     #define USER_FRAMECOUNT (60)
@@ -333,6 +335,11 @@
             if(mViewManager)
                 mViewManager->OnStorageUnmounted(path);
         }
+        void SendNetworkChanged(chars state)
+        {
+            if(mViewManager)
+                mViewManager->OnNetworkChanged(state);
+        }
         void Update(sint32 count, chars arg)
         {
             if(count <= WR_NeedExit)
@@ -387,6 +394,10 @@
         void OnStorageUnmountedEvent(chars path)
         {
             SendStorageUnmounted(path);
+        }
+        void OnNetworkChangedEvent(chars state)
+        {
+            SendNetworkChanged(state);
         }
         void OnCloseEvent(QCloseEvent* event)
         {
@@ -1645,6 +1656,497 @@
         #endif
     };
 
+    class NetworkWatcher : public QObject
+    {
+        Q_OBJECT
+    public:
+        explicit NetworkWatcher(QObject* parent) : QObject(parent)
+        {
+            connect(&mTimer, &QTimer::timeout, this, &NetworkWatcher::Enum);
+        }
+
+        void Start()
+        {
+            #if BOSS_WINDOWS
+                if(!mWlan)
+                {
+                    DWORD Ver = 0;
+                    if(WlanOpenHandle(2, nullptr, &Ver, &mWlan) == ERROR_SUCCESS)
+                    {
+                        DWORD Prev = 0;
+                        WlanRegisterNotification(mWlan,
+                            WLAN_NOTIFICATION_SOURCE_ACM | WLAN_NOTIFICATION_SOURCE_MSM,
+                            FALSE, &NetworkWatcher::WlanNotify, this, nullptr, &Prev);
+                    }
+                }
+            #endif
+            Enum();
+            mTimer.start(3000);
+        }
+
+        void Stop()
+        {
+            mTimer.stop();
+            #if BOSS_WINDOWS
+                if(mWlan)
+                {
+                    DWORD Prev = 0;
+                    WlanRegisterNotification(mWlan, WLAN_NOTIFICATION_SOURCE_NONE,
+                        TRUE, nullptr, nullptr, nullptr, &Prev);
+                    WlanCloseHandle(mWlan, nullptr);
+                    mWlan = nullptr;
+                }
+            #endif
+        }
+        bool ConnectWifi(const QString& ssid, const QString& password)
+        {
+            #if BOSS_WINDOWS
+                if(ssid.isEmpty()) return false;
+                if(!mWlan)
+                {
+                    DWORD Ver = 0;
+                    if(WlanOpenHandle(2, nullptr, &Ver, &mWlan) != ERROR_SUCCESS)
+                        return false;
+                }
+
+                PWLAN_INTERFACE_INFO_LIST IfList = nullptr;
+                if(WlanEnumInterfaces(mWlan, nullptr, &IfList) != ERROR_SUCCESS || !IfList)
+                    return false;
+
+                bool Result = false;
+                for(DWORD i = 0; i < IfList->dwNumberOfItems && !Result; ++i)
+                {
+                    const WLAN_INTERFACE_INFO& If = IfList->InterfaceInfo[i];
+                    const QString Ssid = XmlEscape(ssid);
+                    const QString Password = XmlEscape(password);
+                    const QString Xml = password.isEmpty()?
+                        QString("<?xml version=\"1.0\"?>"
+                            "<WLANProfile xmlns=\"http://www.microsoft.com/networking/WLAN/profile/v1\">"
+                            "<name>%1</name>"
+                            "<SSIDConfig><SSID><name>%1</name></SSID></SSIDConfig>"
+                            "<connectionType>ESS</connectionType>"
+                            "<connectionMode>manual</connectionMode>"
+                            "<MSM><security><authEncryption>"
+                            "<authentication>open</authentication>"
+                            "<encryption>none</encryption>"
+                            "<useOneX>false</useOneX>"
+                            "</authEncryption></security></MSM>"
+                            "</WLANProfile>").arg(Ssid) :
+                        QString("<?xml version=\"1.0\"?>"
+                            "<WLANProfile xmlns=\"http://www.microsoft.com/networking/WLAN/profile/v1\">"
+                            "<name>%1</name>"
+                            "<SSIDConfig><SSID><name>%1</name></SSID></SSIDConfig>"
+                            "<connectionType>ESS</connectionType>"
+                            "<connectionMode>manual</connectionMode>"
+                            "<MSM><security>"
+                            "<authEncryption>"
+                            "<authentication>WPA2PSK</authentication>"
+                            "<encryption>AES</encryption>"
+                            "<useOneX>false</useOneX>"
+                            "</authEncryption>"
+                            "<sharedKey>"
+                            "<keyType>passPhrase</keyType>"
+                            "<protected>false</protected>"
+                            "<keyMaterial>%2</keyMaterial>"
+                            "</sharedKey>"
+                            "</security></MSM>"
+                            "</WLANProfile>").arg(Ssid, Password);
+
+                    DWORD Reason = 0;
+                    if(WlanSetProfile(mWlan, &If.InterfaceGuid, 0, (LPCWSTR) Xml.utf16(),
+                        nullptr, TRUE, nullptr, &Reason) == ERROR_SUCCESS)
+                    {
+                        WLAN_CONNECTION_PARAMETERS Params = {};
+                        Params.wlanConnectionMode = wlan_connection_mode_profile;
+                        Params.strProfile = (LPCWSTR) ssid.utf16();
+                        Params.dot11BssType = dot11_BSS_type_infrastructure;
+                        if(WlanConnect(mWlan, &If.InterfaceGuid, &Params, nullptr) == ERROR_SUCCESS)
+                            Result = true;
+                    }
+                }
+
+                WlanFreeMemory(IfList);
+                Enum();
+                return Result;
+            #elif BOSS_LINUX
+                if(ssid.isEmpty()) return false;
+
+                QProcess P;
+                if(password.isEmpty())
+                    P.start("nmcli", {"dev", "wifi", "connect", ssid});
+                else P.start("nmcli", {"dev", "wifi", "connect", ssid, "password", password});
+
+                if(!P.waitForFinished(15000))
+                    return false;
+
+                const bool Result = (P.exitStatus() == QProcess::NormalExit && P.exitCode() == 0);
+                Enum();
+                return Result;
+            #else
+                (void) ssid;
+                (void) password;
+                return false;
+            #endif
+        }
+
+        bool DisconnectWifi()
+        {
+            #if BOSS_WINDOWS
+                if(!mWlan)
+                {
+                    DWORD Ver = 0;
+                    if(WlanOpenHandle(2, nullptr, &Ver, &mWlan) != ERROR_SUCCESS)
+                        return false;
+                }
+
+                PWLAN_INTERFACE_INFO_LIST IfList = nullptr;
+                if(WlanEnumInterfaces(mWlan, nullptr, &IfList) != ERROR_SUCCESS || !IfList)
+                    return false;
+
+                bool Result = false;
+                for(DWORD i = 0; i < IfList->dwNumberOfItems; ++i)
+                {
+                    const WLAN_INTERFACE_INFO& If = IfList->InterfaceInfo[i];
+                    if(WlanDisconnect(mWlan, &If.InterfaceGuid, nullptr) == ERROR_SUCCESS)
+                        Result = true;
+                }
+
+                WlanFreeMemory(IfList);
+                Enum();
+                return Result;
+            #elif BOSS_LINUX
+                QProcess P;
+                P.start("nmcli", {"-t", "-f", "DEVICE,TYPE,STATE", "dev", "status"});
+                if(!P.waitForFinished(3000) || P.exitStatus() != QProcess::NormalExit)
+                    return false;
+
+                bool Result = false;
+                const QString Out = QString::fromUtf8(P.readAllStandardOutput());
+                const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
+                for(const QString& Line : Lines)
+                {
+                    const QStringList Cols = Line.split(':');
+                    if(3 <= Cols.size() && Cols[1] == "wifi" && Cols[2] == "connected")
+                    {
+                        QProcess D;
+                        D.start("nmcli", {"dev", "disconnect", Cols[0]});
+                        if(D.waitForFinished(8000) && D.exitStatus() == QProcess::NormalExit && D.exitCode() == 0)
+                            Result = true;
+                    }
+                }
+
+                Enum();
+                return Result;
+            #else
+                return false;
+            #endif
+        }
+
+        void Enum()
+        {
+            QString State;
+
+            #if BOSS_LINUX
+                QList<NetItem> Items;
+                QProcess P;
+                P.start("nmcli", {"-t", "-f", "ACTIVE,SSID,SIGNAL,SECURITY", "dev", "wifi", "list"});
+                if(P.waitForFinished(3000) && P.exitStatus() == QProcess::NormalExit)
+                {
+                    const QString Out = QString::fromUtf8(P.readAllStandardOutput());
+                    const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
+                    for(const QString& Line : Lines)
+                    {
+                        const QStringList Cols = Line.split(':');
+                        if(4 <= Cols.size())
+                        {
+                            NetItem Cur;
+                            Cur.Connected = (Cols[0] == "yes");
+                            Cur.Ssid = Cols[1];
+                            Cur.Signal = Cols[2].toInt();
+                            Cur.Security = Cols.mid(3).join(":");
+                            if(!Cur.Ssid.isEmpty())
+                                MergeItem(Items, Cur);
+                        }
+                    }
+                }
+
+                QProcess IpP;
+                IpP.start("hostname", {"-I"});
+                if(IpP.waitForFinished(1000) && IpP.exitStatus() == QProcess::NormalExit)
+                {
+                    const QString Ip = QString::fromUtf8(IpP.readAllStandardOutput()).trimmed().split(' ', Qt::SkipEmptyParts).value(0);
+                    for(NetItem& Cur : Items)
+                        if(Cur.Connected)
+                            Cur.Ip = Ip;
+                }
+                State = BuildState(Items);
+            #elif BOSS_WINDOWS
+                State = EnumWindows();
+            #endif
+
+            if(State != mLastState)
+            {
+                mLastState = State;
+                emit NetworkChanged(State);
+            }
+        }
+
+    signals:
+        void NetworkChanged(const QString& state);
+
+    private:
+        struct NetItem
+        {
+            bool Connected {false};
+            QString Ssid;
+            sint32 Signal {0};
+            QString Security;
+            QString Ip;
+        };
+
+        static void MergeItem(QList<NetItem>& items, const NetItem& item)
+        {
+            for(NetItem& Cur : items)
+            {
+                if(Cur.Ssid == item.Ssid)
+                {
+                    if(item.Connected) Cur.Connected = true;
+                    if(Cur.Signal < item.Signal) Cur.Signal = item.Signal;
+                    if(Cur.Security.isEmpty()) Cur.Security = item.Security;
+                    if(!item.Ip.isEmpty()) Cur.Ip = item.Ip;
+                    return;
+                }
+            }
+            items.append(item);
+        }
+
+        static QString BuildState(const QList<NetItem>& items)
+        {
+            QStringList Lines;
+            for(const NetItem& Cur : items)
+            {
+                Lines << QString("%1|%2|%3|%4|%5")
+                    .arg(Cur.Connected ? 1 : 0)
+                    .arg(Cur.Ssid)
+                    .arg(Cur.Signal)
+                    .arg(Cur.Security)
+                    .arg(Cur.Ip);
+            }
+            return Lines.join('\n');
+        }
+
+        #if BOSS_WINDOWS
+            HANDLE mWlan = nullptr;
+
+            static QString XmlEscape(const QString& text)
+            {
+                QString Result = text;
+                Result.replace("&", "&amp;");
+                Result.replace("<", "&lt;");
+                Result.replace(">", "&gt;");
+                Result.replace("\"", "&quot;");
+                Result.replace("'", "&apos;");
+                return Result;
+            }
+
+            static QString SsidToString(const DOT11_SSID& ssid)
+            {
+                if(ssid.uSSIDLength == 0) return QString();
+                return QString::fromUtf8((const char*) ssid.ucSSID, (int) ssid.uSSIDLength);
+            }
+
+            static QString AuthToString(DOT11_AUTH_ALGORITHM auth)
+            {
+                switch(auth)
+                {
+                case DOT11_AUTH_ALGO_80211_OPEN: return "OPEN";
+                case DOT11_AUTH_ALGO_80211_SHARED_KEY: return "SHARED";
+                case DOT11_AUTH_ALGO_WPA: return "WPA";
+                case DOT11_AUTH_ALGO_WPA_PSK: return "WPA-PSK";
+                case DOT11_AUTH_ALGO_WPA_NONE: return "WPA-NONE";
+                case DOT11_AUTH_ALGO_RSNA: return "WPA2";
+                case DOT11_AUTH_ALGO_RSNA_PSK: return "WPA2-PSK";
+                case DOT11_AUTH_ALGO_WPA3: return "WPA3";
+                case DOT11_AUTH_ALGO_WPA3_SAE: return "WPA3-SAE";
+                case DOT11_AUTH_ALGO_OWE: return "OWE";
+                default: break;
+                }
+                return QString::number((int) auth);
+            }
+
+            static QString LocalIp()
+            {
+                const QList<QHostAddress> List = QNetworkInterface::allAddresses();
+                for(const QHostAddress& Cur : List)
+                    if(Cur.protocol() == QAbstractSocket::IPv4Protocol && !Cur.isLoopback())
+                        return Cur.toString();
+                return QString();
+            }
+
+
+            static void EnumWindowsNetsh(QList<NetItem>& items, const QString& connectedSsid, const QString& connectedIp)
+            {
+                QProcess P;
+                P.start("netsh.exe", {"wlan", "show", "networks", "mode=bssid"});
+                if(!P.waitForFinished(5000) || P.exitStatus() != QProcess::NormalExit)
+                    return;
+
+                const QString Out = QString::fromLocal8Bit(P.readAllStandardOutput());
+                const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
+                NetItem Cur;
+                bool HasItem = false;
+
+                auto Flush = [&]()
+                {
+                    if(HasItem && !Cur.Ssid.isEmpty() && (0 < Cur.Signal || !Cur.Security.isEmpty()))
+                    {
+                        Cur.Connected = (!connectedSsid.isEmpty() && Cur.Ssid == connectedSsid);
+                        if(Cur.Connected) Cur.Ip = connectedIp;
+                        MergeItem(items, Cur);
+                    }
+                    Cur = NetItem();
+                    HasItem = false;
+                };
+
+                for(QString Line : Lines)
+                {
+                    Line = Line.trimmed();
+                    const sint32 Pos = Line.indexOf(':');
+                    if(Pos < 0) continue;
+
+                    const QString Key = Line.left(Pos).trimmed();
+                    const QString Value = Line.mid(Pos + 1).trimmed();
+                    if(Key.startsWith("SSID", Qt::CaseInsensitive) && !Key.startsWith("BSSID", Qt::CaseInsensitive))
+                    {
+                        Flush();
+                        Cur.Ssid = Value;
+                        HasItem = true;
+                    }
+                    else if(HasItem && 0 <= Value.indexOf('%'))
+                    {
+                        Cur.Signal = Value.left(Value.indexOf('%')).trimmed().toInt();
+                    }
+                    else if(HasItem && (0 <= Key.indexOf("Authentication", 0, Qt::CaseInsensitive) || 0 <= Key.indexOf(QString::fromUtf8("인증"))))
+                    {
+                        Cur.Security = Value;
+                    }
+                }
+                Flush();
+            }
+
+            QString EnumWindows()
+            {
+                QList<NetItem> Items;
+                if(!mWlan)
+                {
+                    DWORD Ver = 0;
+                    if(WlanOpenHandle(2, nullptr, &Ver, &mWlan) != ERROR_SUCCESS)
+                        return BuildState(Items);
+                }
+
+                PWLAN_INTERFACE_INFO_LIST IfList = nullptr;
+                if(WlanEnumInterfaces(mWlan, nullptr, &IfList) != ERROR_SUCCESS || !IfList)
+                    return BuildState(Items);
+
+                for(DWORD i = 0; i < IfList->dwNumberOfItems; ++i)
+                {
+                    const WLAN_INTERFACE_INFO& If = IfList->InterfaceInfo[i];
+                    QString ConnectedSsid;
+                    QString ConnectedIp;
+
+                    DWORD DataSize = 0;
+                    WLAN_OPCODE_VALUE_TYPE OpCode;
+                    PWLAN_CONNECTION_ATTRIBUTES Attr = nullptr;
+                    if(WlanQueryInterface(mWlan, &If.InterfaceGuid,
+                        wlan_intf_opcode_current_connection, nullptr,
+                        &DataSize, (PVOID*) &Attr, &OpCode) == ERROR_SUCCESS && Attr)
+                    {
+                        if(Attr->isState == wlan_interface_state_connected)
+                        {
+                            ConnectedSsid = SsidToString(Attr->wlanAssociationAttributes.dot11Ssid);
+                            ConnectedIp = LocalIp();
+
+                            NetItem Cur;
+                            Cur.Connected = true;
+                            Cur.Ssid = ConnectedSsid;
+                            Cur.Signal = (sint32) Attr->wlanAssociationAttributes.wlanSignalQuality;
+                            Cur.Security = AuthToString(Attr->wlanSecurityAttributes.dot11AuthAlgorithm);
+                            Cur.Ip = ConnectedIp;
+                            if(!Cur.Ssid.isEmpty())
+                                MergeItem(Items, Cur);
+                        }
+                        WlanFreeMemory(Attr);
+                    }
+
+                    PWLAN_AVAILABLE_NETWORK_LIST NetList = nullptr;
+                    if(WlanGetAvailableNetworkList(mWlan, &If.InterfaceGuid, 0, nullptr, &NetList) == ERROR_SUCCESS && NetList)
+                    {
+                        for(DWORD j = 0; j < NetList->dwNumberOfItems; ++j)
+                        {
+                            const WLAN_AVAILABLE_NETWORK& Net = NetList->Network[j];
+                            NetItem Cur;
+                            Cur.Ssid = SsidToString(Net.dot11Ssid);
+                            Cur.Signal = (sint32) Net.wlanSignalQuality;
+                            Cur.Security = AuthToString(Net.dot11DefaultAuthAlgorithm);
+                            Cur.Connected = ((Net.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED) != 0) || (!ConnectedSsid.isEmpty() && Cur.Ssid == ConnectedSsid);
+                            if(Cur.Connected) Cur.Ip = ConnectedIp;
+                            if(!Cur.Ssid.isEmpty())
+                                MergeItem(Items, Cur);
+                        }
+                        WlanFreeMemory(NetList);
+                    }
+
+                    EnumWindowsNetsh(Items, ConnectedSsid, ConnectedIp);
+                    WlanScan(mWlan, &If.InterfaceGuid, nullptr, nullptr, nullptr);
+                }
+
+                WlanFreeMemory(IfList);
+                return BuildState(Items);
+            }
+
+            static void WINAPI WlanNotify(PWLAN_NOTIFICATION_DATA data, PVOID context)
+            {
+                NetworkWatcher* Self = (NetworkWatcher*) context;
+                if(!Self || !data) return;
+
+                bool NeedEnum = false;
+                if(data->NotificationSource == WLAN_NOTIFICATION_SOURCE_ACM)
+                {
+                    switch(data->NotificationCode)
+                    {
+                    case wlan_notification_acm_connection_complete:
+                    case wlan_notification_acm_disconnected:
+                    case wlan_notification_acm_scan_complete:
+                    case wlan_notification_acm_scan_fail:
+                        NeedEnum = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                else if(data->NotificationSource == WLAN_NOTIFICATION_SOURCE_MSM)
+                {
+                    switch(data->NotificationCode)
+                    {
+                    case wlan_notification_msm_connected:
+                    case wlan_notification_msm_disconnected:
+                    case wlan_notification_msm_signal_quality_change:
+                        NeedEnum = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                if(NeedEnum)
+                    QMetaObject::invokeMethod(Self, [Self](){Self->Enum();}, Qt::QueuedConnection);
+            }
+        #endif
+
+    private:
+        QTimer mTimer;
+        QString mLastState;
+    };
+
     class MainWindow : public GroupingWindow
     {
         Q_OBJECT
@@ -1669,11 +2171,19 @@
                 }
             #endif
 
-            // USB Mass-Storage watcher (USB memory sticks, etc.)
             mUsbStorageWatcher = new UsbStorageWatcher(this);
             connect(mUsbStorageWatcher, &UsbStorageWatcher::UsbStorageChanged,
                 this, &MainWindow::onUsbStorageChanged);
-            mUsbStorageWatcher->Start();
+            mNetworkWatcher = new NetworkWatcher(this);
+            connect(mNetworkWatcher, &NetworkWatcher::NetworkChanged,
+                this, &MainWindow::onNetworkChanged);
+            QTimer::singleShot(0, this, [this]()
+            {
+                if(mUsbStorageWatcher)
+                    mUsbStorageWatcher->Start();
+                if(mNetworkWatcher)
+                    mNetworkWatcher->Start();
+            });
         }
         ~MainWindow()
         {
@@ -1691,6 +2201,12 @@
                 mUsbStorageWatcher->Stop();
                 delete mUsbStorageWatcher;
                 mUsbStorageWatcher = nullptr;
+            }
+            if(mNetworkWatcher)
+            {
+                mNetworkWatcher->Stop();
+                delete mNetworkWatcher;
+                mNetworkWatcher = nullptr;
             }
 
             #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
@@ -1775,6 +2291,23 @@
         void EnumStorage()
         {
             mUsbStorageWatcher->Enum();
+        }
+        void EnumNetwork()
+        {
+            mNetworkWatcher->Enum();
+        }
+        bool ConnectWifi(chars ssid, chars password)
+        {
+            if(mNetworkWatcher)
+                return mNetworkWatcher->ConnectWifi(QString::fromUtf8(ssid),
+                    (password && password[0])? QString::fromUtf8(password) : QString());
+            return false;
+        }
+        bool DisconnectWifi()
+        {
+            if(mNetworkWatcher)
+                return mNetworkWatcher->DisconnectWifi();
+            return false;
         }
         void SetWindowWebUrl(chars bgweb)
         {
@@ -1925,7 +2458,6 @@
 		    if(mounted)
             {
                 if(mountPath.isEmpty()) return;
-
                 String DirPath = mountPath.toUtf8().constData();
                 DirPath = boss_normalpath(DirPath, nullptr);
                 #if !BOSS_WINDOWS
@@ -1962,6 +2494,10 @@
                 if(mView) mView->OnStorageUnmountedEvent(mountPath.toUtf8().constData());
             }
 		}
+        void onNetworkChanged(const QString& state)
+        {
+            if(mView) mView->OnNetworkChangedEvent(state.toUtf8().constData());
+        }
         #if defined(QT_HAVE_SERIALPORT) && BOSS_LINUX
 		    void onUsbDeviceActivated(int fd)
 		    {
@@ -2036,6 +2572,7 @@
             QSocketNotifier* mUsbNotifier {nullptr};
         #endif
         UsbStorageWatcher* mUsbStorageWatcher {nullptr};
+        NetworkWatcher* mNetworkWatcher {nullptr};
     };
 
     class ThreadClass : public QThread
