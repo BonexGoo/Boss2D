@@ -1719,7 +1719,13 @@
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
-        id_animate Platform::Animate::OpenForLottie(chars filename)
+        id_animate Platform::Animate::OpenForLottieFile(chars filename)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
+        id_animate Platform::Animate::OpenForLottieJson(chars jsontext)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
@@ -1730,13 +1736,37 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
-        float Platform::Animate::Seek(id_animate animate, float delta, bool rewind)
+        sint32 Platform::Animate::GetWidth(id_animate animate)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return 0;
         }
 
-        void Platform::Animate::Draw(id_animate animate, float ox, float oy, float scale, float rotate)
+        sint32 Platform::Animate::GetHeight(id_animate animate)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
+        }
+
+        sint32 Platform::Animate::GetFrameCount(id_animate animate)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
+        }
+
+        float Platform::Animate::Seek(id_animate animate, float sec, bool loop)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
+        }
+
+        sint32 Platform::Animate::Next(id_animate animate, bool loop)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return 0;
+        }
+
+        void Platform::Animate::Draw(id_animate animate, float x, float y, float width, float height, float degree)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

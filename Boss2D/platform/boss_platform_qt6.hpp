@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <platform/boss_platform.hpp>
 #include <platform/boss_platform_impl.hpp>
+#include <memory>
+#include <cmath>
 
 #undef size_t
 #undef ssize_t
@@ -57,6 +59,15 @@
         #include <QGraphicsScene>
         #include <QGraphicsPixmapItem>
         #include <QGraphicsBlurEffect>
+        #if defined(__has_include)
+            #if __has_include(<rlottie.h>)
+                #include <rlottie.h>
+                #define BOSS_HAVE_RLOTTIE 1
+            #endif
+        #endif
+        #ifndef BOSS_HAVE_RLOTTIE
+            #define BOSS_HAVE_RLOTTIE 0
+        #endif
     #endif
 
     #include <QProcess>
@@ -2775,6 +2786,223 @@
         ClockClass* m_prev;
         ClockClass* m_next;
         sint64 m_laptime;
+    };
+
+    class AnimateClass
+    {
+        BOSS_DECLARE_NONCOPYABLE_CLASS(AnimateClass)
+    public:
+        AnimateClass() = default;
+        virtual ~AnimateClass() = default;
+
+    public:
+        virtual bool OpenFile(chars filename) = 0;
+        virtual bool OpenJson(chars jsontext) = 0;
+        virtual sint32 GetWidth() const = 0;
+        virtual sint32 GetHeight() const = 0;
+        virtual sint32 GetFrameCount() const = 0;
+        virtual float Seek(float sec, bool loop) = 0;
+        virtual sint32 Next(bool loop) = 0;
+        virtual void Draw(float x, float y, float width, float height, float degree) = 0;
+    };
+
+    class AnimateLottieClass : public AnimateClass
+    {
+        BOSS_DECLARE_NONCOPYABLE_CLASS(AnimateLottieClass)
+    public:
+        AnimateLottieClass() = default;
+        ~AnimateLottieClass() override = default;
+
+    public:
+        bool OpenFile(chars filename) override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                mAni = rlottie::Animation::loadFromFile(filename);
+                if(!mAni) return false;
+
+                size_t AniWidth = 0, AniHeight = 0;
+                mAni->size(AniWidth, AniHeight);
+                mWidth = (sint32) AniWidth;
+                mHeight = (sint32) AniHeight;
+                mFrameCount = (sint32) mAni->totalFrame();
+                mFrameRate = (0 < mAni->frameRate())? (float) mAni->frameRate() : 60.0f;
+                mDuration = (float) mAni->duration();
+                if(mDuration <= 0.0f && 0 < mFrameCount)
+                    mDuration = (float) mFrameCount / mFrameRate;
+                mCurFrame = 0;
+                ClearCache();
+
+                return (0 < mWidth && 0 < mHeight && 0 < mFrameCount);
+            #else
+                return false;
+            #endif
+        }
+
+        bool OpenJson(chars jsontext) override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                mAni = rlottie::Animation::loadFromData(jsontext, "");
+                if(!mAni) return false;
+
+                size_t AniWidth = 0, AniHeight = 0;
+                mAni->size(AniWidth, AniHeight);
+                mWidth = (sint32) AniWidth;
+                mHeight = (sint32) AniHeight;
+                mFrameCount = (sint32) mAni->totalFrame();
+                mFrameRate = (0 < mAni->frameRate())? (float) mAni->frameRate() : 60.0f;
+                mDuration = (float) mAni->duration();
+                if(mDuration <= 0.0f && 0 < mFrameCount)
+                    mDuration = (float) mFrameCount / mFrameRate;
+                mCurFrame = 0;
+                ClearCache();
+
+                return (0 < mWidth && 0 < mHeight && 0 < mFrameCount);
+            #else
+                return false;
+            #endif
+        }
+
+        sint32 GetWidth() const override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                return mWidth;
+            #else
+                return 0;
+            #endif
+        }
+
+        sint32 GetHeight() const override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                return mHeight;
+            #else
+                return 0;
+            #endif
+        }
+
+        sint32 GetFrameCount() const override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                return mFrameCount;
+            #else
+                return 0;
+            #endif
+        }
+
+        float Seek(float sec, bool loop) override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                if(!mAni) return 0.0f;
+
+                if(0.0f < mDuration)
+                {
+                    if(loop)
+                    {
+                        sec = (float) std::fmod(sec, mDuration);
+                        if(sec < 0.0f) sec += mDuration;
+                    }
+                    else
+                    {
+                        if(sec < 0.0f) sec = 0.0f;
+                        if(mDuration < sec) sec = mDuration;
+                    }
+                }
+                else sec = 0.0f;
+
+                double Pos = (0.0f < mDuration)? (double) sec / (double) mDuration : 0.0;
+                if(Pos < 0.0) Pos = 0.0;
+                if(1.0 < Pos) Pos = 1.0;
+
+                mCurFrame = (sint32) mAni->frameAtPos(Pos);
+                if(mCurFrame < 0) mCurFrame = 0;
+                if(0 < mFrameCount && mFrameCount <= mCurFrame)
+                    mCurFrame = mFrameCount - 1;
+                return mDuration;
+            #else
+                return 0.0f;
+            #endif
+        }
+
+        sint32 Next(bool loop) override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                if(!mAni || mFrameCount <= 0) return -1;
+
+                sint32 NewFrame = mCurFrame + 1;
+                if(mFrameCount <= NewFrame)
+                    NewFrame = (loop)? 0 : mFrameCount - 1;
+
+                mCurFrame = NewFrame;
+                return mCurFrame;
+            #else
+                return -1;
+            #endif
+        }
+
+        void Draw(float x, float y, float width, float height, float degree) override
+        {
+            #if BOSS_HAVE_RLOTTIE
+                if(!mAni || !CanvasClass::enabled()) return;
+
+                const sint32 TargetWidth = (sint32) (width + 0.5f);
+                const sint32 TargetHeight = (sint32) (height + 0.5f);
+                if(TargetWidth <= 0 || TargetHeight <= 0) return;
+
+                if(mCacheWidth != TargetWidth || mCacheHeight != TargetHeight || mPixels.empty() || mImage.isNull())
+                {
+                    mCacheWidth = TargetWidth;
+                    mCacheHeight = TargetHeight;
+                    const size_t PixelCount = (size_t) mCacheWidth * (size_t) mCacheHeight;
+                    mPixels.resize(PixelCount);
+                    mImage = QImage((uchar*) mPixels.data(), mCacheWidth, mCacheHeight,
+                        mCacheWidth * (sint32) sizeof(uint32_t), QImage::Format_ARGB32_Premultiplied);
+                    mCachedFrame = -1;
+                }
+                if(mPixels.empty() || mImage.isNull()) return;
+
+                if(mCachedFrame != mCurFrame)
+                {
+                    memset(mPixels.data(), 0, mPixels.size() * sizeof(uint32_t));
+                    rlottie::Surface Surface(mPixels.data(),
+                        (size_t) mCacheWidth, (size_t) mCacheHeight, (size_t) (mCacheWidth * sizeof(uint32_t)));
+                    mAni->renderSync((size_t) mCurFrame, Surface, false);
+                    mCachedFrame = mCurFrame;
+                }
+
+                QPainter& Painter = CanvasClass::get()->painter();
+                Painter.save();
+                Painter.translate(x + width / 2.0f, y + height / 2.0f);
+                Painter.rotate(degree);
+                Painter.drawImage(QRectF(-width / 2.0f, -height / 2.0f, width, height), mImage);
+                Painter.restore();
+            #endif
+        }
+
+    private:
+        #if BOSS_HAVE_RLOTTIE
+            void ClearCache()
+            {
+                mPixels.clear();
+                mImage = QImage();
+                mCachedFrame = -1;
+                mCacheWidth = 0;
+                mCacheHeight = 0;
+            }
+
+        private:
+            std::unique_ptr<rlottie::Animation> mAni;
+            std::vector<uint32_t> mPixels;
+            QImage mImage;
+            sint32 mCachedFrame {-1};
+            sint32 mCacheWidth {0};
+            sint32 mCacheHeight {0};
+            sint32 mWidth {0};
+            sint32 mHeight {0};
+            sint32 mFrameCount {0};
+            sint32 mCurFrame {0};
+            float mFrameRate {60.0f};
+            float mDuration {0.0f};
+        #endif
     };
 
     #ifdef QT_HAVE_MULTIMEDIA

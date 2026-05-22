@@ -136,6 +136,40 @@
     <ClCompile Include="..\service\boss_zay.cpp" />
     <ClCompile Include="..\service\boss_zayson.cpp" />
     <ClCompile Include="..\service\boss_zaywidget.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieanimation.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\binding\c\lottieanimation_capi.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem_capi.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottiekeypath.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieloader.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottiemodel.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieparser.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieproxymodel.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_math.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_raster.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_stroker.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\stb\stb_image.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\varenaalloc.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbezier.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbitmap.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbrush.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdasher.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdebug.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawable.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_common.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_neon.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_sse2.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\velapsedtimer.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vimageloader.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vinterpolator.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vmatrix.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpainter.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpath.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpathmesure.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vraster.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vrect.cpp" />
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vrle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\addon\boss_addon_aac.hpp" />
@@ -240,6 +274,82 @@
     <ClInclude Include="..\platform\boss_platform_cocos2dx.hpp" />
     <ClInclude Include="..\platform\boss_platform_impl.hpp" />
     <ClInclude Include="..\platform\boss_platform_native.hpp" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\config.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottie.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottiecommon.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottie_capi.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiefiltermodel.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiekeypath.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiemodel.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\allocators.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\document.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\encodedstream.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\encodings.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\error\en.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\error\error.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\filereadstream.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\filewritestream.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\fwd.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\clzll.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\itoa.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\meta.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\pow10.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\regex.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\stack.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\strtod.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\swap.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\memorybuffer.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\memorystream.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\pointer.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\prettywriter.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\rapidjson.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\reader.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\schema.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\stream.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\stringbuffer.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\writer.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_math.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_raster.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_stroker.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_types.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\pixman\pixman-arm-neon-asm.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\stb\stb_image.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\varenaalloc.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbezier.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbitmap.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbrush.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vcowptr.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdasher.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdebug.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdrawable.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\velapsedtimer.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vglobal.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vimageloader.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vinterpolator.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vline.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vmatrix.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpainter.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpath.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpathmesure.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpoint.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vraster.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vrect.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vrle.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vsharedptr.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vstackallocator.h" />
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vtaskqueue.h" />
     <QtMoc Include="..\platform\boss_platform_qt6.hpp" />
     <ClInclude Include="..\service\boss_asyncfilemanager.hpp" />
     <ClInclude Include="..\service\boss_backey.hpp" />
@@ -270,6 +380,9 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="boss2d.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\thirdparty\rlottie-0.2\src\vector\pixman\pixman-arm-neon-asm.S" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64B9A321-85F9-49FE-8F41-C4DE8136050C}</ProjectGuid>
@@ -363,8 +476,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RLOTTIE_BUILD;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;..\thirdparty\rlottie-0.2;..\thirdparty\rlottie-0.2\inc;..\thirdparty\rlottie-0.2\src\lottie;..\thirdparty\rlottie-0.2\src\vector;..\thirdparty\rlottie-0.2\src\vector\freetype;..\thirdparty\rlottie-0.2\src\vector\pixman;..\thirdparty\rlottie-0.2\src\vector\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -391,8 +504,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RLOTTIE_BUILD;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;..\thirdparty\rlottie-0.2;..\thirdparty\rlottie-0.2\inc;..\thirdparty\rlottie-0.2\src\lottie;..\thirdparty\rlottie-0.2\src\vector;..\thirdparty\rlottie-0.2\src\vector\freetype;..\thirdparty\rlottie-0.2\src\vector\pixman;..\thirdparty\rlottie-0.2\src\vector\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -420,8 +533,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RLOTTIE_BUILD;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;..\thirdparty\rlottie-0.2;..\thirdparty\rlottie-0.2\inc;..\thirdparty\rlottie-0.2\src\lottie;..\thirdparty\rlottie-0.2\src\vector;..\thirdparty\rlottie-0.2\src\vector\freetype;..\thirdparty\rlottie-0.2\src\vector\pixman;..\thirdparty\rlottie-0.2\src\vector\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -449,8 +562,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RLOTTIE_BUILD;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>GeneratedFiles\$(ConfigurationName);GeneratedFiles;..\thirdparty\rlottie-0.2;..\thirdparty\rlottie-0.2\inc;..\thirdparty\rlottie-0.2\src\lottie;..\thirdparty\rlottie-0.2\src\vector;..\thirdparty\rlottie-0.2\src\vector\freetype;..\thirdparty\rlottie-0.2\src\vector\pixman;..\thirdparty\rlottie-0.2\src\vector\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>

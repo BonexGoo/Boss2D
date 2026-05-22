@@ -1312,31 +1312,60 @@ public:
     /// @brief 애니메이션지원
     class Animate
     {
-        /// @brief 로띠로 애니메이션 열기
+    public:
+        /// @brief 파일로 Lottie애니메이션 열기
         /// @param filename : 파일명
         /// @return 애니메이션ID
         /// @see Close
-        static id_animate OpenForLottie(chars filename);
+        static id_animate OpenForLottieFile(chars filename);
+
+        /// @brief Json로 Lottie애니메이션 열기
+        /// @param jsontext : JSON데이터
+        /// @return 애니메이션ID
+        /// @see Close
+        static id_animate OpenForLottieJson(chars jsontext);
 
         /// @brief 애니메이션 닫기
         /// @param animate : 애니메이션ID
         /// @see OpenForLottie
         static void Close(id_animate animate);
 
+        /// @brief 애니메이션 가로크기
+        /// @param animate : 애니메이션ID
+        /// @see 가로크기
+        static sint32 GetWidth(id_animate animate);
+
+        /// @brief 애니메이션 세로크기
+        /// @param animate : 애니메이션ID
+        /// @see 세로크기
+        static sint32 GetHeight(id_animate animate);
+
+        /// @brief 애니메이션 프레임수
+        /// @param animate : 애니메이션ID
+        /// @see 프레임수
+        static sint32 GetFrameCount(id_animate animate);
+
         /// @brief 애니메이션 포커싱
         /// @param animate : 애니메이션ID
-        /// @param delta : 진행할 시간(초)
-        /// @param rewind : 되감기여부
-        /// @return 포커싱결과(초)
-        static float Seek(id_animate animate, float delta, bool rewind);
+        /// @param sec : 포커싱할 시간(초)
+        /// @param loop : 루프여부
+        /// @return 전체 애니메이션 시간(초)
+        static float Seek(id_animate animate, float sec, bool loop);
+
+        /// @brief 애니메이션 넘김
+        /// @param animate : 애니메이션ID
+        /// @param loop : 루프여부
+        /// @return 넘긴후 프레임번호
+        static sint32 Next(id_animate animate, bool loop);
 
         /// @brief 애니메이션 출력
         /// @param animate : 애니메이션ID
-        /// @param ox : 출력위치X(px)
-        /// @param oy : 출력위치Y(px)
-        /// @param scale : 기준크기(1)
-        /// @param rotate : 회전각도(360)
-        static void Draw(id_animate animate, float ox, float oy, float scale, float rotate);
+        /// @param x : 좌측위치(px)
+        /// @param y : 상단위치(px)
+        /// @param w : 가로길이(px)
+        /// @param h : 세로길이(px)
+        /// @param degree : 회전값(360˚기준)
+        static void Draw(id_animate animate, float x, float y, float width, float height, float degree);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

@@ -2397,26 +2397,68 @@
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
-        id_animate Platform::Animate::OpenForLottie(chars filename)
+        id_animate Platform::Animate::OpenForLottieFile(chars filename)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            buffer NewAnimate = Buffer::Alloc<AnimateLottieClass>(BOSS_DBG 1);
+            if(((AnimateLottieClass*) NewAnimate)->OpenFile(filename))
+                return (id_animate) NewAnimate;
+            Buffer::Free(NewAnimate);
+            return nullptr;
+        }
+
+        id_animate Platform::Animate::OpenForLottieJson(chars jsontext)
+        {
+            buffer NewAnimate = Buffer::Alloc<AnimateLottieClass>(BOSS_DBG 1);
+            if(((AnimateLottieClass*) NewAnimate)->OpenJson(jsontext))
+                return (id_animate) NewAnimate;
+            Buffer::Free(NewAnimate);
             return nullptr;
         }
 
         void Platform::Animate::Close(id_animate animate)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            Buffer::Free((buffer) animate);
         }
 
-        float Platform::Animate::Seek(id_animate animate, float delta, bool rewind)
+        sint32 Platform::Animate::GetWidth(id_animate animate)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAnimate = (const AnimateClass*) animate)
+                return CurAnimate->GetWidth();
             return 0;
         }
 
-        void Platform::Animate::Draw(id_animate animate, float ox, float oy, float scale, float rotate)
+        sint32 Platform::Animate::GetHeight(id_animate animate)
         {
-            BOSS_ASSERT("Further development is needed.", false);
+            if(auto CurAnimate = (const AnimateClass*) animate)
+                return CurAnimate->GetHeight();
+            return 0;
+        }
+
+        sint32 Platform::Animate::GetFrameCount(id_animate animate)
+        {
+            if(auto CurAnimate = (const AnimateClass*) animate)
+                return CurAnimate->GetFrameCount();
+            return 0;
+        }
+
+        float Platform::Animate::Seek(id_animate animate, float sec, bool loop)
+        {
+            if(auto CurAnimate = (AnimateClass*) animate)
+                return CurAnimate->Seek(sec, loop);
+            return 0;
+        }
+
+        sint32 Platform::Animate::Next(id_animate animate, bool loop)
+        {
+            if(auto CurAnimate = (AnimateClass*) animate)
+                return CurAnimate->Next(loop);
+            return 0;
+        }
+
+        void Platform::Animate::Draw(id_animate animate, float x, float y, float width, float height, float degree)
+        {
+            if(auto CurAnimate = (AnimateClass*) animate)
+                CurAnimate->Draw(x, y, width, height, degree);
         }
 
         ////////////////////////////////////////////////////////////////////////////////

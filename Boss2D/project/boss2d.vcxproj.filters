@@ -28,6 +28,48 @@
     <Filter Include="Boss2D\platform\win32">
       <UniqueIdentifier>{807cfafa-cf2c-4557-8be9-304ca1d55fe6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Boss2D\thirdparty">
+      <UniqueIdentifier>{6726cf43-2f6b-4578-bafb-d155f3ab8d2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2">
+      <UniqueIdentifier>{24611c3e-bda4-466a-a35b-e0b1de5dcdfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\inc">
+      <UniqueIdentifier>{a24b9f59-bd39-460f-b0a4-6d83b526c0c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src">
+      <UniqueIdentifier>{d22360fd-8599-4f58-a4da-46b613c1b662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\lottie">
+      <UniqueIdentifier>{edb7cbd5-4f9b-4f60-ab4a-6433bdee9785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson">
+      <UniqueIdentifier>{b8ac09f7-38e9-4566-a9a6-5402d31f975e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\error">
+      <UniqueIdentifier>{28c5ba71-bbd7-431e-8700-5156da61b581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal">
+      <UniqueIdentifier>{698b4a51-1e35-4f50-b0ef-0f0c1ccfb455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes">
+      <UniqueIdentifier>{059c6e69-85f6-4f71-b3a9-1a11b0a91e73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\vector">
+      <UniqueIdentifier>{ec38ad7c-ebb8-4b97-aa21-0f4ca04d8b54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\vector\freetype">
+      <UniqueIdentifier>{75377fdb-6f3b-4baf-9830-e356f58b7cd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\vector\pixman">
+      <UniqueIdentifier>{57a3b9b3-6a21-403c-96f4-cff0810d82f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\vector\stb">
+      <UniqueIdentifier>{fea73755-ea92-418c-b3e2-809be021573e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Boss2D\thirdparty\rlottie-0.2\src\binding\c">
+      <UniqueIdentifier>{4e59b9cb-53f4-4494-9a58-e9b8407ed8cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\element\boss_clip.cpp">
@@ -380,6 +422,108 @@
     </ClCompile>
     <ClCompile Include="..\platform\boss_platform_qt6.cpp">
       <Filter>Boss2D\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\binding\c\lottieanimation_capi.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\binding\c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieanimation.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem_capi.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottiekeypath.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieloader.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottiemodel.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieparser.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\lottie\lottieproxymodel.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\varenaalloc.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbezier.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbitmap.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vbrush.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdasher.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdebug.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawable.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_common.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_neon.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper_sse2.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\velapsedtimer.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vimageloader.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vinterpolator.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vmatrix.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpainter.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpath.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vpathmesure.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vraster.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vrect.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\vrle.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_math.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_raster.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_stroker.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\rlottie-0.2\src\vector\stb\stb_image.cpp">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\stb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -749,6 +893,234 @@
     <ClInclude Include="..\core\boss_stdmap.hpp">
       <Filter>Boss2D\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\config.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottie.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottie_capi.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\inc\rlottiecommon.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiefiltermodel.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottieitem.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiekeypath.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\lottiemodel.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\allocators.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\cursorstreamwrapper.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\document.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\encodedstream.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\encodings.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\filereadstream.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\filewritestream.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\fwd.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\istreamwrapper.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\memorybuffer.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\memorystream.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\ostreamwrapper.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\pointer.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\prettywriter.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\rapidjson.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\reader.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\schema.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\stream.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\stringbuffer.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\writer.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\error\en.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\error\error.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\biginteger.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\clzll.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\diyfp.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\dtoa.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\ieee754.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\itoa.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\meta.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\pow10.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\regex.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\stack.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\strfunc.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\strtod.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal\swap.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes\inttypes.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes\stdint.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\lottie\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\varenaalloc.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbezier.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbitmap.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vbrush.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vcowptr.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdasher.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdebug.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdrawable.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vdrawhelper.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\velapsedtimer.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vglobal.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vimageloader.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vinterpolator.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vline.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vmatrix.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpainter.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpath.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpathmesure.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vpoint.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vraster.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vrect.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vrle.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vsharedptr.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vstackallocator.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\vtaskqueue.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_math.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_raster.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_stroker.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\freetype\v_ft_types.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\pixman\pixman-arm-neon-asm.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\pixman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\rlottie-0.2\src\vector\stb\stb_image.h">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\stb</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="..\platform\boss_platform_qt5.hpp">
@@ -760,5 +1132,10 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="boss2d.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\thirdparty\rlottie-0.2\src\vector\pixman\pixman-arm-neon-asm.S">
+      <Filter>Boss2D\thirdparty\rlottie-0.2\src\vector\pixman</Filter>
+    </None>
   </ItemGroup>
 </Project>
