@@ -1678,7 +1678,10 @@
 
         void Start()
         {
-            #if BOSS_WINDOWS
+            #if BOSS_LINUX
+                StartLinuxMonitor();
+                Enum();
+            #elif BOSS_WINDOWS
                 if(!mWlan)
                 {
                     DWORD Ver = 0;
@@ -1690,15 +1693,21 @@
                             FALSE, &NetworkWatcher::WlanNotify, this, nullptr, &Prev);
                     }
                 }
+                // Windows에서 3초 주기 Wi-Fi 열거/스캔은 UI 버벅임의 원인이다.
+                // 최초 1회만 백그라운드로 조회하고, 이후는 WLAN 알림시에만 debounce 조회한다.
+                RequestWindowsEnum();
             #endif
-            Enum();
-            mTimer.start(3000);
         }
 
         void Stop()
         {
             mTimer.stop();
-            #if BOSS_WINDOWS
+            #if BOSS_LINUX
+                StopLinuxProcesses();
+            #elif BOSS_WINDOWS
+                mWindowsStarted = false;
+                mWindowsEnumDebounce.stop();
+                mWindowsEnumPending = false;
                 if(mWlan)
                 {
                     DWORD Prev = 0;
@@ -1777,7 +1786,7 @@
                 }
 
                 WlanFreeMemory(IfList);
-                Enum();
+                RequestWindowsEnum();
                 return Result;
             #elif BOSS_LINUX
                 if(ssid.isEmpty()) return false;
@@ -1860,7 +1869,7 @@
                 }
 
                 WlanFreeMemory(IfList);
-                Enum();
+                RequestWindowsEnum();
                 return Result;
             #elif BOSS_LINUX
                 QThread* Thread = QThread::create([this]()
@@ -1912,51 +1921,11 @@
 
         void Enum()
         {
-            QString State;
-
             #if BOSS_LINUX
-                QList<NetItem> Items;
-                QProcess P;
-                P.start("nmcli", {"-t", "-f", "ACTIVE,SSID,SIGNAL,SECURITY", "dev", "wifi", "list"});
-                if(P.waitForFinished(3000) && P.exitStatus() == QProcess::NormalExit)
-                {
-                    const QString Out = QString::fromUtf8(P.readAllStandardOutput());
-                    const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
-                    for(const QString& Line : Lines)
-                    {
-                        const QStringList Cols = Line.split(':');
-                        if(4 <= Cols.size())
-                        {
-                            NetItem Cur;
-                            Cur.Connected = (Cols[0] == "yes");
-                            Cur.Ssid = Cols[1];
-                            Cur.Signal = Cols[2].toInt();
-                            Cur.Security = Cols.mid(3).join(":");
-                            if(!Cur.Ssid.isEmpty())
-                                MergeItem(Items, Cur);
-                        }
-                    }
-                }
-
-                QProcess IpP;
-                IpP.start("hostname", {"-I"});
-                if(IpP.waitForFinished(1000) && IpP.exitStatus() == QProcess::NormalExit)
-                {
-                    const QString Ip = QString::fromUtf8(IpP.readAllStandardOutput()).trimmed().split(' ', Qt::SkipEmptyParts).value(0);
-                    for(NetItem& Cur : Items)
-                        if(Cur.Connected)
-                            Cur.Ip = Ip;
-                }
-                State = BuildState(Items);
+                EnumLinuxAsync();
             #elif BOSS_WINDOWS
-                State = EnumWindows();
+                RequestWindowsEnum();
             #endif
-
-            if(State != mLastState)
-            {
-                mLastState = State;
-                emit NetworkChanged(State);
-            }
         }
 
     signals:
@@ -2003,8 +1972,277 @@
             return Lines.join('\n');
         }
 
+        #if BOSS_LINUX
+            QProcess* mLinuxMonitorProcess = nullptr;
+            bool mLinuxStarted = false;
+            QProcess* mWifiEnumProcess = nullptr;
+            QProcess* mIpEnumProcess = nullptr;
+            QList<NetItem> mEnumItems;
+            bool mEnumRunning = false;
+            bool mEnumPending = false;
+
+            void StartLinuxMonitor()
+            {
+                mLinuxStarted = true;
+                if(mLinuxMonitorProcess)
+                    return;
+
+                QProcess* P = new QProcess(this);
+                mLinuxMonitorProcess = P;
+
+                connect(P, &QProcess::readyReadStandardOutput, this, [this, P]()
+                {
+                    if(mLinuxMonitorProcess != P)
+                        return;
+                    P->readAllStandardOutput();
+                    RequestLinuxEnum();
+                });
+                connect(P, &QProcess::readyReadStandardError, this, [P]()
+                {
+                    P->readAllStandardError();
+                });
+                connect(P, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                    this, [this, P](int, QProcess::ExitStatus)
+                {
+                    if(mLinuxMonitorProcess != P)
+                        return;
+                    mLinuxMonitorProcess = nullptr;
+                    P->deleteLater();
+                    if(mLinuxStarted)
+                        QTimer::singleShot(3000, this, &NetworkWatcher::StartLinuxMonitor);
+                });
+                connect(P, &QProcess::errorOccurred, this, [this, P](QProcess::ProcessError)
+                {
+                    if(mLinuxMonitorProcess != P)
+                        return;
+                    mLinuxMonitorProcess = nullptr;
+                    P->deleteLater();
+                    if(mLinuxStarted)
+                        QTimer::singleShot(3000, this, &NetworkWatcher::StartLinuxMonitor);
+                });
+
+                // nmcli monitor는 장시간 대기하면서 변경 이벤트만 알려준다.
+                // dev wifi list처럼 3초마다 AP 스캔을 강제하지 않는다.
+                P->start("nmcli", {"monitor"});
+            }
+
+            void StopLinuxProcesses()
+            {
+                auto KillProcess = [](QProcess*& p)
+                {
+                    if(p)
+                    {
+                        QObject::disconnect(p, nullptr, nullptr, nullptr);
+                        if(p->state() != QProcess::NotRunning)
+                            p->kill();
+                        p->deleteLater();
+                        p = nullptr;
+                    }
+                };
+                KillProcess(mLinuxMonitorProcess);
+                KillProcess(mWifiEnumProcess);
+                KillProcess(mIpEnumProcess);
+                mLinuxStarted = false;
+                mEnumRunning = false;
+                mEnumPending = false;
+                mEnumItems.clear();
+            }
+
+            void RequestLinuxEnum()
+            {
+                if(!mLinuxEnumDebounce.isActive())
+                {
+                    mLinuxEnumDebounce.setSingleShot(true);
+                    connect(&mLinuxEnumDebounce, &QTimer::timeout, this, &NetworkWatcher::EnumLinuxAsync, Qt::UniqueConnection);
+                }
+                mLinuxEnumDebounce.start(700);
+            }
+
+            QTimer mLinuxEnumDebounce;
+
+            void EnumLinuxAsync()
+            {
+                if(mEnumRunning)
+                {
+                    mEnumPending = true;
+                    return;
+                }
+
+                mEnumRunning = true;
+                mEnumPending = false;
+                mEnumItems.clear();
+                StartWifiEnumProcess();
+            }
+
+            void FinishLinuxEnum(const QString& state)
+            {
+                mEnumRunning = false;
+
+                if(state != mLastState)
+                {
+                    mLastState = state;
+                    emit NetworkChanged(state);
+                }
+
+                if(mEnumPending)
+                    QTimer::singleShot(0, this, &NetworkWatcher::EnumLinuxAsync);
+            }
+
+            void StartWifiEnumProcess()
+            {
+                if(mWifiEnumProcess)
+                    return;
+
+                QProcess* P = new QProcess(this);
+                mWifiEnumProcess = P;
+
+                connect(P, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                    this, [this, P](int, QProcess::ExitStatus ExitStatus)
+                {
+                    if(mWifiEnumProcess != P)
+                        return;
+
+                    if(ExitStatus == QProcess::NormalExit)
+                    {
+                        const QString Out = QString::fromUtf8(P->readAllStandardOutput());
+                        const QStringList Lines = Out.split('\n', Qt::SkipEmptyParts);
+                        for(const QString& Line : Lines)
+                        {
+                            const QStringList Cols = Line.split(':');
+                            if(4 <= Cols.size())
+                            {
+                                NetItem Cur;
+                                Cur.Connected = (Cols[0] == "yes");
+                                Cur.Ssid = Cols[1];
+                                Cur.Signal = Cols[2].toInt();
+                                Cur.Security = Cols.mid(3).join(":");
+                                if(!Cur.Ssid.isEmpty())
+                                    MergeItem(mEnumItems, Cur);
+                            }
+                        }
+                    }
+
+                    mWifiEnumProcess = nullptr;
+                    P->deleteLater();
+                    StartIpEnumProcess();
+                });
+                connect(P, &QProcess::errorOccurred, this, [this, P](QProcess::ProcessError)
+                {
+                    if(mWifiEnumProcess != P)
+                        return;
+                    mWifiEnumProcess = nullptr;
+                    P->deleteLater();
+                    StartIpEnumProcess();
+                });
+                QTimer::singleShot(3000, P, [this, P]()
+                {
+                    if(mWifiEnumProcess == P && P->state() != QProcess::NotRunning)
+                        P->kill();
+                });
+
+                // --rescan no: 주기적인 강제 Wi-Fi 스캔을 피한다.
+                // nmcli 버전에 따라 --rescan 미지원이면 errorOccurred/finished 후 IP만 갱신된다.
+                P->start("nmcli", {"-t", "-f", "ACTIVE,SSID,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "no"});
+            }
+
+            void StartIpEnumProcess()
+            {
+                if(mIpEnumProcess)
+                    return;
+
+                QProcess* P = new QProcess(this);
+                mIpEnumProcess = P;
+
+                connect(P, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                    this, [this, P](int, QProcess::ExitStatus ExitStatus)
+                {
+                    if(mIpEnumProcess != P)
+                        return;
+
+                    if(ExitStatus == QProcess::NormalExit)
+                    {
+                        const QString Ip = QString::fromUtf8(P->readAllStandardOutput()).trimmed().split(' ', Qt::SkipEmptyParts).value(0);
+                        for(NetItem& Cur : mEnumItems)
+                            if(Cur.Connected)
+                                Cur.Ip = Ip;
+                    }
+
+                    const QString State = BuildState(mEnumItems);
+                    mIpEnumProcess = nullptr;
+                    P->deleteLater();
+                    FinishLinuxEnum(State);
+                });
+                connect(P, &QProcess::errorOccurred, this, [this, P](QProcess::ProcessError)
+                {
+                    if(mIpEnumProcess != P)
+                        return;
+                    const QString State = BuildState(mEnumItems);
+                    mIpEnumProcess = nullptr;
+                    P->deleteLater();
+                    FinishLinuxEnum(State);
+                });
+                QTimer::singleShot(1000, P, [this, P]()
+                {
+                    if(mIpEnumProcess == P && P->state() != QProcess::NotRunning)
+                        P->kill();
+                });
+                P->start("hostname", {"-I"});
+            }
+        #endif
+
         #if BOSS_WINDOWS
             HANDLE mWlan = nullptr;
+            bool mWindowsStarted = true;
+            bool mWindowsEnumRunning = false;
+            bool mWindowsEnumPending = false;
+            QTimer mWindowsEnumDebounce;
+
+            void RequestWindowsEnum()
+            {
+                if(!mWindowsStarted)
+                    return;
+                if(!mWindowsEnumDebounce.isActive())
+                {
+                    mWindowsEnumDebounce.setSingleShot(true);
+                    connect(&mWindowsEnumDebounce, &QTimer::timeout,
+                        this, &NetworkWatcher::EnumWindowsAsync, Qt::UniqueConnection);
+                }
+                mWindowsEnumDebounce.start(700);
+            }
+
+            void EnumWindowsAsync()
+            {
+                if(mWindowsEnumRunning)
+                {
+                    mWindowsEnumPending = true;
+                    return;
+                }
+
+                mWindowsEnumRunning = true;
+                mWindowsEnumPending = false;
+
+                QPointer<NetworkWatcher> Self(this);
+                QThread* Thread = QThread::create([Self]()
+                {
+                    const QString State = EnumWindowsSnapshot();
+                    QMetaObject::invokeMethod(qApp, [Self, State]()
+                    {
+                        if(!Self)
+                            return;
+
+                        Self->mWindowsEnumRunning = false;
+                        if(State != Self->mLastState)
+                        {
+                            Self->mLastState = State;
+                            emit Self->NetworkChanged(State);
+                        }
+                        if(Self->mWindowsEnumPending)
+                            Self->RequestWindowsEnum();
+                    }, Qt::QueuedConnection);
+                });
+                connect(Thread, &QThread::finished, Thread, &QObject::deleteLater);
+                Thread->start();
+            }
 
             static QString XmlEscape(const QString& text)
             {
@@ -2102,19 +2340,21 @@
                 Flush();
             }
 
-            QString EnumWindows()
+            static QString EnumWindowsSnapshot()
             {
                 QList<NetItem> Items;
-                if(!mWlan)
-                {
-                    DWORD Ver = 0;
-                    if(WlanOpenHandle(2, nullptr, &Ver, &mWlan) != ERROR_SUCCESS)
-                        return BuildState(Items);
-                }
+
+                HANDLE Wlan = nullptr;
+                DWORD Ver = 0;
+                if(WlanOpenHandle(2, nullptr, &Ver, &Wlan) != ERROR_SUCCESS || !Wlan)
+                    return BuildState(Items);
 
                 PWLAN_INTERFACE_INFO_LIST IfList = nullptr;
-                if(WlanEnumInterfaces(mWlan, nullptr, &IfList) != ERROR_SUCCESS || !IfList)
+                if(WlanEnumInterfaces(Wlan, nullptr, &IfList) != ERROR_SUCCESS || !IfList)
+                {
+                    WlanCloseHandle(Wlan, nullptr);
                     return BuildState(Items);
+                }
 
                 for(DWORD i = 0; i < IfList->dwNumberOfItems; ++i)
                 {
@@ -2125,7 +2365,7 @@
                     DWORD DataSize = 0;
                     WLAN_OPCODE_VALUE_TYPE OpCode;
                     PWLAN_CONNECTION_ATTRIBUTES Attr = nullptr;
-                    if(WlanQueryInterface(mWlan, &If.InterfaceGuid,
+                    if(WlanQueryInterface(Wlan, &If.InterfaceGuid,
                         wlan_intf_opcode_current_connection, nullptr,
                         &DataSize, (PVOID*) &Attr, &OpCode) == ERROR_SUCCESS && Attr)
                     {
@@ -2146,8 +2386,11 @@
                         WlanFreeMemory(Attr);
                     }
 
+                    // 중요: WlanScan()과 netsh.exe 호출은 하지 않는다.
+                    // 둘 다 Windows WLAN 서비스/드라이버를 건드려 2~4초 주기 UI 스터터를 만든다.
+                    // 캐시된 목록만 가져와서 UI를 막지 않는 백그라운드 스냅샷으로 사용한다.
                     PWLAN_AVAILABLE_NETWORK_LIST NetList = nullptr;
-                    if(WlanGetAvailableNetworkList(mWlan, &If.InterfaceGuid, 0, nullptr, &NetList) == ERROR_SUCCESS && NetList)
+                    if(WlanGetAvailableNetworkList(Wlan, &If.InterfaceGuid, 0, nullptr, &NetList) == ERROR_SUCCESS && NetList)
                     {
                         for(DWORD j = 0; j < NetList->dwNumberOfItems; ++j)
                         {
@@ -2163,12 +2406,10 @@
                         }
                         WlanFreeMemory(NetList);
                     }
-
-                    EnumWindowsNetsh(Items, ConnectedSsid, ConnectedIp);
-                    WlanScan(mWlan, &If.InterfaceGuid, nullptr, nullptr, nullptr);
                 }
 
                 WlanFreeMemory(IfList);
+                WlanCloseHandle(Wlan, nullptr);
                 return BuildState(Items);
             }
 
@@ -2199,14 +2440,14 @@
                     case wlan_notification_msm_connected:
                     case wlan_notification_msm_disconnected:
                     case wlan_notification_msm_signal_quality_change:
-                        NeedEnum = true;
+                        // Windows에서 이 이벤트는 너무 자주 오므로 UI 갱신 트리거로 쓰지 않는다.
                         break;
                     default:
                         break;
                     }
                 }
                 if(NeedEnum)
-                    QMetaObject::invokeMethod(Self, [Self](){Self->Enum();}, Qt::QueuedConnection);
+                    QMetaObject::invokeMethod(Self, [Self](){Self->RequestWindowsEnum();}, Qt::QueuedConnection);
             }
         #endif
 
