@@ -65,7 +65,7 @@ void CGetTextDlg::OnBnClickedOk()
 	Text.GetWindowTextW(TagNameMFC);
 	String TagName = String::FromWChars((LPCWSTR) TagNameMFC);
 
-	CStringA AtlasName = (VerCode == 0)? "ui_atlaskey.png" : "ui_atlaskey2.png";
+	CStringA AtlasName = (VerCode == 1)? "ui_atlaskey.png" : "ui_atlaskey2.png";
 	Platform::File::ResetAssetsRoot("./");
 	Platform::File::ResetAssetsRemRoot("./");
 	if(id_bitmap NewBitmap = BoxrBuilder::MakeTagBitmap(AtlasName, TagName, VerCode))

@@ -596,6 +596,13 @@ public:
         /// @param data : 콜백함수에 전달할 데이터
         static void SendRequest(chars url, RequestEventCB cb, payload data = nullptr);
 
+        /// @brief URL로 인증식 네트워크요청 보내기
+        /// @param url : REST-API식 url요청("https://a.b.com/ask?aa=0&bb=1")
+        /// @param apikey : 권한이 부여된 키
+        /// @param cb : 응답이 도착할 콜백함수
+        /// @param data : 콜백함수에 전달할 데이터
+        static void SendAuthRequest(chars url, chars apikey, RequestEventCB cb, payload data = nullptr);
+
         /// @brief URL로 이미지를 포함하여 네트워크요청 보내기
         /// @param url : REST-API식 url요청("https://a.b.com/ask?aa=0&bb=1")
         /// @param image : 보낼 이미지

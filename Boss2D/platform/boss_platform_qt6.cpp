@@ -1220,6 +1220,22 @@
                 });
         }
 
+        void Platform::Utility::SendAuthRequest(chars url, chars apikey, RequestEventCB cb, payload data)
+        {
+            static QNetworkAccessManager Manager;
+            QNetworkRequest NewRequest(QUrl(QString::fromUtf8(url)));
+            NewRequest.setRawHeader("Accept", "application/json");
+            NewRequest.setRawHeader("Authorization", QByteArray("Bearer ") + QByteArray(apikey));
+            QNetworkReply* Reply = Manager.get(NewRequest);
+            QObject::connect(Reply, &QNetworkReply::finished,
+                [Reply, cb, data]()->void
+                {
+                    QByteArray NewBytes = Reply->readAll();
+                    if(cb) cb(data, NewBytes.constData());
+                    Reply->deleteLater();
+                });
+        }
+
         void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data)
         {
             if(const QPixmap* CurPixmap = (const QPixmap*) image)

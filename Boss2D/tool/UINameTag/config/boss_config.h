@@ -3,9 +3,7 @@
 ////////////////////////////////////////
 // Platform (select one or not)
 ////////////////////////////////////////
-//#define BOSS_PLATFORM_COCOS2DX
 #define BOSS_PLATFORM_NATIVE
-//#define BOSS_PLATFORM_QT5
 
 ////////////////////////////////////////
 // AddOn
@@ -41,7 +39,10 @@
 #define BOSS_NEED_PROFILE          0
 #define BOSS_NEED_RELEASE_TRACE    1
 #define BOSS_NEED_NATIVE_OPENGL    0
+#define BOSS_NEED_CEF_WEBVIEW      0
 #define BOSS_NEED_EMBEDDED_ASSET   0
 #define BOSS_NEED_EMBEDDED_CACHE   0
-#define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5"}
+#define BOSS_NEED_BUILD_RESIZING   0
+#define BOSS_NEED_BUILD_COLORING   0
+#define BOSS_ASSET_IGNORES         {".json.pipe", ".json.old", ".json.f5", "etc"}
 #define BOSS_SUMMIT_DOMAIN         "summit.zaylab.com:8109"

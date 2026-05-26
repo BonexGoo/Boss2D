@@ -861,6 +861,11 @@
             BOSS_ASSERT("Further development is needed.", false);
         }
 
+        void Platform::Utility::SendAuthRequest(chars url, chars apikey, RequestEventCB cb, payload data)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data)
         {
             BOSS_ASSERT("Further development is needed.", false);

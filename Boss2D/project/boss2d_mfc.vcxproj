@@ -135,6 +135,7 @@
     <ClCompile Include="..\service\boss_summit.cpp" />
     <ClCompile Include="..\service\boss_tryworld.cpp" />
     <ClCompile Include="..\service\boss_typolar.cpp" />
+    <ClCompile Include="..\service\boss_whisper.cpp" />
     <ClCompile Include="..\service\boss_zay.cpp" />
     <ClCompile Include="..\service\boss_zayson.cpp" />
     <ClCompile Include="..\service\boss_zaywidget.cpp" />
@@ -212,6 +213,8 @@
     <ClInclude Include="..\core\boss_queue.hpp" />
     <ClInclude Include="..\core\boss_remote.hpp" />
     <ClInclude Include="..\core\boss_share.hpp" />
+    <ClInclude Include="..\core\boss_stdarray.hpp" />
+    <ClInclude Include="..\core\boss_stdmap.hpp" />
     <ClInclude Include="..\core\boss_storage.hpp" />
     <ClInclude Include="..\core\boss_string.hpp" />
     <ClInclude Include="..\core\boss_tasking.hpp" />
@@ -257,6 +260,7 @@
     <ClInclude Include="..\service\boss_summit.hpp" />
     <ClInclude Include="..\service\boss_tryworld.hpp" />
     <ClInclude Include="..\service\boss_typolar.hpp" />
+    <ClInclude Include="..\service\boss_whisper.hpp" />
     <ClInclude Include="..\service\boss_zay.hpp" />
     <ClInclude Include="..\service\boss_zayson.hpp" />
     <ClInclude Include="..\service\boss_zaywidget.hpp" />
@@ -264,22 +268,22 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -327,6 +331,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -349,6 +354,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -371,6 +377,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -394,6 +401,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
