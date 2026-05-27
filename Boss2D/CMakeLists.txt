@@ -5,7 +5,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(BOSS_INCLUDES
     ../Boss2D/core
-    ../Boss2D)
+    ../Boss2D
+    ../Boss2D/thirdparty/rlottie-0.2
+    ../Boss2D/thirdparty/rlottie-0.2/inc
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/freetype
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/pixman
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/stb)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     set(NDEBUG 0)
@@ -18,9 +25,54 @@ set(BOSS_DEFINES
     QT_HAVE_GRAPHICS
     QT_HAVE_SERIALPORT
     QT_HAVE_MULTIMEDIA
-    QT_HAVE_WEBENGINEWIDGETS)
+    QT_HAVE_WEBENGINEWIDGETS
+    RLOTTIE_BUILD)
+
+set(BOSS_RLOTTIE_SOURCES
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieanimation.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/binding/c/lottieanimation_capi.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieitem.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieitem_capi.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottiekeypath.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieloader.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottiemodel.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieparser.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/lottie/lottieproxymodel.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/freetype/v_ft_math.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/freetype/v_ft_raster.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/freetype/v_ft_stroker.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/stb/stb_image.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/varenaalloc.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vbezier.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vbitmap.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vbrush.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdasher.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdebug.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdrawable.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdrawhelper.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdrawhelper_common.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/velapsedtimer.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vimageloader.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vinterpolator.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vmatrix.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vpainter.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vpath.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vpathmesure.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vraster.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vrect.cpp
+    ../Boss2D/thirdparty/rlottie-0.2/src/vector/vrle.cpp)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|i[3-6]86)$")
+    list(APPEND BOSS_RLOTTIE_SOURCES
+        ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdrawhelper_sse2.cpp)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm|ARM|aarch64|AARCH64)")
+    list(APPEND BOSS_RLOTTIE_SOURCES
+        ../Boss2D/thirdparty/rlottie-0.2/src/vector/vdrawhelper_neon.cpp)
+endif()
 
 set(BOSS_SOURCES
+    ${BOSS_RLOTTIE_SOURCES}
+
     ###########################################################
     # ADDON
     ../Boss2D/addon/boss_addon_aac.hpp
