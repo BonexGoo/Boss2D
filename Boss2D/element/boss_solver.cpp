@@ -361,7 +361,7 @@ namespace BOSS
 
     SolverValue::Range::Range(Float value)
     {
-        mValue1 = value;
+        mValue1 = 0;
         mValue2 = value;
         mBeginMsec = 0;
         mEndMsec = 0;

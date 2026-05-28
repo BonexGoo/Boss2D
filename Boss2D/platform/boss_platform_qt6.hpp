@@ -3059,22 +3059,16 @@
         {
             #if BOSS_HAVE_RLOTTIE
                 mAni = rlottie::Animation::loadFromFile(filename);
-                if(!mAni) return false;
+                if(!mAni)
+                {
+                    BOSS_TRACE("AnimateLottieClass::OpenFile(%s) failed - loadFromFile returned nullptr", filename);
+                    return false;
+                }
 
-                size_t AniWidth = 0, AniHeight = 0;
-                mAni->size(AniWidth, AniHeight);
-                mWidth = (sint32) AniWidth;
-                mHeight = (sint32) AniHeight;
-                mFrameCount = (sint32) mAni->totalFrame();
-                mFrameRate = (0 < mAni->frameRate())? (float) mAni->frameRate() : 60.0f;
-                mDuration = (float) mAni->duration();
-                if(mDuration <= 0.0f && 0 < mFrameCount)
-                    mDuration = (float) mFrameCount / mFrameRate;
-                mCurFrame = 0;
-                ClearCache();
-
+                SetupAnimationInfo("OpenFile", filename);
                 return (0 < mWidth && 0 < mHeight && 0 < mFrameCount);
             #else
+                BOSS_TRACE("AnimateLottieClass::OpenFile(%s) failed - BOSS_HAVE_RLOTTIE=0", filename);
                 return false;
             #endif
         }
@@ -3083,22 +3077,16 @@
         {
             #if BOSS_HAVE_RLOTTIE
                 mAni = rlottie::Animation::loadFromData(jsontext, "");
-                if(!mAni) return false;
+                if(!mAni)
+                {
+                    BOSS_TRACE("AnimateLottieClass::OpenJson failed - loadFromData returned nullptr");
+                    return false;
+                }
 
-                size_t AniWidth = 0, AniHeight = 0;
-                mAni->size(AniWidth, AniHeight);
-                mWidth = (sint32) AniWidth;
-                mHeight = (sint32) AniHeight;
-                mFrameCount = (sint32) mAni->totalFrame();
-                mFrameRate = (0 < mAni->frameRate())? (float) mAni->frameRate() : 60.0f;
-                mDuration = (float) mAni->duration();
-                if(mDuration <= 0.0f && 0 < mFrameCount)
-                    mDuration = (float) mFrameCount / mFrameRate;
-                mCurFrame = 0;
-                ClearCache();
-
+                SetupAnimationInfo("OpenJson", "");
                 return (0 < mWidth && 0 < mHeight && 0 < mFrameCount);
             #else
+                BOSS_TRACE("AnimateLottieClass::OpenJson failed - BOSS_HAVE_RLOTTIE=0");
                 return false;
             #endif
         }
@@ -3221,6 +3209,23 @@
 
     private:
         #if BOSS_HAVE_RLOTTIE
+            void SetupAnimationInfo(chars tag, chars filename)
+            {
+                size_t AniWidth = 0, AniHeight = 0;
+                mAni->size(AniWidth, AniHeight);
+                mWidth = (sint32) AniWidth;
+                mHeight = (sint32) AniHeight;
+                mFrameCount = (sint32) mAni->totalFrame();
+                mFrameRate = (0 < mAni->frameRate())? (float) mAni->frameRate() : 60.0f;
+                mDuration = (float) mAni->duration();
+                if(mDuration <= 0.0f && 0 < mFrameCount)
+                    mDuration = (float) mFrameCount / mFrameRate;
+                mCurFrame = 0;
+                ClearCache();
+                BOSS_TRACE("AnimateLottieClass::%s(%s) size=%dx%d frameCount=%d frameRate=%f duration=%f",
+                    tag, filename, mWidth, mHeight, mFrameCount, mFrameRate, mDuration);
+            }
+
             void ClearCache()
             {
                 mPixels.clear();

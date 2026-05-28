@@ -377,6 +377,7 @@ SOURCES += $$TOPPATH/service/boss_zaywidget.cpp
 ###########################################################
 # THIRDPARTY
 ###########################################################
+DEFINES += RLOTTIE_BUILD
 INCLUDEPATH += $$TOPPATH/thirdparty/rlottie-0.2
 INCLUDEPATH += $$TOPPATH/thirdparty/rlottie-0.2/inc
 INCLUDEPATH += $$TOPPATH/thirdparty/rlottie-0.2/src/lottie
@@ -482,8 +483,16 @@ SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdebug.cpp
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawable.cpp
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper.cpp
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper_common.cpp
-SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper_neon.cpp
-SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper_sse2.cpp
+wasm{
+    message(rlottie: WASM build - skip SSE2/NEON SIMD backends)
+} else {
+    contains(QMAKE_HOST.arch, x86_64|amd64|x86|i386|i686){
+        SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper_sse2.cpp
+    }
+    contains(QMAKE_HOST.arch, arm64|aarch64|arm){
+        SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vdrawhelper_neon.cpp
+    }
+}
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/velapsedtimer.cpp
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vimageloader.cpp
 SOURCES += $$TOPPATH/thirdparty/rlottie-0.2/src/vector/vinterpolator.cpp
