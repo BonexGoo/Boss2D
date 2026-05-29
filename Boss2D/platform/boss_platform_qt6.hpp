@@ -35,7 +35,9 @@
     #if BOSS_LINUX
         #include <unistd.h>
     #endif
-    #if !BOSS_WASM
+    #if BOSS_WASM
+        #include <emscripten.h>
+    #else
         #include <QException>
     #endif
 
@@ -4867,6 +4869,191 @@
         private:
             String mPort;
 			sint32 mReadFocus;
+            id_mutex mReadMutex;
+            id_mutex mWriteMutex;
+            uint08s mReadStream;
+            uint08s mWriteStream;
+        };
+    #elif BOSS_WASM
+        extern "C" int WasmSerial_GetNames(char* dst, int dstsize);
+        extern "C" int WasmSerial_Open(void* self, const char* name, int baudrate);
+        extern "C" void WasmSerial_Close(int handle);
+        extern "C" void WasmSerial_Write(int handle, const unsigned char* data, int size);
+        extern "C" void WasmSerial_Flush(int handle);
+
+        class SerialClass
+        {
+        public:
+            static Strings EnumDevice(String* spec)
+            {
+                char SpecBuffer[8192] = {0};
+                WasmSerial_GetNames(SpecBuffer, 8192);
+                if(spec) *spec = SpecBuffer;
+
+                Strings Result;
+                const char* Cur = SpecBuffer;
+                while((Cur = strstr(Cur, "\"name\":\"")))
+                {
+                    Cur += 8;
+                    char Name[256] = {0};
+                    sint32 i = 0;
+                    while(*Cur && *Cur != '\"' && i < 255)
+                        Name[i++] = *Cur++;
+                    if(0 < i) Result.AtAdding() = Name;
+                }
+                if(Result.Count() == 0)
+                    Result.AtAdding() = "WebSerial";
+                return Result;
+            }
+
+        public:
+            SerialClass(chars port, sint32 baudrate)
+            {
+                mPort = (port && *port)? port : "WebSerial";
+                mHandle = 0;
+                mConnected = false;
+                mReadFocus = 0;
+                mReadMutex = Mutex::Open();
+                mWriteMutex = Mutex::Open();
+                mHandle = WasmSerial_Open(this, mPort, baudrate);
+            }
+            ~SerialClass()
+            {
+                if(mHandle) WasmSerial_Close(mHandle);
+                Mutex::Close(mReadMutex);
+                Mutex::Close(mWriteMutex);
+            }
+
+        public:
+            static void SendWasmDeviceArrival(bool connected)
+            {
+                // WASM cannot observe raw USB insertion before browser permission.
+                // Therefore CT_DeviceArrival is emitted at the first reliable point:
+                // after the user accepts Chrome's Web Serial request and port.open() succeeds.
+                BOSS_TRACE("WebSerial CT_DeviceArrival(%s)", connected? "true" : "false");
+                for(QWidget* CurWidget : QApplication::topLevelWidgets())
+                if(auto CurWindow = qobject_cast<MainWindow*>(CurWidget))
+                if(auto CurView = CurWindow->View())
+                    CurView->OnDeviceArrivalEvent(connected);
+            }
+            static void OnWasmDeviceChanged(chars specjson)
+            {
+                // Keep device-list cache refresh silent.
+                // The normal SerialClass notification contract only uses
+                // NT_Serial: "error" and "message". Device arrival for WASM is
+                // emitted from OnWasmConnected(), not from this list update.
+                BOSS_TRACE("WebSerial device-list updated: %s", specjson? specjson : "[]");
+            }
+            static void OnWasmConnected(void* self)
+            {
+                if(auto CurSerial = (SerialClass*) self)
+                {
+                    CurSerial->mConnected = true;
+                    SendWasmDeviceArrival(true);
+                }
+            }
+            static void OnWasmDisconnected(void* self)
+            {
+                if(auto CurSerial = (SerialClass*) self)
+                {
+                    CurSerial->mConnected = false;
+                    SendWasmDeviceArrival(false);
+                }
+            }
+            static void OnWasmError(void* self, chars message)
+            {
+                if(auto CurSerial = (SerialClass*) self)
+                {
+                    CurSerial->mConnected = false;
+                    Platform::BroadcastNotify("error", CurSerial->mPort + message, NT_Serial);
+                }
+            }
+            static void OnWasmReceived(void* self, bytes data, sint32 size)
+            {
+                if(auto CurSerial = (SerialClass*) self)
+                if(0 < size)
+                {
+                    Mutex::Lock(CurSerial->mReadMutex);
+                    {
+                        if(0 < CurSerial->mReadFocus)
+                        {
+                            const sint32 CopyLength = CurSerial->mReadStream.Count() - CurSerial->mReadFocus;
+                            if(0 < CopyLength)
+                                CurSerial->mReadStream.SubtractionSection(0, CurSerial->mReadFocus);
+                            else CurSerial->mReadStream.SubtractionAll();
+                            CurSerial->mReadFocus = 0;
+                        }
+                        Memory::Copy(CurSerial->mReadStream.AtDumpingAdded(size), data, size);
+                    }
+                    Mutex::Unlock(CurSerial->mReadMutex);
+                    Platform::BroadcastNotify("message", CurSerial->mPort, NT_Serial);
+                }
+            }
+
+        public:
+            bool IsValid() const
+            {
+                return (mHandle != 0);
+            }
+            bool Connected() const
+            {
+                return mConnected;
+            }
+            bool ReadReady()
+            {
+                return (0 < ReadAvailable());
+            }
+            sint32 ReadAvailable()
+            {
+                sint32 ReadSize = 0;
+                Mutex::Lock(mReadMutex);
+                {
+                    ReadSize = mReadStream.Count() - mReadFocus;
+                }
+                Mutex::Unlock(mReadMutex);
+                return ReadSize;
+            }
+            sint32 ReadData(uint08* data, const sint32 size)
+            {
+                sint32 CopySize = 0;
+                Mutex::Lock(mReadMutex);
+                {
+                    CopySize = Math::Min(size, mReadStream.Count() - mReadFocus);
+                    Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
+                    mReadFocus += CopySize;
+                }
+                Mutex::Unlock(mReadMutex);
+                return CopySize;
+            }
+            void WriteData(bytes data, const sint32 size)
+            {
+                Mutex::Lock(mWriteMutex);
+                {
+                    Memory::Copy(mWriteStream.AtDumpingAdded(size), data, size);
+                }
+                Mutex::Unlock(mWriteMutex);
+            }
+            bool WriteFlush(uint08s* get = nullptr)
+            {
+                Mutex::Lock(mWriteMutex);
+                {
+                    if(0 < mHandle && 0 < mWriteStream.Count())
+                    {
+                        WasmSerial_Write(mHandle, &mWriteStream[0], mWriteStream.Count());
+                        WasmSerial_Flush(mHandle);
+                    }
+                    if(get) *get = ToReference(mWriteStream);
+                    else mWriteStream.SubtractionAll();
+                }
+                Mutex::Unlock(mWriteMutex);
+                return true;
+            }
+
+        private:
+            String mPort;
+            sint32 mHandle;
+            bool mConnected;
+            sint32 mReadFocus;
             id_mutex mReadMutex;
             id_mutex mWriteMutex;
             uint08s mReadStream;

@@ -82,6 +82,311 @@
             //while(!g_WasmFlush)
             //    emscripten_sleep(10);
         }
+        #ifndef QT_HAVE_SERIALPORT
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialDeviceChanged(const char* specjson)
+            {
+                SerialClass::OnWasmDeviceChanged(specjson ? specjson : "[]");
+            }
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialConnected(void* self)
+            {
+                SerialClass::OnWasmConnected(self);
+            }
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialDisconnected(void* self)
+            {
+                SerialClass::OnWasmDisconnected(self);
+            }
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialError(void* self, const char* message)
+            {
+                SerialClass::OnWasmError(self, message ? message : "unknown");
+            }
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialReceived(void* self, const uint08* data, sint32 size)
+            {
+                SerialClass::OnWasmReceived(self, data, size);
+            }
+
+            EM_JS(void, WasmSerial_Ensure, (),
+            {
+                if(Module.BossWasmSerial) return;
+
+                const S = Module.BossWasmSerial = {
+                    nextHandle: 1,
+                    ports: {},
+                    devices: [],
+                    lastSpec: '[]',
+                    installed: false,
+                    supported: !!(navigator.serial),
+                    notifyDevices: function()
+                    {
+                        const len = lengthBytesUTF8(S.lastSpec) + 1;
+                        const ptr = _malloc(len);
+                        stringToUTF8(S.lastSpec, ptr, len);
+                        Module._OnWasmSerialDeviceChanged(ptr);
+                        _free(ptr);
+                    },
+                    refreshDevices: async function()
+                    {
+                        if(!S.supported)
+                        {
+                            S.lastSpec = JSON.stringify([{name:'WebSerial-Unsupported', supported:false}]);
+                            S.notifyDevices();
+                            return;
+                        }
+                        try
+                        {
+                            const ports = await navigator.serial.getPorts();
+                            S.devices = ports;
+                            S.lastSpec = JSON.stringify(ports.map(function(port, index)
+                            {
+                                const info = port.getInfo ? port.getInfo() : {};
+                                const name = 'WebSerial' + index
+                                    + (info.usbVendorId !== undefined ? (' VID_' + info.usbVendorId.toString(16).padStart(4, '0')) : '')
+                                    + (info.usbProductId !== undefined ? (' PID_' + info.usbProductId.toString(16).padStart(4, '0')) : '');
+                                return {
+                                    name: name,
+                                    portname: name,
+                                    description: 'Browser authorized Web Serial port',
+                                    systemlocation: 'browser',
+                                    manufacturer: '',
+                                    serialnumber: '',
+                                    usbVendorId: info.usbVendorId || 0,
+                                    usbProductId: info.usbProductId || 0,
+                                    supported: true,
+                                    authorized: true
+                                };
+                            }));
+                            S.notifyDevices();
+                        }
+                        catch(e)
+                        {
+                            S.lastSpec = JSON.stringify([{name:'WebSerial-Error', supported:S.supported, error:String(e)}]);
+                            S.notifyDevices();
+                        }
+                    },
+                    pumpRead: async function(item)
+                    {
+                        try
+                        {
+                            while(item.port && item.port.readable)
+                            {
+                                const reader = item.port.readable.getReader();
+                                item.reader = reader;
+                                try
+                                {
+                                    for(;;)
+                                    {
+                                        const result = await reader.read();
+                                        if(result.done) break;
+                                        if(result.value && result.value.length)
+                                        {
+                                            const ptr = _malloc(result.value.length);
+                                            HEAPU8.set(result.value, ptr);
+                                            Module._OnWasmSerialReceived(item.self, ptr, result.value.length);
+                                            _free(ptr);
+                                        }
+                                    }
+                                }
+                                finally
+                                {
+                                    reader.releaseLock();
+                                    item.reader = null;
+                                }
+                            }
+                        }
+                        catch(e)
+                        {
+                            S.error(item, e);
+                        }
+                        S.disconnectNotice(item);
+                    },
+                    error: function(item, e)
+                    {
+                        const msg = String(e && e.message ? e.message : e);
+                        const len = lengthBytesUTF8(msg) + 1;
+                        const ptr = _malloc(len);
+                        stringToUTF8(msg, ptr, len);
+                        Module._OnWasmSerialError(item ? item.self : 0, ptr);
+                        _free(ptr);
+                    },
+                    disconnectNotice: function(item)
+                    {
+                        if(item && item.connected)
+                        {
+                            item.connected = false;
+                            Module._OnWasmSerialDisconnected(item.self);
+                        }
+                    }
+                };
+
+                if(S.supported && !S.installed)
+                {
+                    navigator.serial.addEventListener('connect', function(){S.refreshDevices();});
+                    navigator.serial.addEventListener('disconnect', function(){S.refreshDevices();});
+                    setInterval(function(){S.refreshDevices();}, 1000);
+                    S.installed = true;
+                }
+                S.refreshDevices();
+            });
+
+            extern "C" int WasmSerial_GetNames(char* dst, int dstsize)
+            {
+                WasmSerial_Ensure();
+                return EM_ASM_INT({
+                    const S = Module.BossWasmSerial;
+                    const text = S ? S.lastSpec : '[]';
+                    const bytes = lengthBytesUTF8(text) + 1;
+                    const size = Math.min(bytes, $1);
+                    if(0 < size)
+                        stringToUTF8(text, $0, size);
+                    return bytes;
+                }, dst, dstsize);
+            }
+
+            extern "C" int WasmSerial_Open(void* self, const char* name, int baudrate)
+            {
+                WasmSerial_Ensure();
+                return EM_ASM_INT({
+                    const S = Module.BossWasmSerial;
+                    const self = $0;
+                    const name = UTF8ToString($1);
+                    const baudRate = ($2 > 0) ? $2 : 115200;
+                    const handle = S.nextHandle++;
+                    const item = S.ports[handle] = ({self:self, port:null, reader:null, writer:null, connected:false});
+
+                    (async function()
+                    {
+                        try
+                        {
+                            if(!S.supported) throw new Error('Web Serial API is not supported by this browser.');
+
+                            let port = null;
+
+                            // Always refresh first. navigator.serial.getPorts() returns only
+                            // already-authorized ports, which is exactly what the Qt list shows.
+                            await S.refreshDevices();
+
+                            // The Qt-side UI text can contain checkbox marks, spaces,
+                            // line breaks, or appended VID/PID labels, for example:
+                            // "[ ] WebSerial0\nVID_0403". Therefore do not anchor at
+                            // the beginning of the string. Find WebSerialN anywhere.
+                            const match = /WebSerial\s*(\d+)/.exec(name || '');
+                            if(match)
+                            {
+                                const index = parseInt(match[1], 10);
+                                port = S.devices[index] || null;
+                                console.log('WasmSerial_Open name =', name, 'index =', index, 'matched =', !!port, 'authorizedCount =', S.devices.length);
+                            }
+                            else
+                            {
+                                console.log('WasmSerial_Open name =', name, 'matched = false', 'authorizedCount =', S.devices.length);
+                            }
+
+                            // If Qt passes an empty/generic name but Chrome already has exactly
+                            // one authorized port, reuse it. This prevents repeated permission
+                            // popups while the UI is still displaying WebSerial0.
+                            if(!port && S.devices.length === 1 && (!name || /WebSerial/i.test(name)))
+                            {
+                                port = S.devices[0];
+                                console.log('WasmSerial_Open fallback to only authorized port');
+                            }
+
+                            // If no authorized WebSerialN was found, this call must stay
+                            // inside the user click chain so Chrome can show the permission dialog.
+                            if(!port)
+                            {
+                                console.log('WasmSerial_Open requestPort');
+                                port = await navigator.serial.requestPort();
+                                // Make the selected port immediately discoverable as WebSerialN.
+                                await S.refreshDevices();
+                                if(S.devices.indexOf(port) < 0)
+                                    S.devices.push(port);
+                            }
+
+                            item.port = port;
+
+                            // SerialPort.open() throws InvalidStateError if the same browser
+                            // SerialPort is already open. In that case readable/writable are
+                            // already available, so treat it as connected instead of showing
+                            // another chooser popup.
+                            if(!(port.readable || port.writable))
+                                await port.open({baudRate: baudRate, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none'});
+                            else
+                                console.log('WasmSerial_Open already opened');
+
+                            console.log('WasmSerial_Open opened');
+                            item.connected = true;
+                            Module._OnWasmSerialConnected(self);
+                            S.refreshDevices();
+                            S.pumpRead(item);
+                        }
+                        catch(e)
+                        {
+                            S.error(item, e);
+                        }
+                    })();
+                    return handle;
+                }, self, name, baudrate);
+            }
+
+            extern "C" void WasmSerial_Close(int handle)
+            {
+                WasmSerial_Ensure();
+                EM_ASM({
+                    const S = Module.BossWasmSerial;
+                    const item = S && S.ports[$0];
+                    if(!item) return;
+                    (async function()
+                    {
+                        try
+                        {
+                            if(item.reader) await item.reader.cancel().catch(function(){});
+                            if(item.writer) item.writer.releaseLock();
+                            if(item.port) await item.port.close().catch(function(){});
+                        }
+                        catch(e) {S.error(item, e);}
+                        S.disconnectNotice(item);
+                        delete S.ports[$0];
+                        S.refreshDevices();
+                    })();
+                }, handle);
+            }
+
+            extern "C" void WasmSerial_Write(int handle, const uint08* data, sint32 size)
+            {
+                WasmSerial_Ensure();
+                EM_ASM({
+                    const S = Module.BossWasmSerial;
+                    const item = S && S.ports[$0];
+                    if(!item || !item.port || !item.port.writable || $2 <= 0) return;
+                    const packet = new Uint8Array(HEAPU8.subarray($1, $1 + $2));
+                    (async function()
+                    {
+                        try
+                        {
+                            const writer = item.port.writable.getWriter();
+                            item.writer = writer;
+                            await writer.write(packet);
+                            writer.releaseLock();
+                            item.writer = null;
+                        }
+                        catch(e)
+                        {
+                            if(item.writer)
+                            {
+                                try {item.writer.releaseLock();} catch(_) {}
+                                item.writer = null;
+                            }
+                            S.error(item, e);
+                        }
+                    })();
+                }, handle, data, size);
+            }
+
+            extern "C" void WasmSerial_Flush(int handle)
+            {
+                // Web Serial WritableStream.write() itself is the flush boundary.
+                // Kept as a native API pair for Qt/desktop parity.
+            }
+        #endif
     #endif
 
     h_view g_view;
@@ -4223,7 +4528,7 @@
         ////////////////////////////////////////////////////////////////////////////////
         Strings Platform::Serial::GetAllNames(String* spec)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 return SerialClass::EnumDevice(spec);
             #endif
             return Strings();
@@ -4231,7 +4536,7 @@
 
         id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 SerialClass* NewSerial = new SerialClass(name, baudrate);
                 if(NewSerial->IsValid())
                     return (id_serial) NewSerial;
@@ -4242,14 +4547,14 @@
 
         void Platform::Serial::Close(id_serial serial)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 delete (SerialClass*) serial;
             #endif
         }
 
         bool Platform::Serial::Connected(id_serial serial)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
@@ -4261,7 +4566,7 @@
 
         bool Platform::Serial::ReadReady(id_serial serial, sint32* gettype)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
@@ -4273,7 +4578,7 @@
 
         sint32 Platform::Serial::ReadAvailable(id_serial serial)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
@@ -4297,7 +4602,7 @@
 
         sint32 Platform::Serial::ReadData(id_serial serial, uint08* data, const sint32 size)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
@@ -4309,7 +4614,7 @@
 
         bool Platform::Serial::WriteData(id_serial serial, bytes data, const sint32 size)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
@@ -4322,7 +4627,7 @@
 
         void Platform::Serial::WriteFlush(id_serial serial, sint32 type)
         {
-            #ifdef QT_HAVE_SERIALPORT
+            #if defined(QT_HAVE_SERIALPORT) || BOSS_WASM
                 if(serial)
                 {
                     SerialClass* CurSerial = (SerialClass*) serial;
