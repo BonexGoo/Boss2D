@@ -2237,6 +2237,9 @@ public:
         /// @return 존재하는 모든 시리얼포트이름
         static Strings GetAllNames(String* spec = nullptr);
 
+        /// @brief 시리얼포트 1개 추가(WASM전용)
+        static void AttachOnce();
+
         /// @brief 시리얼통신ID 할당
         /// @param name : 시리얼포트이름(없으면 첫번째 시리얼포트찾음)
         /// @param baudrate : 통신속도(디폴트는 -1)

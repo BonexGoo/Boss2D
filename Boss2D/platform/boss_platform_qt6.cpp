@@ -87,6 +87,10 @@
             {
                 SerialClass::OnWasmDeviceChanged(specjson ? specjson : "[]");
             }
+            extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialAttached()
+            {
+                SerialClass::OnWasmAttached();
+            }
             extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialConnected(void* self)
             {
                 SerialClass::OnWasmConnected(self);
@@ -178,6 +182,10 @@
                                         if(result.done) break;
                                         if(result.value && result.value.length)
                                         {
+                                            // Close()/destructor may detach the C++ object while
+                                            // the read pump is still unwinding asynchronously.
+                                            if(!item.self || item.closed)
+                                                break;
                                             const ptr = _malloc(result.value.length);
                                             HEAPU8.set(result.value, ptr);
                                             Module._OnWasmSerialReceived(item.self, ptr, result.value.length);
@@ -201,18 +209,38 @@
                     error: function(item, e)
                     {
                         const msg = String(e && e.message ? e.message : e);
-                        const len = lengthBytesUTF8(msg) + 1;
-                        const ptr = _malloc(len);
-                        stringToUTF8(msg, ptr, len);
-                        Module._OnWasmSerialError(item ? item.self : 0, ptr);
-                        _free(ptr);
+                        if(item)
+                        {
+                            item.error = msg;
+                            item.state = -1;
+                        }
+
+                        // A close/destructor can detach the C++ SerialClass before
+                        // the asynchronous Web Serial operation finishes. In that
+                        // case never call back into C++ with a stale self pointer.
+                        const self = item ? item.self : 0;
+                        if(self)
+                        {
+                            const len = lengthBytesUTF8(msg) + 1;
+                            const ptr = _malloc(len);
+                            stringToUTF8(msg, ptr, len);
+                            Module._OnWasmSerialError(self, ptr);
+                            _free(ptr);
+                        }
+                        else console.warn('WasmSerial detached error:', msg);
                     },
                     disconnectNotice: function(item)
                     {
                         if(item && item.connected)
                         {
                             item.connected = false;
-                            Module._OnWasmSerialDisconnected(item.self);
+                            item.state = 0;
+
+                            // Programmatic Close() detaches self first. Do not report
+                            // a device-removal/serial-disconnect callback to an object
+                            // whose destructor is already running.
+                            if(item.self)
+                                Module._OnWasmSerialDisconnected(item.self);
                         }
                     }
                 };
@@ -241,6 +269,57 @@
                 }, dst, dstsize);
             }
 
+            extern "C" void WasmSerial_AttachOnce()
+            {
+                WasmSerial_Ensure();
+                EM_ASM({
+                    const S = Module.BossWasmSerial;
+                    if(!S || !S.supported)
+                    {
+                        console.warn('WasmSerial_AttachOnce: Web Serial API is not supported.');
+                        return;
+                    }
+
+                    (async function()
+                    {
+                        try
+                        {
+                            console.log('WasmSerial_AttachOnce requestPort');
+
+                            // This is the only place that intentionally opens
+                            // Chrome's permission chooser. It must be called
+                            // from a user gesture, such as the UI [+] button.
+                            const port = await navigator.serial.requestPort();
+
+                            // Make the selected port visible to EnumDevice().
+                            await S.refreshDevices();
+                            if(S.devices.indexOf(port) < 0)
+                            {
+                                S.devices.push(port);
+                                S.notifyDevices();
+                            }
+
+                            console.log('WasmSerial_AttachOnce attached, authorizedCount =', S.devices.length);
+
+                            // Permission was granted and EnumDevice() can now
+                            // list the new WebSerialN item. Notify the Qt-side
+                            // USB watcher path to refresh the UI. This is not a
+                            // serial connection; port.open() is still done by
+                            // WasmSerial_Open().
+                            Module._OnWasmSerialAttached();
+                        }
+                        catch(e)
+                        {
+                            // User cancel is not a serial error because there is
+                            // no SerialClass instance yet. Keep it as a console
+                            // diagnostic only.
+                            console.warn('WasmSerial_AttachOnce cancelled or failed:', e);
+                            await S.refreshDevices().catch(function(){});
+                        }
+                    })();
+                });
+            }
+
             extern "C" int WasmSerial_Open(void* self, const char* name, int baudrate)
             {
                 WasmSerial_Ensure();
@@ -250,7 +329,7 @@
                     const name = UTF8ToString($1);
                     const baudRate = ($2 > 0) ? $2 : 115200;
                     const handle = S.nextHandle++;
-                    const item = S.ports[handle] = ({self:self, port:null, reader:null, writer:null, connected:false});
+                    const item = S.ports[handle] = ({self:self, port:null, reader:null, writer:null, connected:false, state:0, error:'', closed:false});
 
                     (async function()
                     {
@@ -289,19 +368,15 @@
                                 console.log('WasmSerial_Open fallback to only authorized port');
                             }
 
-                            // If no authorized WebSerialN was found, this call must stay
-                            // inside the user click chain so Chrome can show the permission dialog.
+                            // Open() must not show Chrome's permission chooser.
+                            // The chooser is intentionally limited to AttachOnce().
+                            // If the UI tries to open a port that is not already authorized,
+                            // report an error and let the user press [+] first.
                             if(!port)
-                            {
-                                console.log('WasmSerial_Open requestPort');
-                                port = await navigator.serial.requestPort();
-                                // Make the selected port immediately discoverable as WebSerialN.
-                                await S.refreshDevices();
-                                if(S.devices.indexOf(port) < 0)
-                                    S.devices.push(port);
-                            }
+                                throw new Error('Authorized WebSerial port not found. Use AttachOnce() first.');
 
                             item.port = port;
+                            item.state = 2; // opening
 
                             // SerialPort.open() throws InvalidStateError if the same browser
                             // SerialPort is already open. In that case readable/writable are
@@ -314,6 +389,8 @@
 
                             console.log('WasmSerial_Open opened');
                             item.connected = true;
+                            item.state = 1;
+                            item.error = '';
                             Module._OnWasmSerialConnected(self);
                             S.refreshDevices();
                             S.pumpRead(item);
@@ -327,6 +404,32 @@
                 }, self, name, baudrate);
             }
 
+            extern "C" int WasmSerial_GetState(int handle)
+            {
+                WasmSerial_Ensure();
+                return EM_ASM_INT({
+                    const S = Module.BossWasmSerial;
+                    const item = S && S.ports[$0];
+                    if(!item) return -2;
+                    return item.state || 0;
+                }, handle);
+            }
+
+            extern "C" int WasmSerial_GetError(int handle, char* dst, int dstsize)
+            {
+                WasmSerial_Ensure();
+                return EM_ASM_INT({
+                    const S = Module.BossWasmSerial;
+                    const item = S && S.ports[$0];
+                    const text = item && item.error ? item.error : '';
+                    const bytes = lengthBytesUTF8(text) + 1;
+                    const size = Math.min(bytes, $2);
+                    if(0 < size)
+                        stringToUTF8(text, $1, size);
+                    return bytes;
+                }, handle, dst, dstsize);
+            }
+
             extern "C" void WasmSerial_Close(int handle)
             {
                 WasmSerial_Ensure();
@@ -334,16 +437,42 @@
                     const S = Module.BossWasmSerial;
                     const item = S && S.ports[$0];
                     if(!item) return;
+
+                    // C++ SerialClass is being destroyed. Detach immediately so
+                    // pending async read/error/disconnect callbacks cannot touch
+                    // already-destroyed mutexes or buffers.
+                    item.closed = true;
+                    item.self = 0;
+                    item.connected = false;
+                    item.state = 0;
+
                     (async function()
                     {
                         try
                         {
-                            if(item.reader) await item.reader.cancel().catch(function(){});
-                            if(item.writer) item.writer.releaseLock();
-                            if(item.port) await item.port.close().catch(function(){});
+                            const reader = item.reader;
+                            item.reader = null;
+                            if(reader)
+                                await reader.cancel().catch(function(){});
+
+                            const writer = item.writer;
+                            item.writer = null;
+                            if(writer)
+                            {
+                                try {writer.releaseLock();} catch(_) {}
+                            }
+
+                            const port = item.port;
+                            item.port = null;
+                            if(port && (port.readable || port.writable))
+                                await port.close().catch(function(e){ console.warn('WasmSerial close ignored:', e); });
                         }
-                        catch(e) {S.error(item, e);}
-                        S.disconnectNotice(item);
+                        catch(e)
+                        {
+                            // Do not call S.error(item, e) here because item.self has
+                            // intentionally been detached from C++. Console-only.
+                            console.warn('WasmSerial_Close failed:', e);
+                        }
                         delete S.ports[$0];
                         S.refreshDevices();
                     })();
@@ -4532,6 +4661,13 @@
                 return SerialClass::EnumDevice(spec);
             #endif
             return Strings();
+        }
+
+        void Platform::Serial::AttachOnce()
+        {
+            #if BOSS_WASM
+                SerialClass::AttachOnce();
+            #endif
         }
 
         id_serial Platform::Serial::Open(chars name, sint32 baudrate, SerialDecodeCB dec, SerialEncodeCB enc)

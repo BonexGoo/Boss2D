@@ -4840,8 +4840,11 @@
                 Mutex::Lock(mReadMutex);
                 {
                     CopySize = Math::Min(size, mReadStream.Count() - mReadFocus);
-                    Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
-                    mReadFocus += CopySize;
+                    if(0 < CopySize)
+                    {
+                        Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
+                        mReadFocus += CopySize;
+                    }
                 }
                 Mutex::Unlock(mReadMutex);
                 return CopySize;
@@ -4876,10 +4879,13 @@
         };
     #elif BOSS_WASM
         extern "C" int WasmSerial_GetNames(char* dst, int dstsize);
+        extern "C" void WasmSerial_AttachOnce();
         extern "C" int WasmSerial_Open(void* self, const char* name, int baudrate);
         extern "C" void WasmSerial_Close(int handle);
         extern "C" void WasmSerial_Write(int handle, const unsigned char* data, int size);
         extern "C" void WasmSerial_Flush(int handle);
+        extern "C" int WasmSerial_GetState(int handle);
+        extern "C" int WasmSerial_GetError(int handle, char* dst, int dstsize);
 
         class SerialClass
         {
@@ -4905,6 +4911,15 @@
                     Result.AtAdding() = "WebSerial";
                 return Result;
             }
+            static void AttachOnce()
+            {
+                // WASM Web Serial: this is not an actual connect/open step.
+                // It only asks the browser for one serial-port authorization.
+                // On success, JS refreshes navigator.serial.getPorts(), so the
+                // newly authorized port appears in EnumDevice() as WebSerialN,
+                // and then sends CT_DeviceArrival(true).
+                WasmSerial_AttachOnce();
+            }
 
         public:
             SerialClass(chars port, sint32 baudrate)
@@ -4912,14 +4927,68 @@
                 mPort = (port && *port)? port : "WebSerial";
                 mHandle = 0;
                 mConnected = false;
+                mOpenFinished = false;
+                mOpenSucceeded = false;
+                mOpenError = "";
                 mReadFocus = 0;
                 mReadMutex = Mutex::Open();
                 mWriteMutex = Mutex::Open();
+
                 mHandle = WasmSerial_Open(this, mPort, baudrate);
+
+                // Keep the WASM path behavior close to the QSerialPort path:
+                // constructor returns after the open result is known, then
+                // Platform::Serial::Connected() can be checked immediately.
+                const uint64 BeginMsec = Platform::Utility::CurrentTimeMsec();
+                while(!mOpenFinished && Platform::Utility::CurrentTimeMsec() - BeginMsec < 1500)
+                {
+                    const sint32 State = WasmSerial_GetState(mHandle);
+                    if(State == 1)
+                    {
+                        mConnected = true;
+                        mOpenSucceeded = true;
+                        mOpenFinished = true;
+                        break;
+                    }
+                    else if(State < 0)
+                    {
+                        char ErrorText[1024] = {0};
+                        WasmSerial_GetError(mHandle, ErrorText, 1024);
+                        mConnected = false;
+                        mOpenSucceeded = false;
+                        mOpenFinished = true;
+                        mOpenError = (*ErrorText)? ErrorText : "Open failed";
+                        break;
+                    }
+                    // In Qt/WASM, JS Promise continuations for navigator.serial.open()
+                    // do not reliably run while we stay inside a tight C++ stack.
+                    // Yield to the browser event loop so WasmSerial_Open() can finish
+                    // and update item.state through OnWasmSerialConnected/Error.
+                    emscripten_sleep(10);
+                }
+
+                if(!mOpenFinished)
+                {
+                    mOpenFinished = true;
+                    mOpenSucceeded = false;
+                    OnErrorOccurred("Open timeout");
+                }
+                else if(!mOpenSucceeded && 0 < mOpenError.Length())
+                {
+                    OnErrorOccurred(mOpenError);
+                }
             }
             ~SerialClass()
             {
-                if(mHandle) WasmSerial_Close(mHandle);
+                // Web Serial close is asynchronous. WasmSerial_Close() detaches
+                // the JS item from this C++ object synchronously before starting
+                // the async close, so callbacks cannot access these mutexes after
+                // they are destroyed below.
+                if(mHandle)
+                {
+                    WasmSerial_Close(mHandle);
+                    mHandle = 0;
+                }
                 Mutex::Close(mReadMutex);
                 Mutex::Close(mWriteMutex);
             }
@@ -4938,26 +5007,35 @@
             }
             static void OnWasmDeviceChanged(chars specjson)
             {
-                // Keep device-list cache refresh silent.
-                // The normal SerialClass notification contract only uses
-                // NT_Serial: "error" and "message". Device arrival for WASM is
-                // emitted from OnWasmConnected(), not from this list update.
+                // Keep device-list cache refresh silent. EnumDevice() reads the
+                // updated JSON through WasmSerial_GetNames(). NT_Serial keeps
+                // the same contract as the Qt SerialPort version: only
+                // "error" and "message" are emitted there.
                 BOSS_TRACE("WebSerial device-list updated: %s", specjson? specjson : "[]");
+            }
+            static void OnWasmAttached()
+            {
+                // Browser permission was granted by AttachOnce(). The port is
+                // now visible to EnumDevice(), but it is not opened yet. Treat
+                // this as a device-arrival event so the UI refreshes its list.
+                SendWasmDeviceArrival(true);
             }
             static void OnWasmConnected(void* self)
             {
                 if(auto CurSerial = (SerialClass*) self)
                 {
                     CurSerial->mConnected = true;
-                    SendWasmDeviceArrival(true);
+                    CurSerial->mOpenSucceeded = true;
+                    CurSerial->mOpenFinished = true;
                 }
             }
             static void OnWasmDisconnected(void* self)
             {
                 if(auto CurSerial = (SerialClass*) self)
                 {
+                    // QSerialPort::close() does not mean USB device removal.
+                    // Keep CT_DeviceArrival for AttachOnce()/browser authorization only.
                     CurSerial->mConnected = false;
-                    SendWasmDeviceArrival(false);
                 }
             }
             static void OnWasmError(void* self, chars message)
@@ -4965,35 +5043,57 @@
                 if(auto CurSerial = (SerialClass*) self)
                 {
                     CurSerial->mConnected = false;
-                    Platform::BroadcastNotify("error", CurSerial->mPort + message, NT_Serial);
+                    CurSerial->mOpenSucceeded = false;
+                    CurSerial->mOpenFinished = true;
+                    CurSerial->mOpenError = (message && *message)? message : "unknown";
                 }
             }
             static void OnWasmReceived(void* self, bytes data, sint32 size)
             {
                 if(auto CurSerial = (SerialClass*) self)
-                if(0 < size)
+                    CurSerial->OnRead(data, size);
+            }
+
+        private:
+            void OnErrorOccurred(chars message)
+            {
+                // Match the QSerialPort implementation contract:
+                // BroadcastNotify("error", mPort + ErrorText, NT_Serial)
+                // where ErrorText begins with ':' and includes " at <port>".
+                const String ErrorText = String::Format(":%s at %s",
+                    (message && *message)? message : "unknown", (chars) mPort);
+                BOSS_TRACE("Serial communication error occurred (%s)", (chars) ErrorText);
+                Platform::BroadcastNotify("error", mPort + ErrorText, NT_Serial);
+            }
+            void OnRead(bytes data, sint32 size)
+            {
+                // Match QSerialPort::OnRead(): append incoming bytes to the
+                // read stream, compact already consumed bytes first, then emit
+                // only NT_Serial/"message" with the port name.
+                if(!data || size <= 0)
+                    return;
+
+                Mutex::Lock(mReadMutex);
                 {
-                    Mutex::Lock(CurSerial->mReadMutex);
+                    if(0 < mReadFocus)
                     {
-                        if(0 < CurSerial->mReadFocus)
-                        {
-                            const sint32 CopyLength = CurSerial->mReadStream.Count() - CurSerial->mReadFocus;
-                            if(0 < CopyLength)
-                                CurSerial->mReadStream.SubtractionSection(0, CurSerial->mReadFocus);
-                            else CurSerial->mReadStream.SubtractionAll();
-                            CurSerial->mReadFocus = 0;
-                        }
-                        Memory::Copy(CurSerial->mReadStream.AtDumpingAdded(size), data, size);
+                        const sint32 CopyLength = mReadStream.Count() - mReadFocus;
+                        if(0 < CopyLength)
+                            mReadStream.SubtractionSection(0, mReadFocus);
+                        else mReadStream.SubtractionAll();
+                        mReadFocus = 0;
                     }
-                    Mutex::Unlock(CurSerial->mReadMutex);
-                    Platform::BroadcastNotify("message", CurSerial->mPort, NT_Serial);
+                    Memory::Copy(mReadStream.AtDumpingAdded(size), data, size);
                 }
+                Mutex::Unlock(mReadMutex);
+
+                Platform::BroadcastNotify("message", mPort, NT_Serial);
             }
 
         public:
             bool IsValid() const
             {
-                return (mHandle != 0);
+                return mOpenSucceeded;
             }
             bool Connected() const
             {
@@ -5019,8 +5119,11 @@
                 Mutex::Lock(mReadMutex);
                 {
                     CopySize = Math::Min(size, mReadStream.Count() - mReadFocus);
-                    Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
-                    mReadFocus += CopySize;
+                    if(0 < CopySize)
+                    {
+                        Memory::Copy(data, &mReadStream[mReadFocus], CopySize);
+                        mReadFocus += CopySize;
+                    }
                 }
                 Mutex::Unlock(mReadMutex);
                 return CopySize;
@@ -5053,6 +5156,9 @@
             String mPort;
             sint32 mHandle;
             bool mConnected;
+            bool mOpenFinished;
+            bool mOpenSucceeded;
+            String mOpenError;
             sint32 mReadFocus;
             id_mutex mReadMutex;
             id_mutex mWriteMutex;
