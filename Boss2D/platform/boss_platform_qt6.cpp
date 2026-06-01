@@ -115,7 +115,7 @@
                 const S = Module.BossWasmSerial = {
                     nextHandle: 1,
                     ports: {},
-                    devices: [],
+                    deviceSlots: [],
                     lastSpec: '[]',
                     installed: false,
                     supported: !!(navigator.serial),
@@ -127,44 +127,39 @@
                         Module._OnWasmSerialDeviceChanged(ptr);
                         _free(ptr);
                     },
+                    makeDeviceSpec: function(port, index)
+                    {
+                        const slot = S.deviceSlots[index] || null;
+                        const info = port && port.getInfo ? port.getInfo() : {};
+                        const name = (slot && slot.name) || ('WCOM' + (index + 1));
+                        return {
+                            name: name,
+                            portname: name,
+                            description: 'Browser authorized Web Serial port',
+                            systemlocation: 'browser',
+                            manufacturer: '',
+                            serialnumber: '',
+                            usbVendorId: info.usbVendorId || 0,
+                            usbProductId: info.usbProductId || 0,
+                            supported: true,
+                            authorized: true
+                        };
+                    },
                     refreshDevices: async function()
                     {
+                        // Keep only ports explicitly added by this running
+                        // application via AttachOnce(). Do not call
+                        // navigator.serial.getPorts(), because it returns every
+                        // browser-authorized port and makes one [+] selection
+                        // appear as multiple WCOMN items.
                         if(!S.supported)
-                        {
-                            S.lastSpec = JSON.stringify([{name:'WebSerial-Unsupported', supported:false}]);
-                            S.notifyDevices();
-                            return;
-                        }
-                        try
-                        {
-                            const ports = await navigator.serial.getPorts();
-                            S.devices = ports;
-                            S.lastSpec = JSON.stringify(ports.map(function(port, index)
+                            S.lastSpec = JSON.stringify([]);
+                        else
+                            S.lastSpec = JSON.stringify(S.deviceSlots.map(function(slot, index)
                             {
-                                const info = port.getInfo ? port.getInfo() : {};
-                                const name = 'WebSerial' + index
-                                    + (info.usbVendorId !== undefined ? (' VID_' + info.usbVendorId.toString(16).padStart(4, '0')) : '')
-                                    + (info.usbProductId !== undefined ? (' PID_' + info.usbProductId.toString(16).padStart(4, '0')) : '');
-                                return {
-                                    name: name,
-                                    portname: name,
-                                    description: 'Browser authorized Web Serial port',
-                                    systemlocation: 'browser',
-                                    manufacturer: '',
-                                    serialnumber: '',
-                                    usbVendorId: info.usbVendorId || 0,
-                                    usbProductId: info.usbProductId || 0,
-                                    supported: true,
-                                    authorized: true
-                                };
+                                return S.makeDeviceSpec(slot ? slot.port : null, index);
                             }));
-                            S.notifyDevices();
-                        }
-                        catch(e)
-                        {
-                            S.lastSpec = JSON.stringify([{name:'WebSerial-Error', supported:S.supported, error:String(e)}]);
-                            S.notifyDevices();
-                        }
+                        S.notifyDevices();
                     },
                     pumpRead: async function(item)
                     {
@@ -249,7 +244,6 @@
                 {
                     navigator.serial.addEventListener('connect', function(){S.refreshDevices();});
                     navigator.serial.addEventListener('disconnect', function(){S.refreshDevices();});
-                    setInterval(function(){S.refreshDevices();}, 1000);
                     S.installed = true;
                 }
                 S.refreshDevices();
@@ -291,18 +285,33 @@
                             // from a user gesture, such as the UI [+] button.
                             const port = await navigator.serial.requestPort();
 
-                            // Make the selected port visible to EnumDevice().
-                            await S.refreshDevices();
-                            if(S.devices.indexOf(port) < 0)
+                            // Add only the port selected by this requestPort().
+                            // WCOM1 == deviceSlots[0], WCOM2 == deviceSlots[1], ...
+                            // deviceSlots is the single source of truth.
+                            let foundIndex = -1;
+                            for(let i = 0; i < S.deviceSlots.length; ++i)
                             {
-                                S.devices.push(port);
-                                S.notifyDevices();
+                                const slot = S.deviceSlots[i];
+                                if(slot && slot.port === port)
+                                {
+                                    foundIndex = i;
+                                    break;
+                                }
                             }
 
-                            console.log('WasmSerial_AttachOnce attached, authorizedCount =', S.devices.length);
+                            if(foundIndex < 0)
+                            {
+                                const wcomName = 'WCOM' + (S.deviceSlots.length + 1);
+                                S.deviceSlots.push({name:wcomName, port:port});
+                                foundIndex = S.deviceSlots.length - 1;
+                            }
+
+                            await S.refreshDevices();
+
+                            console.log('WasmSerial_AttachOnce attached, slot =', foundIndex, 'appDeviceCount =', S.deviceSlots.length);
 
                             // Permission was granted and EnumDevice() can now
-                            // list the new WebSerialN item. Notify the Qt-side
+                            // list the new WCOMN item. Notify the Qt-side
                             // USB watcher path to refresh the UI. This is not a
                             // serial connection; port.open() is still done by
                             // WasmSerial_Open().
@@ -326,7 +335,7 @@
                 return EM_ASM_INT({
                     const S = Module.BossWasmSerial;
                     const self = $0;
-                    const name = UTF8ToString($1);
+                    const rawName = UTF8ToString($1 || 0);
                     const baudRate = ($2 > 0) ? $2 : 115200;
                     const handle = S.nextHandle++;
                     const item = S.ports[handle] = ({self:self, port:null, reader:null, writer:null, connected:false, state:0, error:'', closed:false});
@@ -335,53 +344,75 @@
                     {
                         try
                         {
-                            if(!S.supported) throw new Error('Web Serial API is not supported by this browser.');
+                            if(!S.supported)
+                                throw new Error('Web Serial API is not supported by this browser.');
 
                             let port = null;
+                            let wcomName = '';
+                            let index = -1;
 
-                            // Always refresh first. navigator.serial.getPorts() returns only
-                            // already-authorized ports, which is exactly what the Qt list shows.
-                            await S.refreshDevices();
-
-                            // The Qt-side UI text can contain checkbox marks, spaces,
-                            // line breaks, or appended VID/PID labels, for example:
-                            // "[ ] WebSerial0\nVID_0403". Therefore do not anchor at
-                            // the beginning of the string. Find WebSerialN anywhere.
-                            const match = /WebSerial\s*(\d+)/.exec(name || '');
-                            if(match)
+                            // UI 문자열에는 "[ ] WCOM1", "WCOM2 at COM2", 개행, 공백 등이 섞일 수 있다.
+                            // EM_ASM 안에서 JS 정규식의 \s/\d 이스케이프가 깨질 수 있으므로
+                            // 정규식을 쓰지 않고 순수 문자열 스캔으로 WCOM 뒤 숫자만 추출한다.
+                            const upperName = String(rawName || '').toUpperCase();
+                            let pos = upperName.indexOf('WCOM');
+                            if(0 <= pos)
                             {
-                                const index = parseInt(match[1], 10);
-                                port = S.devices[index] || null;
-                                console.log('WasmSerial_Open name =', name, 'index =', index, 'matched =', !!port, 'authorizedCount =', S.devices.length);
-                            }
-                            else
-                            {
-                                console.log('WasmSerial_Open name =', name, 'matched = false', 'authorizedCount =', S.devices.length);
+                                pos += 4;
+                                while(pos < upperName.length)
+                                {
+                                    const c = upperName.charCodeAt(pos);
+                                    if(48 <= c && c <= 57) break;
+                                    pos++;
+                                }
+
+                                let numText = '';
+                                while(pos < upperName.length)
+                                {
+                                    const c = upperName.charCodeAt(pos);
+                                    if(c < 48 || 57 < c) break;
+                                    numText += upperName.charAt(pos);
+                                    pos++;
+                                }
+
+                                if(0 < numText.length)
+                                {
+                                    const wcomNo = parseInt(numText, 10);
+                                    if(0 < wcomNo)
+                                    {
+                                        index = wcomNo - 1;
+                                        wcomName = 'WCOM' + wcomNo;
+                                    }
+                                }
                             }
 
-                            // If Qt passes an empty/generic name but Chrome already has exactly
-                            // one authorized port, reuse it. This prevents repeated permission
-                            // popups while the UI is still displaying WebSerial0.
-                            if(!port && S.devices.length === 1 && (!name || /WebSerial/i.test(name)))
+                            // deviceSlots만 신뢰한다.
+                            // WCOM1 == deviceSlots[0], WCOM2 == deviceSlots[1], ...
+                            if(0 <= index && index < S.deviceSlots.length)
                             {
-                                port = S.devices[0];
-                                console.log('WasmSerial_Open fallback to only authorized port');
+                                const slot = S.deviceSlots[index];
+                                // 여기서는 !!slot.port 같은 truthy판정을 하지 않는다.
+                                // 디버그 문자열에는 true로 보이는데도 Open에서 못 찾는 상황을 막기 위해
+                                // slot객체가 있으면 slot.port를 그대로 후보로 잡고, 최종 null/undefined만 검사한다.
+                                if(slot)
+                                    port = slot.port;
                             }
 
-                            // Open() must not show Chrome's permission chooser.
-                            // The chooser is intentionally limited to AttachOnce().
-                            // If the UI tries to open a port that is not already authorized,
-                            // report an error and let the user press [+] first.
-                            if(!port)
-                                throw new Error('Authorized WebSerial port not found. Use AttachOnce() first.');
+                            if(port === null || port === undefined)
+                            {
+                                const slots = S.deviceSlots.map(function(slot, i)
+                                {
+                                    const hasPort = !!(slot && slot.port);
+                                    return 'WCOM' + (i + 1) + ':' + hasPort;
+                                }).join(',');
+                                throw new Error('Authorized WCOM port not found. Use AttachOnce() first. index=' + index + ', slots=' + slots + ', raw=' + rawName);
+                            }
+
+                            console.log('WasmSerial_Open resolved', rawName, '=>', wcomName, 'index=', index, 'slotCount=', S.deviceSlots.length, 'port=', port);
 
                             item.port = port;
                             item.state = 2; // opening
 
-                            // SerialPort.open() throws InvalidStateError if the same browser
-                            // SerialPort is already open. In that case readable/writable are
-                            // already available, so treat it as connected instead of showing
-                            // another chooser popup.
                             if(!(port.readable || port.writable))
                                 await port.open({baudRate: baudRate, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none'});
                             else
@@ -438,44 +469,77 @@
                     const item = S && S.ports[$0];
                     if(!item) return;
 
-                    // C++ SerialClass is being destroyed. Detach immediately so
-                    // pending async read/error/disconnect callbacks cannot touch
-                    // already-destroyed mutexes or buffers.
+                    // IMPORTANT:
+                    // Platform::Serial::Close() is called while the UI is toggling the
+                    // checked state. Therefore this function must return immediately.
+                    // Browser WebSerial close is asynchronous and may wait for a pending
+                    // reader.read() to unwind, so do it as a detached fire-and-forget job.
+                    const handle = $0;
+                    const port = item.port;
+                    const reader = item.reader;
+                    const writer = item.writer;
+
+                    // Detach C++ first. From now on no JS callback may touch SerialClass.
                     item.closed = true;
                     item.self = 0;
                     item.connected = false;
                     item.state = 0;
+                    item.port = null;
+                    item.reader = null;
+                    item.writer = null;
+                    delete S.ports[handle];
 
-                    (async function()
+                    // Keep EnumDevice stable. Closing a serial connection is not removing
+                    // the authorized WCOM device from the browser/app list.
+                    S.refreshDevices();
+
+                    // Finish browser-side stream shutdown later. Do not await from the
+                    // EM_ASM call path; otherwise a locked reader/writer can appear as a UI hang.
+                    setTimeout(function()
                     {
-                        try
+                        (async function()
                         {
-                            const reader = item.reader;
-                            item.reader = null;
-                            if(reader)
-                                await reader.cancel().catch(function(){});
-
-                            const writer = item.writer;
-                            item.writer = null;
-                            if(writer)
+                            try
                             {
-                                try {writer.releaseLock();} catch(_) {}
-                            }
+                                if(reader)
+                                {
+                                    try { await reader.cancel(); }
+                                    catch(e) { console.warn('WasmSerial_Close reader.cancel ignored:', e); }
+                                    try { reader.releaseLock(); }
+                                    catch(e) { /* usually already released by pumpRead finally */ }
+                                }
 
-                            const port = item.port;
-                            item.port = null;
-                            if(port && (port.readable || port.writable))
-                                await port.close().catch(function(e){ console.warn('WasmSerial close ignored:', e); });
-                        }
-                        catch(e)
-                        {
-                            // Do not call S.error(item, e) here because item.self has
-                            // intentionally been detached from C++. Console-only.
-                            console.warn('WasmSerial_Close failed:', e);
-                        }
-                        delete S.ports[$0];
-                        S.refreshDevices();
-                    })();
+                                if(writer)
+                                {
+                                    try { writer.releaseLock(); }
+                                    catch(e) { console.warn('WasmSerial_Close writer.releaseLock ignored:', e); }
+                                }
+
+                                // One turn gives pumpRead() a chance to run its finally block.
+                                await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+                                if(port)
+                                {
+                                    try
+                                    {
+                                        await Promise.race([
+                                            port.close(),
+                                            new Promise(function(resolve) { setTimeout(resolve, 1000); })
+                                        ]);
+                                        console.log('WasmSerial_Close closed/detached');
+                                    }
+                                    catch(e)
+                                    {
+                                        console.warn('WasmSerial_Close port.close ignored:', e);
+                                    }
+                                }
+                            }
+                            catch(e)
+                            {
+                                console.warn('WasmSerial_Close deferred failed:', e);
+                            }
+                        })();
+                    }, 0);
                 }, handle);
             }
 
