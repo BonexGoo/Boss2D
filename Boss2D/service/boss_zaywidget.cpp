@@ -252,6 +252,11 @@ namespace BOSS
         mZaySon.SendAtlas(json);
     }
 
+    String ZayWidget::SaveTime()
+    {
+        return mZaySon.SaveTime();
+    }
+
     void ZayWidget::LangTurn()
     {
         auto& CaptureInfo = ZayControl::GetCaptureInfo();

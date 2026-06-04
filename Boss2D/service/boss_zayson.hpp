@@ -133,6 +133,7 @@ namespace BOSS
         const Strings AllGateNames() const;
         const String SaveDirectUIName(chars uiname);
         const String& DirectlyUIName() const;
+        const String SaveTime() const;
         bool Render(ZayPanel& panel);
         void RenderLogs(ZayPanel& panel, DebugLogs& logs);
 

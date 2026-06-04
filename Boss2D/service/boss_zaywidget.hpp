@@ -27,6 +27,7 @@ namespace BOSS
         void JumpCall(chars gatename, chars uiname, sint32 runcount = 1, sint32 intervalms = 0);
         bool JumpCallDirectly(chars gatename, chars uiname, ZayPanel* panel = nullptr);
         void UpdateAtlas(chars json);
+        String SaveTime();
         void LangTurn();
         void SendLog(chars text);
 

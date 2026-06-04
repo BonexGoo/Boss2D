@@ -1546,6 +1546,7 @@ namespace BOSS
         void Load(const ZaySon& root, const Context& context) override
         {
             ZayUIElement::Load(root, context);
+            mSaveTime = context("savetime").GetText();
 
             hook(context("oncreate"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -1597,6 +1598,7 @@ namespace BOSS
         }
 
     public:
+        String mSaveTime;
         ZayUIs mCreateCodes;
         ZayUIs mChildren;
         ZayMap<ZayUI> mGates;
@@ -1851,6 +1853,13 @@ namespace BOSS
     const String& ZaySon::DirectlyUIName() const
     {
         return mDirectlyUIName;
+    }
+
+    const String ZaySon::SaveTime() const
+    {
+        if(auto TopElement = (ZayViewElement*)(ZayUIElement*) mUIElement)
+            return TopElement->mSaveTime;
+        return String();
     }
 
     bool ZaySon::Render(ZayPanel& panel)
