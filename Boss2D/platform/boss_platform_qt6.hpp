@@ -3254,6 +3254,15 @@
     };
 
     #ifdef QT_HAVE_MULTIMEDIA
+        #if BOSS_WASM
+            extern "C" int BossWasmSound_Open(const char* url, int loop);
+            extern "C" void BossWasmSound_Close(int id);
+            extern "C" void BossWasmSound_Play(int id);
+            extern "C" void BossWasmSound_Stop(int id);
+            extern "C" void BossWasmSound_SetVolume(int id, double volume);
+            extern "C" int BossWasmSound_IsPlaying(int id);
+        #endif
+
         class SoundClass
         {
         public:
@@ -3295,6 +3304,15 @@
             }
             SoundClass(chars path, bool loop, bool url_or_file)
             {
+                #if BOSS_WASM
+                    if(url_or_file)
+                    {
+                        m_wasm_sound_id = BossWasmSound_Open(path ? path : "", (loop)? 1 : 0);
+                        ApplyVolumeToBackend(m_volume_pos);
+                        return;
+                    }
+                #endif
+
                 m_player = new QMediaPlayer();
                 m_player_output = new QAudioOutput();
                 m_player->setAudioOutput(m_player_output);
@@ -3328,6 +3346,13 @@
             ~SoundClass()
             {
                 Stop();
+                #if BOSS_WASM
+                    if(0 < m_wasm_sound_id)
+                    {
+                        BossWasmSound_Close(m_wasm_sound_id);
+                        m_wasm_sound_id = 0;
+                    }
+                #endif
                 delete m_player;
                 delete m_player_output;
                 delete m_sink;
@@ -3338,6 +3363,7 @@
         public:
             void SetDevice(sint32 deviceindex)
             {
+                if(!m_player_output) return;
                 const QList<QAudioDevice>& AllDevices = QMediaDevices::audioOutputs();
                 foreach(const auto& CurDevice, AllDevices)
                 {
@@ -3392,6 +3418,15 @@
             }
             void Play()
             {
+                #if BOSS_WASM
+                    if(0 < m_wasm_sound_id)
+                    {
+                        ApplyVolumeToBackend(CalcedVolume());
+                        BossWasmSound_Play(m_wasm_sound_id);
+                        return;
+                    }
+                #endif
+
                 branch;
                 jump(m_player)
                 {
@@ -3410,6 +3445,14 @@
             }
             void Stop()
             {
+                #if BOSS_WASM
+                    if(0 < m_wasm_sound_id)
+                    {
+                        BossWasmSound_Stop(m_wasm_sound_id);
+                        return;
+                    }
+                #endif
+
                 branch;
                 jump(m_player) m_player->stop();
                 jump(m_sink)
@@ -3425,6 +3468,11 @@
             }
             bool NowPlaying()
             {
+                #if BOSS_WASM
+                    if(0 < m_wasm_sound_id)
+                        return (BossWasmSound_IsPlaying(m_wasm_sound_id) != 0);
+                #endif
+
                 branch;
                 jump(m_player)
                 {
@@ -3498,6 +3546,13 @@
             void ApplyVolumeToBackend(sint32 volume_0_100)
             {
                 const qreal QtVolume = Math::ClampF(volume_0_100 / 100.0f, 0.0f, 1.0f);
+                #if BOSS_WASM
+                    if(0 < m_wasm_sound_id)
+                    {
+                        BossWasmSound_SetVolume(m_wasm_sound_id, QtVolume);
+                        return;
+                    }
+                #endif
                 if(m_player_output)
                     m_player_output->setVolume(QtVolume);
                 if(m_sink)
@@ -3509,6 +3564,9 @@
             sint32 m_volume_target {100};
             uint64 m_volume_pos_msec {0};
             uint64 m_volume_target_msec {0};
+            #if BOSS_WASM
+                sint32 m_wasm_sound_id {0};
+            #endif
             QMediaPlayer* m_player {nullptr};
             QAudioOutput* m_player_output {nullptr};
             QAudioSink* m_sink {nullptr};

@@ -82,6 +82,92 @@
             //while(!g_WasmFlush)
             //    emscripten_sleep(10);
         }
+        #if BOSS_WASM
+            EM_JS(int, BossWasmSound_Open, (const char* url, int loop), {
+                if(!Module.BossWasmSounds)
+                {
+                    Module.BossWasmSounds = {};
+                    Module.BossWasmSoundNext = 1;
+                }
+
+                const id = Module.BossWasmSoundNext++;
+                const u = UTF8ToString(url || 0);
+                const a = new Audio(u);
+                a.preload = 'auto';
+                a.loop = !!loop;
+                a.volume = 1.0;
+
+                a.addEventListener('error', function() {
+                    const err = a.error ? (a.error.code + ':' + a.error.message) : 'unknown';
+                    console.warn('BossWasmSound error', id, u, err);
+                });
+
+                Module.BossWasmSounds[id] = a;
+                console.log('BossWasmSound_Open', id, u, 'loop=', !!loop);
+                return id;
+            });
+
+            EM_JS(void, BossWasmSound_Close, (int id), {
+                const S = Module.BossWasmSounds;
+                const a = S && S[id];
+                if(!a) return;
+
+                try {
+                    a.pause();
+                    a.removeAttribute('src');
+                    a.load();
+                } catch(e) {
+                    console.warn('BossWasmSound_Close ignored:', e);
+                }
+                delete S[id];
+            });
+
+            EM_JS(void, BossWasmSound_Play, (int id), {
+                const S = Module.BossWasmSounds;
+                const a = S && S[id];
+                if(!a) return;
+
+                try { a.currentTime = 0; }
+                catch(e) {}
+
+                const p = a.play();
+                if(p && p.catch)
+                    p.catch(function(e) {
+                        console.warn('BossWasmSound_Play failed:', e);
+                    });
+            });
+
+            EM_JS(void, BossWasmSound_Stop, (int id), {
+                const S = Module.BossWasmSounds;
+                const a = S && S[id];
+                if(!a) return;
+
+                try {
+                    a.pause();
+                    a.currentTime = 0;
+                } catch(e) {
+                    console.warn('BossWasmSound_Stop ignored:', e);
+                }
+            });
+
+            EM_JS(void, BossWasmSound_SetVolume, (int id, double volume), {
+                const S = Module.BossWasmSounds;
+                const a = S && S[id];
+                if(!a) return;
+
+                if(volume < 0) volume = 0;
+                else if(1 < volume) volume = 1;
+                a.volume = volume;
+            });
+
+            EM_JS(int, BossWasmSound_IsPlaying, (int id), {
+                const S = Module.BossWasmSounds;
+                const a = S && S[id];
+                if(!a) return 0;
+                return (!a.paused && !a.ended) ? 1 : 0;
+            });
+        #endif
+
         #ifndef QT_HAVE_SERIALPORT
             extern "C" EMSCRIPTEN_KEEPALIVE void OnWasmSerialDeviceChanged(const char* specjson)
             {
