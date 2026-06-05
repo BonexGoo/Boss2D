@@ -3019,19 +3019,19 @@
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
-        id_animate Platform::Animate::OpenForLottieFile(chars filename)
+        id_animate Platform::Animate::OpenForLottieFile(chars filename, bool use_cache)
         {
             buffer NewAnimate = Buffer::Alloc<AnimateLottieClass>(BOSS_DBG 1);
-            if(((AnimateLottieClass*) NewAnimate)->OpenFile(filename))
+            if(((AnimateLottieClass*) NewAnimate)->OpenFile(filename, use_cache))
                 return (id_animate) NewAnimate;
             Buffer::Free(NewAnimate);
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForLottieJson(chars jsontext)
+        id_animate Platform::Animate::OpenForLottieJson(chars jsontext, chars cachekey)
         {
             buffer NewAnimate = Buffer::Alloc<AnimateLottieClass>(BOSS_DBG 1);
-            if(((AnimateLottieClass*) NewAnimate)->OpenJson(jsontext))
+            if(((AnimateLottieClass*) NewAnimate)->OpenJson(jsontext, cachekey))
                 return (id_animate) NewAnimate;
             Buffer::Free(NewAnimate);
             return nullptr;

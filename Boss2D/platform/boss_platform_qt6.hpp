@@ -3039,8 +3039,8 @@
         virtual ~AnimateClass() = default;
 
     public:
-        virtual bool OpenFile(chars filename) = 0;
-        virtual bool OpenJson(chars jsontext) = 0;
+        virtual bool OpenFile(chars filename, bool use_cache) = 0;
+        virtual bool OpenJson(chars jsontext, chars cachekey) = 0;
         virtual sint32 GetWidth() const = 0;
         virtual sint32 GetHeight() const = 0;
         virtual sint32 GetFrameCount() const = 0;
@@ -3057,10 +3057,10 @@
         ~AnimateLottieClass() override = default;
 
     public:
-        bool OpenFile(chars filename) override
+        bool OpenFile(chars filename, bool use_cache) override
         {
             #if BOSS_HAVE_RLOTTIE
-                mAni = rlottie::Animation::loadFromFile(filename);
+                mAni = rlottie::Animation::loadFromFile(filename, use_cache);
                 if(!mAni)
                 {
                     BOSS_TRACE("AnimateLottieClass::OpenFile(%s) failed - loadFromFile returned nullptr", filename);
@@ -3075,10 +3075,10 @@
             #endif
         }
 
-        bool OpenJson(chars jsontext) override
+        bool OpenJson(chars jsontext, chars cachekey) override
         {
             #if BOSS_HAVE_RLOTTIE
-                mAni = rlottie::Animation::loadFromData(jsontext, "");
+                mAni = rlottie::Animation::loadFromData(jsontext, (cachekey)? cachekey : "", "", cachekey != nullptr);
                 if(!mAni)
                 {
                     BOSS_TRACE("AnimateLottieClass::OpenJson failed - loadFromData returned nullptr");

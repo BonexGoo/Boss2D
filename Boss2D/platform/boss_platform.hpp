@@ -1322,15 +1322,17 @@ public:
     public:
         /// @brief 파일로 Lottie애니메이션 열기
         /// @param filename : 파일명
+        /// @param use_cache : 캐시사용여부
         /// @return 애니메이션ID
         /// @see Close
-        static id_animate OpenForLottieFile(chars filename);
+        static id_animate OpenForLottieFile(chars filename, bool use_cache = false);
 
         /// @brief Json로 Lottie애니메이션 열기
         /// @param jsontext : JSON데이터
+        /// @param cachekey : 캐시를 위한 키(없으면 캐시안함)
         /// @return 애니메이션ID
         /// @see Close
-        static id_animate OpenForLottieJson(chars jsontext);
+        static id_animate OpenForLottieJson(chars jsontext, chars cachekey = nullptr);
 
         /// @brief 애니메이션 닫기
         /// @param animate : 애니메이션ID

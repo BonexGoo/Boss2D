@@ -1611,13 +1611,13 @@
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
-        id_animate Platform::Animate::OpenForLottieFile(chars filename)
+        id_animate Platform::Animate::OpenForLottieFile(chars filename, bool use_cache)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForLottieJson(chars jsontext)
+        id_animate Platform::Animate::OpenForLottieJson(chars jsontext, chars cachekey)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

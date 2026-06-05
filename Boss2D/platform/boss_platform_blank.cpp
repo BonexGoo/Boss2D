@@ -1582,13 +1582,13 @@
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
-        id_animate Platform::Animate::OpenForLottieFile(chars filename)
+        id_animate Platform::Animate::OpenForLottieFile(chars filename, bool use_cache)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForLottieJson(chars jsontext)
+        id_animate Platform::Animate::OpenForLottieJson(chars jsontext, chars cachekey)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
