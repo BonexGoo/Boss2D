@@ -111,6 +111,10 @@
         #include <QtMultimedia>
         #include <QMediaPlayer>
         #include <QMediaDevices>
+        #include <QVideoSink>
+        #include <QVideoFrame>
+        #include <QEventLoop>
+        #include <QElapsedTimer>
         #include <QAudioOutput>
         #include <QAudioSink>
         #include <QAudioFormat>
@@ -3252,6 +3256,184 @@
             float mDuration {0.0f};
         #endif
     };
+
+    #ifdef QT_HAVE_MULTIMEDIA
+        class AnimateMovieClass : public AnimateClass
+        {
+            BOSS_DECLARE_NONCOPYABLE_CLASS(AnimateMovieClass)
+        public:
+            AnimateMovieClass()
+            {
+                mVideoSink = new QVideoSink();
+                mPlayer = new QMediaPlayer();
+                mPlayer->setVideoSink(mVideoSink);
+
+                QObject::connect(mVideoSink, &QVideoSink::videoFrameChanged,
+                    [this](const QVideoFrame& frame)->void
+                    {
+                        if(frame.isValid())
+                        {
+                            const QSize Size = frame.size();
+                            if(Size.isValid())
+                            {
+                                mWidth = Size.width();
+                                mHeight = Size.height();
+                            }
+                        }
+                    });
+
+                QObject::connect(mPlayer, &QMediaPlayer::durationChanged,
+                    [this](qint64 duration)->void
+                    {
+                        if(0 < duration)
+                        {
+                            mDuration = (float) duration / 1000.0f;
+                            mFrameCount = Math::Max(1, (sint32) (mDuration * mFrameRate + 0.5f));
+                        }
+                    });
+            }
+
+            ~AnimateMovieClass() override
+            {
+                if(mPlayer)
+                {
+                    mPlayer->stop();
+                    mPlayer->setVideoSink(nullptr);
+                }
+                delete mPlayer;
+                delete mVideoSink;
+            }
+
+        public:
+            bool OpenFile(chars filename, bool use_cache) override
+            {
+                if(!filename || !*filename)
+                    return false;
+
+                const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
+                const QString FilePath = QString::fromUtf8(FilenameUTF8, -1);
+                if(!QFileInfo(FilePath).exists())
+                {
+                    BOSS_TRACE("AnimateMovieClass::OpenFile(%s) failed - file not found", filename);
+                    return false;
+                }
+
+                mImage = QImage();
+                mWidth = 0;
+                mHeight = 0;
+                mFrameCount = 1;
+                mCurFrame = 0;
+                mLastCapturedUSec = -2;
+                mDuration = 0.0f;
+
+                mPlayer->stop();
+                mPlayer->setSource(QUrl::fromLocalFile(FilePath));
+
+                const QSize VideoSize = mVideoSink->videoSize();
+                if(VideoSize.isValid())
+                {
+                    mWidth = VideoSize.width();
+                    mHeight = VideoSize.height();
+                }
+
+                // Movie는 Lottie처럼 임의 위치로 seek해서 프레임을 뽑지 않는다.
+                // Qt Multimedia 디코더를 자연 재생시켜 두고, Draw() 호출 시점의 sink 프레임만 즉시 그린다.
+                mPlayer->play();
+
+                BOSS_TRACE("AnimateMovieClass::OpenFile(%s) size=%dx%d frameCount=%d frameRate=%f duration=%f",
+                    filename, mWidth, mHeight, mFrameCount, mFrameRate, mDuration);
+                return true;
+            }
+
+            bool OpenJson(chars jsontext, chars cachekey) override
+            {
+                BOSS_TRACE("AnimateMovieClass::OpenJson failed - movie animation supports file source only");
+                return false;
+            }
+
+            sint32 GetWidth() const override {return mWidth;}
+            sint32 GetHeight() const override {return mHeight;}
+            sint32 GetFrameCount() const override {return mFrameCount;}
+
+            float Seek(float sec, bool loop) override
+            {
+                // Movie는 임의 위치 점프를 지원하지 않는다.
+                // 호출자는 기존 AnimateClass 호환을 위해 이 함수를 호출할 수 있지만 모두 무시한다.
+                return mDuration;
+            }
+
+            sint32 Next(bool loop) override
+            {
+                if(mFrameCount <= 0)
+                    return -1;
+
+                mCurFrame++;
+                if(mFrameCount <= mCurFrame)
+                {
+                    if(loop)
+                    {
+                        mCurFrame = 0;
+                        if(mPlayer)
+                        {
+                            mLastCapturedUSec = -2;
+                            mPlayer->setPosition(0);
+                            mPlayer->play();
+                        }
+                    }
+                    else
+                    {
+                        mCurFrame = mFrameCount - 1;
+                        if(mPlayer)
+                            mPlayer->pause();
+                    }
+                }
+                return mCurFrame;
+            }
+
+            void Draw(float x, float y, float width, float height, float degree) override
+            {
+                if(!mVideoSink || !CanvasClass::enabled()) return;
+
+                const QVideoFrame CurFrame = mVideoSink->videoFrame();
+                if(CurFrame.isValid())
+                {
+                    const qint64 StartUSec = CurFrame.startTime();
+                    if(mImage.isNull() || mLastCapturedUSec != StartUSec)
+                    {
+                        QImage NewImage = CurFrame.toImage();
+                        if(!NewImage.isNull())
+                        {
+                            mImage = NewImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+                            mLastCapturedUSec = StartUSec;
+                            mWidth = mImage.width();
+                            mHeight = mImage.height();
+                        }
+                    }
+                }
+
+                if(mImage.isNull()) return;
+
+                QPainter& Painter = CanvasClass::get()->painter();
+                Painter.save();
+                Painter.translate(x + width / 2.0f, y + height / 2.0f);
+                Painter.rotate(degree);
+                Painter.drawImage(QRectF(-width / 2.0f, -height / 2.0f, width, height), mImage);
+                Painter.restore();
+            }
+
+        private:
+            QMediaPlayer* mPlayer {nullptr};
+            QVideoSink* mVideoSink {nullptr};
+            QImage mImage;
+            sint32 mWidth {0};
+            sint32 mHeight {0};
+            sint32 mFrameCount {1};
+            sint32 mCurFrame {0};
+            qint64 mLastCapturedUSec {-2};
+            float mFrameRate {30.0f};
+            float mDuration {0.0f};
+        };
+    #endif
 
     #ifdef QT_HAVE_MULTIMEDIA
         #if BOSS_WASM

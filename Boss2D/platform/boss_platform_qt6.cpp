@@ -3037,6 +3037,19 @@
             return nullptr;
         }
 
+        id_animate Platform::Animate::OpenForMovieFile(chars filename)
+        {
+            #ifdef QT_HAVE_MULTIMEDIA
+                buffer NewAnimate = Buffer::Alloc<AnimateMovieClass>(BOSS_DBG 1);
+                if(((AnimateMovieClass*) NewAnimate)->OpenFile(filename, false))
+                    return (id_animate) NewAnimate;
+                Buffer::Free(NewAnimate);
+            #else
+                BOSS_TRACE("OpenForMovieFile(%s) failed - QT_HAVE_MULTIMEDIA is not defined", filename);
+            #endif
+            return nullptr;
+        }
+
         void Platform::Animate::Close(id_animate animate)
         {
             Buffer::Free((buffer) animate);

@@ -1334,6 +1334,12 @@ public:
         /// @see Close
         static id_animate OpenForLottieJson(chars jsontext, chars cachekey = nullptr);
 
+        /// @brief 파일로 동영상애니메이션 열기
+        /// @param filename : 파일명
+        /// @return 애니메이션ID
+        /// @see Close
+        static id_animate OpenForMovieFile(chars filename);
+
         /// @brief 애니메이션 닫기
         /// @param animate : 애니메이션ID
         /// @see OpenForLottie
