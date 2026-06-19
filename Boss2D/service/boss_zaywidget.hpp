@@ -78,6 +78,7 @@ namespace BOSS
         static void BindPipe(id_pipe pipe);
         static void UnbindPipe(id_pipe pipe);
         static void SetFocus(sint32 compid);
+        static void AddFlash(sint32 compid);
 
     private:
         void ConfirmUpdate();
@@ -85,6 +86,7 @@ namespace BOSS
         static void UpdateToPipe(id_pipe pipe, const Solver* solver);
         static void RemoveToPipe(id_pipe pipe, chars variable);
         static void FocusToPipe(id_pipe pipe, sint32 compid);
+        static void FlashToPipe(id_pipe pipe, sint32 compid);
 
     private:
         class Pipe
@@ -103,6 +105,7 @@ namespace BOSS
         bool mHasUpdate;
         bool mHasRemove;
         sint32 mHasFocusedCompID;
+        sint32s mHasFlashedCompIDs;
         ZayMap<bool> mRemoveVariables;
         sint32 mUpdateProcedure;
     };

@@ -1296,10 +1296,21 @@ namespace BOSS
                     FocusToPipe(PipeID, Self->mHasFocusedCompID);
                 }
 
+                // 플래시처리
+                if(sint32 FlashCount = Self->mHasFlashedCompIDs.Count())
+                for(sint32 i = 0, iend = Self->mPipeMap.Count(); i < iend; ++i)
+                for(sint32 j = 0; j < FlashCount; ++j)
+                {
+                    auto CurPipe = *Self->mPipeMap.AccessByOrder(i);
+                    id_pipe PipeID = CurPipe.mRefPipe;
+                    FlashToPipe(PipeID, Self->mHasFlashedCompIDs[j]);
+                }
+
                 // 초기화
                 Self->mHasUpdate = false;
                 Self->mHasRemove = false;
                 Self->mHasFocusedCompID = -1;
+                Self->mHasFlashedCompIDs.Clear();
                 Self->mRemoveVariables.Reset();
             }, this);
     }
@@ -1411,6 +1422,12 @@ namespace BOSS
         Self.mHasFocusedCompID = compid;
     }
 
+    void ZayWidgetDOM::AddFlash(sint32 compid)
+    {
+        auto& Self = ST();
+        Self.mHasFlashedCompIDs.AtAdding() = compid;
+    }
+
     void ZayWidgetDOM::ConfirmUpdate()
     {
         mHasUpdate = true;
@@ -1444,6 +1461,14 @@ namespace BOSS
     {
         Context Json;
         Json.At("type").Set("comp_focused");
+        Json.At("compid").Set(String::FromInteger(compid));
+        Platform::Pipe::SendJson(pipe, Json.SaveJson());
+    }
+
+    void ZayWidgetDOM::FlashToPipe(id_pipe pipe, sint32 compid)
+    {
+        Context Json;
+        Json.At("type").Set("comp_flashed");
         Json.At("compid").Set(String::FromInteger(compid));
         Platform::Pipe::SendJson(pipe, Json.SaveJson());
     }

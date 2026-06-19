@@ -1,6 +1,8 @@
 ﻿#include <boss.hpp>
 #include "boss_zayson.hpp"
 
+#include "boss_zaywidget.hpp"
+
 ZAY_DECLARE_VIEW("_unmatched_view_")
 ZAY_VIEW_API OnCommand(CommandType, id_share, id_cloned_share*) {}
 ZAY_VIEW_API OnNotify(NotifyType, chars, id_share, id_cloned_share*) {}
@@ -1015,13 +1017,19 @@ namespace BOSS
     class ZayGateElement : public ZayUIElement
     {
     public:
-        ZayGateElement() : ZayUIElement(Type::Gate) {}
+        ZayGateElement() : ZayUIElement(Type::Gate)
+        {
+            mCompID = -2;
+        }
         ~ZayGateElement() override {}
 
     public:
         void Load(const ZaySon& root, const Context& context) override
         {
             ZayUIElement::Load(root, context);
+
+            hook(context("compid"))
+                mCompID = fish.GetInt(-2);
 
             hook(context("ui"))
             for(sint32 i = 0, iend = fish.LengthOfIndexable(); i < iend; ++i)
@@ -1032,6 +1040,12 @@ namespace BOSS
                 NewUI->Load(root, fish[i]);
                 mChildren.AtAdding() = (id_share) NewUI;
             }
+        }
+
+    public:
+        sint32 GetCompID() const override
+        {
+            return mCompID;
         }
 
     public:
@@ -1051,6 +1065,7 @@ namespace BOSS
         }
 
     public:
+        sint32 mCompID;
         ZayUIs mChildren;
     };
 
@@ -1925,6 +1940,8 @@ namespace BOSS
                             mLocalSolvers.SubtractionAll();
                         }
                         SaveDirectUIName(OldUIName);
+                        // 플래시효과
+                        ZayWidgetDOM::AddFlash(CurGate->GetCompID());
                     }
                     // 점프콜 재신청
                     String NextJumpCall = String::Format("%llu,%d,%s,%s,%d", NowMsec + IntervalMsec, IntervalMsec, (chars) GateName, (chars) UIName, RunIndex + 1);
