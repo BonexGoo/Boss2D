@@ -101,7 +101,7 @@ namespace BOSS
                     []()->const void* {static double _[308]; double EP = 1; for(sint32 i = 0; i < 308; ++i) _[i] = (EP *= 10); return _;}();
                 const TYPE* ECode[2] = {(const TYPE*) ECodeEM, (const TYPE*) ECodeEP};
                 const sint32 ESign = (source[(++Offset)++] == '+');
-                const sint32 EValue = GetInt(source, length, offset);
+                const sint32 EValue = GetInt(source, length, &Offset);
                 const bool ESuccess = (0 <= EValue && EValue - ESign < ((sizeof(TYPE) == 4)? 38 : 308));
                 if(ESuccess) Result *= ECode[ESign][EValue - ESign];
             }
