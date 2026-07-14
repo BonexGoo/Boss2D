@@ -1493,7 +1493,7 @@
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
         }
 
-        void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data)
+        void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data, chars rawheader)
         {
             BOSS_ASSERT("Further development is needed.", false);
         }

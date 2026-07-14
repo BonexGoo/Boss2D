@@ -1842,7 +1842,7 @@
                 });
         }
 
-        void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data)
+        void Platform::Utility::SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data, chars rawheader)
         {
             if(const QPixmap* CurPixmap = (const QPixmap*) image)
             if(!CurPixmap->isNull())
@@ -1863,6 +1863,12 @@
                 static QNetworkAccessManager Manager;
                 QNetworkRequest NewRequest(QUrl(QString::fromUtf8(url)));
                 NewRequest.setRawHeader("Accept", "application/json");
+                if(rawheader && 0 < String(rawheader).Find(0, ":"))
+                {
+                    const String RawHeader(rawheader);
+                    const sint32 ColonPos = RawHeader.Find(0, ":");
+                    NewRequest.setRawHeader((chars) RawHeader.Left(ColonPos), (chars) RawHeader.Offset(ColonPos + 1));
+                }
                 QNetworkReply* Reply = Manager.post(NewRequest, MultiPart);
                 MultiPart->setParent(Reply);
                 QObject::connect(Reply, &QNetworkReply::finished,

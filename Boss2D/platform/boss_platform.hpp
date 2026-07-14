@@ -608,7 +608,8 @@ public:
         /// @param image : 보낼 이미지
         /// @param cb : 응답이 도착할 콜백함수
         /// @param data : 콜백함수에 전달할 데이터
-        static void SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data = nullptr);
+        /// @param rawheader : 추가 헤더정보("apikey:helloworld")
+        static void SendImageRequest(chars url, id_image_read image, RequestEventCB cb, payload data = nullptr, chars rawheader = nullptr);
 
         /// @brief URL로 CSV를 포함하여 네트워크요청 보내기
         /// @param url : REST-API식 url요청("https://a.b.com/ask?aa=0&bb=1")
