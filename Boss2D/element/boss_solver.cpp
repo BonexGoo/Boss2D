@@ -1082,7 +1082,7 @@ namespace BOSS
                     const String Variable(ToReference(path->GetPath()));
                     if(OnePayload.mMatchFromStart)
                     {
-                        if(!Variable.Compare(OnePayload.mKeyword, OnePayload.mKeyword.Length()))
+                        if(!String::Compare(Variable, OnePayload.mKeyword, OnePayload.mKeyword.Length()))
                             OnePayload.mMatchedVariables.AtAdding() = Variable;
                     }
                     else if(0 <= Variable.Find(0, OnePayload.mKeyword))
