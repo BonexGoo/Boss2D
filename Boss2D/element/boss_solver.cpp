@@ -1061,7 +1061,7 @@ namespace BOSS
             FindedChain->Remove(variable);
     }
 
-    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverVariableCB cb)
+    void Solver::RemoveMatchedVariables(chars chain, chars keyword, SolverVariableCB cb, bool match_from_start)
     {
         BOSS_ASSERT("잘못된 시나리오입니다", keyword);
         if(auto FindedChain = &gSolverChains(chain))
@@ -1069,9 +1069,10 @@ namespace BOSS
             struct Payload
             {
                 const String mKeyword;
+                const bool mMatchFromStart;
                 Strings mMatchedVariables;
             };
-            Payload OnePayload {keyword};
+            Payload OnePayload {keyword, match_from_start};
 
             // 삭제대상의 선별(AccessByCallback중 삭제불가)
             FindedChain->AccessByCallback(
@@ -1079,7 +1080,12 @@ namespace BOSS
                 {
                     Payload& OnePayload = *((Payload*) param);
                     const String Variable(ToReference(path->GetPath()));
-                    if(0 <= Variable.Find(0, OnePayload.mKeyword))
+                    if(OnePayload.mMatchFromStart)
+                    {
+                        if(!Variable.Compare(OnePayload.mKeyword, OnePayload.mKeyword.Length()))
+                            OnePayload.mMatchedVariables.AtAdding() = Variable;
+                    }
+                    else if(0 <= Variable.Find(0, OnePayload.mKeyword))
                         OnePayload.mMatchedVariables.AtAdding() = Variable;
                 }, (payload) &OnePayload);
 
@@ -1090,10 +1096,8 @@ namespace BOSS
                 {
                     auto& CurVariable = OnePayload.mMatchedVariables[i];
                     if(auto CurChainPair = FindedChain->Access(CurVariable))
-                    {
                         cb(CurVariable, CurChainPair);
-                        FindedChain->Remove(CurVariable);
-                    }
+                    FindedChain->Remove(CurVariable);
                 }
             }
             else for(sint32 i = 0, iend = OnePayload.mMatchedVariables.Count(); i < iend; ++i)

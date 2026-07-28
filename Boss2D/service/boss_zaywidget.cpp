@@ -1385,14 +1385,14 @@ namespace BOSS
         if(0 < Pipes.Count())
         {
             const ZayArray<id_pipe>* PtrPipes = &Pipes;
-            Self.mDocument->RemoveMatchedVariables(keyword,
+            Self.mDocument->RemoveStartMatchedVariables(keyword,
                 [PtrPipes](const String& variable, const SolverChainPair* pair)->void
                 {
                     for(sint32 i = 0, iend = PtrPipes->Count(); i < iend; ++i)
                         RemoveToPipe((*PtrPipes)[i], variable);
                 });
         }
-        else Self.mDocument->RemoveMatchedVariables(keyword);
+        else Self.mDocument->RemoveStartMatchedVariables(keyword);
     }
 
     void ZayWidgetDOM::BindPipe(id_pipe pipe)
