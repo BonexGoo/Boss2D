@@ -45,6 +45,7 @@
         #include <QMainWindow>
         #include <QWindow>
         #include <QPainter>
+        #include <QImageReader>
         #include <QPainterPath>
         #include <QCloseEvent>
         #include <QResizeEvent>
@@ -3255,6 +3256,393 @@
             float mFrameRate {60.0f};
             float mDuration {0.0f};
         #endif
+    };
+
+    class AnimateAPngClass : public AnimateClass
+    {
+        BOSS_DECLARE_NONCOPYABLE_CLASS(AnimateAPngClass)
+
+        struct Chunk
+        {
+            QByteArray Type;
+            QByteArray Data;
+        };
+
+        struct Frame
+        {
+            quint32 Width {0};
+            quint32 Height {0};
+            quint32 X {0};
+            quint32 Y {0};
+            quint16 DelayNum {0};
+            quint16 DelayDen {100};
+            quint8 DisposeOp {0};
+            quint8 BlendOp {0};
+            QByteArray Compressed;
+            bool UsesIDAT {false};
+        };
+
+    public:
+        AnimateAPngClass() = default;
+        ~AnimateAPngClass() override = default;
+
+    public:
+        bool OpenFile(chars filename, bool use_cache) override
+        {
+            if(!filename || !*filename)
+                return false;
+
+            const String FilenameUTF8 = PlatformImpl::Core::NormalPath(filename);
+            const QString FilePath = QString::fromUtf8(FilenameUTF8, -1);
+
+            QFile File(FilePath);
+            if(!File.open(QIODevice::ReadOnly))
+            {
+                BOSS_TRACE("AnimateAPngClass::OpenFile(%s) failed - cannot open file", filename);
+                return false;
+            }
+
+            const QByteArray Source = File.readAll();
+            File.close();
+
+            if(!DecodeAPng(Source))
+            {
+                BOSS_TRACE("AnimateAPngClass::OpenFile(%s) failed - invalid or unsupported APNG", filename);
+                return false;
+            }
+
+            BOSS_TRACE("AnimateAPngClass::OpenFile(%s) size=%dx%d frameCount=%d duration=%f",
+                filename, mWidth, mHeight, mFrameCount, mDuration);
+            return true;
+        }
+
+        bool OpenJson(chars jsontext, chars cachekey) override
+        {
+            BOSS_TRACE("AnimateAPngClass::OpenJson failed - APNG supports file source only");
+            return false;
+        }
+
+        sint32 GetWidth() const override {return mWidth;}
+        sint32 GetHeight() const override {return mHeight;}
+        sint32 GetFrameCount() const override {return mFrameCount;}
+
+        float Seek(float sec, bool loop) override
+        {
+            if(mFrameCount <= 0 || mDuration <= 0.0f)
+            {
+                mCurFrame = 0;
+                return 0.0f;
+            }
+
+            if(loop)
+            {
+                sec = (float) std::fmod(sec, mDuration);
+                if(sec < 0.0f) sec += mDuration;
+            }
+            else
+            {
+                if(sec < 0.0f) sec = 0.0f;
+                if(mDuration < sec) sec = mDuration;
+            }
+
+            float Time = 0.0f;
+            for(sint32 i = 0; i < mFrameCount; ++i)
+            {
+                const float NextTime = Time + mDelays[i] / 1000.0f;
+                if(sec < NextTime || i == mFrameCount - 1)
+                {
+                    mCurFrame = i;
+                    break;
+                }
+                Time = NextTime;
+            }
+            return mDuration;
+        }
+
+        sint32 Next(bool loop) override
+        {
+            if(mFrameCount <= 0)
+                return -1;
+
+            sint32 NewFrame = mCurFrame + 1;
+            if(mFrameCount <= NewFrame)
+                NewFrame = (loop)? 0 : mFrameCount - 1;
+            mCurFrame = NewFrame;
+            return mCurFrame;
+        }
+
+        void Draw(float x, float y, float width, float height, float degree) override
+        {
+            if(mFrameCount <= 0 || !CanvasClass::enabled()) return;
+            if(mCurFrame < 0 || mFrameCount <= mCurFrame) return;
+
+            const QImage& Image = mFrames[mCurFrame];
+            if(Image.isNull()) return;
+
+            QPainter& Painter = CanvasClass::get()->painter();
+            Painter.save();
+            Painter.translate(x + width / 2.0f, y + height / 2.0f);
+            Painter.rotate(degree);
+            Painter.drawImage(QRectF(-width / 2.0f, -height / 2.0f, width, height), Image);
+            Painter.restore();
+        }
+
+    private:
+        static quint32 ReadBE32(const uchar* data)
+        {
+            return ((quint32) data[0] << 24)
+                | ((quint32) data[1] << 16)
+                | ((quint32) data[2] << 8)
+                | ((quint32) data[3]);
+        }
+
+        static quint16 ReadBE16(const uchar* data)
+        {
+            return (quint16) (((quint16) data[0] << 8) | data[1]);
+        }
+
+        static void WriteBE32(QByteArray& dst, quint32 value)
+        {
+            dst.append((char) ((value >> 24) & 0xFF));
+            dst.append((char) ((value >> 16) & 0xFF));
+            dst.append((char) ((value >> 8) & 0xFF));
+            dst.append((char) (value & 0xFF));
+        }
+
+        static quint32 Crc32(const uchar* data, sint32 size)
+        {
+            quint32 Crc = 0xFFFFFFFF;
+            for(sint32 i = 0; i < size; ++i)
+            {
+                Crc ^= data[i];
+                for(sint32 j = 0; j < 8; ++j)
+                    Crc = (Crc >> 1) ^ ((Crc & 1)? 0xEDB88320 : 0);
+            }
+            return Crc ^ 0xFFFFFFFF;
+        }
+
+        static void AppendChunk(QByteArray& png, const QByteArray& type, const QByteArray& data)
+        {
+            WriteBE32(png, (quint32) data.size());
+            const sint32 CrcBegin = png.size();
+            png.append(type);
+            png.append(data);
+            const quint32 Crc = Crc32((const uchar*) png.constData() + CrcBegin, type.size() + data.size());
+            WriteBE32(png, Crc);
+        }
+
+        QByteArray MakeFramePng(const Frame& frame, const QByteArray& ihdr, const std::vector<Chunk>& globals) const
+        {
+            static const uchar PngSignature[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+
+            QByteArray Png;
+            Png.append((const char*) PngSignature, 8);
+
+            QByteArray FrameIHDR = ihdr;
+            if(FrameIHDR.size() != 13)
+                return QByteArray();
+
+            FrameIHDR[0] = (char) ((frame.Width >> 24) & 0xFF);
+            FrameIHDR[1] = (char) ((frame.Width >> 16) & 0xFF);
+            FrameIHDR[2] = (char) ((frame.Width >> 8) & 0xFF);
+            FrameIHDR[3] = (char) (frame.Width & 0xFF);
+            FrameIHDR[4] = (char) ((frame.Height >> 24) & 0xFF);
+            FrameIHDR[5] = (char) ((frame.Height >> 16) & 0xFF);
+            FrameIHDR[6] = (char) ((frame.Height >> 8) & 0xFF);
+            FrameIHDR[7] = (char) (frame.Height & 0xFF);
+
+            AppendChunk(Png, "IHDR", FrameIHDR);
+            for(const Chunk& CurChunk : globals)
+                AppendChunk(Png, CurChunk.Type, CurChunk.Data);
+            AppendChunk(Png, "IDAT", frame.Compressed);
+            AppendChunk(Png, "IEND", QByteArray());
+            return Png;
+        }
+
+        bool DecodeAPng(const QByteArray& source)
+        {
+            static const uchar PngSignature[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+
+            mFrames.clear();
+            mDelays.clear();
+            mWidth = 0;
+            mHeight = 0;
+            mFrameCount = 0;
+            mCurFrame = 0;
+            mDuration = 0.0f;
+
+            if(source.size() < 8 || memcmp(source.constData(), PngSignature, 8) != 0)
+                return false;
+
+            QByteArray IHDR;
+            std::vector<Chunk> Globals;
+            std::vector<Frame> RawFrames;
+            Frame Current;
+            bool HasCurrent = false;
+            bool HasACTL = false;
+            bool SeenImageData = false;
+            bool AllowGlobalChunk = true;
+
+            sint32 Pos = 8;
+            while(Pos + 12 <= source.size())
+            {
+                const uchar* Base = (const uchar*) source.constData() + Pos;
+                const quint32 Length = ReadBE32(Base);
+                if(0x7FFFFFFF < Length)
+                    return false;
+                if(source.size() - Pos < (sint32) Length + 12)
+                    return false;
+
+                const QByteArray Type(source.constData() + Pos + 4, 4);
+                const QByteArray Data(source.constData() + Pos + 8, (sint32) Length);
+                Pos += (sint32) Length + 12;
+
+                if(Type == "IHDR")
+                {
+                    if(Data.size() != 13)
+                        return false;
+                    IHDR = Data;
+                    mWidth = (sint32) ReadBE32((const uchar*) Data.constData());
+                    mHeight = (sint32) ReadBE32((const uchar*) Data.constData() + 4);
+                    if(mWidth <= 0 || mHeight <= 0)
+                        return false;
+                }
+                else if(Type == "acTL")
+                {
+                    if(Data.size() != 8)
+                        return false;
+                    HasACTL = true;
+                }
+                else if(Type == "fcTL")
+                {
+                    if(Data.size() != 26)
+                        return false;
+
+                    if(HasCurrent)
+                    {
+                        if(Current.Compressed.isEmpty())
+                            return false;
+                        RawFrames.push_back(Current);
+                    }
+
+                    const uchar* P = (const uchar*) Data.constData();
+                    Current = Frame();
+                    Current.Width = ReadBE32(P + 4);
+                    Current.Height = ReadBE32(P + 8);
+                    Current.X = ReadBE32(P + 12);
+                    Current.Y = ReadBE32(P + 16);
+                    Current.DelayNum = ReadBE16(P + 20);
+                    Current.DelayDen = ReadBE16(P + 22);
+                    if(Current.DelayDen == 0) Current.DelayDen = 100;
+                    Current.DisposeOp = P[24];
+                    Current.BlendOp = P[25];
+                    Current.UsesIDAT = !SeenImageData;
+                    HasCurrent = true;
+                    AllowGlobalChunk = false;
+
+                    if(Current.Width == 0 || Current.Height == 0
+                        || mWidth < (sint32) (Current.X + Current.Width)
+                        || mHeight < (sint32) (Current.Y + Current.Height)
+                        || 2 < Current.DisposeOp || 1 < Current.BlendOp)
+                        return false;
+                }
+                else if(Type == "IDAT")
+                {
+                    SeenImageData = true;
+                    AllowGlobalChunk = false;
+                    if(HasCurrent && Current.UsesIDAT)
+                        Current.Compressed.append(Data);
+                }
+                else if(Type == "fdAT")
+                {
+                    SeenImageData = true;
+                    AllowGlobalChunk = false;
+                    if(!HasCurrent || Data.size() < 4)
+                        return false;
+                    Current.Compressed.append(Data.constData() + 4, Data.size() - 4);
+                }
+                else if(Type == "IEND")
+                {
+                    if(HasCurrent)
+                    {
+                        if(Current.Compressed.isEmpty())
+                            return false;
+                        RawFrames.push_back(Current);
+                        HasCurrent = false;
+                    }
+                    break;
+                }
+                else if(AllowGlobalChunk && Type != "IHDR")
+                {
+                    Globals.push_back({Type, Data});
+                }
+            }
+
+            if(!HasACTL || IHDR.size() != 13 || RawFrames.empty())
+                return false;
+
+            QImage Canvas(mWidth, mHeight, QImage::Format_ARGB32_Premultiplied);
+            Canvas.fill(Qt::transparent);
+
+            for(sint32 i = 0; i < (sint32) RawFrames.size(); ++i)
+            {
+                const Frame& CurFrame = RawFrames[i];
+                const QByteArray FramePng = MakeFramePng(CurFrame, IHDR, Globals);
+                if(FramePng.isEmpty())
+                    return false;
+
+                QImage Image = QImage::fromData(FramePng, "PNG");
+                if(Image.isNull()
+                    || Image.width() != (sint32) CurFrame.Width
+                    || Image.height() != (sint32) CurFrame.Height)
+                    return false;
+
+                Image = Image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+                QImage Previous;
+                if(CurFrame.DisposeOp == 2)
+                    Previous = Canvas.copy();
+
+                {
+                    QPainter Painter(&Canvas);
+                    Painter.setCompositionMode((CurFrame.BlendOp == 0)
+                        ? QPainter::CompositionMode_Source
+                        : QPainter::CompositionMode_SourceOver);
+                    Painter.drawImage(QPoint((sint32) CurFrame.X, (sint32) CurFrame.Y), Image);
+                }
+
+                mFrames.push_back(Canvas.copy());
+
+                sint32 Delay = (sint32) std::round(
+                    1000.0 * (double) CurFrame.DelayNum / (double) CurFrame.DelayDen);
+                if(Delay <= 0) Delay = 1;
+                mDelays.push_back(Delay);
+                mDuration += Delay / 1000.0f;
+
+                if(CurFrame.DisposeOp == 1 || (CurFrame.DisposeOp == 2 && i == 0))
+                {
+                    QPainter Painter(&Canvas);
+                    Painter.setCompositionMode(QPainter::CompositionMode_Source);
+                    Painter.fillRect(QRect(
+                        (sint32) CurFrame.X, (sint32) CurFrame.Y,
+                        (sint32) CurFrame.Width, (sint32) CurFrame.Height), Qt::transparent);
+                }
+                else if(CurFrame.DisposeOp == 2)
+                    Canvas = Previous;
+            }
+
+            mFrameCount = (sint32) mFrames.size();
+            return (0 < mFrameCount);
+        }
+
+    private:
+        std::vector<QImage> mFrames;
+        std::vector<sint32> mDelays;
+        sint32 mWidth {0};
+        sint32 mHeight {0};
+        sint32 mFrameCount {0};
+        sint32 mCurFrame {0};
+        float mDuration {0.0f};
     };
 
     #ifdef QT_HAVE_MULTIMEDIA
