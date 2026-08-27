@@ -100,6 +100,11 @@ namespace BOSS
         memcpy(dst, src, size);
     }
 
+    void Memory::Move(void* dst, const void* src, const sint32 size)
+    {
+        memmove(dst, src, size);
+    }
+
     void Memory::CopyStencil(void* dst, const void* src, const sint32 size)
     {
         uint08* CurDst = (uint08*) dst;

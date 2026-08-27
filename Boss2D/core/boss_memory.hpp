@@ -29,6 +29,12 @@ namespace BOSS
         /// @param size : 복사할 길이(byte)
         static void Copy(void* dst, const void* src, const sint32 size);
 
+        /// @brief 이동(메모리영역이 겹쳐도 안전)
+        /// @param dst : 이동받을 시작주소
+        /// @param src : 이동할 시작주소
+        /// @param size : 이동할 길이(byte)
+        static void Move(void* dst, const void* src, const sint32 size);
+
         /// @brief 스텐실복사(dst가 2바이트마다 src는 1바이트씩만 복사)
         /// @param dst : 복사받을 시작주소(size의 2배이상이어야 함)
         /// @param src : 복사할 시작주소
