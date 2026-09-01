@@ -7,6 +7,7 @@ extern "C"
     extern void free(void*);
     extern void* memset(void*, sint32, boss_size_t);
     extern void* memcpy(void*, const void*, boss_size_t);
+    extern void* memmove(void*, const void*, boss_size_t);
     extern sint32 memcmp(const void*, const void*, boss_size_t);
 }
 
