@@ -49,7 +49,10 @@ namespace BOSS
         uint64 mZaySonModifyTime;
         sint32 mProcedureID;
         id_pipe mPipe;
+        String mPipeName;
         uint64 mPipeModifyTime;
+        uint64 mPipeRetryMsec;
+        bool mPipeBound;
         Strings mPipeReservers;
     };
     typedef ZayArray<ZayWidget> ZayWidgets;

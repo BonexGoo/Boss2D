@@ -66,7 +66,8 @@ namespace BOSS
                     Context Json;
                     Json.At("type").Set("atlas_updated");
                     Json.At("atlas").LoadJson(SO_OnlyReference, detail);
-                    if(mPipe) Platform::Pipe::SendJson(mPipe, Json.SaveJson());
+                    if(mPipe && Platform::Pipe::Status(mPipe) == ConnectStatus::CS_Connected)
+                        Platform::Pipe::SendJson(mPipe, Json.SaveJson());
                     else mPipeReservers.AtAdding() = Json.SaveJson();
                 }
             }
@@ -82,14 +83,18 @@ namespace BOSS
                 else if(type == ZaySon::LogType::Info)
                     Json.At("type").Set("info");
                 else Json.At("type").Set("unknown");
-                if(mPipe) Platform::Pipe::SendJson(mPipe, Json.SaveJson());
+                if(mPipe && Platform::Pipe::Status(mPipe) == ConnectStatus::CS_Connected)
+                    Platform::Pipe::SendJson(mPipe, Json.SaveJson());
                 else mPipeReservers.AtAdding() = Json.SaveJson();
             }
         });
         mZaySonModifyTime = 0;
         mProcedureID = -1;
         mPipe = nullptr;
+        mPipeName.Empty();
         mPipeModifyTime = 0;
+        mPipeRetryMsec = 0;
+        mPipeBound = false;
     }
 
     ZayWidget::~ZayWidget()
@@ -114,7 +119,10 @@ namespace BOSS
         mZaySonModifyTime = ToReference(rhs.mZaySonModifyTime);
         mProcedureID = ToReference(rhs.mProcedureID); rhs.mProcedureID = -1; // 이관
         mPipe = rhs.mPipe; rhs.mPipe = nullptr; // 이관
+        mPipeName = ToReference(rhs.mPipeName);
         mPipeModifyTime = ToReference(rhs.mPipeModifyTime);
+        mPipeRetryMsec = ToReference(rhs.mPipeRetryMsec);
+        mPipeBound = ToReference(rhs.mPipeBound); rhs.mPipeBound = false;
         // this가 변경되면 Reload가 필요
         if(0 < mZaySonAssetName.Length())
             Reload(mZaySonAssetName);
@@ -165,26 +173,62 @@ namespace BOSS
                 // Pipe체크
                 if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", gAssetPath, nullptr, nullptr, nullptr, &ModifyTime))
                 {
-                    if(Self->mPipeModifyTime != 0)
+                    if(Self->mPipeModifyTime != 0 || Self->mPipe)
                     {
                         ZayWidgetDOM::UnbindPipe(Self->mPipe);
                         Platform::Pipe::Close(Self->mPipe);
                         Self->mPipe = nullptr;
+                        Self->mPipeName.Empty();
                         Self->mPipeModifyTime = 0;
+                        Self->mPipeRetryMsec = 0;
+                        Self->mPipeBound = false;
                     }
                 }
                 else
                 {
+                    const uint64 NowMsec = Platform::Utility::CurrentTimeMsec();
+
+                    // 파이프파일이 갱신되면 새 파이프명을 읽는다.
+                    // JSON이 아직 기록 중이거나 파이프명이 비어 있으면 수정시간을 확정하지 않아
+                    // 다음 1초 주기에 다시 읽도록 한다.
                     if(Self->mPipeModifyTime != ModifyTime)
                     {
-                        Self->mPipeModifyTime = ModifyTime;
                         Context Json(ST_Json, SO_NeedCopy, String::FromAsset(Self->mZaySonAssetName + ".pipe", gAssetPath));
                         const String PipeName = Json("pipe").GetText();
+                        if(0 < PipeName.Length())
+                        {
+                            ZayWidgetDOM::UnbindPipe(Self->mPipe);
+                            Platform::Pipe::Close(Self->mPipe);
+                            Self->mPipe = nullptr;
+                            Self->mPipeName = PipeName;
+                            Self->mPipeModifyTime = ModifyTime;
+                            Self->mPipeRetryMsec = 0;
+                            Self->mPipeBound = false;
+                        }
+                    }
+
+                    // 연결되지 않은 동일 파이프도 3초마다 다시 연다.
+                    // Open이 비동기 연결을 수행할 시간을 주기 위해 매 주기마다 닫지는 않는다.
+                    const bool Connected = (Self->mPipe &&
+                        Platform::Pipe::Status(Self->mPipe) == ConnectStatus::CS_Connected);
+                    if(!Connected && 0 < Self->mPipeName.Length() && Self->mPipeRetryMsec <= NowMsec)
+                    {
                         ZayWidgetDOM::UnbindPipe(Self->mPipe);
                         Platform::Pipe::Close(Self->mPipe);
-                        Self->mPipe = Platform::Pipe::Open(PipeName);
+                        Self->mPipe = Platform::Pipe::Open(Self->mPipeName);
+                        Self->mPipeBound = false;
+                        Self->mPipeRetryMsec = NowMsec + 3000;
+                    }
+
+                    // 실제 연결이 확인된 시점에 한 번만 전체 DOM을 전달한다.
+                    if(Self->mPipe &&
+                        Platform::Pipe::Status(Self->mPipe) == ConnectStatus::CS_Connected &&
+                        !Self->mPipeBound)
+                    {
                         ZayWidgetDOM::BindPipe(Self->mPipe);
-                        // 그동안 쌓인 송신내용
+                        Self->mPipeBound = true;
+
+                        // 연결 전까지 쌓인 송신내용은 연결된 뒤 전달한다.
                         for(sint32 i = 0, iend = Self->mPipeReservers.Count(); i < iend; ++i)
                             Platform::Pipe::SendJson(Self->mPipe, Self->mPipeReservers[i]);
                         Self->mPipeReservers.Clear();
