@@ -2214,7 +2214,8 @@ namespace BOSS
             case TT_Press: CurElement.m_cb(this, &CurElement, SavedType = GT_Pressed, x, y); break;
             case TT_Dragging:
                 // 관련 스크롤 존재시 sensitive초과된 Dragging발생한 경우 제스처 전이
-                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb &&
+                // 단, Press가 스크롤영역 밖에서 시작됐다면 드래그 도중 진입해도 전이하지 않음
+                if(ScrollElement && ScrollElement != PressElement && ScrollElement->m_cb && CurTouch->press_in(ScrollElement) &&
                     ((ScrollElement->m_scrollsense.x != -1 && ScrollElement->m_scrollsense.x < CurTouch->press_to_x(x)) ||
                         (ScrollElement->m_scrollsense.y != -1 && ScrollElement->m_scrollsense.y < CurTouch->press_to_y(y))))
                 {

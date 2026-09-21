@@ -786,6 +786,13 @@ namespace BOSS
             inline void setpress_xy(sint32 x, sint32 y) {m_press_x = x; m_press_y = y;}
             inline sint32 press_to_x(sint32 x) const {return Math::Abs(x - m_press_x);}
             inline sint32 press_to_y(sint32 y) const {return Math::Abs(y - m_press_y);}
+            inline bool press_in(const Element* element) const
+            {
+                if(!element) return false;
+                const rect128& rect = element->m_rect;
+                return (rect.l <= m_press_x && m_press_x < rect.r
+                    && rect.t <= m_press_y && m_press_y < rect.b);
+            }
             inline Scroll* getscroll(chars uiname) {return m_scrollmap.Access(uiname);}
             inline const Scroll* getscroll_const(chars uiname) const {return m_scrollmap.Access(uiname);}
             inline Scroll* getscroll_valid(chars uiname) {return &m_scrollmap(uiname);}
