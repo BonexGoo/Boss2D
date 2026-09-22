@@ -1771,6 +1771,8 @@ namespace BOSS
                 }
             }
             SaveDirectUIName(OldUIName);
+            // 플래시효과
+            ZayWidgetDOM::AddFlash(CurGate->GetCompID());
             return true;
         }
         return false;
