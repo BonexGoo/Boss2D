@@ -15,7 +15,7 @@ namespace BOSS
         Function_Min, Function_Max, Function_Abs, Function_Pow, // [min], [max], [abs], [pow]
         Function_Cos, Function_Sin, Function_Tan, Function_Atan, // [cos], [sin], [tan], [atan]
         Function_And, Function_Or, Function_Multiply, Function_Divide, // [and], [or], [multiply], [divide]
-        Function_Find, Function_Truncate}; // [find], [truncate]
+        Function_Find, Function_Truncate, Function_Localize}; // [find], [truncate], [localize]
 
     // 업데이트체인
     class SolverChainPair
@@ -126,6 +126,7 @@ namespace BOSS
         public: SolverValue Function_Divide(const SolverValue& rhs) const;
         public: SolverValue Function_Find(const SolverValue& rhs) const;
         public: SolverValue Function_Truncate(const SolverValue& rhs) const;
+        public: SolverValue Function_Localize(const SolverValue& rhs) const;
 
         // 멤버
         private: SolverValueType mType;

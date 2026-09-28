@@ -192,6 +192,7 @@ namespace BOSS
             case SolverOperatorType::Function_Divide: collector += "[divide] "; break;
             case SolverOperatorType::Function_Find: collector += "[find] "; break;
             case SolverOperatorType::Function_Truncate: collector += "[truncate] "; break;
+            case SolverOperatorType::Function_Localize: collector += "[localize] "; break;
             }
 
             // 우항
@@ -255,6 +256,7 @@ namespace BOSS
             case SolverOperatorType::Function_Divide:   return mOperandL->result(Zero).Function_Divide(mOperandR->result(One));
             case SolverOperatorType::Function_Find:     return mOperandL->result(Zero).Function_Find(mOperandR->result(One));
             case SolverOperatorType::Function_Truncate: return mOperandL->result(Zero).Function_Truncate(mOperandR->result(One));
+            case SolverOperatorType::Function_Localize: return mOperandL->result(Zero).Function_Localize(mOperandR->result(One));
             }
             return zero;
         }
@@ -962,6 +964,38 @@ namespace BOSS
         return SolverValue();
     }
 
+    SolverValue SolverValue::Function_Localize(const SolverValue& rhs) const
+    {
+        const Text Mode = rhs.ToText();
+        char Group = '\0', Decimal = '.';
+        if(Mode == "comma") Group = ',';
+        else if(Mode == "dot") {Group = '.'; Decimal = ',';}
+        else if(Mode == "space") {Group = ' '; Decimal = ',';}
+
+        const Text Number = ToText();
+        const sint32 Length = Number.Length();
+        sint32 Begin = (0 < Length && (Number[0] == '-' || Number[0] == '+'))? 1 : 0;
+        sint32 Dot = Begin;
+        while(Dot < Length && Number[Dot] != '.' && Number[Dot] != 'e' && Number[Dot] != 'E') ++Dot;
+        // 지수 표기에는 적용하지 않는다
+        for(sint32 i = Dot; i < Length; ++i)
+            if(Number[i] == 'e' || Number[i] == 'E') return MakeText(Number);
+
+        Text Result;
+        if(Begin) Result += Number[0];
+        for(sint32 i = Begin; i < Dot; ++i)
+        {
+            if(Group && Begin < i && (Dot - i) % 3 == 0) Result += Group;
+            Result += Number[i];
+        }
+        if(Dot < Length)
+        {
+            Result += Decimal;
+            for(sint32 i = Dot + 1; i < Length; ++i) Result += Number[i];
+        }
+        return MakeText(Result);
+    }
+
     Solver::Solver()
     {
         mLinkedChain = nullptr;
@@ -1148,7 +1182,7 @@ namespace BOSS
             case SolverOperatorType::Function_Abs: case SolverOperatorType::Function_Pow:
             case SolverOperatorType::Function_Cos: case SolverOperatorType::Function_Sin:
             case SolverOperatorType::Function_Tan: case SolverOperatorType::Function_Atan:
-            case SolverOperatorType::Function_Find: case SolverOperatorType::Function_Truncate:
+            case SolverOperatorType::Function_Find: case SolverOperatorType::Function_Truncate: case SolverOperatorType::Function_Localize:
                 NewPriority += PriorityCount - 5;
                 break;
             case SolverOperatorType::Variabler: // 6순위> @
@@ -1333,6 +1367,11 @@ namespace BOSS
                     jump(!String::Compare("[truncate]", CurCode, 10))
                     {
                         AddOperator(OperandFocus, SolverOperatorType::Function_Truncate, deep);
+                        CurCode += 10 - 1;
+                    }
+                    jump(!String::Compare("[localize]", CurCode, 10))
+                    {
+                        AddOperator(OperandFocus, SolverOperatorType::Function_Localize, deep);
                         CurCode += 10 - 1;
                     }
                     else
