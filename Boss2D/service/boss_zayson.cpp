@@ -15,6 +15,34 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
 namespace BOSS
 {
+    // Active render ancestry; requests are consumed only by their named LOOP.
+    struct ZayLoopFlow
+    {
+        const ZaySon* root;
+        String name;
+        ZayLoopFlow* parent;
+        static ZayLoopFlow*& Top() {static thread_local ZayLoopFlow* value = nullptr; return value;}
+        static ZayLoopFlow*& Target() {static thread_local ZayLoopFlow* value = nullptr; return value;}
+        static bool& Continue() {static thread_local bool value = false; return value;}
+        ZayLoopFlow(const ZaySon* r, const String& n) : root(r), name(n), parent(Top()) {Top() = this;}
+        ~ZayLoopFlow() {if(Target() == this) Target() = nullptr; Top() = parent;}
+        static void Request(const ZaySon* root, const String& name, bool next)
+        {
+            for(auto loop = Top(); loop; loop = loop->parent)
+                if(loop->root == root && loop->name == name)
+                {Target() = loop; Continue() = next; break;}
+        }
+    };
+    // Events/load are separate executions, even when called during rendering.
+    struct ZayLoopFlowIsolation
+    {
+        ZayLoopFlow* top = ZayLoopFlow::Top();
+        ZayLoopFlow* target = ZayLoopFlow::Target();
+        bool next = ZayLoopFlow::Continue();
+        ZayLoopFlowIsolation() {ZayLoopFlow::Top() = nullptr; ZayLoopFlow::Target() = nullptr;}
+        ~ZayLoopFlowIsolation() {ZayLoopFlow::Top() = top; ZayLoopFlow::Target() = target; ZayLoopFlow::Continue() = next;}
+    };
+
     ////////////////////////////////////////////////////////////////////////////////
     // ZayUIElement
     ////////////////////////////////////////////////////////////////////////////////
@@ -473,6 +501,10 @@ namespace BOSS
             return ZaySonInterface::ConditionType::IfOutReleased;
         jump(!String::Compare(text, "ifcancelreleased"))
             return ZaySonInterface::ConditionType::IfCancelReleased;
+        jump(!String::Compare(text, "break(", 6))
+            return ZaySonInterface::ConditionType::Break;
+        jump(!String::Compare(text, "continue(", 9))
+            return ZaySonInterface::ConditionType::Continue;
         // elif계열
         jump(!String::Compare(text, "elif(", 5))
         {
@@ -610,13 +642,31 @@ namespace BOSS
             {
                 mConditionSolver.Link(root.ViewName());
                 mConditionSolver.Parse(String(((chars) ConditionText) + PosB, PosE - PosB));
+                if(IsFlow())
+                {
+                    mLoopName = String(((chars) ConditionText) + PosB, PosE - PosB);
+                    mLoopName = mLoopName.Trim();
+                }
             }
         }
 
     public:
+        bool IsFlow() const
+        {return mConditionType == ZaySonInterface::ConditionType::Break ||
+            mConditionType == ZaySonInterface::ConditionType::Continue;}
+        static bool ApplyFlow(const ZayUIElement* element)
+        {
+            if(element->mType != Type::Condition) return false;
+            auto condition = (const ZayConditionElement*) element;
+            if(!condition->IsFlow()) return false;
+            ZayLoopFlow::Request(element->mRefRoot, condition->mLoopName,
+                condition->mConditionType == ZaySonInterface::ConditionType::Continue);
+            return true;
+        }
         void CollectCapture(ZayMap<String>& collector)
         {
             // 캡쳐가 필요한 변수의 목록화
+            if(IsFlow()) return; // LOOP names are identifiers, not value expressions.
             const Strings Variables = mConditionSolver.GetTargetlessVariables();
             for(sint32 i = 0, iend = Variables.Count(); i < iend; ++i)
                 collector(Variables[i]) = Variables[i];
@@ -645,7 +695,8 @@ namespace BOSS
         };
         static sint32s Collect(chars viewname, const ZayUIs& uis, const ZayPanel* panel,
             bool doubleclicked, bool longpressed, bool repeatpressed,
-            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased)
+            bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased,
+            bool collectflow = false)
         {
             sint32s Collector;
             // 조건문처리로 유효한 CompValue를 수집
@@ -656,6 +707,11 @@ namespace BOSS
                     // 조건의 성공여부
                     bool IsTrue = false;
                     auto CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
+                    if(CurCondition->IsFlow())
+                    {
+                        if(collectflow) Collector.AtAdding() = i;
+                        return Collector;
+                    }
                     if(CurCondition->mConditionType == ZaySonInterface::ConditionType::If)
                         IsTrue = (CurCondition->mConditionSolver.ExecuteOnly().ToInteger() != 0);
                     // 포커스확인
@@ -742,6 +798,12 @@ namespace BOSS
                     {
                         while(i + 1 < iend && uis[i + 1].ConstValue().mType != ZayUIElement::Type::Condition)
                             Collector.AtAdding() = ++i;
+                        // A flow directive ends the selected branch and the whole code list.
+                        if(i + 1 < iend && ((const ZayConditionElement*) uis[i + 1].ConstPtr())->IsFlow())
+                        {
+                            if(collectflow) Collector.AtAdding() = i + 1;
+                            return Collector;
+                        }
                         // 선진입
                         while(i + 1 < iend)
                         {
@@ -767,6 +829,7 @@ namespace BOSS
                         if(uis[++i].ConstValue().mType == ZayUIElement::Type::Condition)
                         {
                             CurCondition = (const ZayConditionElement*) uis[i].ConstPtr();
+                            if(CurCondition->IsFlow()) continue; // Excluded branch: do not activate its flow command.
                             if(CurCondition->mConditionType == ZaySonInterface::ConditionType::Endif) // endif는 조건그룹을 빠져나오게 하고
                                 break;
                             else // 다른 모든 조건은 수락
@@ -785,6 +848,7 @@ namespace BOSS
     public:
         ZaySonInterface::ConditionType mConditionType;
         bool mWithElse;
+        String mLoopName;
         Solver mConditionSolver;
     };
 
@@ -1058,6 +1122,7 @@ namespace BOSS
                     &panel, false, false, false, false, false, false, false, false, false);
                 for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
                 {
+                    if(ZayLoopFlow::Target()) break;
                     auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
                     CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
                 }
@@ -1225,6 +1290,7 @@ namespace BOSS
     private:
         void Render(ZayPanel& panel, const String& defaultname, ZaySon::DebugLogs& logs) const override
         {
+            if(ZayLoopFlow::Target()) return;
             if(auto CurComponent = mRefRoot->FindComponent(mCompName))
             {
                 // 디버깅 정보수집
@@ -1251,20 +1317,23 @@ namespace BOSS
                         mLocalSolvers.AtAdding().Link(ViewName, "pH").SetResultDirectly(SolverValue::MakeFloat(panel.h()));
 
                         sint32s CollectedCodes = ZayConditionElement::Collect(ViewName, mInputCodes,
-                            nullptr, false, false, false, false, false, false, false, false, false);
+                            nullptr, false, false, false, false, false, false, false, false, false, true);
                         for(sint32 i = 0, iend = CollectedCodes.Count(); i < iend; ++i)
                         {
-                            auto CurCompCode = (ZayRequestElement*) mInputCodes.At(CollectedCodes[i]).Ptr();
+                            auto Element = mInputCodes.At(CollectedCodes[i]).Ptr();
+                            if(ZayLoopFlow::Target() || ZayConditionElement::ApplyFlow(Element)) break;
+                            auto CurCompCode = (ZayRequestElement*) Element;
                             if(!mStableMode) CurCompCode->Transaction<false>(UIName, ViewName, &mLocalSolvers);
                             else CurCompCode->Transaction<true>(UIName, ViewName, &mLocalSolvers,
                                 String(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : "")));
                         }
-                        RenderChildren(mChildren, panel, nullptr, defaultname, logs);
+                        if(!ZayLoopFlow::Target()) RenderChildren(mChildren, panel, nullptr, defaultname, logs);
                         mLocalSolvers.SubtractionAll();
                     }
                     else if(!mUILoopSolver.is_blank()) // 반복문
                     {
                         const sint32 LoopCount = Math::Max(0, (sint32) mUILoopSolver.ExecuteOnly().ToInteger());
+                        ZayLoopFlow LoopFlow(mRefRoot, UIName);
                         for(sint32 i = 0; i < LoopCount; ++i)
                         {
                             // 지역변수 수집
@@ -1275,6 +1344,13 @@ namespace BOSS
                             }
                             RenderChildren(mChildren, panel, nullptr, defaultname + String::Format("_%d", i), logs);
                             mLocalSolvers.SubtractionAll();
+                            if(ZayLoopFlow::Target())
+                            {
+                                if(ZayLoopFlow::Target() != &LoopFlow) break;
+                                const bool Next = ZayLoopFlow::Continue();
+                                ZayLoopFlow::Target() = nullptr;
+                                if(!Next) break;
+                            }
                         }
                     }
                     else if(!mCompName.Compare("jump")) // 호출문
@@ -1324,6 +1400,7 @@ namespace BOSS
                         &panel, false, false, false, false, false, false, false, false, false);
                     for(sint32 i = 0, iend = CollectedCompValues.Count(); i < iend; ++i)
                     {
+                        if(ZayLoopFlow::Target()) break;
                         const String DefaultName(defaultname + ((1 < iend)? (chars) String::Format("_%d", i) : ""));
                         String UINameTemp;
                         chars ComponentName = nullptr;
@@ -1421,6 +1498,7 @@ namespace BOSS
                         &panel, false, false, false, false, false, false, false, false, false);
                 for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
                 {
+                    if(ZayLoopFlow::Target()) break;
                     auto CurChildren = (const ZayUIElement*) children[CollectedChildren[i]].ConstPtr();
                     CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
                 }
@@ -1433,6 +1511,7 @@ namespace BOSS
         bool OnLambda(chars uiname, LambdaID id, chars key, chars value, bool doubleclicked, bool longpressed, bool repeatpressed,
             bool upswiped, bool downswiped, bool leftswiped, bool rightswiped, bool outreleased, bool cancelreleased) override
         {
+            ZayLoopFlowIsolation FlowIsolation;
             if(0 < mLambdas[(sint32) id].mCodes.Count())
             {
                 // 사전 캡쳐된 변수를 지역변수화
@@ -1450,10 +1529,12 @@ namespace BOSS
 
                 // 클릭코드의 실행
                 sint32s CollectedClickCodes = ZayConditionElement::Collect(mRefRoot->ViewName(), mLambdas[(sint32) id].mCodes,
-                    nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased);
+                    nullptr, doubleclicked, longpressed, repeatpressed, upswiped, downswiped, leftswiped, rightswiped, outreleased, cancelreleased, true);
                 for(sint32 i = 0, iend = CollectedClickCodes.Count(); i < iend; ++i)
                 {
-                    auto CurClickCode = (ZayRequestElement*) mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
+                    auto Element = mLambdas[(sint32) id].mCodes.At(CollectedClickCodes[i]).Ptr();
+                    if(ZayConditionElement::ApplyFlow(Element)) break;
+                    auto CurClickCode = (ZayRequestElement*) Element;
                     CurClickCode->Transaction<false>(uiname, mRefRoot->ViewName());
                 }
                 mLocalSolvers.SubtractionAll();
@@ -1570,8 +1651,19 @@ namespace BOSS
                     continue;
                 ZayUI NewUI(ZayUIElement::Create(Type::Request));
                 NewUI->Load(root, fish[i]);
-                ((ZayRequestElement*) NewUI.Ptr())->InitForCreate();
                 mCreateCodes.AtAdding() = (id_share) NewUI;
+            }
+
+            {
+                ZayLoopFlowIsolation FlowIsolation;
+                const auto Codes = ZayConditionElement::Collect(root.ViewName(), mCreateCodes,
+                    nullptr, false, false, false, false, false, false, false, false, false, true);
+                for(sint32 i = 0; i < Codes.Count(); ++i)
+                {
+                    auto Element = mCreateCodes.At(Codes[i]).Ptr();
+                    if(ZayConditionElement::ApplyFlow(Element)) break;
+                    ((ZayRequestElement*) Element)->InitForCreate();
+                }
             }
 
             hook(context("ui"))
@@ -1607,6 +1699,7 @@ namespace BOSS
                     &panel, false, false, false, false, false, false, false, false, false);
             for(sint32 i = 0, iend = CollectedChildren.Count(); i < iend; ++i)
             {
+                if(ZayLoopFlow::Target()) break;
                 auto CurChildren = (const ZayUIElement*) mChildren[CollectedChildren[i]].ConstPtr();
                 CurChildren->Render(panel, defaultname + String::Format(".%d", i), logs);
             }

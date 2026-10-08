@@ -61,7 +61,7 @@ namespace BOSS
         enum class ConditionType {Unknown, If, IfFocused, IfHovered, IfPressed,
             IfDoubleClicked, IfNDoubleClicked, IfLongPressed, IfNLongPressed, IfRepeatPressed, IfNRepeatPressed,
             IfUpSwiped, IfNUpSwiped, IfDownSwiped, IfNDownSwiped, IfLeftSwiped, IfNLeftSwiped, IfRightSwiped, IfNRightSwiped,
-            IfOutReleased, IfCancelReleased, Else, Endif};
+            IfOutReleased, IfCancelReleased, Else, Endif, Break, Continue};
         enum class RequestType {Unknown, SetVariable, VoidFunction, ReturnFunction};
 
     public:
