@@ -244,7 +244,9 @@ namespace BOSS
 
             chars Utility_GetOSName()
             {
-                #if BOSS_WINDOWS
+                #if BOSS_WASM
+                    return "WASM";
+                #elif BOSS_WINDOWS
                     return "WINDOWS";
                 #elif BOSS_LINUX
                     return "UBUNTU";

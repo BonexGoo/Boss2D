@@ -2,6 +2,7 @@
 #include <platform/boss_platform.hpp>
 #include <platform/boss_platform_impl.hpp>
 #include <memory>
+#include <utility>
 #include <cmath>
 
 #undef size_t
@@ -3298,27 +3299,35 @@
             QFile File(FilePath);
             if(!File.open(QIODevice::ReadOnly))
             {
-                BOSS_TRACE("AnimateAPngClass::OpenFile(%s) failed - cannot open file", filename);
+                BOSS_TRACE("AnimateAPngClass::OpenFile(%s) failed - inaccessible file (resolved=%s)",
+                    filename, FilePath.toUtf8().constData());
                 return false;
             }
 
             const QByteArray Source = File.readAll();
             File.close();
+            return OpenSource(Source, "OpenFile", filename);
+        }
 
-            if(!DecodeAPng(Source))
-            {
-                BOSS_TRACE("AnimateAPngClass::OpenFile(%s) failed - invalid or unsupported APNG", filename);
+        bool OpenAssets(chars filename)
+        {
+            if(!filename || !*filename)
                 return false;
-            }
 
-            BOSS_TRACE("AnimateAPngClass::OpenFile(%s) size=%dx%d frameCount=%d duration=%f",
-                filename, mWidth, mHeight, mFrameCount, mDuration);
-            return true;
+            QByteArray Source;
+            if(auto AssetBuffer = Asset::ToBuffer(filename))
+            {
+                const sint32 Size = Buffer::CountOf(AssetBuffer);
+                if(0 < Size)
+                    Source = QByteArray((const char*) AssetBuffer, Size);
+                Buffer::Free(AssetBuffer);
+            }
+            return OpenSource(Source, "OpenAssets", filename);
         }
 
         bool OpenJson(chars jsontext, chars cachekey) override
         {
-            BOSS_TRACE("AnimateAPngClass::OpenJson failed - APNG supports file source only");
+            BOSS_TRACE("AnimateAPngClass::OpenJson failed - APNG supports file or asset sources only");
             return false;
         }
 
@@ -3376,7 +3385,12 @@
             if(mFrameCount <= 0 || !CanvasClass::enabled()) return;
             if(mCurFrame < 0 || mFrameCount <= mCurFrame) return;
 
-            const QImage& Image = mFrames[mCurFrame];
+            #if BOSS_WASM
+                if(!ComposeUntil(mCurFrame)) return;
+                const QImage& Image = mRenderedImage;
+            #else
+                const QImage& Image = mFrames[mCurFrame];
+            #endif
             if(Image.isNull()) return;
 
             QPainter& Painter = CanvasClass::get()->painter();
@@ -3388,6 +3402,25 @@
         }
 
     private:
+        bool OpenSource(const QByteArray& source, chars method, chars filename)
+        {
+            if(source.isEmpty())
+            {
+                BOSS_TRACE("AnimateAPngClass::%s(%s) failed - empty or inaccessible source", method, filename);
+                return false;
+            }
+
+            if(!DecodeAPng(source))
+            {
+                BOSS_TRACE("AnimateAPngClass::%s(%s) failed - invalid or unsupported APNG", method, filename);
+                return false;
+            }
+
+            BOSS_TRACE("AnimateAPngClass::%s(%s) size=%dx%d frameCount=%d duration=%f",
+                method, filename, mWidth, mHeight, mFrameCount, mDuration);
+            return true;
+        }
+
         static quint32 ReadBE32(const uchar* data)
         {
             return ((quint32) data[0] << 24)
@@ -3459,11 +3492,106 @@
             return Png;
         }
 
+        #if BOSS_WASM
+            // 프레임을 PNG 압축 상태로 보관하고 실제 출력 프레임까지만 합성한다.
+            // 원래의 모든 프레임을 QImage로 캐싱하는 방식은 WASM에서 메모리를
+            // 수백 MB ~ 수 GB 소모할 수 있어 로딩 자체가 실패할 수 있다.
+            bool ComposeUntil(sint32 target)
+            {
+                if(target < 0 || mFrameCount <= target)
+                    return false;
+                if(target == mCachedFrame && !mRenderedImage.isNull())
+                    return true;
+
+                if(mPreparedFrame >= target || mCanvas.isNull())
+                {
+                    mCanvas = QImage(mWidth, mHeight, QImage::Format_ARGB32_Premultiplied);
+                    if(mCanvas.isNull())
+                    {
+                        BOSS_TRACE("AnimateAPngClass::ComposeUntil failed - canvas allocation %dx%d",
+                            mWidth, mHeight);
+                        return false;
+                    }
+                    mCanvas.fill(Qt::transparent);
+                    mPreparedFrame = -1;
+                }
+                mCachedFrame = -1;
+                mRenderedImage = QImage();
+
+                for(sint32 i = mPreparedFrame + 1; i <= target; ++i)
+                {
+                    const Frame& CurFrame = mRawFrames[i];
+                    const QByteArray FramePng = MakeFramePng(CurFrame, mIHDR, mGlobals);
+                    if(FramePng.isEmpty())
+                    {
+                        BOSS_TRACE("AnimateAPngClass::ComposeUntil failed - reconstruct PNG frame=%d", i);
+                        return false;
+                    }
+
+                    QImage Image = QImage::fromData(FramePng, "PNG");
+                    if(Image.isNull()
+                        || Image.width() != (sint32) CurFrame.Width
+                        || Image.height() != (sint32) CurFrame.Height)
+                    {
+                        QBuffer PngBuffer;
+                        PngBuffer.setData(FramePng);
+                        PngBuffer.open(QIODevice::ReadOnly);
+                        QImageReader Reader(&PngBuffer, "PNG");
+                        Reader.read();
+                        const bool HasPNG = QImageReader::supportedImageFormats().contains("png")
+                            || QImageReader::supportedImageFormats().contains("PNG");
+                        BOSS_TRACE("AnimateAPngClass::ComposeUntil PNG decode failed frame=%d/%d pngSupported=%d reason=%s",
+                            i, mFrameCount, (sint32) HasPNG, Reader.errorString().toUtf8().constData());
+                        return false;
+                    }
+                    Image = Image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+                    QImage Previous;
+                    if(CurFrame.DisposeOp == 2)
+                        Previous = mCanvas.copy();
+                    {
+                        QPainter Painter(&mCanvas);
+                        Painter.setCompositionMode((CurFrame.BlendOp == 0)
+                            ? QPainter::CompositionMode_Source
+                            : QPainter::CompositionMode_SourceOver);
+                        Painter.drawImage(QPoint((sint32) CurFrame.X, (sint32) CurFrame.Y), Image);
+                    }
+                    if(i == target)
+                        mRenderedImage = mCanvas.copy();
+
+                    // 다음 프레임의 합성 기준은 dispose 처리 이후의 캔버스다.
+                    if(CurFrame.DisposeOp == 1 || (CurFrame.DisposeOp == 2 && i == 0))
+                    {
+                        QPainter Painter(&mCanvas);
+                        Painter.setCompositionMode(QPainter::CompositionMode_Source);
+                        Painter.fillRect(QRect(
+                            (sint32) CurFrame.X, (sint32) CurFrame.Y,
+                            (sint32) CurFrame.Width, (sint32) CurFrame.Height), Qt::transparent);
+                    }
+                    else if(CurFrame.DisposeOp == 2)
+                        mCanvas = Previous;
+                    mPreparedFrame = i;
+                }
+                mCachedFrame = target;
+                return !mRenderedImage.isNull();
+            }
+        #endif
+
         bool DecodeAPng(const QByteArray& source)
         {
             static const uchar PngSignature[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
 
-            mFrames.clear();
+            #if BOSS_WASM
+                mRawFrames.clear();
+                mGlobals.clear();
+                mIHDR.clear();
+                mCanvas = QImage();
+                mRenderedImage = QImage();
+                mPreparedFrame = -1;
+                mCachedFrame = -1;
+            #else
+                mFrames.clear();
+            #endif
             mDelays.clear();
             mWidth = 0;
             mHeight = 0;
@@ -3581,6 +3709,23 @@
             if(!HasACTL || IHDR.size() != 13 || RawFrames.empty())
                 return false;
 
+            #if BOSS_WASM
+                mIHDR = std::move(IHDR);
+                mGlobals = std::move(Globals);
+                mRawFrames = std::move(RawFrames);
+                mFrameCount = (sint32) mRawFrames.size();
+
+                for(const Frame& CurFrame : mRawFrames)
+                {
+                    sint32 Delay = (sint32) std::round(
+                        1000.0 * (double) CurFrame.DelayNum / (double) CurFrame.DelayDen);
+                    if(Delay <= 0) Delay = 1;
+                    mDelays.push_back(Delay);
+                    mDuration += Delay / 1000.0f;
+                }
+                // 조기에 PNG 디코더/자산 오류를 검출하고 첫 프레임을 준비한다.
+                return ComposeUntil(0);
+            #else
             QImage Canvas(mWidth, mHeight, QImage::Format_ARGB32_Premultiplied);
             Canvas.fill(Qt::transparent);
 
@@ -3633,10 +3778,21 @@
 
             mFrameCount = (sint32) mFrames.size();
             return (0 < mFrameCount);
+            #endif
         }
 
     private:
-        std::vector<QImage> mFrames;
+        #if BOSS_WASM
+            QByteArray mIHDR;
+            std::vector<Chunk> mGlobals;
+            std::vector<Frame> mRawFrames;
+            QImage mCanvas;        // 다음 프레임의 합성 기반(이미 dispose 완료)
+            QImage mRenderedImage; // 현재 출력할 프레임 하나만 유지
+            sint32 mPreparedFrame {-1};
+            sint32 mCachedFrame {-1};
+        #else
+            std::vector<QImage> mFrames;
+        #endif
         std::vector<sint32> mDelays;
         sint32 mWidth {0};
         sint32 mHeight {0};

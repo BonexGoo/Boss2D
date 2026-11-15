@@ -1635,6 +1635,12 @@
             return nullptr;
         }
 
+        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
         void Platform::Animate::Close(id_animate animate)
         {
             BOSS_ASSERT("Further development is needed.", false);

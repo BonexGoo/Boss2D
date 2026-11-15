@@ -1606,6 +1606,12 @@
             return nullptr;
         }
 
+        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
         void Platform::Animate::Close(id_animate animate)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);

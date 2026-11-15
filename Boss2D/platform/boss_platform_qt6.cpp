@@ -3065,6 +3065,15 @@
             return nullptr;
         }
 
+        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        {
+            buffer NewAnimate = Buffer::Alloc<AnimateAPngClass>(BOSS_DBG 1);
+            if(((AnimateAPngClass*) NewAnimate)->OpenAssets(filename))
+                return (id_animate) NewAnimate;
+            Buffer::Free(NewAnimate);
+            return nullptr;
+        }
+
         void Platform::Animate::Close(id_animate animate)
         {
             Buffer::Free((buffer) animate);

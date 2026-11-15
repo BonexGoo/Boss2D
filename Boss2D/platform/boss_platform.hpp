@@ -1347,6 +1347,12 @@ public:
         /// @see Close
         static id_animate OpenForAPngFile(chars filename);
 
+        /// @brief 에셋으로 PNG애니메이션 열기
+        /// @param filename : 에셋 상대경로
+        /// @return 애니메이션ID
+        /// @see Close
+        static id_animate OpenForAPngAssets(chars filename);
+
         /// @brief 애니메이션 닫기
         /// @param animate : 애니메이션ID
         /// @see OpenForLottie
