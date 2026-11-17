@@ -1341,17 +1341,24 @@ public:
         /// @see Close
         static id_animate OpenForMovieFile(chars filename);
 
+        /// @brief 데이터로 PNG애니메이션 열기
+        /// @param data : PNG데이터
+        /// @param size : 데이터 크기(byte)
+        /// @return 애니메이션ID
+        /// @see Close
+        static id_animate OpenForAPngForData(bytes data, sint32 size);
+
         /// @brief 파일로 PNG애니메이션 열기
         /// @param filename : 파일명
         /// @return 애니메이션ID
         /// @see Close
-        static id_animate OpenForAPngFile(chars filename);
+        static id_animate OpenForAPngForFile(chars filename);
 
-        /// @brief 에셋으로 PNG애니메이션 열기
-        /// @param filename : 에셋 상대경로
-        /// @return 애니메이션ID
+        /// @brief URL로 PNG애니메이션 열기(비동기 로딩)
+        /// @param url : PNG파일의 URL
+        /// @return 애니메이션ID(로딩 시작 성공시)
         /// @see Close
-        static id_animate OpenForAPngAssets(chars filename);
+        static id_animate OpenForAPngForUrl(chars url);
 
         /// @brief 애니메이션 닫기
         /// @param animate : 애니메이션ID

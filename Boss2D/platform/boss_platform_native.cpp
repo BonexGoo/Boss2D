@@ -1629,13 +1629,19 @@
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngFile(chars filename)
+        id_animate Platform::Animate::OpenForAPngForData(bytes data, sint32 size)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        id_animate Platform::Animate::OpenForAPngForFile(chars filename)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return nullptr;
+        }
+
+        id_animate Platform::Animate::OpenForAPngForUrl(chars url)
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;

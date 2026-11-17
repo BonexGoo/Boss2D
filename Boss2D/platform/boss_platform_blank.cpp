@@ -1600,13 +1600,19 @@
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngFile(chars filename)
+        id_animate Platform::Animate::OpenForAPngForData(bytes data, sint32 size)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        id_animate Platform::Animate::OpenForAPngForFile(chars filename)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+            return nullptr;
+        }
+
+        id_animate Platform::Animate::OpenForAPngForUrl(chars url)
         {
             BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
             return nullptr;

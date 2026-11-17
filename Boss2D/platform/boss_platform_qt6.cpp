@@ -3056,7 +3056,16 @@
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngFile(chars filename)
+        id_animate Platform::Animate::OpenForAPngForData(bytes data, sint32 size)
+        {
+            buffer NewAnimate = Buffer::Alloc<AnimateAPngClass>(BOSS_DBG 1);
+            if(((AnimateAPngClass*) NewAnimate)->OpenData(data, size))
+                return (id_animate) NewAnimate;
+            Buffer::Free(NewAnimate);
+            return nullptr;
+        }
+
+        id_animate Platform::Animate::OpenForAPngForFile(chars filename)
         {
             buffer NewAnimate = Buffer::Alloc<AnimateAPngClass>(BOSS_DBG 1);
             if(((AnimateAPngClass*) NewAnimate)->OpenFile(filename, false))
@@ -3065,10 +3074,10 @@
             return nullptr;
         }
 
-        id_animate Platform::Animate::OpenForAPngAssets(chars filename)
+        id_animate Platform::Animate::OpenForAPngForUrl(chars url)
         {
             buffer NewAnimate = Buffer::Alloc<AnimateAPngClass>(BOSS_DBG 1);
-            if(((AnimateAPngClass*) NewAnimate)->OpenAssets(filename))
+            if(((AnimateAPngClass*) NewAnimate)->OpenUrl(url))
                 return (id_animate) NewAnimate;
             Buffer::Free(NewAnimate);
             return nullptr;

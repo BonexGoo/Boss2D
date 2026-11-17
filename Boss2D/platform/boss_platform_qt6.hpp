@@ -94,6 +94,7 @@
     #include <QNetworkAccessManager>
     #include <QNetworkRequest>
     #include <QNetworkReply>
+    #include <QPointer>
 
     #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
         #include <QCefContext.h>
@@ -3285,9 +3286,24 @@
 
     public:
         AnimateAPngClass() = default;
-        ~AnimateAPngClass() override = default;
+        ~AnimateAPngClass() override
+        {
+            if(mUrlReply)
+            {
+                QObject::disconnect(mUrlReply, nullptr, nullptr, nullptr);
+                mUrlReply->abort();
+                mUrlReply->deleteLater();
+            }
+        }
 
     public:
+        bool OpenData(bytes data, sint32 size)
+        {
+            if(!data || size <= 0)
+                return false;
+            return OpenSource(QByteArray((const char*) data, size), "OpenData", "(buffer)");
+        }
+
         bool OpenFile(chars filename, bool use_cache) override
         {
             if(!filename || !*filename)
@@ -3309,25 +3325,58 @@
             return OpenSource(Source, "OpenFile", filename);
         }
 
-        bool OpenAssets(chars filename)
+        bool OpenUrl(chars url)
         {
-            if(!filename || !*filename)
+            if(!url || !*url)
                 return false;
 
-            QByteArray Source;
-            if(auto AssetBuffer = Asset::ToBuffer(filename))
+            QUrl Url(QString::fromUtf8(url));
+            #if BOSS_WASM
+                // HTML페이지를 기준으로 상대경로를 절대 URL로 변환
+                if(Url.isRelative())
+                {
+                    QByteArray FullUrl(8192, '\0');
+                    EM_ASM({
+                        try
+                        {
+                            const Resolved = new URL(UTF8ToString($0), window.location.href).href;
+                            stringToUTF8(Resolved, $1, $2);
+                        }
+                        catch(e) {}
+                    }, url, FullUrl.data(), FullUrl.size());
+                    Url = QUrl(QString::fromUtf8(FullUrl.constData()));
+                }
+            #endif
+            if(!Url.isValid() || Url.isRelative() ||
+                (Url.scheme() != "http" && Url.scheme() != "https"))
             {
-                const sint32 Size = Buffer::CountOf(AssetBuffer);
-                if(0 < Size)
-                    Source = QByteArray((const char*) AssetBuffer, Size);
-                Buffer::Free(AssetBuffer);
+                BOSS_TRACE("AnimateAPngClass::OpenUrl(%s) failed - invalid URL", url);
+                return false;
             }
-            return OpenSource(Source, "OpenAssets", filename);
+
+            static QNetworkAccessManager Manager;
+            QNetworkReply* Reply = Manager.get(QNetworkRequest(Url));
+            mUrlReply = Reply;
+            QObject::connect(Reply, &QNetworkReply::finished,
+                [this, Reply, Url]()->void
+                {
+                    mUrlReply = nullptr;
+                    if(Reply->error() == QNetworkReply::NoError)
+                    {
+                        const QByteArray Source = Reply->readAll();
+                        OpenSource(Source, "OpenUrl", Url.toString().toUtf8().constData());
+                    }
+                    else BOSS_TRACE("AnimateAPngClass::OpenUrl(%s) failed - %s",
+                        Url.toString().toUtf8().constData(), Reply->errorString().toUtf8().constData());
+                    Reply->deleteLater();
+                    Platform::UpdateAllViews();
+                });
+            return true;
         }
 
         bool OpenJson(chars jsontext, chars cachekey) override
         {
-            BOSS_TRACE("AnimateAPngClass::OpenJson failed - APNG supports file or asset sources only");
+            BOSS_TRACE("AnimateAPngClass::OpenJson failed - APNG supports data, file or URL sources only");
             return false;
         }
 
@@ -3793,6 +3842,7 @@
         #else
             std::vector<QImage> mFrames;
         #endif
+        QPointer<QNetworkReply> mUrlReply;
         std::vector<sint32> mDelays;
         sint32 mWidth {0};
         sint32 mHeight {0};
