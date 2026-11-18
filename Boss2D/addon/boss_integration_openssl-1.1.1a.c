@@ -3,7 +3,12 @@
 
 #include <addon/boss_integration_openssl-1.1.1a.h>
 
-#if BOSS_WINDOWS
+#if BOSS_WASM
+    #undef _stat
+    #define _stat _stat64
+    #undef _fstat
+    #define _fstat _fstat64
+#elif BOSS_WINDOWS
     #pragma comment(lib, "advapi32.lib")
     #pragma comment(lib, "gdi32.lib")
 #endif
@@ -194,7 +199,14 @@ NON_EMPTY_TRANSLATION_UNIT
 
 #include <addon/openssl-1.1.1a_for_boss/crypto/ec/curve448/arch_32/f_impl.c>
 
+#if BOSS_WASM
+    #define stat _stat64
+#endif
 #include <addon/openssl-1.1.1a_for_boss/crypto/x509/by_dir.c>
+#if BOSS_WASM
+    #undef stat
+#endif
+
 #include <addon/openssl-1.1.1a_for_boss/crypto/x509/by_file.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/x509/t_crl.c>
 #include <addon/openssl-1.1.1a_for_boss/crypto/x509/t_req.c>

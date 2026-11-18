@@ -95,6 +95,7 @@
     #include <QNetworkRequest>
     #include <QNetworkReply>
     #include <QPointer>
+    #include <QElapsedTimer>
 
     #if !BOSS_WASM & BOSS_NEED_CEF_WEBVIEW
         #include <QCefContext.h>
@@ -117,7 +118,6 @@
         #include <QVideoSink>
         #include <QVideoFrame>
         #include <QEventLoop>
-        #include <QElapsedTimer>
         #include <QAudioOutput>
         #include <QAudioSink>
         #include <QAudioFormat>

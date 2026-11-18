@@ -18,6 +18,9 @@
 #endif
 #if !BOSS_WINDOWS
     #define _MSC_VER 1900
+    #if BOSS_WASM && defined(__clang__) && defined(__cplusplus)
+        #define _NATIVE_WCHAR_T_DEFINED 1
+    #endif
     #undef __linux__
     #undef __APPLE__
     #undef ANDROID
