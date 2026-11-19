@@ -74,6 +74,7 @@
         #endif
     #endif
 
+    #include <QImage>
     #include <QProcess>
     #include <QLocalSocket>
     #include <QLocalServer>
@@ -131,6 +132,24 @@
         #include <wlanapi.h>
         #pragma comment(lib, "wlanapi.lib")
     #endif
+
+    // Load through the asset system so installed and embedded icons follow the same search path.
+    static inline QByteArray ReadShortcutPng(chars assetname, int maximum)
+    {
+        if(!assetname || !*assetname) return QByteArray();
+        buffer data = Asset::ToBuffer(assetname);
+        if(!data) return QByteArray();
+        QByteArray png((const char*) data, Buffer::CountOf(data));
+        Buffer::Free(data);
+        const QImage image = QImage::fromData(png, "PNG");
+        if(image.isNull()) return QByteArray();
+        if(image.width() <= maximum && image.height() <= maximum) return png;
+        QByteArray resized;
+        QBuffer out(&resized);
+        if(!out.open(QIODevice::WriteOnly) || !image.scaled(maximum, maximum,
+            Qt::KeepAspectRatio, Qt::SmoothTransformation).save(&out, "PNG")) return QByteArray();
+        return resized;
+    }
 
     #define USER_FRAMECOUNT (60)
     extern h_view g_view;

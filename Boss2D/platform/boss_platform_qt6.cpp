@@ -3,6 +3,10 @@
 
 #ifdef BOSS_PLATFORM_QT6
 
+    #if !BOSS_WASM && !BOSS_WINDOWS
+        #include <QDesktopServices>
+    #endif
+
     #if BOSS_WINDOWS
         #include <windows.h>
     #elif BOSS_WASM
@@ -1372,11 +1376,6 @@
             return PlatformImpl::Wrap::Popup_MessageDialog(title, text, type);
         }
 
-        void Platform::Popup::WebBrowserDialog(chars url)
-        {
-            PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
-        }
-
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
             PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
@@ -1578,6 +1577,126 @@
             if(i < g_argc)
                 return g_argv[i];
             return "";
+        }
+
+        String Platform::Utility::GetLaunchParameter(chars name)
+        {
+            if(!name || !*name) return String();
+            #if BOSS_WASM
+                const int size = MAIN_THREAD_EM_ASM_INT({
+                    if(typeof window === 'undefined') return 0;
+                    const value = new URLSearchParams(window.location.search).get(UTF8ToString($0));
+                    return value ? lengthBytesUTF8(value) + 1 : 0;
+                }, name);
+                if(size <= 1) return String();
+                QByteArray value(size, '\0');
+                MAIN_THREAD_EM_ASM({
+                    const result = new URLSearchParams(window.location.search).get(UTF8ToString($0));
+                    stringToUTF8(result || '', $1, $2);
+                }, name, value.data(), size);
+                return String(value.constData());
+            #else
+                const QStringList args = QCoreApplication::arguments();
+                const auto index = args.indexOf("-" + QString::fromUtf8(name), 1);
+                if(index < 0 || index + 1 >= args.size()) return String();
+                return String(args.at(index + 1).toUtf8().constData());
+            #endif
+        }
+
+        bool Platform::Utility::CreateDesktopShortcut(chars title, chars key, chars value, chars iconasset)
+        {
+            #if BOSS_WINDOWS
+                const QByteArray png = ReadShortcutPng(iconasset, 256);
+                return PlatformImpl::Wrap::Utility_CreateDesktopShortcut(title, key, value, (bytes) png.constData(), png.size());
+            #else
+                return false;
+            #endif
+        }
+
+        void Platform::Utility::SetWebAppIdentity(chars title, chars iconasset)
+        {
+            #if BOSS_WASM
+                const QByteArray png = ReadShortcutPng(iconasset, 512).toBase64();
+                MAIN_THREAD_EM_ASM({
+                    if(typeof document === 'undefined') return;
+                    document.title = UTF8ToString($0);
+                    const data = UTF8ToString($1);
+                    if(!data) return;
+                    const href = 'data:image/png;base64,' + data;
+                    for(const rel of ['icon', 'apple-touch-icon']) {
+                        let link = document.head.querySelector('link[rel="' + rel + '"]');
+                        if(!link) {
+                            link = document.createElement('link');
+                            link.rel = rel;
+                            document.head.appendChild(link);
+                        }
+                        link.href = href;
+                        link.type = 'image/png';
+                        link.removeAttribute('sizes');
+                    }
+                }, title, png.constData());
+            #endif
+        }
+
+        String Platform::Utility::GetThisWebPageUrl()
+        {
+            return PlatformImpl::Wrap::Utility_GetThisWebPageUrl();
+        }
+
+        bool Platform::Utility::OpenWebPageWithQuery(chars url, chars target)
+        {
+            #if !BOSS_WASM && !BOSS_WINDOWS
+                if(!url || !*url) return false;
+                const QUrl address(QString::fromUtf8(url), QUrl::TolerantMode);
+                return address.isValid() && !address.isRelative() && QDesktopServices::openUrl(address);
+            #else
+                return PlatformImpl::Wrap::Utility_OpenWebPage(url, target);
+            #endif
+        }
+
+        bool Platform::Utility::ShowWebShortcutDialog(chars key, chars value, chars title, chars help, chars openlabel, chars closelabel)
+        {
+            #if BOSS_WASM
+                if(!key || !value || !title || !help || !openlabel || !closelabel) return false;
+                return MAIN_THREAD_EM_ASM_INT({
+                    if(typeof document === 'undefined' || !document.body) return 0;
+                    const target = new URL(window.location.href);
+                    const id = UTF8ToString($0);
+                    target.searchParams.set(UTF8ToString($4), id);
+                    // Use a real link so the new tab opens directly from a user gesture.
+                    const oldDialog = document.getElementById('boss-platform-shortcut-dialog');
+                    if(oldDialog) oldDialog.remove();
+                    const dialog = document.createElement('dialog');
+                    dialog.id = 'boss-platform-shortcut-dialog';
+                    dialog.setAttribute('aria-label', UTF8ToString($5));
+                    dialog.style.cssText = 'max-width:min(28rem,85vw);box-sizing:border-box;border:1px solid #94a7b6;border-radius:12px;padding:20px;font:16px/1.5 system-ui;color:#163a53;background:white';
+                    const help = document.createElement('p');
+                    help.textContent = UTF8ToString($1);
+                    help.style.cssText = 'margin:0 0 16px;white-space:pre-line';
+                    const link = document.createElement('a');
+                    link.href = target.href;
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                    link.textContent = UTF8ToString($2) + ' (' + UTF8ToString($5) + ')';
+                    const close = document.createElement('button');
+                    close.type = 'button';
+                    close.textContent = UTF8ToString($3);
+                    close.style.marginInlineStart = '16px';
+                    close.onclick = function() { dialog.close(); };
+                    dialog.addEventListener('close', function() { dialog.remove(); });
+                    dialog.append(help, link, close);
+                    document.body.appendChild(dialog);
+                    try {
+                        dialog.showModal();
+                        return 1;
+                    } catch(e) {
+                        dialog.remove();
+                        return 0;
+                    }
+                }, value, help, openlabel, closelabel, key, title) != 0;
+            #else
+                return false;
+            #endif
         }
 
         bool Platform::Utility::TestUrlSchema(chars schema, chars comparepath)

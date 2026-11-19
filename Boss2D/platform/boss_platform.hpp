@@ -385,10 +385,6 @@ public:
         /// @return 버튼결과(0-긍정, 1-부정, 2-무시)
         static sint32 MessageDialog(chars title, chars text, DialogButtonType type = DBT_Ok);
 
-        /// @brief 웹브라우저 다이얄로그
-        /// @param url : 접속할 URL
-        static void WebBrowserDialog(chars url);
-
         /// @brief 응용프로그램 다이얄로그 열기
         /// @param exepath : 실행파일의 경로
         /// @param args : 전달할 스트링
@@ -519,6 +515,44 @@ public:
         /// @param getcount : 수량정보
         /// @return i번째에 해당하는 인수스트링(없으면 "")
         static chars GetArgument(sint32 i, sint32* getcount = nullptr);
+
+        /// @brief 실행 인수(-name value) 또는 웹 주소의 쿼리(?name=value)에서 값을 조회
+        /// @param name : 조회할 인수 또는 쿼리의 이름(예: "app")
+        /// @return 지정한 이름에 해당하는 값(예: "robo", 없으면 빈 문자열)
+        static String GetLaunchParameter(chars name);
+
+        /// @brief Windows 바탕화면에 지정한 인수로 현재 프로그램을 실행하는 바로가기를 생성
+        /// @param title : 바탕화면에 표시할 바로가기 이름(.lnk 확장자 제외, 예: "TCafe")
+        /// @param key : 실행 인수의 이름(앞의 하이픈 제외, 예: "app")
+        /// @param value : 실행 인수의 값(예: "tcafe"를 지정하면 -app tcafe로 실행)
+        /// @param iconasset : 바로가기 아이콘으로 사용할 PNG 에셋의 경로(예: "image/icon/tcafe.png")
+        /// @return 바로가기 생성 또는 갱신 성공여부
+        static bool CreateDesktopShortcut(chars title, chars key, chars value, chars iconasset);
+
+        /// @brief 웹 문서의 제목과 바로가기용 아이콘을 설정
+        /// @param title : 브라우저 탭에 표시할 제목(예: "TCafe")
+        /// @param iconasset : 파비콘과 홈 화면 아이콘으로 사용할 PNG 에셋의 경로(예: "image/icon/tcafe.png")
+        static void SetWebAppIdentity(chars title, chars iconasset);
+
+        /// @brief 현재 웹 페이지의 기준 URL을 조회
+        /// @return 쿼리와 프래그먼트를 제외한 URL(예: "https://bonexgoo.github.io/zayapp/", 웹 페이지가 없으면 빈 문자열)
+        static String GetThisWebPageUrl();
+
+        /// @brief 쿼리를 포함할 수 있는 완성된 URL을 열기
+        /// @param url : 열 URL(예: "https://bonexgoo.github.io/zayapp/?app=robo")
+        /// @param target : 웹에서 열 위치("self": 현재 페이지, "tab": 새 탭, "window": 새 창, 네이티브에서는 OS 기본 처리기에 위임)
+        /// @return 열기 요청의 성공여부(페이지 로딩 완료 여부와 별개)
+        static bool OpenWebPageWithQuery(chars url, chars target = "self");
+
+        /// @brief 웹에서 앱 실행 링크와 바로가기 등록 안내를 대화상자에 표시
+        /// @param key : 현재 웹 주소에 설정할 쿼리 이름(예: "app")
+        /// @param value : 지정한 쿼리에 넣을 값(예: "tcafe")
+        /// @param title : 실행 링크에 표시할 앱 이름(예: "TCafe")
+        /// @param help : 대화상자에 표시할 바로가기 등록 안내문
+        /// @param openlabel : 앱 실행 링크에 표시할 문구
+        /// @param closelabel : 닫기 버튼에 표시할 문구
+        /// @return 안내 대화상자 표시 성공여부
+        static bool ShowWebShortcutDialog(chars key, chars value, chars title, chars help, chars openlabel, chars closelabel);
 
         /// @brief URL스키마의 내용을 체크
         /// @param schema : URL스키마(예: http, https, mailto)

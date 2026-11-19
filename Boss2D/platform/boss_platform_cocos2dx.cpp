@@ -616,11 +616,6 @@
             return PlatformImpl::Wrap::Popup_MessageDialog(title, text, type);
         }
 
-        void Platform::Popup::WebBrowserDialog(chars url)
-        {
-            return PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
-        }
-
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
             return PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, dirpath, getpid);
@@ -778,6 +773,39 @@
         {
             BOSS_ASSERT("Further development is needed.", false);
             return nullptr;
+        }
+
+        String Platform::Utility::GetLaunchParameter(chars name)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return String();
+        }
+
+        bool Platform::Utility::CreateDesktopShortcut(chars title, chars key, chars value, chars iconasset)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
+        void Platform::Utility::SetWebAppIdentity(chars title, chars iconasset)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        String Platform::Utility::GetThisWebPageUrl()
+        {
+            return PlatformImpl::Wrap::Utility_GetThisWebPageUrl();
+        }
+
+        bool Platform::Utility::OpenWebPageWithQuery(chars url, chars target)
+        {
+            return PlatformImpl::Wrap::Utility_OpenWebPage(url, target);
+        }
+
+        bool Platform::Utility::ShowWebShortcutDialog(chars key, chars value, chars title, chars help, chars openlabel, chars closelabel)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
         }
 
         bool Platform::Utility::TestUrlSchema(chars schema, chars comparepath)

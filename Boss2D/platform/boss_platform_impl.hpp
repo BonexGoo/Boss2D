@@ -27,6 +27,9 @@ namespace BOSS
             void ClearUserEventListener(chars event);
             void SendUserEvent(chars event, chars args);
 
+            String Utility_GetThisWebPageUrl();
+            bool Utility_OpenWebPage(chars url, chars target);
+            bool Utility_CreateDesktopShortcut(chars title, chars key, chars value, bytes png, sint32 pngsize);
             chars Utility_GetOSName();
             sint32 Utility_EnumPrograms(Context& programs, bool visible_only);
             chars Utility_GetDeviceID();
@@ -46,7 +49,6 @@ namespace BOSS
 
             bool Popup_FileDialog(DialogShellType type, String& path, String* shortpath, chars title, wchars filters, sint32* filterresult);
             sint32 Popup_MessageDialog(chars title, chars text, DialogButtonType type);
-            void Popup_WebBrowserDialog(String url);
             void Popup_ProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid = nullptr);
             void Popup_KillProgramDialog(ublock pid);
             sint64 Popup_FindWindowHandle(chars titlename);

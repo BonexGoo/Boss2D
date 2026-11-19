@@ -3,6 +3,10 @@
 
 #ifdef BOSS_PLATFORM_QT5
 
+    #if !BOSS_WASM && !BOSS_WINDOWS
+        #include <QDesktopServices>
+    #endif
+
     #if BOSS_WASM
         #include <emscripten.h>
     #endif
@@ -1034,15 +1038,6 @@
             return PlatformImpl::Wrap::Popup_MessageDialog(title, text, type);
         }
 
-        void Platform::Popup::WebBrowserDialog(chars url)
-        {
-            #if BOSS_WINDOWS
-                PlatformImpl::Wrap::Popup_WebBrowserDialog(url);
-            #else
-                QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
-            #endif
-        }
-
         void Platform::Popup::OpenProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
         {
             PlatformImpl::Wrap::Popup_ProgramDialog(exepath, args, admin, hide, dirpath, getpid);
@@ -1288,6 +1283,45 @@
             if(i < g_argc)
                 return g_argv[i];
             return "";
+        }
+
+        String Platform::Utility::GetLaunchParameter(chars name)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return String();
+        }
+
+        bool Platform::Utility::CreateDesktopShortcut(chars title, chars key, chars value, chars iconasset)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
+        }
+
+        void Platform::Utility::SetWebAppIdentity(chars title, chars iconasset)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        String Platform::Utility::GetThisWebPageUrl()
+        {
+            return PlatformImpl::Wrap::Utility_GetThisWebPageUrl();
+        }
+
+        bool Platform::Utility::OpenWebPageWithQuery(chars url, chars target)
+        {
+            #if !BOSS_WASM && !BOSS_WINDOWS
+                if(!url || !*url) return false;
+                const QUrl address(QString::fromUtf8(url), QUrl::TolerantMode);
+                return address.isValid() && !address.isRelative() && QDesktopServices::openUrl(address);
+            #else
+                return PlatformImpl::Wrap::Utility_OpenWebPage(url, target);
+            #endif
+        }
+
+        bool Platform::Utility::ShowWebShortcutDialog(chars key, chars value, chars title, chars help, chars openlabel, chars closelabel)
+        {
+            BOSS_ASSERT("Further development is needed.", false);
+            return false;
         }
 
         bool Platform::Utility::TestUrlSchema(chars schema, chars comparepath)

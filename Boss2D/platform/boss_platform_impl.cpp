@@ -3,6 +3,7 @@
 
 #if BOSS_WINDOWS
     #include <shlobj.h>
+    #pragma comment(lib, "uuid.lib")
     #pragma comment(lib, "user32.lib")
     #pragma comment(lib, "comdlg32.lib")
     #pragma comment(lib, "ole32.lib")
@@ -48,6 +49,7 @@
 #endif
 
 #if BOSS_WASM
+    #include <emscripten.h>
     #include <stdio.h>
     #include <string>
     #include <uuid/uuid.h>
@@ -240,6 +242,189 @@ namespace BOSS
             {
                 if(auto OneUserEvent = g_UserEvents.Access(event))
                     OneUserEvent->mCB(OneUserEvent->mData, args);
+            }
+
+#if BOSS_WINDOWS
+            static std::wstring ShortcutPath(chars path)
+            {
+                std::wstring result = (wchars) WString::FromChars(path);
+                for(auto& c : result) if(c == L'/') c = L'\\';
+                return result;
+            }
+
+            static std::wstring ShortcutArg(const std::wstring& value)
+            {
+                if(!value.empty() && value.find_first_of(L" \t\"") == std::wstring::npos) return value;
+                std::wstring result(1, L'"');
+                size_t slashes = 0;
+                for(wchar_t c : value)
+                {
+                    if(c == L'\\') { ++slashes; continue; }
+                    result.append(c == L'"'? slashes * 2 + 1 : slashes, L'\\');
+                    result.push_back(c);
+                    slashes = 0;
+                }
+                result.append(slashes * 2, L'\\');
+                return result + L'"';
+            }
+
+            // The ICO directory points directly at the lossless PNG, including its alpha channel.
+            static bool SaveShortcutIcon(bytes png, sint32 size, const std::wstring& temp, std::wstring& cached)
+            {
+                if(!png || size < 33 || memcmp(png, "\x89PNG\r\n\x1a\n", 8) || memcmp(png + 12, "IHDR", 4)) return false;
+                auto dimension = [](bytes v)->uint32 {
+                    return (uint32(v[0]) << 24) | (uint32(v[1]) << 16) | (uint32(v[2]) << 8) | v[3];
+                };
+                const uint32 w = dimension(png + 16), h = dimension(png + 20);
+                if(!w || !h || w > 256 || h > 256) return false;
+                uint64 hash = 14695981039346656037ULL;
+                for(sint32 i = 0; i < size; ++i) hash = (hash ^ png[i]) * 1099511628211ULL;
+                const String folder = Platform::File::RootForData() + "shortcut-icons";
+                if(!Platform::File::ExistForDir(folder) && !Platform::File::CreateDir(WString::FromChars(folder), true)
+                    && !Platform::File::ExistForDir(folder)) return false;
+                cached = ShortcutPath(folder + String::Format("/%016llx.ico", (unsigned long long) hash));
+                if(GetFileAttributesW(cached.c_str()) != INVALID_FILE_ATTRIBUTES) return true;
+                unsigned char hdr[22] = {0,0,1,0,1,0, (unsigned char) w,(unsigned char) h,0,0,1,0,32,0,
+                    (unsigned char) size,(unsigned char) (size >> 8),(unsigned char) (size >> 16),(unsigned char) (size >> 24),22,0,0,0};
+                const std::wstring staged = cached + temp;
+                HANDLE file = CreateFileW(staged.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+                if(file == INVALID_HANDLE_VALUE) return false;
+                DWORD written = 0;
+                const bool ok = WriteFile(file, hdr, sizeof(hdr), &written, nullptr) && written == sizeof(hdr)
+                    && WriteFile(file, png, size, &written, nullptr) && written == (DWORD) size;
+                CloseHandle(file);
+                if(ok && MoveFileW(staged.c_str(), cached.c_str())) return true;
+                DeleteFileW(staged.c_str());
+                return GetFileAttributesW(cached.c_str()) != INVALID_FILE_ATTRIBUTES;
+            }
+
+            static bool SaveDesktopLink(chars title, chars key, chars value, bytes png, sint32 pngsize)
+            {
+                std::wstring name = (wchars) WString::FromChars(title);
+                for(auto& c : name)
+                    if(c < 32 || wcschr(L"<>:\"/\\|?*", c)) c = L'_';
+                while(!name.empty() && (name.back() == L'.' || name.back() == L' ')) name.pop_back();
+                if(name.empty()) return false;
+                GUID guid;
+                wchar_t tag[40];
+                if(FAILED(CoCreateGuid(&guid)) || !StringFromGUID2(guid, tag, 40)) return false;
+                std::wstring icon;
+                if(!SaveShortcutIcon(png, pngsize, tag, icon)) return false;
+
+                const std::wstring exe = ShortcutPath(Platform::Utility::GetProgramPath());
+                const std::wstring dir = ShortcutPath(Platform::Utility::GetProgramPath(true));
+                const std::wstring args = ShortcutArg((wchars) WString::FromChars(String("-") + key)) + L" "
+                    + ShortcutArg((wchars) WString::FromChars(value));
+                const std::wstring desktop = ShortcutPath(Platform::File::RootForDesktop());
+                if(exe.empty() || desktop.empty()) return false;
+                const std::wstring file = desktop + name + L".lnk";
+                const std::wstring staged = desktop + tag + L".lnk";
+                const bool existing = GetFileAttributesW(file.c_str()) != INVALID_FILE_ATTRIBUTES;
+
+                IShellLinkW* link = nullptr;
+                HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&link));
+                if(FAILED(hr)) return false;
+                IPersistFile* persist = nullptr;
+                hr = link->QueryInterface(IID_PPV_ARGS(&persist));
+                if(SUCCEEDED(hr) && existing)
+                {
+                    wchar_t oldExe[32768] = {}, oldArgs[32768] = {};
+                    hr = persist->Load(file.c_str(), STGM_READ);
+                    if(SUCCEEDED(hr)) hr = link->GetPath(oldExe, 32768, nullptr, SLGP_RAWPATH);
+                    if(SUCCEEDED(hr)) hr = link->GetArguments(oldArgs, 32768);
+                    if(SUCCEEDED(hr) && (_wcsicmp(oldExe, exe.c_str()) || oldArgs != args)) hr = E_ACCESSDENIED;
+                }
+                if(SUCCEEDED(hr)) hr = link->SetPath(exe.c_str());
+                if(SUCCEEDED(hr)) hr = link->SetWorkingDirectory(dir.c_str());
+                if(SUCCEEDED(hr)) hr = link->SetArguments(args.c_str());
+                if(SUCCEEDED(hr)) hr = link->SetIconLocation(icon.c_str(), 0);
+                if(SUCCEEDED(hr)) hr = persist->Save(staged.c_str(), TRUE);
+                if(persist) persist->Release();
+                link->Release();
+                if(SUCCEEDED(hr) && MoveFileExW(staged.c_str(), file.c_str(), existing? MOVEFILE_REPLACE_EXISTING : 0))
+                {
+                    SHChangeNotify(existing? SHCNE_UPDATEITEM : SHCNE_CREATE, SHCNF_PATHW, file.c_str(), nullptr);
+                    return true;
+                }
+                DeleteFileW(staged.c_str());
+                return false;
+            }
+#endif
+
+            String Utility_GetThisWebPageUrl()
+            {
+                #if BOSS_WASM
+                    const int size = MAIN_THREAD_EM_ASM_INT({
+                        if(typeof window === 'undefined') return 0;
+                        return lengthBytesUTF8(window.location.href) + 1;
+                    });
+                    if(size <= 1) return String();
+                    std::string address(size, '\0');
+                    MAIN_THREAD_EM_ASM({
+                        const url = new URL(window.location.href);
+                        url.search = '';
+                        url.hash = '';
+                        stringToUTF8(url.href, $0, $1);
+                    }, &address[0], size);
+                    return String(address.c_str());
+                #else
+                    return String();
+                #endif
+            }
+
+            bool Utility_OpenWebPage(chars url, chars target)
+            {
+                if(!url || !*url) return false;
+                #if BOSS_WASM
+                    if(!target) return false;
+                    return MAIN_THREAD_EM_ASM_INT({
+                        try {
+                            const url = new URL(UTF8ToString($0));
+                            if(url.protocol === 'javascript:' || url.protocol === 'data:') return 0;
+                            const mode = UTF8ToString($1);
+                            if(mode === 'self') {
+                                window.location.assign(url.href);
+                                return 1;
+                            }
+                            if(mode !== 'tab' && mode !== 'window') return 0;
+                            const child = window.open('about:blank', '_blank', mode === 'window' ? 'popup' : '');
+                            if(!child) return 0;
+                            try {
+                                child.opener = null;
+                                child.location.replace(url.href);
+                            } catch(e) {
+                                child.close();
+                                return 0;
+                            }
+                            return 1;
+                        } catch(e) {
+                            return 0;
+                        }
+                    }, url, target) != 0;
+                #elif BOSS_WINDOWS
+                    const char* letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                    const size_t scheme = std::strspn(url, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+.-");
+                    if(!std::strchr(letters, url[0]) || url[scheme] != ':') return false;
+                    if(scheme == 1 && (url[2] == '/' || url[2] == '\\')) return false;
+                    return reinterpret_cast<INT_PTR>(ShellExecuteW(nullptr, L"open",
+                        (wchars) WString::FromChars(url), nullptr, nullptr, SW_SHOWNORMAL)) > 32;
+                #else
+                    return false;
+                #endif
+            }
+
+            bool Utility_CreateDesktopShortcut(chars title, chars key, chars value, bytes png, sint32 pngsize)
+            {
+                #if BOSS_WINDOWS
+                    if(!title || !*title || !key || !*key || !value || !*value) return false;
+                    const HRESULT init = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+                    if(FAILED(init) && init != RPC_E_CHANGED_MODE) return false;
+                    const bool saved = SaveDesktopLink(title, key, value, png, pngsize);
+                    if(SUCCEEDED(init)) CoUninitialize();
+                    return saved;
+                #else
+                    return false;
+                #endif
             }
 
             chars Utility_GetOSName()
@@ -980,18 +1165,6 @@ namespace BOSS
                 return -1;
             }
 
-            void Popup_WebBrowserDialog(String url)
-            {
-                #if BOSS_WINDOWS
-                    #ifdef UNICODE
-                        ShellExecute(NULL, L"open", (wchars) WString::FromChars(url),
-                            NULL, NULL, SW_SHOWNORMAL);
-                    #else
-                        ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
-                    #endif
-                #endif
-            }
-
             void Popup_ProgramDialog(chars exepath, chars args, bool admin, bool hide, chars dirpath, ublock* getpid)
             {
                 #if BOSS_WINDOWS
@@ -1307,7 +1480,7 @@ namespace BOSS
             {
                 sint32 ID = -1;
                 #if BOSS_WINDOWS
-                    Platform::Popup::WebBrowserDialog(url);
+                    Platform::Utility::OpenWebPageWithQuery(url);
                 #elif BOSS_IPHONE
                     ID = BossWebView::Create(GetIOSApplicationUIView(), url, clearcookies, cb, data);
                 #elif BOSS_ANDROID
