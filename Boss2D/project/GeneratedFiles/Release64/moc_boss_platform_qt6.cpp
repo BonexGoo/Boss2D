@@ -8,8 +8,8 @@
 
 #include "../../../platform/boss_platform_qt6.hpp"
 #include <QtGui/qtextcursor.h>
-#include <QtNetwork/QSslError>
 #include <QtGui/qscreen.h>
+#include <QtNetwork/QSslError>
 #include <QtNetwork/QSslPreSharedKeyAuthenticator>
 #include <QtCore/qmetatype.h>
 #include <QtCore/QList>

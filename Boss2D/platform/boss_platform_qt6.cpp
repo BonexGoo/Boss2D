@@ -672,6 +672,7 @@
         #endif
     #endif
 
+    static RenderingType g_startupRenderingType = RT_CPU;
     h_view g_view;
     QPoint g_CursorPos;
     CursorState g_CursorState = CursorState::Unknown;
@@ -960,6 +961,107 @@
         }
     }
 
+
+    void MainView::ReleaseGpuTarget()
+    {
+        if(!mGpuContext) return;
+        QPointer<QOpenGLContext> previous = QOpenGLContext::currentContext();
+        auto previousSurface = previous? previous->surface() : nullptr;
+        if(mGpuSurface && mGpuContext->makeCurrent(mGpuSurface.get()))
+        {
+            mGpuTarget.reset();
+            mGpuContext->doneCurrent();
+        }
+        else mGpuTarget.reset();
+        mGpuContext.reset();
+        mGpuSurface.reset();
+        if(previous && previousSurface) previous->makeCurrent(previousSurface);
+    }
+
+    void MainView::BeginFrame()
+    {
+        if(mFrameInProgress || CanvasClass::enabled())
+        {
+            update();
+            return;
+        }
+        const QScopedValueRollback<bool> inFrame(mFrameInProgress, true);
+        if(mRequestedType == RT_GPU && RenderGpuFrame()) return;
+        if(mRequestedType == RT_GPU)
+        {
+            qWarning("Boss2D: GPU frame unavailable, switching to CPU.");
+            mRequestedType = RT_CPU;
+        }
+        ReleaseGpuTarget();
+        RenderFrame(this);
+    }
+
+    bool MainView::RenderFrame(QPaintDevice* device)
+    {
+        if(CanvasClass::enabled()) return false;
+        CanvasClass canvas(device, size());
+        auto& painter = canvas.painter();
+        if(!painter.isActive()) return false;
+        if(device != this && painter.paintEngine()->type() != QPaintEngine::OpenGL2)
+            return false;
+        if(mViewManager)
+            mViewManager->OnRender(mWidth, mHeight, 0, 0, mWidth, mHeight);
+        if(!mCapturing && 0 < mPaintCount)
+            --mPaintCount;
+        return true;
+    }
+
+    bool MainView::RenderGpuFrame()
+    {
+        const qreal ratio = devicePixelRatioF();
+        const QSize pixels = size() * ratio;
+        if(pixels.isEmpty()) return true;
+        if(!mGpuContext)
+        {
+            mGpuContext.reset(new QOpenGLContext);
+            mGpuContext->setScreen(screen());
+            if(!mGpuContext->create()) return false;
+            mGpuSurface.reset(new QOffscreenSurface(screen()));
+            mGpuSurface->setFormat(mGpuContext->format());
+            mGpuSurface->create();
+        }
+        QPointer<QOpenGLContext> previous = QOpenGLContext::currentContext();
+        auto previousSurface = previous? previous->surface() : nullptr;
+        if(!mGpuSurface->isValid() || !mGpuContext->makeCurrent(mGpuSurface.get()))
+            return false;
+        if(!mGpuTarget || mGpuTarget->size() != pixels)
+            mGpuTarget.reset(new QOpenGLFramebufferObject(pixels, QOpenGLFramebufferObject::CombinedDepthStencil));
+        QImage frame;
+        if(mGpuTarget->isValid() && mGpuTarget->bind())
+        {
+            auto gl = mGpuContext->functions();
+            gl->glViewport(0, 0, pixels.width(), pixels.height());
+            gl->glDisable(GL_SCISSOR_TEST);
+            gl->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+            gl->glStencilMask(0xff);
+            gl->glClearColor(0, 0, 0, 0);
+            gl->glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            QOpenGLPaintDevice target(pixels);
+            target.setDevicePixelRatio(ratio);
+            if(RenderFrame(&target)) frame = mGpuTarget->toImage();
+            mGpuTarget->release();
+        }
+        mGpuContext->doneCurrent();
+        if(previous && previousSurface) previous->makeCurrent(previousSurface);
+        if(frame.isNull()) return false;
+        frame.setDevicePixelRatio(ratio);
+        QPainter output(this);
+        if(!output.isActive()) return false;
+        output.drawImage(QPoint(0, 0), frame);
+        return true;
+    }
+
+    QPixmap MainView::GrabContent(QWidget* top, const QRect& area)
+    {
+        const QScopedValueRollback<bool> capture(mCapturing, true);
+        return top->grab(area);
+    }
+
     namespace BOSS
     {
         ////////////////////////////////////////////////////////////////////////////////
@@ -973,6 +1075,7 @@
         void Platform::InitForMDI(bool frameless, bool topmost, void* bgwidget, chars bgweb)
         {
             g_window->InitForWidget(frameless, topmost, (QWidget*) bgwidget, bgweb);
+            g_window->View()->RequestRenderingType(g_startupRenderingType);
         }
 
         void Platform::SetViewCreator(View::CreatorCB creator)
@@ -1299,7 +1402,7 @@
                 Views->AccessByCallback([](const MapPath*, h_view* view, payload param)->void
                 {
                     ((View*) view->get())->DirtyAllSurfaces();
-                    g_window->View()->update();
+                    g_window->View()->UpdateFrame();
                 }, nullptr);
                 View::SearchEnd();
             }
@@ -1875,8 +1978,12 @@
 
             QPixmap GrabPixmap;
             if(use_repaint)
-                GrabPixmap = g_window->grab(QRect(rect.l - BlurBorder, rect.t - BlurBorder,
-                    LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2));
+            {
+                const QRect area(rect.l - BlurBorder, rect.t - BlurBorder,
+                    LogicalWidth + BlurBorder * 2, LogicalHeight + BlurBorder * 2);
+                auto view = g_window->View();
+                GrabPixmap = view? view->GrabContent(g_window, area) : g_window->grab(area);
+            }
             else if(QScreen* Screen = g_window->windowHandle()->screen())
             {
                 const QRect ScreenGeo = Screen->geometry();
@@ -2354,6 +2461,14 @@
         ////////////////////////////////////////////////////////////////////////////////
         // GRAPHICS
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::Graphics::SetRenderingType(RenderingType type)
+        {
+            if(type != RT_CPU && type != RT_GPU) return;
+            if(g_window && g_window->View())
+                g_window->View()->RequestRenderingType(type);
+            else g_startupRenderingType = type;
+        }
+
         void Platform::Graphics::SetRenderHint(bool smooth, bool antialiasing)
         {
             CanvasClass::get()->SetRenderHint(smooth, antialiasing);

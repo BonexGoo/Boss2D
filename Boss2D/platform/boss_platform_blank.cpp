@@ -1123,6 +1123,11 @@
         ////////////////////////////////////////////////////////////////////////////////
         // GRAPHICS
         ////////////////////////////////////////////////////////////////////////////////
+        void Platform::Graphics::SetRenderingType(RenderingType)
+        {
+            BOSS_ASSERT("This is blank platform. You can use BOSS_PLATFORM_XXX.", false);
+        }
+
         void Platform::Graphics::SetRenderHint(bool smooth, bool antialiasing)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());

@@ -46,6 +46,13 @@
         #include <QMainWindow>
         #include <QWindow>
         #include <QPainter>
+        #include <QOpenGLContext>
+        #include <QOffscreenSurface>
+        #include <QtOpenGL/QOpenGLFramebufferObject>
+        #include <QOpenGLFunctions>
+        #include <QPaintEngine>
+        #include <QScopedValueRollback>
+        #include <QtOpenGL/QOpenGLPaintDevice>
         #include <QImageReader>
         #include <QPainterPath>
         #include <QCloseEvent>
@@ -194,6 +201,11 @@
     public:
         CanvasClass();
         CanvasClass(QPaintDevice* device);
+        CanvasClass(QPaintDevice* device, const QSize& logicalSize) : CanvasClass(device)
+        {
+            mPainterWidth = logicalSize.width();
+            mPainterHeight = logicalSize.height();
+        }
         ~CanvasClass();
 
     public:
@@ -298,6 +310,7 @@
         }
         ~MainView()
         {
+            ReleaseGpuTarget();
             if(mViewManager)
             {
                 SendDestroy();
@@ -307,6 +320,18 @@
         }
 
     public:
+        void RequestRenderingType(RenderingType type)
+        {
+            if(mRequestedType == type) return;
+            mRequestedType = type;
+            UpdateFrame();
+        }
+        void UpdateFrame()
+        {
+            update();
+        }
+        QPixmap GrabContent(QWidget* top, const QRect& area);
+
         h_view ChangeViewManager(View* manager)
         {
             if(mViewManager)
@@ -476,20 +501,8 @@
         }
         void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE
         {
-            // Assert등에서 재귀가 일어난 경우
-            if(CanvasClass::enabled()) return;
-            CanvasClass Canvas(this);
-            if(mViewManager)
-                mViewManager->OnRender(mWidth, mHeight, 0, 0, mWidth, mHeight);
-
-            /*if(m_next_manager)
-            {
-                h_view OldViewHandle = changeViewManagerAndDestroy(m_next_manager);
-                setViewAndCreateAndSize(OldViewHandle);
-                m_next_manager = nullptr;
-            }*/
-            if(0 < mPaintCount)
-                mPaintCount--;
+            if(mCapturing) RenderFrame(this);
+            else BeginFrame();
         }
         void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE
         {
@@ -684,7 +697,7 @@
         {
             if(mPaintCount == 0)
                 mUpdateTimer.stop();
-            update();
+            UpdateFrame();
         }
         void TooltipTimeout()
         {
@@ -707,6 +720,17 @@
         }
 
     private:
+        void BeginFrame();
+        void ReleaseGpuTarget();
+        bool RenderGpuFrame();
+        bool RenderFrame(QPaintDevice* device);
+
+        RenderingType mRequestedType {RT_CPU};
+        bool mFrameInProgress {false};
+        std::unique_ptr<QOffscreenSurface> mGpuSurface;
+        std::unique_ptr<QOpenGLContext> mGpuContext;
+        std::unique_ptr<QOpenGLFramebufferObject> mGpuTarget;
+        bool mCapturing {false};
         View* mViewManager {nullptr};
         sint32 mWidth {0};
         sint32 mHeight {0};

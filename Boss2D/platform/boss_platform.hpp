@@ -31,6 +31,7 @@ enum UIStack {UIS_PushPop, UIS_Push, UIS_Current, UIS_Pop};
 enum MaskRole {MR_SrcOver, MR_DstOver, MR_Clear, MR_Src, MR_Dst, MR_SrcIn, MR_DstIn, MR_SrcOut, MR_DstOut, MR_SrcAtop, MR_DstAtop, MR_Xor, MR_Plus,
     MR_Multiply, MR_Screen, MR_Overlay, MR_Darken, MR_Lighten, MR_ColorDodge, MR_ColorBurn, MR_HardLight, MR_SoftLight, MR_Difference, MR_Exclusion,
     MR_Default = MR_SrcOver};
+enum RenderingType {RT_CPU, RT_GPU};
 enum ShaderRole {SR_Normal, SR_Nv21, SR_BlurWeak, SR_BlurMedium, SR_BlurStrong, SR_Max};
 enum OrientationRole {OR_Normal, OR_CW90, OR_CW180, OR_CW270, OR_Max};
 class ZoomState
@@ -910,6 +911,10 @@ public:
     class Graphics
     {
     public:
+        /// @brief 메인 뷰 렌더링 방식 변경 (Qt6, UI 스레드)
+        /// @details 기본값은 RT_CPU. 다음 프레임의 시작에서 마지막 요청을 적용합니다.
+        static void SetRenderingType(RenderingType type);
+
         /// @brief 랜더링품질지정
         /// @param smooth : SmoothPixmapTransform여부
         /// @param antialiasing : Antialiasing여부
