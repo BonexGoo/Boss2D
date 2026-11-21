@@ -959,6 +959,9 @@ public:
         /// @param orientation : 출력방향
         static void SetZoom(double scale, OrientationRole orientation = OR_Normal);
 
+        /// @brief 현재 출력 장치의 논리 픽셀당 실제 픽셀 수(활성 장치가 없으면 1)
+        static double GetDevicePixelRatio();
+
         /// @brief 사각영역 지우기
         /// @param x : 좌측위치(px)
         /// @param y : 상단위치(px)
@@ -1353,6 +1356,36 @@ public:
         /// @param ori : 90도기준 회전상태와 상하반전여부(디폴트는 상하반전)
         /// @return 서피스 비트맵(nullptr은 실패)
         static id_bitmap_read GetBitmapFromSurface(id_surface_read surface, orientationtype ori = orientationtype_fliped0);
+
+        /// @brief 정적 배경과 픽셀별 깊이를 보관할 장면 생성(미지원 플랫폼은 nullptr)
+        /// @details 뷰의 렌더링 스레드에서 생성하고 사용합니다. 첫 사용 전에 ResetDepthScene을 호출합니다.
+        static id_depthscene CreateDepthScene();
+
+        /// @brief 깊이 장면 삭제(nullptr 허용)
+        static void RemoveDepthScene(id_depthscene scene);
+
+        /// @brief 장면의 화면 영역을 지정하고 정적 색상, 깊이, 반투명층을 초기화
+        /// @details 등록할 이미지와 캐릭터는 이 시점의 이미지 보간 설정을 함께 사용합니다.
+        /// @param viewportPx 출력 장치의 물리 픽셀 영역 [l,r) x [t,b). 줌과 기기 배율이 이미 반영된 좌표
+        /// @return 성공 여부. 실패하면 기존 장면을 유지합니다.
+        static bool ResetDepthScene(id_depthscene scene, const rect128& viewportPx);
+
+        /// @brief 정적 이미지를 뒤에서 앞으로 등록. 출력 배율의 알파로 가림과 반투명층을 기록합니다.
+        /// @param staticOrder 0 이상의 비감소 순번. 같은 순번 안에서는 호출 순서로 합성합니다.
+        /// @param src 원본 이미지의 픽셀 영역. dst는 뷰포트 좌상단 기준 최종 출력 픽셀 영역입니다.
+        /// @param opacity 원본 알파에 곱할 불투명도(0~1)
+        /// @return 등록 성공 여부. 화면 밖으로 완전히 잘린 이미지는 성공으로 처리합니다.
+        static bool AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity = 1.0f);
+
+        /// @brief 현재 캔버스의 클립 안에서 정적 배경을 지정한 화면 위치에 1:1로 합성
+        static void DrawDepthScene(id_depthscene_read scene);
+
+        /// @brief 캐릭터 이미지를 현재 캔버스에 합성. 캐릭터끼리는 뒤에서 앞으로 호출합니다.
+        /// @param afterStatic 이 순번까지의 정적 이미지 앞에 그립니다. -1이면 모든 정적 이미지 뒤입니다.
+        /// @details src, dst, opacity는 AddDepthSceneImage와 동일합니다. 배경 출력 후에 호출합니다.
+        static void DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity = 1.0f);
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1440,6 +1473,10 @@ public:
         /// @param h : 세로길이(px)
         /// @param degree : 회전값(360˚기준)
         static void Draw(id_animate animate, float x, float y, float width, float height, float degree);
+
+        /// @brief 현재 합성된 애니메이션 프레임 이미지 얻기(Qt6 APNG 지원)
+        /// @return 애니메이션이 소유한 이미지. 다음 GetImage 또는 Close까지 유효하며, 로딩 중이거나 미지원이면 nullptr
+        static id_image_read GetImage(id_animate animate);
     };
 
     ////////////////////////////////////////////////////////////////////////////////

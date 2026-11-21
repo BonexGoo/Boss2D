@@ -5,6 +5,40 @@ namespace BOSS
 {
     namespace PlatformImpl
     {
+        // Backend-independent, viewport-local compositor. All pixels use premultiplied ARGB32.
+        class DepthScene
+        {
+        public:
+            DepthScene() = default;
+            ~DepthScene();
+            DepthScene(const DepthScene&) = delete;
+            DepthScene& operator=(const DepthScene&) = delete;
+
+            bool Reset(const rect128& viewportPx);
+            const rect128& Viewport() const {return mViewport;}
+            const uint32* Pixels() const {return mPixels;}
+
+            // Backends rasterize and clip to the viewport before calling Add or Filter.
+            // Strides are in pixels. Add accepts nondecreasing orders (including ties).
+            bool Add(sint32 order, sint32 x, sint32 y, sint32 width, sint32 height,
+                const uint32* pixels, sint32 stride);
+            void Filter(sint32 afterStatic, sint32 x, sint32 y, sint32 width, sint32 height,
+                uint32* pixels, sint32 stride) const;
+
+        private:
+            struct Visibility;
+            struct Layer;
+            bool ContainsRaster(sint32 x, sint32 y, sint32 width, sint32 height, sint32 stride) const;
+            bool ReserveLayers(uint64 additional);
+
+            rect128 mViewport = {};
+            sint32 mWidth = 0, mHeight = 0, mLastOrder = -1;
+            uint32* mPixels = nullptr;
+            Visibility* mVisibility = nullptr;
+            Layer* mLayers = nullptr;
+            uint32 mLayerCount = 0, mLayerCapacity = 0;
+        };
+
         // 일반함수와 전역인스턴스
         namespace Core
         {
@@ -17,6 +51,19 @@ namespace BOSS
 
             extern View::CreatorCB g_Creator;
         }
+
+        // 현재 렌더링 백엔드가 제공하는 깊이 장면. 픽셀 합성 규칙은 공통 DepthScene이 담당합니다.
+        class DepthSceneDevice
+        {
+        public:
+            virtual ~DepthSceneDevice() = default;
+            virtual bool Reset(const rect128& viewportPx) = 0;
+            virtual bool AddImage(sint32 staticOrder, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity) = 0;
+            virtual void Draw() const = 0;
+            virtual void DrawSprite(sint32 afterStatic, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity) const = 0;
+        };
 
         // 래핑함수
         namespace Wrap
@@ -55,6 +102,14 @@ namespace BOSS
             bool Popup_MoveWindow(sint64 hwnd, sint32 left, sint32 top, sint32 right, sint32 bottom, bool repaint);
             bool Popup_MoveWindowGroup(sint64s windowparams);
             bool Popup_MoveWindowGroupCaptured(sint64s windowparams, bool release);
+
+            void Graphics_RemoveDepthScene(id_depthscene scene);
+            bool Graphics_ResetDepthScene(id_depthscene scene, const rect128& viewportPx);
+            bool Graphics_AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity);
+            void Graphics_DrawDepthScene(id_depthscene_read scene);
+            void Graphics_DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity);
 
             void File_SetAttributeHidden(wchars itemname);
             WString File_GetDirName(wchars itemname, wchar_t badslash, wchar_t goodslash);

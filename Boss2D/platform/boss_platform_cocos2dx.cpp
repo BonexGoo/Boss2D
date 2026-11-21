@@ -1255,6 +1255,11 @@
             return NewNode;
         }
 
+        double Platform::Graphics::GetDevicePixelRatio()
+        {
+            return 1.0;
+        }
+
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", ViewAPI::CurPainter());
@@ -1754,6 +1759,38 @@
             return nullptr;
         }
 
+        id_depthscene Platform::Graphics::CreateDepthScene()
+        {
+            return nullptr;
+        }
+
+        void Platform::Graphics::RemoveDepthScene(id_depthscene scene)
+        {
+            PlatformImpl::Wrap::Graphics_RemoveDepthScene(scene);
+        }
+
+        bool Platform::Graphics::ResetDepthScene(id_depthscene scene, const rect128& viewportPx)
+        {
+            return PlatformImpl::Wrap::Graphics_ResetDepthScene(scene, viewportPx);
+        }
+
+        bool Platform::Graphics::AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            return PlatformImpl::Wrap::Graphics_AddDepthSceneImage(scene, staticOrder, image, src, dst, opacity);
+        }
+
+        void Platform::Graphics::DrawDepthScene(id_depthscene_read scene)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthScene(scene);
+        }
+
+        void Platform::Graphics::DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthSceneSprite(scene, afterStatic, image, src, dst, opacity);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
@@ -1831,6 +1868,11 @@
         void Platform::Animate::Draw(id_animate animate, float x, float y, float width, float height, float degree)
         {
             BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        id_image_read Platform::Animate::GetImage(id_animate animate)
+        {
+            return nullptr;
         }
 
         ////////////////////////////////////////////////////////////////////////////////

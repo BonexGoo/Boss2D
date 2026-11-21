@@ -17,6 +17,7 @@
         #endif
         #include <unistd.h>
     #endif
+    #include <new>
     #include <format/boss_bmp.hpp>
 
     #if BOSS_ANDROID
@@ -2565,6 +2566,13 @@
                 fish.setTransform(NewTransform);
         }
 
+        double Platform::Graphics::GetDevicePixelRatio()
+        {
+            if(!CanvasClass::enabled()) return 1.0;
+            const QPaintDevice* device = CanvasClass::get()->painter().device();
+            return device ? device->devicePixelRatioF() : 1.0;
+        }
+
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
             auto OldCompositionMode = CanvasClass::get()->painter().compositionMode();
@@ -3256,6 +3264,39 @@
             return nullptr;
         }
 
+        id_depthscene Platform::Graphics::CreateDepthScene()
+        {
+            PlatformImpl::DepthSceneDevice* device = new(std::nothrow) QtDepthScene;
+            return reinterpret_cast<id_depthscene>(device);
+        }
+
+        void Platform::Graphics::RemoveDepthScene(id_depthscene scene)
+        {
+            PlatformImpl::Wrap::Graphics_RemoveDepthScene(scene);
+        }
+
+        bool Platform::Graphics::ResetDepthScene(id_depthscene scene, const rect128& viewportPx)
+        {
+            return PlatformImpl::Wrap::Graphics_ResetDepthScene(scene, viewportPx);
+        }
+
+        bool Platform::Graphics::AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            return PlatformImpl::Wrap::Graphics_AddDepthSceneImage(scene, staticOrder, image, src, dst, opacity);
+        }
+
+        void Platform::Graphics::DrawDepthScene(id_depthscene_read scene)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthScene(scene);
+        }
+
+        void Platform::Graphics::DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthSceneSprite(scene, afterStatic, image, src, dst, opacity);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
@@ -3361,6 +3402,13 @@
         {
             if(auto CurAnimate = (AnimateClass*) animate)
                 CurAnimate->Draw(x, y, width, height, degree);
+        }
+
+        id_image_read Platform::Animate::GetImage(id_animate animate)
+        {
+            if(auto CurAnimate = (AnimateClass*) animate)
+                return CurAnimate->GetImage();
+            return nullptr;
         }
 
         ////////////////////////////////////////////////////////////////////////////////

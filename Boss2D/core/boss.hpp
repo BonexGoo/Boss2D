@@ -324,6 +324,7 @@ namespace BOSS
     BOSS_DECLARE_ID(id_image_routine);
     BOSS_DECLARE_ID(id_texture);
     BOSS_DECLARE_ID(id_surface);
+    BOSS_DECLARE_ID(id_depthscene);
     BOSS_DECLARE_ID(id_animate);
     BOSS_DECLARE_ID(id_clock);
     BOSS_DECLARE_ID(id_camera);

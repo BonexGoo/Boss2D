@@ -1,6 +1,11 @@
 ﻿#include <boss.hpp>
 #include "boss_platform_impl.hpp"
 
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+
 #if BOSS_WINDOWS
     #include <shlobj.h>
     #pragma comment(lib, "uuid.lib")
@@ -61,6 +66,228 @@ namespace BOSS
 {
     namespace PlatformImpl
     {
+        // One opaque depth and the last layer of a sparse translucent ring for each pixel.
+        // Zero means empty in both fields, so the dense buffers can be cleared together.
+        struct DepthScene::Visibility
+        {
+            uint32 opaqueKey, topLayer;
+        };
+
+        struct DepthScene::Layer
+        {
+            uint32 key, color, next;
+        };
+
+        namespace
+        {
+            // Scale two pairs of 8-bit channels with round-to-nearest division by 255.
+            uint32 ScaleDepthColor(uint32 color, uint32 factor)
+            {
+                const uint32 mask = 0x00FF00FFu;
+                const uint32 rb = (color & mask) * factor + 0x00800080u;
+                const uint32 ag = ((color >> 8) & mask) * factor + 0x00800080u;
+                return (((rb + ((rb >> 8) & mask)) >> 8) & mask)
+                    | ((ag + ((ag >> 8) & mask)) & 0xFF00FF00u);
+            }
+
+            uint32 OpaqueDepthColor(uint32 color, uint32 alpha)
+            {
+                if(alpha == 255) return color;
+                const uint32 red = (((color >> 16) & 255) * 255 + alpha / 2) / alpha;
+                const uint32 green = (((color >> 8) & 255) * 255 + alpha / 2) / alpha;
+                const uint32 blue = ((color & 255) * 255 + alpha / 2) / alpha;
+                return 0xFF000000u | (red << 16) | (green << 8) | blue;
+            }
+
+            uint32 DepthColorOver(uint32 front, uint32 back)
+            {
+                return front + ScaleDepthColor(back, 255 - (front >> 24));
+            }
+        }
+
+        DepthScene::~DepthScene()
+        {
+            std::free(mPixels);
+            std::free(mVisibility);
+            std::free(mLayers);
+        }
+
+        bool DepthScene::Reset(const rect128& viewportPx)
+        {
+            const sint64 width = sint64(viewportPx.r) - viewportPx.l;
+            const sint64 height = sint64(viewportPx.b) - viewportPx.t;
+            const sint32 intMax = (std::numeric_limits<sint32>::max)();
+            if(width <= 0 || height <= 0 || width > intMax / sint32(sizeof(uint32)) || height > intMax)
+                return false;
+            const uint64 count = uint64(width) * uint64(height);
+            const uint64 maxBytes = (std::numeric_limits<std::ptrdiff_t>::max)();
+            if(count > maxBytes / sizeof(Visibility))
+                return false;
+            if(count == uint64(mWidth) * mHeight)
+            {
+                std::memset(mPixels, 0, size_t(count) * sizeof(*mPixels));
+                std::memset(mVisibility, 0, size_t(count) * sizeof(*mVisibility));
+            }
+            else
+            {
+                uint32* pixels = static_cast<uint32*>(std::calloc(size_t(count), sizeof(*mPixels)));
+                if(!pixels) return false;
+                Visibility* visibility = static_cast<Visibility*>(std::calloc(size_t(count), sizeof(*mVisibility)));
+                if(!visibility)
+                {
+                    std::free(pixels);
+                    return false;
+                }
+                std::free(mPixels);
+                std::free(mVisibility);
+                mPixels = pixels;
+                mVisibility = visibility;
+            }
+            mViewport = viewportPx;
+            mWidth = sint32(width);
+            mHeight = sint32(height);
+            mLastOrder = -1;
+            mLayerCount = 0;
+            return true;
+        }
+
+        bool DepthScene::ContainsRaster(sint32 x, sint32 y, sint32 width, sint32 height, sint32 stride) const
+        {
+            if(x < 0 || y < 0 || width <= 0 || height <= 0 || stride < width
+                || x > mWidth - width || y > mHeight - height)
+                return false;
+            const uint64 extent = uint64(height - 1) * stride + width;
+            return extent <= uint64((std::numeric_limits<std::ptrdiff_t>::max)()) / sizeof(uint32);
+        }
+
+        bool DepthScene::ReserveLayers(uint64 additional)
+        {
+            const uint64 required = uint64(mLayerCount) + additional;
+            if(required <= mLayerCapacity) return true;
+            // Handles are one-based uint32 indices. Check byte-size limits on 32-bit WASM too.
+            const uint64 maxBytes = (std::numeric_limits<std::ptrdiff_t>::max)();
+            const uint64 maxIndices = (std::numeric_limits<uint32>::max)();
+            const uint64 limit = (maxBytes / sizeof(Layer) < maxIndices) ? maxBytes / sizeof(Layer) : maxIndices;
+            if(required > limit) return false;
+            uint64 capacity = uint64(mLayerCapacity) + mLayerCapacity / 2 + 64;
+            if(capacity < required) capacity = required;
+            if(capacity > limit) capacity = limit;
+            Layer* layers = static_cast<Layer*>(std::realloc(mLayers, size_t(capacity) * sizeof(Layer)));
+            if(!layers) return false;
+            mLayers = layers;
+            mLayerCapacity = uint32(capacity);
+            return true;
+        }
+
+        bool DepthScene::Add(sint32 order, sint32 x, sint32 y, sint32 width, sint32 height,
+            const uint32* pixels, sint32 stride)
+        {
+            if(!mPixels || order < 0 || order < mLastOrder) return false;
+            // A clipped draw still participates in the caller's static submission order.
+            if(width == 0 && height == 0 && !pixels)
+            {
+                mLastOrder = order;
+                return true;
+            }
+            if(!pixels || !ContainsRaster(x, y, width, height, stride)) return false;
+
+            // Reserve before changing any pixel. An opaque floor needs no layer storage.
+            if(uint64(width) * height > mLayerCapacity - mLayerCount)
+            {
+                uint64 partial = 0;
+                for(sint32 row = 0; row < height; ++row)
+                {
+                    const uint32* src = pixels + size_t(row) * stride;
+                    for(sint32 col = 0; col < width; ++col)
+                    {
+                        const uint32 alpha = src[col] >> 24;
+                        if(alpha && alpha < 255) ++partial;
+                    }
+                }
+                if(!ReserveLayers(partial)) return false;
+            }
+
+            const uint32 key = uint32(order) + 1;
+            for(sint32 row = 0; row < height; ++row)
+            {
+                const size_t offset = size_t(y + row) * mWidth + x;
+                const uint32* src = pixels + size_t(row) * stride;
+                uint32* dst = mPixels + offset;
+                Visibility* visibility = mVisibility + offset;
+                for(sint32 col = 0; col < width; ++col)
+                {
+                    const uint32 color = src[col];
+                    const uint32 alpha = color >> 24;
+                    if(alpha == 255)
+                    {
+                        dst[col] = color;
+                        visibility[col] = {key, 0};
+                    }
+                    else if(alpha)
+                    {
+                        dst[col] = DepthColorOver(color, dst[col]);
+                        const uint32 tail = visibility[col].topLayer;
+                        const uint32 index = ++mLayerCount;
+                        const uint32 first = tail ? mLayers[tail - 1].next : index;
+                        mLayers[index - 1] = {key, color, first};
+                        if(tail) mLayers[tail - 1].next = index;
+                        visibility[col].topLayer = index;
+                    }
+                }
+            }
+            mLastOrder = order;
+            return true;
+        }
+
+        void DepthScene::Filter(sint32 afterStatic, sint32 x, sint32 y, sint32 width, sint32 height,
+            uint32* pixels, sint32 stride) const
+        {
+            if(!pixels || !ContainsRaster(x, y, width, height, stride)) return;
+            if(afterStatic >= mLastOrder) return;
+            const uint32 key = afterStatic < 0 ? 0 : uint32(afterStatic) + 1;
+            for(sint32 row = 0; row < height; ++row)
+            {
+                const Visibility* visibility = mVisibility + size_t(y + row) * mWidth + x;
+                uint32* dst = pixels + size_t(row) * stride;
+                for(sint32 col = 0; col < width; ++col)
+                {
+                    const uint32 sprite = dst[col];
+                    if(!sprite) continue;
+                    const Visibility& v = visibility[col];
+                    if(v.opaqueKey > key)
+                    {
+                        dst[col] = 0;
+                        continue;
+                    }
+                    const uint32 tail = v.topLayer;
+                    if(!tail || mLayers[tail - 1].key <= key) continue;
+                    const Layer& front = mLayers[tail - 1];
+                    uint32 index = front.next;
+                    while(mLayers[index - 1].key <= key) index = mLayers[index - 1].next;
+                    const uint32 alpha = sprite >> 24;
+                    if(index == tail)
+                    {
+                        // Preserve the sprite's coverage. Transparent gaps already contain the glass.
+                        dst[col] = ScaleDepthColor(front.color, alpha)
+                            + ScaleDepthColor(sprite, 255 - (front.color >> 24));
+                    }
+                    else
+                    {
+                        // Replay each layer once in its original painter order. Premultiply only
+                        // at the end so a soft sprite edge isn't quantized once per window.
+                        uint32 color = OpaqueDepthColor(sprite, alpha);
+                        while(index != tail)
+                        {
+                            const Layer& layer = mLayers[index - 1];
+                            color = DepthColorOver(layer.color, color);
+                            index = layer.next;
+                        }
+                        dst[col] = ScaleDepthColor(DepthColorOver(front.color, color), alpha);
+                    }
+                }
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // 일반함수와 전역인스턴스
         ////////////////////////////////////////////////////////////////////////////////
@@ -1334,6 +1561,37 @@ namespace BOSS
                 #else
                     return false;
                 #endif
+            }
+
+            void Graphics_RemoveDepthScene(id_depthscene scene)
+            {
+                delete reinterpret_cast<DepthSceneDevice*>(scene);
+            }
+
+            bool Graphics_ResetDepthScene(id_depthscene scene, const rect128& viewportPx)
+            {
+                auto* Device = reinterpret_cast<DepthSceneDevice*>(scene);
+                return Device && Device->Reset(viewportPx);
+            }
+
+            bool Graphics_AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity)
+            {
+                auto* Device = reinterpret_cast<DepthSceneDevice*>(scene);
+                return Device && image && Device->AddImage(staticOrder, image, src, dst, opacity);
+            }
+
+            void Graphics_DrawDepthScene(id_depthscene_read scene)
+            {
+                auto* Device = reinterpret_cast<const DepthSceneDevice*>(scene);
+                if(Device) Device->Draw();
+            }
+
+            void Graphics_DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+                const rect128f& src, const rect128f& dst, float opacity)
+            {
+                auto* Device = reinterpret_cast<const DepthSceneDevice*>(scene);
+                if(Device && image) Device->DrawSprite(afterStatic, image, src, dst, opacity);
             }
 
             void File_SetAttributeHidden(wchars itemname)

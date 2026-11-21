@@ -282,6 +282,182 @@
         ShaderRole mShader;
     };
 
+    // Qt owns the sampled images and the active paint target. Pixel depth and
+    // translucent-layer composition are shared by all paint engines.
+    class QtDepthScene : public BOSS::PlatformImpl::DepthSceneDevice
+    {
+    public:
+        bool Reset(const rect128& viewportPx) override
+        {
+            if(!mScene.Reset(viewportPx)) return false;
+            mSmooth = CanvasClass::get()->smooth();
+            mBackgroundTiles.clear();
+            return true;
+        }
+
+        bool AddImage(sint32 staticOrder, id_image_read image, const rect128f& src,
+            const rect128f& dst, float opacity) override
+        {
+            QRect bounds;
+            QImage pixels;
+            if(!Rasterize(image, src, dst, opacity, bounds, pixels)) return false;
+            if(pixels.isNull()) return mScene.Add(staticOrder, 0, 0, 0, 0, nullptr, 0);
+            if(!mScene.Add(staticOrder, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
+                reinterpret_cast<const uint32*>(pixels.constBits()), pixels.bytesPerLine() / sizeof(uint32)))
+                return false;
+            mBackgroundTiles.clear();
+            return true;
+        }
+
+        void Draw() const override
+        {
+            if(!CanvasClass::enabled() || !mScene.Pixels()) return;
+            const rect128& viewport = mScene.Viewport();
+            const QImage view(reinterpret_cast<const uchar*>(mScene.Pixels()),
+                viewport.r - viewport.l, viewport.b - viewport.t, QImage::Format_ARGB32_Premultiplied);
+            DrawPixels(view, viewport.l, viewport.t, true);
+        }
+
+        void DrawSprite(sint32 afterStatic, id_image_read image, const rect128f& src,
+            const rect128f& dst, float opacity) const override
+        {
+            if(!CanvasClass::enabled()) return;
+            QRect bounds;
+            QImage pixels;
+            if(!Rasterize(image, src, dst, opacity, bounds, pixels) || pixels.isNull()) return;
+            mScene.Filter(afterStatic, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
+                reinterpret_cast<uint32*>(pixels.bits()), pixels.bytesPerLine() / sizeof(uint32));
+            const rect128& viewport = mScene.Viewport();
+            DrawPixels(pixels, viewport.l + bounds.x(), viewport.t + bounds.y(), false);
+        }
+
+    private:
+        static QRectF ImageRect(const rect128f& r)
+        {
+            if(!qIsFinite(r.l) || !qIsFinite(r.t) || !qIsFinite(r.r) || !qIsFinite(r.b)
+                || r.r <= r.l || r.b <= r.t) return QRectF();
+            return QRectF(QPointF(r.l, r.t), QPointF(r.r, r.b));
+        }
+
+        bool Rasterize(id_image_read image, const rect128f& src, const rect128f& dst,
+            float opacity, QRect& bounds, QImage& pixels) const
+        {
+            if(!image || !mScene.Pixels() || !qIsFinite(opacity)) return false;
+            const QPixmap& pixmap = *reinterpret_cast<const QPixmap*>(image);
+            const QRectF source = ImageRect(src);
+            const QRectF target = ImageRect(dst);
+            const rect128& viewport = mScene.Viewport();
+            const QRectF visible = target.intersected(QRectF(0, 0,
+                viewport.r - viewport.l, viewport.b - viewport.t));
+            if(pixmap.isNull() || source.isEmpty() || target.isEmpty()) return false;
+            if(opacity <= 0 || visible.isEmpty() || !source.intersects(QRectF(pixmap.rect()))) return true;
+
+            // Allocate only the visible area. Preserve the full source rectangle
+            // so the smooth sampler can read neighbours just beyond the clip.
+            bounds = visible.toAlignedRect();
+            pixels = QImage(bounds.size(), QImage::Format_ARGB32_Premultiplied);
+            if(pixels.isNull()) return false;
+            pixels.fill(Qt::transparent);
+            {
+                QPainter raster(&pixels);
+                if(!raster.isActive()) return false;
+                raster.setRenderHint(QPainter::SmoothPixmapTransform, mSmooth);
+                raster.setOpacity(qMin(1.0f, opacity));
+                raster.drawPixmap(target.translated(-bounds.x(), -bounds.y()), pixmap, source);
+            }
+            return true;
+        }
+
+        struct PixmapTile
+        {
+            QPoint offset;
+            QPixmap pixmap;
+        };
+
+        void DrawGLPixels(QPainter& painter, const QImage& pixels, sint32 x, sint32 y,
+            bool background) const
+        {
+            QOpenGLContext* context = QOpenGLContext::currentContext();
+            if(!context) return;
+            if(mContext != context)
+            {
+                mBackgroundTiles.clear();
+                mContext = context;
+                context->functions()->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mTextureLimit);
+            }
+            if(mTextureLimit <= 0) return;
+
+            QList<PixmapTile> spriteTiles;
+            QList<PixmapTile>& tiles = background ? mBackgroundTiles : spriteTiles;
+            if(tiles.isEmpty())
+            {
+                // Only split images that exceed the active device's texture limit.
+                for(int top = 0; top < pixels.height();)
+                {
+                    const int h = qMin(mTextureLimit, pixels.height() - top);
+                    for(int left = 0; left < pixels.width();)
+                    {
+                        const int w = qMin(mTextureLimit, pixels.width() - left);
+                        const QRect tile(left, top, w, h);
+                        // The static view borrows DepthScene memory. Give its retained
+                        // pixmap an owning copy; ordinary sprites can share their raster.
+                        QImage part = (!background && tile == pixels.rect()) ? pixels : pixels.copy(tile);
+                        QPixmap pixmap = QPixmap::fromImage(std::move(part));
+                        if(pixmap.isNull())
+                        {
+                            tiles.clear();
+                            return;
+                        }
+                        tiles.append({tile.topLeft(), std::move(pixmap)});
+                        left += w;
+                    }
+                    top += h;
+                }
+            }
+
+            // Qt 6.8's GL drawImage may resize non-power-of-two textures even for a
+            // 1:1 draw on WebGL. The fragment path uploads the native pixmap and
+            // uses clamp-to-edge, preserving texels and the cached background key.
+            for(const PixmapTile& tile : std::as_const(tiles))
+            {
+                const QRectF src(tile.pixmap.rect());
+                const QPointF center = QPointF(x, y) + tile.offset + src.center();
+                const auto fragment = QPainter::PixmapFragment::create(center, src);
+                painter.drawPixmapFragments(&fragment, 1, tile.pixmap);
+            }
+        }
+
+        void DrawPixels(const QImage& pixels, sint32 x, sint32 y, bool background) const
+        {
+            if(pixels.isNull()) return;
+            QPainter& painter = CanvasClass::get()->painter();
+            if(!painter.isActive()) return;
+            painter.save();
+            painter.resetTransform();
+            // Coordinates already include the view zoom and device pixel ratio.
+            // Keep any QWidget backing-store origin and the active device clip.
+            const qreal scale = 1.0 / painter.device()->devicePixelRatioF();
+            painter.scale(scale, scale);
+            painter.setOpacity(1.0);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
+            if(painter.paintEngine()->type() == QPaintEngine::OpenGL2)
+                DrawGLPixels(painter, pixels, x, y, background);
+            else
+            {
+                if(background) mBackgroundTiles.clear();
+                painter.drawImage(QPointF(x, y), pixels);
+            }
+            painter.restore();
+        }
+
+        BOSS::PlatformImpl::DepthScene mScene;
+        mutable QList<PixmapTile> mBackgroundTiles;
+        mutable QPointer<QOpenGLContext> mContext;
+        mutable GLint mTextureLimit = 0;
+        bool mSmooth = true;
+    };
+
     class MainView : public QWidget
     {
         Q_OBJECT
@@ -3097,6 +3273,7 @@
         virtual float Seek(float sec, bool loop) = 0;
         virtual sint32 Next(bool loop) = 0;
         virtual void Draw(float x, float y, float width, float height, float degree) = 0;
+        virtual id_image_read GetImage() {return nullptr;}
     };
 
     class AnimateLottieClass : public AnimateClass
@@ -3474,26 +3651,42 @@
 
         void Draw(float x, float y, float width, float height, float degree) override
         {
-            if(mFrameCount <= 0 || !CanvasClass::enabled()) return;
-            if(mCurFrame < 0 || mFrameCount <= mCurFrame) return;
-
-            #if BOSS_WASM
-                if(!ComposeUntil(mCurFrame)) return;
-                const QImage& Image = mRenderedImage;
-            #else
-                const QImage& Image = mFrames[mCurFrame];
-            #endif
-            if(Image.isNull()) return;
+            if(!CanvasClass::enabled()) return;
+            const QImage* Image = CurrentImage();
+            if(!Image || Image->isNull()) return;
 
             QPainter& Painter = CanvasClass::get()->painter();
             Painter.save();
             Painter.translate(x + width / 2.0f, y + height / 2.0f);
             Painter.rotate(degree);
-            Painter.drawImage(QRectF(-width / 2.0f, -height / 2.0f, width, height), Image);
+            Painter.drawImage(QRectF(-width / 2.0f, -height / 2.0f, width, height), *Image);
             Painter.restore();
         }
 
+        id_image_read GetImage() override
+        {
+            if(mPixmapFrame != mCurFrame)
+            {
+                const QImage* Image = CurrentImage();
+                if(!Image || Image->isNull()) return nullptr;
+                mFramePixmap = QPixmap::fromImage(*Image);
+                if(mFramePixmap.isNull()) return nullptr;
+                mPixmapFrame = mCurFrame;
+            }
+            return reinterpret_cast<id_image_read>(&mFramePixmap);
+        }
+
     private:
+        const QImage* CurrentImage()
+        {
+            if(mCurFrame < 0 || mFrameCount <= mCurFrame) return nullptr;
+            #if BOSS_WASM
+                return ComposeUntil(mCurFrame)? &mRenderedImage : nullptr;
+            #else
+                return &mFrames[mCurFrame];
+            #endif
+        }
+
         bool OpenSource(const QByteArray& source, chars method, chars filename)
         {
             if(source.isEmpty())
@@ -3684,6 +3877,8 @@
             #else
                 mFrames.clear();
             #endif
+            mFramePixmap = QPixmap();
+            mPixmapFrame = -1;
             mDelays.clear();
             mWidth = 0;
             mHeight = 0;
@@ -3885,6 +4080,8 @@
         #else
             std::vector<QImage> mFrames;
         #endif
+        QPixmap mFramePixmap;
+        sint32 mPixmapFrame {-1};
         QPointer<QNetworkReply> mUrlReply;
         std::vector<sint32> mDelays;
         sint32 mWidth {0};

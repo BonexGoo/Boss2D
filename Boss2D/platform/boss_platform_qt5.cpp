@@ -2017,6 +2017,17 @@
             }
         }
 
+        double Platform::Graphics::GetDevicePixelRatio()
+        {
+            if(!CanvasClass::enabled()) return 1.0;
+            const QPaintDevice* device = CanvasClass::get()->painter().device();
+            #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+                return device ? device->devicePixelRatioF() : 1.0;
+            #else
+                return device ? device->devicePixelRatio() : 1.0;
+            #endif
+        }
+
         void Platform::Graphics::EraseRect(float x, float y, float w, float h)
         {
             BOSS_ASSERT("호출시점이 적절하지 않습니다", CanvasClass::get());
@@ -3396,6 +3407,38 @@
             return SurfaceImage.GetBitmap();
         }
 
+        id_depthscene Platform::Graphics::CreateDepthScene()
+        {
+            return nullptr;
+        }
+
+        void Platform::Graphics::RemoveDepthScene(id_depthscene scene)
+        {
+            PlatformImpl::Wrap::Graphics_RemoveDepthScene(scene);
+        }
+
+        bool Platform::Graphics::ResetDepthScene(id_depthscene scene, const rect128& viewportPx)
+        {
+            return PlatformImpl::Wrap::Graphics_ResetDepthScene(scene, viewportPx);
+        }
+
+        bool Platform::Graphics::AddDepthSceneImage(id_depthscene scene, sint32 staticOrder, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            return PlatformImpl::Wrap::Graphics_AddDepthSceneImage(scene, staticOrder, image, src, dst, opacity);
+        }
+
+        void Platform::Graphics::DrawDepthScene(id_depthscene_read scene)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthScene(scene);
+        }
+
+        void Platform::Graphics::DrawDepthSceneSprite(id_depthscene_read scene, sint32 afterStatic, id_image_read image,
+            const rect128f& src, const rect128f& dst, float opacity)
+        {
+            PlatformImpl::Wrap::Graphics_DrawDepthSceneSprite(scene, afterStatic, image, src, dst, opacity);
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // ANIMATE
         ////////////////////////////////////////////////////////////////////////////////
@@ -3473,6 +3516,11 @@
         void Platform::Animate::Draw(id_animate animate, float x, float y, float width, float height, float degree)
         {
             BOSS_ASSERT("Further development is needed.", false);
+        }
+
+        id_image_read Platform::Animate::GetImage(id_animate animate)
+        {
+            return nullptr;
         }
 
         ////////////////////////////////////////////////////////////////////////////////
