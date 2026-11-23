@@ -11,6 +11,18 @@ namespace BOSS
     class Asset
     {
     public:
+        /// @brief 웹어셋의 기준 URL설정 및 다운로드캐시 초기화(BOSS_NEED_WEBFILES_ASSET이 필요)
+        /// @param url : 기준 디렉토리 URL(빈 값이면 WASM 메인스레드는 현재 페이지, PC는 기존 로컬어셋)
+        /// @details WASM은 동기식 XHR을 사용하며, 쓰기캐시와 열린 어셋은 유지됨
+        static void SetWebFilesUrl(chars url = nullptr);
+
+        /// @brief ToText()를 제공하는 값객체로 웹어셋 URL설정
+        template<typename TYPE>
+        static auto SetWebFilesUrl(const TYPE& url) -> decltype(url.ToText(), void())
+        {
+            SetWebFilesUrl(url.ToText());
+        }
+
         /// @brief 임베디드어셋을 위한 리빌드(BOSS_NEED_EMBEDDED_ASSET이 필요)
         /// @return 리빌드 실시여부
         static bool RebuildForEmbedded();
@@ -122,6 +134,7 @@ namespace BOSS
         static void Release(id_assetpath assetpath);
 
         /// @brief 기존 어셋패스에서 파일 검색
+        /// @details 웹어셋은 다운로드된 파일만 열거하며, 서버 디렉토리 전체를 검색하지 않음
         /// @param assetpath : 어셋패스ID
         /// @param cb : 콜백함수
         /// @param data : 콜백함수에 전달할 데이터

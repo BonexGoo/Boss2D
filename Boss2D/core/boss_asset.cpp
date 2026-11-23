@@ -2,7 +2,26 @@
 #include "boss_asset.hpp"
 
 #include <platform/boss_platform.hpp>
-#include <boss_assets.hpp>
+#if BOSS_NEED_EMBEDDED_ASSET
+    #include <boss_assets.hpp>
+#elif BOSS_NEED_EMBEDDED_CACHE
+    struct EmbeddedFile
+    {
+        String mPath;
+        buffer mBuffer = nullptr;
+        bytes* mPages = nullptr;
+        uint64 mSize = 0;
+        uint64 mCTime = 0;
+        uint64 mATime = 0;
+        uint64 mMTime = 0;
+        ~EmbeddedFile()
+        {
+            Buffer::Free(mBuffer);
+            delete[] mPages;
+        }
+    };
+    static Map<EmbeddedFile> gEmbeddedCaches;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetClass
@@ -18,6 +37,407 @@ public:
     virtual sint32 Write(bytes data, const sint32 size) = 0;
     virtual sint32 Skip(const sint32 size) = 0;
 };
+
+#if BOSS_NEED_WEBFILES_ASSET
+    #include <chrono>
+    #include <cstdlib>
+    #include <map>
+    #include <memory>
+    #include <mutex>
+    #include <string>
+    #include <vector>
+
+    #if BOSS_WASM
+        #include <emscripten.h>
+
+        EM_JS(char*, BossWebFiles_ResolveUrl, (const char* base, const char* path), {
+            try {
+                const page = typeof window !== 'undefined' ? window.location.href : undefined;
+                const value = UTF8ToString(base);
+                if(!value && !page) return 0;
+                const root = new URL(value || './', page);
+                if(root.protocol !== 'http:' && root.protocol !== 'https:') return 0;
+                root.search = '';
+                root.hash = '';
+                if(!root.pathname.endsWith('/')) root.pathname += '/';
+                const url = new URL(UTF8ToString(path), root).href;
+                const length = lengthBytesUTF8(url) + 1;
+                const result = _malloc(length);
+                if(result) stringToUTF8(url, result, length);
+                return result;
+            } catch(error) {
+                console.warn('BOSS web asset URL:', error);
+                return 0;
+            }
+        });
+
+        // 브라우저 메인스레드에서도 호출 스택을 중단하지 않는 동기식 다운로드.
+        // 텍스트는 UTF-8+BOM을 유지하고 그 외 파일은 x-user-defined로 바이너리를 복원한다.
+        // 동기 XHR은 다운로드 중 브라우저 UI를 차단한다.
+        EM_JS(void*, BossWebFiles_FetchSync, (const char* url, int* size, int* status), {
+            try {
+                const path = UTF8ToString(url);
+                const isUtf8Text = /\.(zay|json)(?:[?#]|$)/i.test(path);
+                const request = new XMLHttpRequest();
+                request.open('GET', path, false);
+                request.overrideMimeType(isUtf8Text ?
+                    'text/plain; charset=utf-8' : 'text/plain; charset=x-user-defined');
+                request.send(null);
+                HEAP32[status >> 2] = request.status;
+                if(request.status < 200 || request.status >= 300 || request.status === 206)
+                    return 0;
+
+                const content = request.responseText;
+                let data;
+                if(isUtf8Text) {
+                    // UTF-8 텍스트는 반드시 BOM을 포함한 바이트로 반환한다.
+                    // XHR은 BOM을 제거할 수 있으므로 재인코딩 후 복원한다.
+                    const encoded = new TextEncoder().encode(content);
+                    const hasBom = encoded.length >= 3 && encoded[0] === 0xEF &&
+                        encoded[1] === 0xBB && encoded[2] === 0xBF;
+                    if(hasBom) data = encoded;
+                    else {
+                        data = new Uint8Array(encoded.length + 3);
+                        data.set([0xEF, 0xBB, 0xBF]);
+                        data.set(encoded, 3);
+                    }
+                }
+                else {
+                    // 이미지/음원/폰트 등의 임의 바이트는 문자 디코딩하지 않는다.
+                    data = new Uint8Array(content.length);
+                    for(let i = 0, len = content.length; i < len; ++i)
+                        data[i] = content.charCodeAt(i) & 0xFF;
+                }
+                if(data.length > 0x7fffffff) return 0;
+                const result = _malloc(Math.max(1, data.length));
+                if(!result) return 0;
+                HEAPU8.set(data, result);
+                HEAP32[size >> 2] = data.length;
+                return result;
+            } catch(error) {
+                console.warn('BOSS sync web asset download:', error);
+                return 0;
+            }
+        });
+    #elif defined(BOSS_PLATFORM_QT5) || defined(BOSS_PLATFORM_QT6)
+        #include <QByteArray>
+        #include <QEventLoop>
+        #include <QNetworkAccessManager>
+        #include <QNetworkReply>
+        #include <QNetworkRequest>
+        #include <QThread>
+        #include <QTimer>
+        #include <QUrl>
+    #else
+        #error BOSS_NEED_WEBFILES_ASSET requires Emscripten or Qt5/Qt6
+    #endif
+
+    struct AssetWebFileData
+    {
+        AssetWebFileData() : mData(nullptr), mSize(0) {}
+        ~AssetWebFileData() {std::free(mData);}
+        std::string mPath;
+        uint08* mData;
+        sint32 mSize;
+    };
+    typedef std::shared_ptr<const AssetWebFileData> AssetWebFilePtr;
+
+    #if BOSS_WASM && !defined(__EMSCRIPTEN_PTHREADS__)
+        struct AssetWebMutex
+        {
+            void lock() {}
+            void unlock() {}
+        };
+    #else
+        typedef std::mutex AssetWebMutex;
+    #endif
+
+    struct AssetWebFilesState
+    {
+        AssetWebFilesState() : mGeneration(0) {}
+        AssetWebMutex mMutex;
+        std::string mUrl;
+        uint64 mGeneration;
+        std::map<std::string, AssetWebFilePtr> mFiles;
+        std::map<std::string, std::chrono::steady_clock::time_point> mMissing;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetWebReadFileClass
+    class AssetWebReadFileClass : public AssetClass
+    {
+    public:
+        AssetWebReadFileClass(AssetWebFilePtr file) : mFile(file), mPos(0) {}
+        ~AssetWebReadFileClass() override {}
+
+    public:
+        static void SetUrl(chars url)
+        {
+            std::string NewUrl = url ? url : "";
+            const auto First = NewUrl.find_first_not_of(" \t\r\n");
+            if(First == std::string::npos) NewUrl.clear();
+            else NewUrl = NewUrl.substr(First, NewUrl.find_last_not_of(" \t\r\n") - First + 1);
+            const auto Suffix = NewUrl.find_first_of("?#");
+            if(Suffix != std::string::npos) NewUrl.erase(Suffix);
+            if(!NewUrl.empty() && NewUrl.back() != '/') NewUrl += '/';
+
+            auto& State = ST();
+            std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+            State.mUrl = NewUrl;
+            ++State.mGeneration;
+            State.mFiles.clear();
+            State.mMissing.clear();
+        }
+        static bool Enabled()
+        {
+            #if BOSS_WASM
+                return true;
+            #else
+                auto& State = ST();
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                return !State.mUrl.empty();
+            #endif
+        }
+        static AssetClass* Create(chars pathname)
+        {
+            if(auto File = Match(pathname))
+                return new AssetWebReadFileClass(File);
+            return nullptr;
+        }
+        static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+        {
+            if(auto File = Match(pathname))
+            {
+                if(size) *size = File->mSize;
+                if(ctime) *ctime = 0;
+                if(atime) *atime = 0;
+                if(mtime) *mtime = 0;
+                return true;
+            }
+            return false;
+        }
+        static void Search(chars pathname, Platform::File::SearchCB cb, payload data)
+        {
+            if(!cb) return;
+            bool Valid = false;
+            const std::string Path = NormalizePath(pathname, true, &Valid);
+            if(!Valid) return;
+            std::vector<std::string> Names;
+            {
+                auto& State = ST();
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                for(const auto& Item : State.mFiles)
+                {
+                    const std::string& Name = Item.second->mPath;
+                    if(Name.compare(0, Path.size(), Path) == 0 &&
+                        Name.find('/', Path.size()) == std::string::npos)
+                        Names.push_back(Name.substr(Path.size()));
+                }
+            }
+            for(const auto& Name : Names)
+                cb(Name.c_str(), data);
+        }
+
+    public:
+        sint32 Size() override {return mFile->mSize;}
+        sint32 Read(uint08* data, const sint32 size) override
+        {
+            if(!data || size <= 0) return 0;
+            const sint32 ReadSize = Math::Min(size, mFile->mSize - mPos);
+            if(0 < ReadSize)
+            {
+                Memory::Copy(data, mFile->mData + mPos, ReadSize);
+                mPos += ReadSize;
+            }
+            return ReadSize;
+        }
+        sint32 Write(bytes data, const sint32 size) override {return 0;}
+        sint32 Skip(const sint32 size) override
+        {
+            const sint64 NewPos = (sint64) mPos + size;
+            mPos = (NewPos < 0)? 0 : ((mFile->mSize < NewPos)? mFile->mSize : (sint32) NewPos);
+            return mPos;
+        }
+
+    private:
+        static AssetWebFilesState& ST()
+        {
+            static AssetWebFilesState State;
+            return State;
+        }
+        static std::string NormalizePath(chars pathname, bool directory = false, bool* valid = nullptr)
+        {
+            if(valid) *valid = true;
+            std::string Path = pathname ? pathname : "";
+            for(auto& Ch : Path) if(Ch == '\\') Ch = '/';
+            if(Path.compare(0, 8, "assets:/") == 0) Path.erase(0, 8);
+            if(Path.find(':') != std::string::npos)
+            {
+                if(valid) *valid = false;
+                return "";
+            }
+            std::vector<std::string> Parts;
+            for(size_t Pos = 0; Pos < Path.size();)
+            {
+                const auto End = Path.find('/', Pos);
+                const auto Part = Path.substr(Pos, (End == std::string::npos)? End : End - Pos);
+                if(Part == "..")
+                {
+                    if(Parts.empty())
+                    {
+                        if(valid) *valid = false;
+                        return "";
+                    }
+                    Parts.pop_back();
+                }
+                else if(!Part.empty() && Part != ".") Parts.push_back(Part);
+                if(End == std::string::npos) break;
+                Pos = End + 1;
+            }
+            Path.clear();
+            for(const auto& Part : Parts)
+            {
+                if(!Path.empty()) Path += '/';
+                Path += Part;
+            }
+            if(directory && !Path.empty()) Path += '/';
+            return Path;
+        }
+        static std::string EncodePath(const std::string& path)
+        {
+            static const char Hex[] = "0123456789ABCDEF";
+            std::string Result;
+            for(const unsigned char Ch : path)
+            {
+                if(('a' <= Ch && Ch <= 'z') || ('A' <= Ch && Ch <= 'Z') ||
+                    ('0' <= Ch && Ch <= '9') || Ch == '/' || Ch == '-' || Ch == '_' || Ch == '.' || Ch == '~')
+                    Result += (char) Ch;
+                else
+                {
+                    Result += '%';
+                    Result += Hex[Ch >> 4];
+                    Result += Hex[Ch & 15];
+                }
+            }
+            return Result;
+        }
+        static std::string ResolveUrl(const std::string& base, const std::string& path)
+        {
+            const std::string Encoded = EncodePath(path);
+            #if BOSS_WASM
+                if(char* Url = BossWebFiles_ResolveUrl(base.c_str(), Encoded.c_str()))
+                {
+                    const std::string Result = Url;
+                    std::free(Url);
+                    return Result;
+                }
+                return "";
+            #else
+                const QUrl Root(QString::fromUtf8(base.c_str()));
+                if(!Root.isValid() || Root.isRelative() || Root.host().isEmpty() ||
+                    (Root.scheme() != "http" && Root.scheme() != "https")) return "";
+                return Root.resolved(QUrl::fromEncoded(QByteArray(Encoded.c_str()))).toEncoded().toStdString();
+            #endif
+        }
+        static bool Download(const std::string& url, AssetWebFileData& file, sint32& status)
+        {
+            #if BOSS_WASM
+                file.mData = (uint08*) BossWebFiles_FetchSync(url.c_str(), &file.mSize, &status);
+            #else
+                auto Worker = QThread::create([&]()
+                {
+                    QNetworkAccessManager Manager;
+                    QNetworkRequest Request(QUrl::fromEncoded(QByteArray(url.c_str())));
+                    Request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+                    Request.setMaximumRedirectsAllowed(5);
+                    QEventLoop Loop;
+                    QTimer Timer;
+                    Timer.setSingleShot(true);
+                    QNetworkReply* Reply = Manager.get(Request);
+                    QObject::connect(Reply, &QNetworkReply::finished, &Loop, &QEventLoop::quit);
+                    QObject::connect(&Timer, &QTimer::timeout, Reply, &QNetworkReply::abort);
+                    Timer.start(30000);
+                    if(!Reply->isFinished()) Loop.exec();
+                    Timer.stop();
+                    status = Reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+                    if(Reply->error() == QNetworkReply::NoError && 200 <= status && status < 300 && status != 206)
+                    {
+                        const QByteArray Data = Reply->readAll();
+                        if(Data.size() <= 0x7fffffff)
+                        {
+                            file.mSize = (sint32) Data.size();
+                            file.mData = (uint08*) std::malloc(file.mSize ? file.mSize : 1);
+                            if(file.mData && 0 < file.mSize)
+                                Memory::Copy(file.mData, Data.constData(), file.mSize);
+                        }
+                    }
+                    delete Reply;
+                });
+                Worker->start();
+                Worker->wait();
+                delete Worker;
+            #endif
+            return file.mData != nullptr;
+        }
+        static AssetWebFilePtr Match(chars pathname)
+        {
+            const std::string Path = NormalizePath(pathname);
+            if(Path.empty()) return nullptr;
+            auto& State = ST();
+            std::string Base;
+            uint64 Generation;
+            {
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                Base = State.mUrl;
+                Generation = State.mGeneration;
+            }
+            const std::string Url = ResolveUrl(Base, Path);
+            if(Url.empty()) return nullptr;
+            {
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                const auto Found = State.mFiles.find(Url);
+                if(Found != State.mFiles.end()) return Found->second;
+                const auto Missing = State.mMissing.find(Url);
+                if(Missing != State.mMissing.end())
+                {
+                    if(std::chrono::steady_clock::now() < Missing->second) return nullptr;
+                    State.mMissing.erase(Missing);
+                }
+            }
+
+            auto File = std::make_shared<AssetWebFileData>();
+            File->mPath = Path;
+            sint32 Status = 0;
+            if(!Download(Url, *File, Status))
+            {
+                // 웹 원본에 없는 파일은 정상적인 존재검사 결과이며, 잠시 보관한다.
+                if(Status == 404 || Status == 410)
+                {
+                    std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                    if(Generation == State.mGeneration)
+                        State.mMissing[Url] = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+                }
+                if(Status != 404 && Status != 410)
+                    BOSS_TRACE("Web asset load failed (%d): %s", Status, Url.c_str());
+                return nullptr;
+            }
+            {
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                if(Generation == State.mGeneration)
+                {
+                    State.mMissing.erase(Url);
+                    return State.mFiles.emplace(Url, File).first->second;
+                }
+            }
+            return File;
+        }
+
+    private:
+        AssetWebFilePtr mFile;
+        sint32 mPos;
+    };
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetFileClass
@@ -113,7 +533,7 @@ public:
 };
 
 #define BOSS_COMPILER_DATA_LENGTH_MAX 40000
-#if BOSS_NEED_EMBEDDED_ASSET
+#if BOSS_NEED_EMBEDDED_ASSET || BOSS_NEED_EMBEDDED_CACHE
     ////////////////////////////////////////////////////////////////////////////////
     // AssetEmbeddedFileClass
     class AssetEmbeddedFileClass : public AssetClass
@@ -129,11 +549,14 @@ public:
         }
         sint32 Skip(const sint32 size) override
         {
-            m_pos = Math::Clamp(m_pos + size, 0, m_embedded_file->mSize);
+            const sint64 NewPos = (sint64) m_pos + size;
+            m_pos = (NewPos < 0)? 0 : ((m_embedded_file->mSize < (uint64) NewPos)?
+                (sint32) m_embedded_file->mSize : (sint32) NewPos);
             return m_pos;
         }
         static void SearchAsset(chars pathname, Platform::File::SearchCB cb, payload data)
         {
+            #if BOSS_NEED_EMBEDDED_ASSET
             const sint32 PathLen = boss_strlen(pathname);
             for(sint32 i = 0; i < BOSS_EMBEDDED_ASSET_COUNT; ++i)
             {
@@ -145,6 +568,7 @@ public:
                         cb(FileName, data);
                 }
             }
+            #endif
         }
         static void SearchCache(chars pathname, Platform::File::SearchCB cb, payload data)
         {
@@ -174,6 +598,7 @@ public:
     protected:
         static EmbeddedFile* MatchAsset(chars pathname)
         {
+            #if BOSS_NEED_EMBEDDED_ASSET
             // 이진탐색
             const String PathName = String(pathname).Lower();
             sint32 iLow = 0, iHigh = BOSS_EMBEDDED_ASSET_COUNT - 1;
@@ -187,6 +612,7 @@ public:
                     iHigh = i - 1;
                 else iLow = i + 1;
             }
+            #endif
             return nullptr;
         }
         static EmbeddedFile* MatchCache(chars pathname, bool forced)
@@ -269,6 +695,7 @@ public:
     public:
         sint32 Read(uint08* data, const sint32 size) override
         {
+            if(!data || size <= 0 || m_embedded_file->mSize <= (uint64) m_pos) return 0;
             // 포커스정보 갱신
             sint32 ReadSize = Math::Min(size, m_embedded_file->mSize - m_pos);
             sint32 PageIndex = m_pos / BOSS_COMPILER_DATA_LENGTH_MAX;
@@ -303,6 +730,7 @@ public:
         {
             if(auto OneFile = MatchCache(pathname, true))
             {
+                OneFile->mSize = 0;
                 auto Result = new AssetEmbeddedWriteFileClass();
                 Result->m_embedded_file = OneFile;
                 return Result;
@@ -359,10 +787,10 @@ public:
                 return true;
         return false;
     }
-    id_asset_read OpenForRead(chars filename) const
+    id_asset_read OpenForRead(chars filename, bool originalonly) const
     {
         for(sint32 i = 0, iend = m_pathes.Count(); i < iend; ++i)
-            if(auto NewFile = Asset::OpenForRead(m_pathes[i] + filename))
+            if(auto NewFile = Asset::OpenForRead(m_pathes[i] + filename, nullptr, originalonly))
                 return NewFile;
         return nullptr;
     }
@@ -388,9 +816,13 @@ public:
             auto SearchCB = [](chars itemname, payload data)->void
             {
                 Map<String>& Collector = *((Map<String>*) data);
-                const String LowerName = String(itemname).Lower();
-                if(!Collector.Access(LowerName))
-                    Collector(LowerName) = itemname;
+                #if BOSS_NEED_WEBFILES_ASSET
+                    const String Key = AssetWebReadFileClass::Enabled()? String(itemname) : String(itemname).Lower();
+                #else
+                    const String Key = String(itemname).Lower();
+                #endif
+                if(!Collector.Access(Key))
+                    Collector(Key) = itemname;
             };
 
             if(!originalonly)
@@ -403,19 +835,25 @@ public:
                 #endif
             }
 
-            #if BOSS_NEED_EMBEDDED_ASSET
-                AssetEmbeddedFileClass::SearchAsset(m_pathes[i], SearchCB, (payload) &Collector);
-            #else
-                Platform::File::Search(Platform::File::RootForAssets() + m_pathes[i] + "*",
-                    SearchCB, (payload) &Collector, false, true);
+            #if BOSS_NEED_WEBFILES_ASSET
+                if(AssetWebReadFileClass::Enabled())
+                    AssetWebReadFileClass::Search(m_pathes[i], SearchCB, (payload) &Collector);
+                else
             #endif
+            {
+                #if BOSS_NEED_EMBEDDED_ASSET
+                    AssetEmbeddedFileClass::SearchAsset(m_pathes[i], SearchCB, (payload) &Collector);
+                #else
+                    Platform::File::Search(Platform::File::RootForAssets() + m_pathes[i] + "*",
+                        SearchCB, (payload) &Collector, false, true);
+                #endif
+            }
 
-            if(cb)
             for(sint32 j = 0, jend = Collector.Count(); j < jend; ++j)
             {
                 if(const String* CurItemName = Collector.AccessByOrder(j))
                 {
-                    cb(m_pathes[i], *CurItemName, data);
+                    if(cb) cb(m_pathes[i], *CurItemName, data);
                     FindedCount++;
                 }
             }
@@ -429,6 +867,7 @@ private:
 
 namespace BOSS
 {
+    #if BOSS_NEED_EMBEDDED_ASSET
     static void _AssetsSearcher(chars itemname, payload data)
     {
         Context& Collector = *((Context*) data);
@@ -636,6 +1075,17 @@ namespace BOSS
         }
     }
 
+    #endif
+
+    void Asset::SetWebFilesUrl(chars url)
+    {
+        #if BOSS_NEED_WEBFILES_ASSET
+            AssetWebReadFileClass::SetUrl(url);
+        #else
+            (void) url;
+        #endif
+    }
+
     bool Asset::RebuildForEmbedded()
     {
         #if BOSS_NEED_EMBEDDED_ASSET
@@ -694,6 +1144,11 @@ namespace BOSS
                 return true;
         #endif
 
+        #if BOSS_NEED_WEBFILES_ASSET
+            if(AssetWebReadFileClass::Enabled())
+                return AssetWebReadFileClass::Exist(filename, size, ctime, atime, mtime);
+        #endif
+
         #if BOSS_NEED_EMBEDDED_ASSET
             if(AssetEmbeddedReadFileClass::ExistForAsset(filename, size, ctime, atime, mtime))
                 return true;
@@ -707,7 +1162,7 @@ namespace BOSS
     id_asset_read Asset::OpenForRead(chars filename, id_assetpath_read assetpath, bool originalonly)
     {
         if(assetpath)
-            return ((const AssetPathClass*) assetpath)->OpenForRead(filename);
+            return ((const AssetPathClass*) assetpath)->OpenForRead(filename, originalonly);
 
         if(!originalonly)
         {
@@ -719,6 +1174,11 @@ namespace BOSS
                     return (id_asset_read) Asset;
             #endif
         }
+
+        #if BOSS_NEED_WEBFILES_ASSET
+            if(AssetWebReadFileClass::Enabled())
+                return (id_asset_read) AssetWebReadFileClass::Create(filename);
+        #endif
 
         #if BOSS_NEED_EMBEDDED_ASSET
             if(auto Asset = AssetEmbeddedReadFileClass::CreateForAsset(filename))

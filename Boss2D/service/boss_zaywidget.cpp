@@ -61,6 +61,7 @@ namespace BOSS
             {
                 if(!String::Compare(title, "Cursor"))
                     Platform::BroadcastNotify("SetCursor", sint32o(Parser::GetInt(detail)), NT_ZayWidget);
+                #if BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX
                 else if(!String::Compare(title, "Atlas"))
                 {
                     Context Json;
@@ -70,7 +71,9 @@ namespace BOSS
                         Platform::Pipe::SendJson(mPipe, Json.SaveJson());
                     else mPipeReservers.AtAdding() = Json.SaveJson();
                 }
+                #endif
             }
+            #if BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX
             else
             {
                 Context Json;
@@ -87,6 +90,7 @@ namespace BOSS
                     Platform::Pipe::SendJson(mPipe, Json.SaveJson());
                 else mPipeReservers.AtAdding() = Json.SaveJson();
             }
+            #endif
         });
         mZaySonModifyTime = 0;
         mProcedureID = -1;
@@ -100,8 +104,10 @@ namespace BOSS
     ZayWidget::~ZayWidget()
     {
         Platform::SubProcedure(mProcedureID);
+        #if BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX
         ZayWidgetDOM::UnbindPipe(mPipe);
         Platform::Pipe::Close(mPipe);
+        #endif
     }
 
     ZayWidget::ZayWidget(ZayWidget&& rhs)
@@ -170,6 +176,7 @@ namespace BOSS
                     Platform::UpdateAllViews();
                 }
 
+                #if BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX
                 // Pipe체크
                 if(!Asset::Exist(Self->mZaySonAssetName + ".pipe", gAssetPath, nullptr, nullptr, nullptr, &ModifyTime))
                 {
@@ -234,6 +241,7 @@ namespace BOSS
                         Self->mPipeReservers.Clear();
                     }
                 }
+                #endif
             }, this);
     }
 
@@ -244,6 +252,7 @@ namespace BOSS
 
     bool ZayWidget::TickOnce()
     {
+        #if BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX
         while(auto NewJson = Platform::Pipe::RecvJson(mPipe))
         {
             const String Type = (*NewJson)("type").GetText();
@@ -265,6 +274,7 @@ namespace BOSS
                 return true;
             }
         }
+        #endif
         return false;
     }
 
