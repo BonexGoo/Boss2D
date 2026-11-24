@@ -164,6 +164,10 @@
 // About user config
 #include <boss_config.h>
 
+// About asset policy
+#define BOSS_GENERATE_ASSET ((BOSS_WINDOWS || BOSS_LINUX || BOSS_MAC_OSX) && !BOSS_NDEBUG)
+#define BOSS_STATIC_ASSET (BOSS_WASM || BOSS_ANDROID || BOSS_IPHONE || BOSS_NEED_WEBFILES_ASSET)
+
 // About assert
 #if !BOSS_NDEBUG
     #define BOSS_DBG __FILE__,__LINE__,__FUNCTION__,

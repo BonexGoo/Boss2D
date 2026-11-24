@@ -2,6 +2,10 @@
 #include "boss_asset.hpp"
 
 #include <platform/boss_platform.hpp>
+#ifndef BOSS_NEED_WEBFILES_ASSET
+    #define BOSS_NEED_WEBFILES_ASSET 0
+#endif
+
 #if BOSS_NEED_EMBEDDED_ASSET
     #include <boss_assets.hpp>
 #elif BOSS_NEED_EMBEDDED_CACHE
@@ -23,6 +27,147 @@
     static Map<EmbeddedFile> gEmbeddedCaches;
 #endif
 
+#if BOSS_NEED_WEBFILES_ASSET || BOSS_STATIC_ASSET || BOSS_GENERATE_ASSET
+    #include <cerrno>
+    #include <cstdlib>
+    #include <map>
+    #include <mutex>
+    #include <string>
+    #include <vector>
+
+    #if BOSS_WASM && !defined(__EMSCRIPTEN_PTHREADS__)
+        struct AssetIndexMutex { void lock() {} void unlock() {} };
+    #else
+        typedef std::mutex AssetIndexMutex;
+    #endif
+
+    struct AssetIndexFileInfo
+    {
+        uint64 mSize = 0;
+        uint64 mCTime = 0;
+        uint64 mATime = 0;
+        uint64 mMTime = 0;
+    };
+    typedef std::map<std::string, AssetIndexFileInfo> AssetIndexFiles;
+
+    // 파일명은 assets 기준 상대경로이며, 웹에서 사용할 때는 URL 인코딩한다.
+    static bool AssetIndexValidPath(const std::string& path)
+    {
+        if(path.empty() || path[0] == '/' || path.find('\\') != std::string::npos ||
+            path.find(':') != std::string::npos || path == "assetsindex.json") return false;
+        for(size_t i = 0; i < path.length();)
+        {
+            const size_t End = path.find('/', i);
+            const std::string Part = path.substr(i, End == std::string::npos? End : End - i);
+            if(Part.empty() || Part == "." || Part == "..") return false;
+            if(End == std::string::npos) break;
+            i = End + 1;
+            if(i == path.length()) return false;
+        }
+        return true;
+    }
+
+    // assets:/, 하위 폴더, '..' 처리를 공통의 상대경로 규칙으로 변환한다.
+    static std::string AssetIndexNormalizePath(chars pathname, bool directory = false, bool* valid = nullptr)
+    {
+        if(valid) *valid = true;
+        std::string Path = pathname ? pathname : "";
+        for(auto& Ch : Path) if(Ch == '\\') Ch = '/';
+        if(Path.compare(0, 8, "assets:/") == 0) Path.erase(0, 8);
+        if((!Path.empty() && Path[0] == '/') || Path.find(':') != std::string::npos)
+        {
+            if(valid) *valid = false;
+            return "";
+        }
+        std::vector<std::string> Parts;
+        for(size_t Pos = 0; Pos < Path.size();)
+        {
+            const auto End = Path.find('/', Pos);
+            const auto Part = Path.substr(Pos, (End == std::string::npos)? End : End - Pos);
+            if(Part == "..")
+            {
+                if(Parts.empty())
+                {
+                    if(valid) *valid = false;
+                    return "";
+                }
+                Parts.pop_back();
+            }
+            else if(!Part.empty() && Part != ".") Parts.push_back(Part);
+            if(End == std::string::npos) break;
+            Pos = End + 1;
+        }
+        Path.clear();
+        for(const auto& Part : Parts)
+        {
+            if(!Path.empty()) Path += '/';
+            Path += Part;
+        }
+        if(directory && !Path.empty()) Path += '/';
+        return Path;
+    }
+
+    static bool AssetIndexToUInt64(chars text, uint64& value)
+    {
+        if(!text || !*text || *text < '0' || '9' < *text) return false;
+        errno = 0;
+        char* End = nullptr;
+        const unsigned long long Parsed = std::strtoull(text, &End, 10);
+        if(errno == ERANGE || !End || *End) return false;
+        value = (uint64) Parsed;
+        return true;
+    }
+
+    static bool AssetIndexParse(const char* data, size_t size, AssetIndexFiles& result)
+    {
+        result.clear();
+        if(!data || size < 3 || (uint08) data[0] != 0xEF ||
+            (uint08) data[1] != 0xBB || (uint08) data[2] != 0xBF) return false;
+
+        // 파일에는 BOM을 보존하고, JSON 파서에만 BOM 이후의 문자열을 전달한다.
+        std::string Text(data + 3, size - 3);
+        Text.push_back('\0');
+        Context Index;
+        Index.LoadJson(SO_OnlyReference, Text.c_str());
+        if(std::string((chars) Index("format").GetText()) != "Boss2D-AssetsIndex-1") return false;
+        const auto& Files = Index("files");
+        if(Files.LengthOfIndexable() <= 0) return false;
+        for(sint32 i = 0, iend = Files.LengthOfIndexable(); i < iend; ++i)
+        {
+            const auto& Item = Files[i];
+            const std::string Path = (chars) Item("path").GetText();
+            AssetIndexFileInfo Info;
+            if(!AssetIndexValidPath(Path) ||
+                !AssetIndexToUInt64(Item("size").GetText(), Info.mSize) ||
+                !AssetIndexToUInt64(Item("ctime").GetText(), Info.mCTime) ||
+                !AssetIndexToUInt64(Item("atime").GetText(), Info.mATime) ||
+                !AssetIndexToUInt64(Item("mtime").GetText(), Info.mMTime) ||
+                !result.emplace(Path, Info).second)
+            {
+                result.clear();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static String AssetIndexBuild(const AssetIndexFiles& files)
+    {
+        Context Index;
+        Index.At("format").Set("Boss2D-AssetsIndex-1");
+        for(const auto& Pair : files)
+        {
+            auto& File = Index.At("files").AtAdding();
+            File.At("path").Set(Pair.first.c_str());
+            File.At("size").Set(std::to_string(Pair.second.mSize).c_str());
+            File.At("ctime").Set(std::to_string(Pair.second.mCTime).c_str());
+            File.At("atime").Set(std::to_string(Pair.second.mATime).c_str());
+            File.At("mtime").Set(std::to_string(Pair.second.mMTime).c_str());
+        }
+        return Index.SaveJson();
+    }
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // AssetClass
 class AssetClass
@@ -40,12 +185,7 @@ public:
 
 #if BOSS_NEED_WEBFILES_ASSET
     #include <chrono>
-    #include <cstdlib>
-    #include <map>
     #include <memory>
-    #include <mutex>
-    #include <string>
-    #include <vector>
 
     #if BOSS_WASM
         #include <emscripten.h>
@@ -142,15 +282,7 @@ public:
     };
     typedef std::shared_ptr<const AssetWebFileData> AssetWebFilePtr;
 
-    #if BOSS_WASM && !defined(__EMSCRIPTEN_PTHREADS__)
-        struct AssetWebMutex
-        {
-            void lock() {}
-            void unlock() {}
-        };
-    #else
-        typedef std::mutex AssetWebMutex;
-    #endif
+    typedef AssetIndexMutex AssetWebMutex;
 
     struct AssetWebFilesState
     {
@@ -158,8 +290,8 @@ public:
         AssetWebMutex mMutex;
         std::string mUrl;
         uint64 mGeneration;
-        std::map<std::string, AssetWebFilePtr> mFiles;
-        std::map<std::string, std::chrono::steady_clock::time_point> mMissing;
+        AssetIndexFiles mIndex;
+        bool mIndexReady = false;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -185,8 +317,8 @@ public:
             std::lock_guard<AssetWebMutex> Lock(State.mMutex);
             State.mUrl = NewUrl;
             ++State.mGeneration;
-            State.mFiles.clear();
-            State.mMissing.clear();
+            State.mIndex.clear();
+            State.mIndexReady = false;
         }
         static bool Enabled()
         {
@@ -206,29 +338,28 @@ public:
         }
         static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
         {
-            if(auto File = Match(pathname))
-            {
-                if(size) *size = File->mSize;
-                if(ctime) *ctime = 0;
-                if(atime) *atime = 0;
-                if(mtime) *mtime = 0;
-                return true;
-            }
-            return false;
+            AssetIndexFileInfo Info;
+            if(!FindInfo(pathname, Info)) return false;
+            if(size) *size = Info.mSize;
+            if(ctime) *ctime = Info.mCTime;
+            if(atime) *atime = Info.mATime;
+            if(mtime) *mtime = Info.mMTime;
+            return true;
         }
         static void Search(chars pathname, Platform::File::SearchCB cb, payload data)
         {
             if(!cb) return;
             bool Valid = false;
-            const std::string Path = NormalizePath(pathname, true, &Valid);
+            const std::string Path = AssetIndexNormalizePath(pathname, true, &Valid);
             if(!Valid) return;
+            if(!EnsureIndex()) return;
             std::vector<std::string> Names;
             {
                 auto& State = ST();
                 std::lock_guard<AssetWebMutex> Lock(State.mMutex);
-                for(const auto& Item : State.mFiles)
+                for(const auto& Item : State.mIndex)
                 {
-                    const std::string& Name = Item.second->mPath;
+                    const std::string& Name = Item.first;
                     if(Name.compare(0, Path.size(), Path) == 0 &&
                         Name.find('/', Path.size()) == std::string::npos)
                         Names.push_back(Name.substr(Path.size()));
@@ -265,43 +396,58 @@ public:
             static AssetWebFilesState State;
             return State;
         }
-        static std::string NormalizePath(chars pathname, bool directory = false, bool* valid = nullptr)
+        // 웹 모드에서 인덱스만 1회 다운로드한다. 존재검사는 통신하지 않는다.
+        static bool EnsureIndex()
         {
-            if(valid) *valid = true;
-            std::string Path = pathname ? pathname : "";
-            for(auto& Ch : Path) if(Ch == '\\') Ch = '/';
-            if(Path.compare(0, 8, "assets:/") == 0) Path.erase(0, 8);
-            if(Path.find(':') != std::string::npos)
+            static AssetWebMutex LoadMutex;
+            std::lock_guard<AssetWebMutex> OneLoad(LoadMutex);
+            auto& State = ST();
+            std::string Base;
+            uint64 Generation = 0;
             {
-                if(valid) *valid = false;
-                return "";
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                if(State.mIndexReady) return true;
+                Base = State.mUrl;
+                Generation = State.mGeneration;
             }
-            std::vector<std::string> Parts;
-            for(size_t Pos = 0; Pos < Path.size();)
+
+            std::string Url = ResolveUrl(Base, "assetsindex.json");
+            AssetIndexFiles NewIndex;
+            bool Success = false;
+            sint32 Status = 0;
+            if(!Url.empty())
             {
-                const auto End = Path.find('/', Pos);
-                const auto Part = Path.substr(Pos, (End == std::string::npos)? End : End - Pos);
-                if(Part == "..")
+                // Github Pages의 기존 600초 캐시와 관계없이 새 배포 목록을 확인한다.
+                const auto Nonce = std::chrono::system_clock::now().time_since_epoch().count();
+                Url += "?v=" + std::to_string(Nonce);
+                AssetWebFileData Manifest;
+                if(Download(Url, Manifest, Status))
+                    Success = AssetIndexParse((const char*) Manifest.mData, Manifest.mSize, NewIndex);
+            }
+            {
+                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                if(Generation != State.mGeneration) return false;
+                if(Success)
                 {
-                    if(Parts.empty())
-                    {
-                        if(valid) *valid = false;
-                        return "";
-                    }
-                    Parts.pop_back();
+                    State.mIndex.swap(NewIndex);
+                    State.mIndexReady = true;
                 }
-                else if(!Part.empty() && Part != ".") Parts.push_back(Part);
-                if(End == std::string::npos) break;
-                Pos = End + 1;
             }
-            Path.clear();
-            for(const auto& Part : Parts)
-            {
-                if(!Path.empty()) Path += '/';
-                Path += Part;
-            }
-            if(directory && !Path.empty()) Path += '/';
-            return Path;
+            if(!Success)
+                BOSS_TRACE("Assets index load failed (%d): %s", Status, Url.c_str());
+            return Success;
+        }
+        static bool FindInfo(chars pathname, AssetIndexFileInfo& info)
+        {
+            bool Valid = false;
+            const std::string Path = AssetIndexNormalizePath(pathname, false, &Valid);
+            if(!Valid || !AssetIndexValidPath(Path) || !EnsureIndex()) return false;
+            auto& State = ST();
+            std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+            const auto Found = State.mIndex.find(Path);
+            if(Found == State.mIndex.end()) return false;
+            info = Found->second;
+            return true;
         }
         static std::string EncodePath(const std::string& path)
         {
@@ -381,53 +527,26 @@ public:
         }
         static AssetWebFilePtr Match(chars pathname)
         {
-            const std::string Path = NormalizePath(pathname);
-            if(Path.empty()) return nullptr;
+            AssetIndexFileInfo Info;
+            if(!FindInfo(pathname, Info)) return nullptr;
+            const std::string Path = AssetIndexNormalizePath(pathname);
             auto& State = ST();
             std::string Base;
-            uint64 Generation;
             {
                 std::lock_guard<AssetWebMutex> Lock(State.mMutex);
                 Base = State.mUrl;
-                Generation = State.mGeneration;
             }
             const std::string Url = ResolveUrl(Base, Path);
             if(Url.empty()) return nullptr;
-            {
-                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
-                const auto Found = State.mFiles.find(Url);
-                if(Found != State.mFiles.end()) return Found->second;
-                const auto Missing = State.mMissing.find(Url);
-                if(Missing != State.mMissing.end())
-                {
-                    if(std::chrono::steady_clock::now() < Missing->second) return nullptr;
-                    State.mMissing.erase(Missing);
-                }
-            }
 
+            // 존재여부는 인덱스로 판단한다. 다운로드 성공/실패 결과는 재사용하지 않는다.
             auto File = std::make_shared<AssetWebFileData>();
             File->mPath = Path;
             sint32 Status = 0;
             if(!Download(Url, *File, Status))
             {
-                // 웹 원본에 없는 파일은 정상적인 존재검사 결과이며, 잠시 보관한다.
-                if(Status == 404 || Status == 410)
-                {
-                    std::lock_guard<AssetWebMutex> Lock(State.mMutex);
-                    if(Generation == State.mGeneration)
-                        State.mMissing[Url] = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-                }
-                if(Status != 404 && Status != 410)
-                    BOSS_TRACE("Web asset load failed (%d): %s", Status, Url.c_str());
+                BOSS_TRACE("Web asset listed in index but load failed (%d): %s", Status, Url.c_str());
                 return nullptr;
-            }
-            {
-                std::lock_guard<AssetWebMutex> Lock(State.mMutex);
-                if(Generation == State.mGeneration)
-                {
-                    State.mMissing.erase(Url);
-                    return State.mFiles.emplace(Url, File).first->second;
-                }
             }
             return File;
         }
@@ -438,6 +557,111 @@ public:
     };
 #endif
 
+
+#if BOSS_STATIC_ASSET
+    ////////////////////////////////////////////////////////////////////////////////
+    // AssetLocalIndex: BOSS_STATIC_ASSET의 로컬 원본 파일 목록.
+    // 다운로드나 파일 존재 결과를 캐싱하지 않고, 유효한 목록만 메모리에 유지한다.
+    class AssetLocalIndex
+    {
+    public:
+        static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
+        {
+            AssetIndexFileInfo Info;
+            if(!Find(pathname, Info)) return false;
+            if(size) *size = Info.mSize;
+            if(ctime) *ctime = Info.mCTime;
+            if(atime) *atime = Info.mATime;
+            if(mtime) *mtime = Info.mMTime;
+            return true;
+        }
+        static bool Has(chars pathname)
+        {
+            AssetIndexFileInfo Info;
+            return Find(pathname, Info);
+        }
+        static void Search(chars pathname, Platform::File::SearchCB cb, payload data)
+        {
+            if(!cb) return;
+            bool Valid = false;
+            const std::string Path = AssetIndexNormalizePath(pathname, true, &Valid);
+            if(!Valid || !Ensure()) return;
+            std::vector<std::string> Names;
+            {
+                auto& State = ST();
+                std::lock_guard<AssetIndexMutex> Lock(State.mMutex);
+                for(const auto& Item : State.mFiles)
+                {
+                    const std::string& Name = Item.first;
+                    if(Name.compare(0, Path.size(), Path) == 0 &&
+                        Name.find('/', Path.size()) == std::string::npos)
+                        Names.push_back(Name.substr(Path.size()));
+                }
+            }
+            for(const auto& Name : Names) cb(Name.c_str(), data);
+        }
+    private:
+        struct State
+        {
+            AssetIndexMutex mMutex;
+            AssetIndexFiles mFiles;
+            bool mReady = false;
+        };
+        static State& ST()
+        {
+            static State OneState;
+            return OneState;
+        }
+        static bool Ensure()
+        {
+            static AssetIndexMutex LoadMutex;
+            std::lock_guard<AssetIndexMutex> OneLoad(LoadMutex);
+            auto& State = ST();
+            {
+                std::lock_guard<AssetIndexMutex> Lock(State.mMutex);
+                if(State.mReady) return true;
+            }
+            const String IndexPath = Platform::File::RootForAssets() + "assetsindex.json";
+            auto File = Platform::File::OpenForRead(IndexPath);
+            if(!File) return false;
+            const sint32 Size = Platform::File::Size(File);
+            if(Size <= 0 || 16 * 1024 * 1024 < Size)
+            {
+                Platform::File::Close(File);
+                return false;
+            }
+            std::vector<char> Data(Size);
+            sint32 Done = 0;
+            while(Done < Size)
+            {
+                const sint32 ReadSize = Platform::File::Read(File, (uint08*) Data.data() + Done, Size - Done);
+                if(ReadSize <= 0) break;
+                Done += ReadSize;
+            }
+            Platform::File::Close(File);
+            AssetIndexFiles NewFiles;
+            if(Done != Size || !AssetIndexParse(Data.data(), Data.size(), NewFiles)) return false;
+            {
+                std::lock_guard<AssetIndexMutex> Lock(State.mMutex);
+                State.mFiles.swap(NewFiles);
+                State.mReady = true;
+            }
+            return true;
+        }
+        static bool Find(chars pathname, AssetIndexFileInfo& info)
+        {
+            bool Valid = false;
+            const std::string Path = AssetIndexNormalizePath(pathname, false, &Valid);
+            if(!Valid || !AssetIndexValidPath(Path) || !Ensure()) return false;
+            auto& State = ST();
+            std::lock_guard<AssetIndexMutex> Lock(State.mMutex);
+            const auto Found = State.mFiles.find(Path);
+            if(Found == State.mFiles.end()) return false;
+            info = Found->second;
+            return true;
+        }
+    };
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // AssetFileClass
@@ -841,7 +1065,9 @@ public:
                 else
             #endif
             {
-                #if BOSS_NEED_EMBEDDED_ASSET
+                #if BOSS_STATIC_ASSET
+                    AssetLocalIndex::Search(m_pathes[i], SearchCB, (payload) &Collector);
+                #elif BOSS_NEED_EMBEDDED_ASSET
                     AssetEmbeddedFileClass::SearchAsset(m_pathes[i], SearchCB, (payload) &Collector);
                 #else
                     Platform::File::Search(Platform::File::RootForAssets() + m_pathes[i] + "*",
@@ -867,7 +1093,7 @@ private:
 
 namespace BOSS
 {
-    #if BOSS_NEED_EMBEDDED_ASSET
+    #if BOSS_GENERATE_ASSET && BOSS_NEED_EMBEDDED_ASSET
     static void _AssetsSearcher(chars itemname, payload data)
     {
         Context& Collector = *((Context*) data);
@@ -875,6 +1101,8 @@ namespace BOSS
             Platform::File::Search(itemname, _AssetsSearcher, data, true);
         else
         {
+            // 목록 자체는 임베디드어셋에 내장하지 않는다.
+            if(!String(itemname).Right(16).CompareNoCase("assetsindex.json")) return;
             // 무시해야하는 파일은 제외
             chars Ignores[] = BOSS_ASSET_IGNORES;
             const String LowerName = String(itemname).Lower();
@@ -917,6 +1145,7 @@ namespace BOSS
         if(auto GenFile = Platform::File::OpenForWrite(Platform::File::RootForAssets() + "../source-gen/boss_assets.hpp"))
         {
             String GenText;
+            GenText += "\xEF\xBB\xBF";
             GenText += "#include <boss.hpp>\n";
             GenText += "\n";
             GenText += "#if BOSS_NEED_EMBEDDED_ASSET\n";
@@ -1086,9 +1315,125 @@ namespace BOSS
         #endif
     }
 
+    #if BOSS_GENERATE_ASSET
+        struct AssetsIndexCollector
+        {
+            std::string mRoot;
+            AssetIndexFiles mFiles;
+            bool mValid = true;
+        };
+
+        static void _AssetsIndexSearcher(chars itemname, payload data)
+        {
+            auto& Collector = *((AssetsIndexCollector*) data);
+            if(Platform::File::ExistForDir(itemname))
+            {
+                if(Platform::File::Search(itemname, _AssetsIndexSearcher, data, true) == -1)
+                    Collector.mValid = false;
+                return;
+            }
+            std::string FullPath = itemname;
+            for(auto& Ch : FullPath) if(Ch == '\\') Ch = '/';
+            if(FullPath.compare(0, Collector.mRoot.size(), Collector.mRoot)) return;
+            const std::string Relative = FullPath.substr(Collector.mRoot.size());
+            if(Relative == "assetsindex.json") return;
+            if(!AssetIndexValidPath(Relative))
+            {
+                Collector.mValid = false;
+                BOSS_TRACE("Invalid assets index path: %s", Relative.c_str());
+                return;
+            }
+            AssetIndexFileInfo Info;
+            if(Platform::File::GetAttributes(WString::FromChars(itemname),
+                &Info.mSize, &Info.mCTime, &Info.mATime, &Info.mMTime) == -1)
+            {
+                Collector.mValid = false;
+                return;
+            }
+            Collector.mFiles[Relative] = Info;
+        }
+
+        static bool _ReadAssetsIndex(chars pathname, AssetIndexFiles& index)
+        {
+            auto File = Platform::File::OpenForRead(pathname);
+            if(!File) return false;
+            const sint32 Size = Platform::File::Size(File);
+            if(Size <= 0 || 16 * 1024 * 1024 < Size)
+            {
+                Platform::File::Close(File);
+                return false;
+            }
+            std::vector<char> Data(Size);
+            sint32 Done = 0;
+            while(Done < Size)
+            {
+                const sint32 ReadSize = Platform::File::Read(File, (uint08*) Data.data() + Done, Size - Done);
+                if(ReadSize <= 0) break;
+                Done += ReadSize;
+            }
+            Platform::File::Close(File);
+            return Done == Size && AssetIndexParse(Data.data(), Data.size(), index);
+        }
+
+        static bool _WriteAssetsIndex(chars pathname, const AssetIndexFiles& index)
+        {
+            if(index.empty()) return false;
+            const String Text = AssetIndexBuild(index);
+            const uint08 BOM[3] = {0xEF, 0xBB, 0xBF};
+            if(auto File = Platform::File::OpenForWrite(pathname, true))
+            {
+                const bool Result = (Platform::File::Write(File, BOM, 3) == 3 &&
+                    Platform::File::Write(File, (bytes)(chars) Text, Text.Length()) == Text.Length());
+                Platform::File::Close(File);
+                return Result;
+            }
+            return false;
+        }
+    #endif
+
+    bool Asset::RebuildForAssetsIndex()
+    {
+        #if BOSS_GENERATE_ASSET
+            const String& AssetsPath = Platform::File::RootForAssets();
+            const String AssetsDir = AssetsPath.Left(AssetsPath.Length() - 1);
+            if(!Platform::File::ExistForDir(AssetsDir)) return false;
+
+            AssetsIndexCollector Collector;
+            Collector.mRoot = (chars) AssetsPath;
+            for(auto& Ch : Collector.mRoot) if(Ch == '\\') Ch = '/';
+            if(Platform::File::Search(AssetsDir, _AssetsIndexSearcher, &Collector, true) == -1 ||
+                !Collector.mValid) return false;
+
+            AssetIndexFiles OldIndex;
+            const String IndexPath = AssetsPath + "assetsindex.json";
+            bool Changed = !_ReadAssetsIndex(IndexPath, OldIndex) ||
+                OldIndex.size() != Collector.mFiles.size();
+            if(!Changed)
+                for(const auto& Pair : Collector.mFiles)
+                {
+                    const auto Found = OldIndex.find(Pair.first);
+                    if(Found == OldIndex.end() || Found->second.mSize != Pair.second.mSize ||
+                        Found->second.mCTime != Pair.second.mCTime ||
+                        Found->second.mMTime != Pair.second.mMTime)
+                    {
+                        Changed = true;
+                        break;
+                    }
+                }
+            // 접근시간(atime)은 일반적인 파일 읽기로도 변하므로 변경판정에는 제외한다.
+            if(Changed && Platform::Popup::MessageDialog("리빌드가 필요합니다",
+                "에셋 파일 목록에 변경이 있습니다.\n\nassetsindex.json을 다시 생성하고 종료할까요?", DBT_YesNo) == 0)
+            {
+                if(_WriteAssetsIndex(IndexPath, Collector.mFiles)) return true;
+                BOSS_TRACE("Assets index write failed: %s", (chars) IndexPath);
+            }
+        #endif
+        return false;
+    }
+
     bool Asset::RebuildForEmbedded()
     {
-        #if BOSS_NEED_EMBEDDED_ASSET
+        #if BOSS_GENERATE_ASSET && BOSS_NEED_EMBEDDED_ASSET
             const String& AssetsPath = Platform::File::RootForAssets();
             const String AssetsDir = AssetsPath.Left(AssetsPath.Length() - 1);
 
@@ -1149,7 +1494,9 @@ namespace BOSS
                 return AssetWebReadFileClass::Exist(filename, size, ctime, atime, mtime);
         #endif
 
-        #if BOSS_NEED_EMBEDDED_ASSET
+        #if BOSS_STATIC_ASSET
+            return AssetLocalIndex::Exist(filename, size, ctime, atime, mtime);
+        #elif BOSS_NEED_EMBEDDED_ASSET
             if(AssetEmbeddedReadFileClass::ExistForAsset(filename, size, ctime, atime, mtime))
                 return true;
         #else
@@ -1178,6 +1525,10 @@ namespace BOSS
         #if BOSS_NEED_WEBFILES_ASSET
             if(AssetWebReadFileClass::Enabled())
                 return (id_asset_read) AssetWebReadFileClass::Create(filename);
+        #endif
+
+        #if BOSS_STATIC_ASSET
+            if(!AssetLocalIndex::Has(filename)) return nullptr;
         #endif
 
         #if BOSS_NEED_EMBEDDED_ASSET
