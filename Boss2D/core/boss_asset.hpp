@@ -12,7 +12,8 @@ namespace BOSS
     {
     public:
         /// @brief 웹어셋의 기준 URL설정 및 파일인덱스 초기화(BOSS_NEED_WEBFILES_ASSET이 필요)
-        /// @param url : 기준 디렉토리 URL(빈 값이면 WASM 메인스레드는 현재 페이지, PC는 기존 로컬어셋)
+        /// @param url : 기준 디렉토리 URL(빈 값이면 WASM은 현재 페이지, 앱목록 미설정 PC는 기존 로컬어셋)
+        /// @details 앱목록을 설정한 PC에서 빈 URL은 사이트해제이며 main/만 로컬원본으로 읽음. 사이트전환은 TrySetWebFilesUrl()을 사용
         /// @details WASM은 동기식 XHR을 사용하며, 쓰기캐시와 열린 어셋은 유지됨
         static void SetWebFilesUrl(chars url = nullptr);
 
@@ -27,9 +28,38 @@ namespace BOSS
         /// @return 리빌드 실시여부
         static bool RebuildForEmbedded();
 
-        /// @brief BOSS_GENERATE_ASSET에서 assets 전체를 비교하여 assetsindex.json 갱신
+        /// @brief BOSS_GENERATE_ASSET에서 기준폴더 전체를 비교하여 지정한 파일인덱스 갱신
+        /// @param filename : 기준폴더 내 인덱스파일명(하위경로 제외)
+        /// @param version : 인덱스의 버전명칭(Boss2D-AssetsIndex-1은 기존 files/format 규격)
+        /// @param rootpath : 검색과 인덱스 저장의 기준폴더(nullptr이면 기존 assets폴더)
         /// @return 인덱스를 다시 생성하여 앱을 종료해야 하는지 여부
-        static bool RebuildForAssetsIndex();
+        static bool RebuildForAssetsIndex(chars filename = "assetsindex.json",
+            chars version = "Boss2D-AssetsIndex-1", chars rootpath = nullptr);
+
+        /// @brief 최초 어셋접근 전에 웹어셋의 파일인덱스와 앱목록 규격 설정
+        /// @param filename : 기준 URL에 상대적인 인덱스파일명(nullptr이면 assetsindex.json)
+        /// @param version : 인덱스의 버전명칭(nullptr이면 Boss2D-AssetsIndex-1)
+        /// @param deckname : 앱목록파일명(nullptr이면 기존 웹어셋 방식, 지정하면 PC의 main/ 외 앱리소스는 웹/캐시 전용)
+        static void SetWebFilesIndex(chars filename, chars version, chars deckname = nullptr);
+
+        /// @brief PC에서 웹어셋 URL의 인덱스와 앱목록을 검증하고 성공한 경우에만 사이트 전환
+        /// @param url : 인덱스와 앱목록이 있는 HTTP/HTTPS 기준 디렉토리 URL
+        /// @return 성공시 앱목록 JSON, 실패시 nullptr(반환문자열은 다음 동일함수 호출까지 유효, 해제금지)
+        /// @details SetWebFilesIndex()의 deckname과 BOSS_NEED_WEBFILES_ASSET이 필요하며 실패시 기존 사이트를 유지함
+        static chars TrySetWebFilesUrl(chars url);
+
+        /// @brief 현재 웹어셋의 기준 URL 얻기
+        /// @return 기준 URL(미설정시 빈 문자열, 다음 동일함수 호출까지 유효, 해제금지)
+        static chars GetWebFilesUrl();
+
+        /// @brief PC에서 사이트별 파생리소스를 저장할 assets-rem 기준 캐시경로 얻기
+        /// @return URL해시/ 경로(사이트 미설정 또는 WASM이면 빈 문자열, 다음 동일함수 호출까지 유효, 해제금지)
+        static chars GetWebCachePrefix();
+
+        /// @brief 네이티브 파일 API에서 사용할 어셋의 실제 파일경로 얻기(웹어셋은 필요시 캐시에 다운로드)
+        /// @param filename : assets 기준 상대파일명
+        /// @return 실제 파일경로(파일을 얻지 못하면 빈 문자열, 다음 동일함수 호출까지 유효, 해제금지)
+        static chars GetFilePath(chars filename);
 
         /// @brief 어셋을 버퍼로 반환(읽기전용)
         /// @param filename : 파일명

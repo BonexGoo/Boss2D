@@ -49,12 +49,16 @@
         uint64 mMTime = 0;
     };
     typedef std::map<std::string, AssetIndexFileInfo> AssetIndexFiles;
+    static std::string gIndexFilename = "assetsindex.json";
+    static std::string gIndexVersion = "Boss2D-AssetsIndex-1";
+    static std::string gDeckFilename;
+    static bool LegacyIndex(const std::string& version) {return version == "Boss2D-AssetsIndex-1";}
 
     // 파일명은 assets 기준 상대경로이며, 웹에서 사용할 때는 URL 인코딩한다.
     static bool AssetIndexValidPath(const std::string& path)
     {
         if(path.empty() || path[0] == '/' || path.find('\\') != std::string::npos ||
-            path.find(':') != std::string::npos || path == "assetsindex.json") return false;
+            path.find(':') != std::string::npos || path == "assetsindex.json" || path == gIndexFilename) return false;
         for(size_t i = 0; i < path.length();)
         {
             const size_t End = path.find('/', i);
@@ -118,19 +122,19 @@
         return true;
     }
 
-    static bool AssetIndexParse(const char* data, size_t size, AssetIndexFiles& result)
+    static bool AssetIndexParse(const char* data, size_t size, AssetIndexFiles& result, const std::string& version = gIndexVersion)
     {
         result.clear();
-        if(!data || size < 3 || (uint08) data[0] != 0xEF ||
-            (uint08) data[1] != 0xBB || (uint08) data[2] != 0xBF) return false;
-
-        // 파일에는 BOM을 보존하고, JSON 파서에만 BOM 이후의 문자열을 전달한다.
-        std::string Text(data + 3, size - 3);
+        if(!data || !size || size > 16 * 1024 * 1024) return false;
+        const size_t Bom = (size >= 3 && (uint08)data[0] == 0xEF &&
+            (uint08)data[1] == 0xBB && (uint08)data[2] == 0xBF)? 3 : 0;
+        std::string Text(data + Bom, size - Bom);
         Text.push_back('\0');
         Context Index;
         Index.LoadJson(SO_OnlyReference, Text.c_str());
-        if(std::string((chars) Index("format").GetText()) != "Boss2D-AssetsIndex-1") return false;
-        const auto& Files = Index("files");
+        const bool Legacy = LegacyIndex(version);
+        if(std::string((chars) Index(Legacy? "format" : "version").GetText()) != version) return false;
+        const auto& Files = Index(Legacy? "files" : "list");
         if(Files.LengthOfIndexable() <= 0) return false;
         for(sint32 i = 0, iend = Files.LengthOfIndexable(); i < iend; ++i)
         {
@@ -151,13 +155,14 @@
         return true;
     }
 
-    static String AssetIndexBuild(const AssetIndexFiles& files)
+    static String AssetIndexBuild(const AssetIndexFiles& files, const std::string& version)
     {
         Context Index;
-        Index.At("format").Set("Boss2D-AssetsIndex-1");
+        const bool Legacy = LegacyIndex(version);
+        Index.At(Legacy? "format" : "version").Set(version.c_str());
         for(const auto& Pair : files)
         {
-            auto& File = Index.At("files").AtAdding();
+            auto& File = Index.At(Legacy? "files" : "list").AtAdding();
             File.At("path").Set(Pair.first.c_str());
             File.At("size").Set(std::to_string(Pair.second.mSize).c_str());
             File.At("ctime").Set(std::to_string(Pair.second.mCTime).c_str());
@@ -265,6 +270,15 @@ public:
         #include <QNetworkAccessManager>
         #include <QNetworkReply>
         #include <QNetworkRequest>
+        #include <QCryptographicHash>
+        #include <QDir>
+        #include <QFile>
+        #include <QFileInfo>
+        #include <QSaveFile>
+        #include <QJsonDocument>
+        #include <QJsonObject>
+        #include <QJsonArray>
+        #include <QSet>
         #include <QThread>
         #include <QTimer>
         #include <QUrl>
@@ -292,6 +306,7 @@ public:
         uint64 mGeneration;
         AssetIndexFiles mIndex;
         bool mIndexReady = false;
+        std::string mDeck;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -319,6 +334,7 @@ public:
             ++State.mGeneration;
             State.mIndex.clear();
             State.mIndexReady = false;
+            State.mDeck.clear();
         }
         static bool Enabled()
         {
@@ -327,17 +343,203 @@ public:
             #else
                 auto& State = ST();
                 std::lock_guard<AssetWebMutex> Lock(State.mMutex);
-                return !State.mUrl.empty();
+                return Scoped() || !State.mUrl.empty();
             #endif
         }
+        static std::string Url()
+        {
+            auto& State = ST();
+            std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+            return State.mUrl;
+        }
+        static bool Scoped() {return !gDeckFilename.empty();}
+        static bool GeneratedPath(const std::string& path)
+        {
+            if(path.size() < 65 || path[64] != '/') return false;
+            for(size_t i = 0; i < 64; ++i)
+                if(!('0' <= path[i] && path[i] <= '9') && !('a' <= path[i] && path[i] <= 'f')) return false;
+            return true;
+        }
+        static bool Routed(chars pathname)
+        {
+            if(!Enabled()) return false;
+            #if BOSS_WASM
+                return true; // Existing WASM runtime serves all assets from its page.
+            #else
+                if(!Scoped()) return true;
+                bool Valid = false;
+                const std::string Path = AssetIndexNormalizePath(pathname, true, &Valid);
+                if(!Valid) return true;
+                // Main and generated cache are never controlled by a remote deck.
+                if(Path.compare(0,5,"main/") == 0 || GeneratedPath(Path)) return false;
+                if(Path == gDeckFilename + "/" || Path == gIndexFilename + "/") return true;
+                return true; // No fallback to another site's app resources, including custom directories.
+            #endif
+        }
+        static bool LocalOriginal(chars pathname)
+        {
+            #if !BOSS_WASM
+                if(Scoped())
+                {
+                    bool Valid = false;
+                    const std::string Path = AssetIndexNormalizePath(pathname, true, &Valid);
+                    return Valid && Path.compare(0, 5, "main/") == 0;
+                }
+            #endif
+            return true;
+        }
+        static String CachePrefix()
+        {
+            #if !BOSS_WASM
+                const auto Base = Url();
+                if(Scoped() && !Base.empty())
+                    return String((Hash(Base) + "/").c_str());
+            #endif
+            return String();
+        }
+        static String UserPath(chars pathname)
+        {
+            #if !BOSS_WASM
+                if(Scoped() && Routed(pathname))
+                {
+                    bool Valid = false;
+                    const std::string Path = AssetIndexNormalizePath(pathname, false, &Valid);
+                    if(!Valid || Url().empty()) return String();
+                    return CachePrefix() + ".user/" + Path.c_str();
+                }
+            #endif
+            return String(pathname);
+        }
+        static bool Listed(chars pathname)
+        {
+            if(Scoped() && (AssetIndexNormalizePath(pathname)==gDeckFilename || AssetIndexNormalizePath(pathname)==gIndexFilename)) return true;
+            AssetIndexFileInfo Info; return FindInfo(pathname, Info);
+        }
+        static bool TryUrl(chars url, String* deckjson)
+        {
+            #if BOSS_WASM
+                // The browser-hosted shell has no native URL switch. Keep its own origin.
+                (void) url; (void) deckjson; return false;
+            #else
+                if(!Scoped()) return false;
+                QUrl Root(QString::fromUtf8(url?url:"").trimmed(), QUrl::StrictMode);
+                if(!Root.isValid() || Root.host().isEmpty() || Root.isRelative() || !Root.userInfo().isEmpty() ||
+                    (Root.scheme() != "http" && Root.scheme() != "https")) return false;
+                Root = Root.adjusted(QUrl::NormalizePathSegments | QUrl::RemoveQuery | QUrl::RemoveFragment);
+                if((Root.scheme()=="https" && Root.port()==443) || (Root.scheme()=="http" && Root.port()==80)) Root.setPort(-1);
+                if(!Root.path(QUrl::FullyEncoded).endsWith('/')) Root.setPath(Root.path(QUrl::FullyEncoded)+'/',QUrl::StrictMode);
+                const std::string Base = Root.toEncoded().toStdString();
+                AssetIndexFiles Index; AssetWebFileData Manifest, Deck; sint32 Status = 0;
+                if(!FetchFresh(Base,gIndexFilename,Manifest,Status) || Manifest.mSize>16*1024*1024) return false;
+                QByteArray ManifestBytes((const char*)Manifest.mData,Manifest.mSize);
+                if(ManifestBytes.startsWith("\xEF\xBB\xBF")) ManifestBytes.remove(0,3);
+                QJsonParseError IndexError;
+                const QJsonDocument IndexDoc=QJsonDocument::fromJson(ManifestBytes,&IndexError);
+                if(IndexError.error!=QJsonParseError::NoError || !IndexDoc.isObject() ||
+                    !AssetIndexParse((const char*)Manifest.mData,Manifest.mSize,Index)) return false;
+                if(!FetchFresh(Base,gDeckFilename,Deck,Status) || Deck.mSize > 1024*1024) return false;
+                QSet<QString> FileNames;
+                for(const auto& Pair : Index)
+                {
+                    if(!SafeDiskPath(Pair.first)) return false;
+                    const QString Key=QString::fromStdString(Pair.first).toCaseFolded();
+                    if(FileNames.contains(Key)) return false;
+                    FileNames.insert(Key);
+                }
+                QByteArray DeckBytes((const char*)Deck.mData,Deck.mSize);
+                QByteArray JsonBytes = DeckBytes;
+                if(JsonBytes.startsWith("\xEF\xBB\xBF")) JsonBytes.remove(0,3);
+                QJsonParseError Error;
+                const QJsonDocument Doc = QJsonDocument::fromJson(JsonBytes,&Error);
+                if(Error.error != QJsonParseError::NoError || !Doc.isObject()) return false;
+                const auto Obj = Doc.object();
+                if(Obj.value("version").toString() != "zayapp_deck_v1" || !Obj.value("list").isArray()) return false;
+                QSet<QString> Seen;
+                for(const auto Entry : Obj.value("list").toArray())
+                {
+                    if(!Entry.isObject()) return false;
+                    const auto App = Entry.toObject();
+                    const QString Id = App.value("dom").toString(), Script = App.value("script").toString();
+                    if(Id.isEmpty() || Id == "main" || Id == "home" || Id == "settings" || Id == "data" ||
+                        Id == "deck" || Id == "program" || Id == "main_browser" || Id == "main_settings_save" || Seen.contains(Id) ||
+                        !SafeAppName(Id) || !Script.endsWith(".zay") || !SafeAppName(Script.left(Script.size()-4)) || Script == "main.zay" ||
+                        App.value("title").toString().isEmpty()) return false;
+                    Seen.insert(Id);
+                    const std::string ScriptPath = "widget/" + Script.toStdString();
+                    const std::string JsonPath = ScriptPath.substr(0,ScriptPath.size()-4)+".json";
+                    if(!Index.count(ScriptPath) || !Index.count(JsonPath)) return false;
+                }
+                // Commit only after both manifests are valid. Never reuse a previous site's deck on failure.
+                if(!SaveManifestPair(CacheFolder(Base), Manifest, DeckBytes)) return false;
+                auto& State = ST();
+                {std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                    State.mUrl = Base; ++State.mGeneration; State.mIndex.swap(Index);
+                    State.mIndexReady = true; State.mDeck.assign(JsonBytes.constData(),JsonBytes.size());}
+                if(deckjson) *deckjson = String(JsonBytes.constData(),JsonBytes.size());
+                return true;
+            #endif
+        }
+        static String NativePath(chars pathname)
+        {
+            #if !BOSS_WASM
+                bool Valid=false;
+                const std::string Path=AssetIndexNormalizePath(pathname,false,&Valid);
+                if(!Valid || Url().empty() || !EnsureIndex()) return String();
+                if(Scoped() && (Path==gDeckFilename || Path==gIndexFilename))
+                {
+                    const QString Name=CacheFolder(Url())+QString::fromStdString(Path);
+                    return QFileInfo(Name).isFile()? String(Name.toUtf8().constData()) : String();
+                }
+                AssetIndexFileInfo Info; std::string Base;
+                {auto& State=ST(); std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                    auto It=State.mIndex.find(Path); if(It==State.mIndex.end()) return String();
+                    Info=It->second; Base=State.mUrl;}
+                return String(CacheFile(Base,Path,Info).toUtf8().constData());
+            #else
+                (void) pathname; return String();
+            #endif
+        }
+        class DiskRead : public AssetClass
+        {
+        public:
+            explicit DiskRead(decltype(Platform::File::OpenForRead("")) f) : mFile(f) {}
+            ~DiskRead() override {Platform::File::Close(mFile);}
+            sint32 Size() override {return Platform::File::Size(mFile);}
+            sint32 Read(uint08* data, sint32 size) override {return Platform::File::Read(mFile,data,size);}
+            sint32 Write(bytes, sint32) override {return 0;}
+            sint32 Skip(sint32 size) override {Platform::File::Seek(mFile,Platform::File::Focus(mFile)+size);return Platform::File::Focus(mFile);}
+        private: decltype(Platform::File::OpenForRead("")) mFile;
+        };
         static AssetClass* Create(chars pathname)
         {
+            #if !BOSS_WASM
+                if(Scoped())
+                {
+                    const String Path = NativePath(pathname);
+                    if(Path.Length()) if(auto File = Platform::File::OpenForRead(Path)) return new DiskRead(File);
+                    return nullptr;
+                }
+            #endif
             if(auto File = Match(pathname))
                 return new AssetWebReadFileClass(File);
             return nullptr;
         }
         static bool Exist(chars pathname, uint64* size, uint64* ctime, uint64* atime, uint64* mtime)
         {
+            #if !BOSS_WASM
+                if(Scoped() && (AssetIndexNormalizePath(pathname)==gDeckFilename || AssetIndexNormalizePath(pathname)==gIndexFilename))
+                {
+                    const String Path=NativePath(pathname);
+                    if(!Path.Length()) return false;
+                    const sint32 Attr=Platform::File::GetAttributes(WString::FromChars(Path),size,ctime,atime,mtime);
+                    return Attr!=-1 && (Attr&0x10)==0;
+                }
+            #endif
+            if(!gDeckFilename.empty() && AssetIndexNormalizePath(pathname)==gDeckFilename)
+            {
+                if(auto File = Match(pathname)) {if(size) *size=File->mSize; if(ctime) *ctime=0; if(atime) *atime=0; if(mtime) *mtime=0; return true;}
+                return false;
+            }
             AssetIndexFileInfo Info;
             if(!FindInfo(pathname, Info)) return false;
             if(size) *size = Info.mSize;
@@ -397,6 +599,104 @@ public:
             return State;
         }
         // 웹 모드에서 인덱스만 1회 다운로드한다. 존재검사는 통신하지 않는다.
+        static bool FetchFresh(const std::string& base,const std::string& path,AssetWebFileData& file,sint32& status)
+        {
+            const auto Url = ResolveUrl(base,path);
+            if(Url.empty()) return false;
+            const auto Nonce = std::chrono::system_clock::now().time_since_epoch().count();
+            return Download(Url + "?v=" + std::to_string(Nonce),file,status);
+        }
+        #if !BOSS_WASM
+        static std::string Hash(const std::string& s)
+        {return QCryptographicHash::hash(QByteArray(s.data(),int(s.size())),QCryptographicHash::Sha256).toHex().toStdString();}
+        static QString CacheFolder(const std::string& base)
+        {return QString::fromUtf8((chars)Platform::File::RootForAssetsRem()) + QString::fromStdString(Hash(base)) + "/";}
+        static bool SafeAppName(const QString& s)
+        {
+            if(s.isEmpty() || s.size()>128) return false;
+            for(const auto c : s) if(!((c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='_')) return false;
+            return true;
+        }
+        static bool SafeDiskPath(const std::string& path)
+        {
+            if(!AssetIndexValidPath(path)) return false;
+            for(const auto& Part : QString::fromStdString(path).split('/'))
+            {
+                if(Part.endsWith('.') || Part.endsWith(' ') || Part.contains(QChar(0)) ||
+                    Part.contains('"') || Part.contains('<') || Part.contains('>') || Part.contains('|') ||
+                    Part.contains('?') || Part.contains('*')) return false;
+                for(auto c : Part) if(c.unicode() < 32) return false;
+                const auto Stem = Part.section('.',0,0).toUpper();
+                if(Stem=="CON"||Stem=="PRN"||Stem=="AUX"||Stem=="NUL"||
+                    (Stem.size()==4 && (Stem.startsWith("COM")||Stem.startsWith("LPT")) && Stem[3].isDigit())) return false;
+            }
+            return true;
+        }
+        static bool SaveAtomic(const QString& name,const char* data,qint64 size)
+        {
+            if(!QDir().mkpath(QFileInfo(name).absolutePath())) return false;
+            QSaveFile File(name);
+            if(!File.open(QIODevice::WriteOnly) || File.write(data,size)!=size) return false;
+            return File.commit();
+        }
+        static bool SaveManifestPair(const QString& root, const AssetWebFileData& index, const QByteArray& deck)
+        {
+            const QString IndexName = root + QString::fromStdString(gIndexFilename);
+            const QString DeckName = root + QString::fromStdString(gDeckFilename);
+            QFile PreviousIndex(IndexName);
+            const bool HadIndex = PreviousIndex.exists();
+            QByteArray PreviousBytes;
+            if(HadIndex)
+            {
+                if(!PreviousIndex.open(QIODevice::ReadOnly)) return false;
+                PreviousBytes = PreviousIndex.readAll();
+                if(PreviousIndex.error() != QFileDevice::NoError) return false;
+                PreviousIndex.close();
+            }
+            if(!SaveAtomic(IndexName, (const char*) index.mData, index.mSize)) return false;
+            if(!SaveAtomic(DeckName, deck.constData(), deck.size()))
+            {
+                // 각각의 파일은 원자적으로 저장하며, 두 번째 저장 실패시 이전 인덱스를 복원한다.
+                const bool Restored = HadIndex? SaveAtomic(IndexName, PreviousBytes.constData(), PreviousBytes.size()) : QFile::remove(IndexName);
+                if(!Restored) BOSS_TRACE("Assets index rollback failed: %s", IndexName.toUtf8().constData());
+                return false;
+            }
+            return true;
+        }
+        static QString CacheFile(const std::string& base,const std::string& path,const AssetIndexFileInfo& info)
+        {
+            if(base.empty() || !SafeDiskPath(path)) return QString();
+            static AssetWebMutex CacheMutex;
+            std::lock_guard<AssetWebMutex> Guard(CacheMutex);
+            const QString Root = CacheFolder(base);
+            const QString Name = Root + QString::fromStdString(path);
+            const QString Meta = Root + ".cache/" + QString::fromStdString(Hash(path)) + ".stamp";
+            const QByteArray Stamp = QByteArray::number(qulonglong(info.mSize)) + ':' +
+                QByteArray::number(qulonglong(info.mMTime)) + ':' + QByteArray::number(qulonglong(info.mCTime));
+            const QFileInfo CachedFile(Name);
+            QFile StampFile(Meta);
+            if(CachedFile.isFile() && StampFile.open(QIODevice::ReadOnly))
+            {
+                const QByteArray SavedStamp = StampFile.readAll();
+                // 인덱스 서명과 실제 저장길이를 함께 확인하고, 기존 3항목 스탬프도 호환한다.
+                if(SavedStamp == Stamp + ':' + QByteArray::number(CachedFile.size()) ||
+                    (SavedStamp == Stamp && uint64(CachedFile.size()) == info.mSize)) return Name;
+            }
+            StampFile.close();
+            AssetWebFileData File; sint32 Status=0;
+            const auto Url = ResolveUrl(base,path);
+            if(Url.empty() || !Download(Url + "?v=" + std::to_string(info.mMTime) + "_" + std::to_string(info.mCTime),File,Status)) return QString();
+            if(uint64(File.mSize)!=info.mSize)
+            {
+                BOSS_TRACE("[AssetWeb] Index size differs: %s (index=%llu, downloaded=%d). Using downloaded bytes.",
+                    path.c_str(), (unsigned long long) info.mSize, File.mSize);
+            }
+            // 줄바꿈 변환 등으로 크기가 달라도 받은 파일을 사용하며, 다음에는 실제 길이로 캐시를 검증한다.
+            const QByteArray SavedStamp = Stamp + ':' + QByteArray::number(File.mSize);
+            if(!SaveAtomic(Name,(const char*)File.mData,File.mSize) || !SaveAtomic(Meta,SavedStamp.constData(),SavedStamp.size())) return QString();
+            return Name;
+        }
+        #endif
         static bool EnsureIndex()
         {
             static AssetWebMutex LoadMutex;
@@ -411,7 +711,7 @@ public:
                 Generation = State.mGeneration;
             }
 
-            std::string Url = ResolveUrl(Base, "assetsindex.json");
+            std::string Url = ResolveUrl(Base, gIndexFilename);
             AssetIndexFiles NewIndex;
             bool Success = false;
             sint32 Status = 0;
@@ -517,6 +817,9 @@ public:
                                 Memory::Copy(file.mData, Data.constData(), file.mSize);
                         }
                     }
+                    if(!file.mData)
+                        BOSS_TRACE("[AssetWeb] Download failed: HTTP=%d, Qt=%d (%s), URL=%s",
+                            status, sint32(Reply->error()), Reply->errorString().toUtf8().constData(), url.c_str());
                     delete Reply;
                 });
                 Worker->start();
@@ -527,6 +830,19 @@ public:
         }
         static AssetWebFilePtr Match(chars pathname)
         {
+            if(!gDeckFilename.empty() && AssetIndexNormalizePath(pathname)==gDeckFilename)
+            {
+                auto File = std::make_shared<AssetWebFileData>();
+                const auto Base = Url();
+                #if !BOSS_WASM
+                    {auto& State=ST(); std::lock_guard<AssetWebMutex> Lock(State.mMutex);
+                     if(!State.mDeck.empty()) {File->mSize=sint32(State.mDeck.size()); File->mData=(uint08*)std::malloc(File->mSize);
+                         if(!File->mData) return nullptr; Memory::Copy(File->mData,State.mDeck.data(),File->mSize); return File;}}
+                #endif
+                sint32 Status=0;
+                if(FetchFresh(Base,gDeckFilename,*File,Status)) return File;
+                return nullptr;
+            }
             AssetIndexFileInfo Info;
             if(!FindInfo(pathname, Info)) return nullptr;
             const std::string Path = AssetIndexNormalizePath(pathname);
@@ -621,7 +937,7 @@ public:
                 std::lock_guard<AssetIndexMutex> Lock(State.mMutex);
                 if(State.mReady) return true;
             }
-            const String IndexPath = Platform::File::RootForAssets() + "assetsindex.json";
+            const String IndexPath = Platform::File::RootForAssets() + gIndexFilename.c_str();
             auto File = Platform::File::OpenForRead(IndexPath);
             if(!File) return false;
             const sint32 Size = Platform::File::Size(File);
@@ -1051,22 +1367,40 @@ public:
 
             if(!originalonly)
             {
-                #if BOSS_NEED_EMBEDDED_CACHE
-                    AssetEmbeddedFileClass::SearchCache(m_pathes[i], SearchCB, (payload) &Collector);
-                #else
-                    Platform::File::Search(Platform::File::RootForAssetsRem() + m_pathes[i] + "*",
-                        SearchCB, (payload) &Collector, false, true);
+                #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+                    if(AssetWebReadFileClass::Scoped() && AssetWebReadFileClass::Routed(m_pathes[i]))
+                    {
+                        const String UserDir = AssetWebReadFileClass::UserPath(m_pathes[i]);
+                        if(UserDir.Length())
+                            Platform::File::Search(Platform::File::RootForAssetsRem() + UserDir + "/*",
+                                SearchCB, (payload) &Collector, false, true);
+                    }
+                    else
                 #endif
+                {
+                    #if BOSS_NEED_EMBEDDED_CACHE
+                        AssetEmbeddedFileClass::SearchCache(m_pathes[i], SearchCB, (payload) &Collector);
+                    #else
+                        Platform::File::Search(Platform::File::RootForAssetsRem() + m_pathes[i] + "*",
+                            SearchCB, (payload) &Collector, false, true);
+                    #endif
+                }
             }
 
             #if BOSS_NEED_WEBFILES_ASSET
-                if(AssetWebReadFileClass::Enabled())
+                if(AssetWebReadFileClass::Routed(m_pathes[i]))
                     AssetWebReadFileClass::Search(m_pathes[i], SearchCB, (payload) &Collector);
-                else
+                else if(AssetWebReadFileClass::LocalOriginal(m_pathes[i]))
             #endif
             {
                 #if BOSS_STATIC_ASSET
-                    AssetLocalIndex::Search(m_pathes[i], SearchCB, (payload) &Collector);
+                    #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+                        if(AssetWebReadFileClass::Scoped())
+                            Platform::File::Search(Platform::File::RootForAssets() + m_pathes[i] + "*",
+                                SearchCB, (payload) &Collector, false, true);
+                        else
+                    #endif
+                        AssetLocalIndex::Search(m_pathes[i], SearchCB, (payload) &Collector);
                 #elif BOSS_NEED_EMBEDDED_ASSET
                     AssetEmbeddedFileClass::SearchAsset(m_pathes[i], SearchCB, (payload) &Collector);
                 #else
@@ -1102,7 +1436,8 @@ namespace BOSS
         else
         {
             // 목록 자체는 임베디드어셋에 내장하지 않는다.
-            if(!String(itemname).Right(16).CompareNoCase("assetsindex.json")) return;
+            if(!String(itemname).Right(16).CompareNoCase("assetsindex.json") ||
+                String(itemname).Right(gIndexFilename.size()) == gIndexFilename.c_str()) return;
             // 무시해야하는 파일은 제외
             chars Ignores[] = BOSS_ASSET_IGNORES;
             const String LowerName = String(itemname).Lower();
@@ -1306,6 +1641,79 @@ namespace BOSS
 
     #endif
 
+    void Asset::SetWebFilesIndex(chars filename, chars version, chars deckname)
+    {
+        #if BOSS_NEED_WEBFILES_ASSET || BOSS_STATIC_ASSET || BOSS_GENERATE_ASSET
+            gIndexFilename=filename?filename:"assetsindex.json";
+            gIndexVersion=version?version:"Boss2D-AssetsIndex-1";
+            gDeckFilename=deckname?deckname:"";
+        #else
+            (void)filename; (void)version; (void)deckname;
+        #endif
+    }
+    chars Asset::TrySetWebFilesUrl(chars url)
+    {
+        #if BOSS_NEED_WEBFILES_ASSET
+            static String DeckJson;
+            String NewDeckJson;
+            if(!AssetWebReadFileClass::TryUrl(url, &NewDeckJson)) return nullptr;
+            DeckJson = NewDeckJson;
+            return DeckJson;
+        #else
+            (void) url;
+            BOSS_TRACE("[AssetWeb] Web loading is disabled. Set BOSS_NEED_WEBFILES_ASSET=1 in the shared boss_config.h and rebuild Boss2D.");
+            return nullptr;
+        #endif
+    }
+    chars Asset::GetWebFilesUrl()
+    {
+        static String WebFilesUrl;
+        #if BOSS_NEED_WEBFILES_ASSET
+            WebFilesUrl = AssetWebReadFileClass::Url().c_str();
+        #endif
+        return WebFilesUrl;
+    }
+    chars Asset::GetWebCachePrefix()
+    {
+        static String WebCachePrefix;
+        #if BOSS_NEED_WEBFILES_ASSET
+            WebCachePrefix = AssetWebReadFileClass::CachePrefix();
+        #endif
+        return WebCachePrefix;
+    }
+    chars Asset::GetFilePath(chars filename)
+    {
+        const String Filename = filename;
+        static String FilePath;
+        FilePath.Empty();
+        if(!Filename.Length()) return FilePath;
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Routed(Filename))
+            {
+                if(AssetWebReadFileClass::Url().empty()) return FilePath;
+                const String UserName = AssetWebReadFileClass::UserPath(Filename);
+                if(!UserName.Length()) return FilePath;
+                const String UserFile = Platform::File::RootForAssetsRem() + UserName;
+                if(AssetReadFileClass::Exist(UserFile, nullptr, nullptr, nullptr, nullptr))
+                    FilePath = UserFile;
+                else if(AssetWebReadFileClass::Listed(Filename))
+                    FilePath = AssetWebReadFileClass::NativePath(Filename);
+                return FilePath;
+            }
+        #endif
+        const String Rem = Platform::File::RootForAssetsRem() + Filename;
+        if(AssetReadFileClass::Exist(Rem, nullptr, nullptr, nullptr, nullptr)) FilePath = Rem;
+        else
+        {
+            #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+                if(!AssetWebReadFileClass::LocalOriginal(Filename)) return FilePath;
+            #endif
+            const String Local = Platform::File::RootForAssets() + Filename;
+            if(AssetReadFileClass::Exist(Local, nullptr, nullptr, nullptr, nullptr)) FilePath = Local;
+        }
+        return FilePath;
+    }
+
     void Asset::SetWebFilesUrl(chars url)
     {
         #if BOSS_NEED_WEBFILES_ASSET
@@ -1319,9 +1727,39 @@ namespace BOSS
         struct AssetsIndexCollector
         {
             std::string mRoot;
+            std::string mOutput;
             AssetIndexFiles mFiles;
             bool mValid = true;
         };
+
+        static std::string _AssetsIndexFullPath(chars pathname)
+        {
+            std::string Path = pathname? pathname : "";
+            for(auto& Ch : Path) if(Ch == '\\') Ch = '/';
+            const std::string Prefix = (Path.compare(0, 2, "//") == 0)? "//" : ((!Path.empty() && Path[0] == '/')? "/" : "");
+            const bool Rooted = !Prefix.empty() || (3 <= Path.size() && Path[1] == ':' && Path[2] == '/');
+            std::vector<std::string> Parts;
+            for(size_t Pos = 0; Pos < Path.size();)
+            {
+                const auto End = Path.find('/', Pos);
+                const auto Part = Path.substr(Pos, End == std::string::npos? End : End - Pos);
+                if(Part == "..")
+                {
+                    if(!Parts.empty() && Parts.back() != ".." && Parts.back().find(':') == std::string::npos) Parts.pop_back();
+                    else if(!Rooted) Parts.push_back(Part);
+                }
+                else if(!Part.empty() && Part != ".") Parts.push_back(Part);
+                if(End == std::string::npos) break;
+                Pos = End + 1;
+            }
+            Path = Prefix;
+            for(const auto& Part : Parts)
+            {
+                if(!Path.empty() && Path.back() != '/') Path += '/';
+                Path += Part;
+            }
+            return Path;
+        }
 
         static void _AssetsIndexSearcher(chars itemname, payload data)
         {
@@ -1332,11 +1770,10 @@ namespace BOSS
                     Collector.mValid = false;
                 return;
             }
-            std::string FullPath = itemname;
-            for(auto& Ch : FullPath) if(Ch == '\\') Ch = '/';
+            const std::string FullPath = _AssetsIndexFullPath(itemname);
             if(FullPath.compare(0, Collector.mRoot.size(), Collector.mRoot)) return;
             const std::string Relative = FullPath.substr(Collector.mRoot.size());
-            if(Relative == "assetsindex.json") return;
+            if(Relative == "assetsindex.json" || Relative == Collector.mOutput || Relative == gIndexFilename) return;
             if(!AssetIndexValidPath(Relative))
             {
                 Collector.mValid = false;
@@ -1353,7 +1790,7 @@ namespace BOSS
             Collector.mFiles[Relative] = Info;
         }
 
-        static bool _ReadAssetsIndex(chars pathname, AssetIndexFiles& index)
+        static bool _ReadAssetsIndex(chars pathname, AssetIndexFiles& index, const std::string& version)
         {
             auto File = Platform::File::OpenForRead(pathname);
             if(!File) return false;
@@ -1372,13 +1809,13 @@ namespace BOSS
                 Done += ReadSize;
             }
             Platform::File::Close(File);
-            return Done == Size && AssetIndexParse(Data.data(), Data.size(), index);
+            return Done == Size && AssetIndexParse(Data.data(), Data.size(), index, version);
         }
 
-        static bool _WriteAssetsIndex(chars pathname, const AssetIndexFiles& index)
+        static bool _WriteAssetsIndex(chars pathname, const AssetIndexFiles& index, const std::string& version)
         {
             if(index.empty()) return false;
-            const String Text = AssetIndexBuild(index);
+            const String Text = AssetIndexBuild(index, version);
             const uint08 BOM[3] = {0xEF, 0xBB, 0xBF};
             if(auto File = Platform::File::OpenForWrite(pathname, true))
             {
@@ -1391,22 +1828,30 @@ namespace BOSS
         }
     #endif
 
-    bool Asset::RebuildForAssetsIndex()
+    bool Asset::RebuildForAssetsIndex(chars filename, chars version, chars rootpath)
     {
         #if BOSS_GENERATE_ASSET
-            const String& AssetsPath = Platform::File::RootForAssets();
-            const String AssetsDir = AssetsPath.Left(AssetsPath.Length() - 1);
+            const String SourceRoot = rootpath? String(rootpath) : Platform::File::RootForAssets();
+            std::string NormalRoot = _AssetsIndexFullPath(SourceRoot);
+            if(NormalRoot.empty()) return false;
+            if(NormalRoot.back() != '/') NormalRoot += '/';
+            const String AssetsPath = NormalRoot.c_str();
+            const String AssetsDir = AssetsPath;
             if(!Platform::File::ExistForDir(AssetsDir)) return false;
 
+            if(!filename || !*filename || !version || !*version) return false;
+            const std::string Name=filename;
+            if(Name.find('/')!=std::string::npos || Name.find('\\')!=std::string::npos || Name.find(':')!=std::string::npos || Name=="." || Name=="..") return false;
             AssetsIndexCollector Collector;
+            Collector.mOutput=Name;
             Collector.mRoot = (chars) AssetsPath;
             for(auto& Ch : Collector.mRoot) if(Ch == '\\') Ch = '/';
             if(Platform::File::Search(AssetsDir, _AssetsIndexSearcher, &Collector, true) == -1 ||
                 !Collector.mValid) return false;
 
             AssetIndexFiles OldIndex;
-            const String IndexPath = AssetsPath + "assetsindex.json";
-            bool Changed = !_ReadAssetsIndex(IndexPath, OldIndex) ||
+            const String IndexPath = AssetsPath + filename;
+            bool Changed = !_ReadAssetsIndex(IndexPath, OldIndex, version) ||
                 OldIndex.size() != Collector.mFiles.size();
             if(!Changed)
                 for(const auto& Pair : Collector.mFiles)
@@ -1422,9 +1867,9 @@ namespace BOSS
                 }
             // 접근시간(atime)은 일반적인 파일 읽기로도 변하므로 변경판정에는 제외한다.
             if(Changed && Platform::Popup::MessageDialog("리빌드가 필요합니다",
-                "에셋 파일 목록에 변경이 있습니다.\n\nassetsindex.json을 다시 생성하고 종료할까요?", DBT_YesNo) == 0)
+                String::Format("에셋 파일 목록에 변경이 있습니다.\n\n%s을 다시 생성하고 종료할까요?", filename), DBT_YesNo) == 0)
             {
-                if(_WriteAssetsIndex(IndexPath, Collector.mFiles)) return true;
+                if(_WriteAssetsIndex(IndexPath, Collector.mFiles, version)) return true;
                 BOSS_TRACE("Assets index write failed: %s", (chars) IndexPath);
             }
         #endif
@@ -1481,6 +1926,16 @@ namespace BOSS
         if(assetpath)
             return ((const AssetPathClass*) assetpath)->Exist(filename, size, ctime, atime, mtime);
 
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Scoped() && AssetWebReadFileClass::Routed(filename))
+            {
+                if(AssetWebReadFileClass::Url().empty()) return false;
+                const String UserName = AssetWebReadFileClass::UserPath(filename);
+                if(!UserName.Length()) return false;
+                if(AssetReadFileClass::Exist(Platform::File::RootForAssetsRem() + UserName, size, ctime, atime, mtime)) return true;
+                return AssetWebReadFileClass::Exist(filename, size, ctime, atime, mtime);
+            }
+        #endif
         #if BOSS_NEED_EMBEDDED_CACHE
             if(AssetEmbeddedReadFileClass::ExistForCache(filename, size, ctime, atime, mtime))
                 return true;
@@ -1490,11 +1945,18 @@ namespace BOSS
         #endif
 
         #if BOSS_NEED_WEBFILES_ASSET
-            if(AssetWebReadFileClass::Enabled())
+            if(AssetWebReadFileClass::Routed(filename))
                 return AssetWebReadFileClass::Exist(filename, size, ctime, atime, mtime);
+            if(!AssetWebReadFileClass::LocalOriginal(filename)) return false;
         #endif
 
         #if BOSS_STATIC_ASSET
+            #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+                if(AssetWebReadFileClass::Scoped())
+                    return AssetReadFileClass::Exist(Platform::File::RootForAssets() + filename, size, ctime, atime, mtime);
+            #endif
+            if(std::string(filename)==gDeckFilename || std::string(filename)==gIndexFilename)
+                return AssetReadFileClass::Exist(Platform::File::RootForAssets()+filename,size,ctime,atime,mtime);
             return AssetLocalIndex::Exist(filename, size, ctime, atime, mtime);
         #elif BOSS_NEED_EMBEDDED_ASSET
             if(AssetEmbeddedReadFileClass::ExistForAsset(filename, size, ctime, atime, mtime))
@@ -1511,6 +1973,18 @@ namespace BOSS
         if(assetpath)
             return ((const AssetPathClass*) assetpath)->OpenForRead(filename, originalonly);
 
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Scoped() && AssetWebReadFileClass::Routed(filename))
+            {
+                if(AssetWebReadFileClass::Url().empty()) return nullptr;
+                const String UserName = AssetWebReadFileClass::UserPath(filename);
+                if(!UserName.Length()) return nullptr;
+                if(!originalonly)
+                    if(auto Asset = AssetReadFileClass::Create(Platform::File::RootForAssetsRem() + UserName))
+                        return (id_asset_read) Asset;
+                return (id_asset_read) AssetWebReadFileClass::Create(filename);
+            }
+        #endif
         if(!originalonly)
         {
             #if BOSS_NEED_EMBEDDED_CACHE
@@ -1523,12 +1997,18 @@ namespace BOSS
         }
 
         #if BOSS_NEED_WEBFILES_ASSET
-            if(AssetWebReadFileClass::Enabled())
+            if(AssetWebReadFileClass::Routed(filename))
                 return (id_asset_read) AssetWebReadFileClass::Create(filename);
+            if(!AssetWebReadFileClass::LocalOriginal(filename)) return nullptr;
         #endif
 
         #if BOSS_STATIC_ASSET
-            if(!AssetLocalIndex::Has(filename)) return nullptr;
+            #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+                if(!AssetWebReadFileClass::Scoped())
+            #endif
+            {
+                if(std::string(filename)!=gDeckFilename && std::string(filename)!=gIndexFilename && !AssetLocalIndex::Has(filename)) return nullptr;
+            }
         #endif
 
         #if BOSS_NEED_EMBEDDED_ASSET
@@ -1541,34 +2021,69 @@ namespace BOSS
         return nullptr;
     }
 
+    static String WritableAssetName(chars filename)
+    {
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            return AssetWebReadFileClass::UserPath(filename);
+        #else
+            return String(filename);
+        #endif
+    }
     id_asset Asset::OpenForWrite(chars filename, bool autocreatedir)
     {
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Scoped() && AssetWebReadFileClass::Routed(filename))
+            {
+                const String UserName = AssetWebReadFileClass::UserPath(filename);
+                if(!UserName.Length()) return nullptr;
+                return (id_asset) AssetWriteFileClass::Create(
+                    Platform::File::RootForAssetsRem() + UserName, autocreatedir);
+            }
+        #endif
         #if BOSS_NEED_EMBEDDED_CACHE
             return (id_asset) AssetEmbeddedWriteFileClass::Create(filename);
         #else
             return (id_asset) AssetWriteFileClass::Create(
-                Platform::File::RootForAssetsRem() + filename, autocreatedir);
+                Platform::File::RootForAssetsRem() + WritableAssetName(filename), autocreatedir);
         #endif
     }
 
     bool Asset::RemoveForWrite(chars filename, bool autoremovedir)
     {
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Scoped() && AssetWebReadFileClass::Routed(filename))
+            {
+                const String UserName = AssetWebReadFileClass::UserPath(filename);
+                return UserName.Length() && AssetWriteFileClass::Remove(
+                    Platform::File::RootForAssetsRem() + UserName, autoremovedir);
+            }
+        #endif
         #if BOSS_NEED_EMBEDDED_CACHE
             return false;
         #else
             return AssetWriteFileClass::Remove(
-                Platform::File::RootForAssetsRem() + filename, autoremovedir);
+                Platform::File::RootForAssetsRem() + WritableAssetName(filename), autoremovedir);
         #endif
     }
 
     bool Asset::RenameForWrite(chars old_filename, chars new_filename)
     {
+        #if BOSS_NEED_WEBFILES_ASSET && !BOSS_WASM
+            if(AssetWebReadFileClass::Scoped() &&
+                (AssetWebReadFileClass::Routed(old_filename) || AssetWebReadFileClass::Routed(new_filename)))
+            {
+                const String OldName = AssetWebReadFileClass::UserPath(old_filename);
+                const String NewName = AssetWebReadFileClass::UserPath(new_filename);
+                return OldName.Length() && NewName.Length() && AssetWriteFileClass::Rename(
+                    Platform::File::RootForAssetsRem() + OldName, Platform::File::RootForAssetsRem() + NewName);
+            }
+        #endif
         #if BOSS_NEED_EMBEDDED_CACHE
             return false;
         #else
             return AssetWriteFileClass::Rename(
-                Platform::File::RootForAssetsRem() + old_filename,
-                Platform::File::RootForAssetsRem() + new_filename);
+                Platform::File::RootForAssetsRem() + WritableAssetName(old_filename),
+                Platform::File::RootForAssetsRem() + WritableAssetName(new_filename));
         #endif
     }
 
