@@ -28,14 +28,6 @@ namespace BOSS
         /// @return 리빌드 실시여부
         static bool RebuildForEmbedded();
 
-        /// @brief BOSS_GENERATE_ASSET에서 기준폴더 전체를 비교하여 지정한 파일인덱스 갱신
-        /// @param filename : 기준폴더 내 인덱스파일명(하위경로 제외)
-        /// @param version : 인덱스의 버전명칭(Boss2D-AssetsIndex-1은 기존 files/format 규격)
-        /// @param rootpath : 검색과 인덱스 저장의 기준폴더(nullptr이면 기존 assets폴더)
-        /// @return 인덱스를 다시 생성하여 앱을 종료해야 하는지 여부
-        static bool RebuildForAssetsIndex(chars filename = "assetsindex.json",
-            chars version = "Boss2D-AssetsIndex-1", chars rootpath = nullptr);
-
         /// @brief 최초 어셋접근 전에 웹어셋의 파일인덱스와 앱목록 규격 설정
         /// @param filename : 기준 URL에 상대적인 인덱스파일명(nullptr이면 assetsindex.json)
         /// @param version : 인덱스의 버전명칭(nullptr이면 Boss2D-AssetsIndex-1)
